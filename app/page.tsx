@@ -321,9 +321,9 @@ export default async function HomePage() {
                       </div>
                       
                       {/* Icon */}
-                      <div className={`w-14 h-14 rounded-xl ${item.iconBg} flex items-center justify-center mb-4`}>
+                      {/* <div className={`w-14 h-14 rounded-xl ${item.iconBg} flex items-center justify-center mb-4`}>
                         <item.icon className={`w-7 h-7 ${item.iconColor}`} />
-                      </div>
+                      </div> */}
                       
                       {/* Content */}
                       <h3 className="font-bold text-slate-900 text-lg mb-2">{item.title}</h3>
