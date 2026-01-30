@@ -7,7 +7,7 @@ interface HeroSectionProps {
 
 export function HeroSection({ user }: HeroSectionProps) {
   return (
-    <div className="relative overflow-hidden py-12 md:py-16">
+    <div className="relative overflow-hidden py-16 md:py-20">
       {/* Background image with green overlay */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -17,7 +17,7 @@ export function HeroSection({ user }: HeroSectionProps) {
       />
       <div className="absolute inset-0 bg-gradient-to-r from-emerald-800/90 via-emerald-700/85 to-emerald-600/80" />
       
-      <div className="relative container mx-auto px-4 text-center mb-6 md:mb-12">
+      <div className="relative container mx-auto px-4 text-center">
         <div className="inline-flex items-center gap-2 text-white/90 mb-4">
           <Trophy className="w-5 h-5" />
           <span className="font-semibold text-sm">Bolão de Tênis</span>
