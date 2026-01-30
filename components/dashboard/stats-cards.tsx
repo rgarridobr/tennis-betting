@@ -25,9 +25,9 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: Target,
       iconColor: 'text-white',
       bgColor: 'bg-emerald-500',
-      valueColor: 'text-foreground',
-      highlightBg: '',
-      highlightRing: '',
+      valueColor: 'text-emerald-600',
+      highlightBg: 'bg-emerald-50',
+      highlightRing: 'ring-emerald-200',
     },
     {
       label: 'Precisão',
@@ -35,9 +35,9 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: TrendingUp,
       iconColor: 'text-white',
       bgColor: 'bg-blue-500',
-      valueColor: 'text-foreground',
-      highlightBg: '',
-      highlightRing: '',
+      valueColor: 'text-blue-600',
+      highlightBg: 'bg-blue-50',
+      highlightRing: 'ring-blue-200',
     },
     {
       label: 'Torneios',
@@ -46,9 +46,9 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: Calendar,
       iconColor: 'text-white',
       bgColor: 'bg-violet-500',
-      valueColor: 'text-foreground',
-      highlightBg: '',
-      highlightRing: '',
+      valueColor: 'text-violet-600',
+      highlightBg: 'bg-violet-50',
+      highlightRing: 'ring-violet-200',
     },
   ]
 
