@@ -251,13 +251,7 @@ export default async function HomePage() {
                         <p className="text-slate-600 leading-relaxed">{item.description}</p>
                       </CardContent>
                     </Card>
-                    
-                    {/* Arrow connector - hidden on mobile and last item */}
-                    {index < 3 && (
-                      <div className="hidden md:flex absolute top-24 -right-6 z-10 w-6 h-6 rounded-full bg-white shadow-md items-center justify-center">
-                        <ChevronRight className="w-4 h-4 text-slate-400" />
-                      </div>
-                    )}
+    
                   </div>
                 ))}
               </div>
