@@ -362,13 +362,13 @@ export default async function HomePage() {
               {[
                 {
                   name: 'Carlos Silva',
-                  role: 'Participante desde 2024',
+                  role: 'Participante desde 2025',
                   content: 'Já ganhei dois bolões! A plataforma é muito fácil de usar e os pagamentos são rápidos.',
                   avatar: 'CS',
                 },
                 {
                   name: 'Ana Rodrigues',
-                  role: 'Top 10 no ranking',
+                  role: 'Participante desde 2025',
                   content: 'Adoro acompanhar os torneios e fazer palpites. Muito divertido competir com os amigos!',
                   avatar: 'AR',
                 },
