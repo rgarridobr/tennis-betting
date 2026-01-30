@@ -118,7 +118,7 @@ export default async function HomePage() {
               </div>
               
               {/* Right content - Stats cards */}
-              <div className="hidden lg:block">
+              {/* <div className="hidden lg:block">
                 <div className="relative">
                   {/* Main stats card */}
                   <Card className="bg-white/10 backdrop-blur-md border-white/20 shadow-2xl">
@@ -172,7 +172,7 @@ export default async function HomePage() {
                   </Card>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
           
           {/* Scroll indicator */}
