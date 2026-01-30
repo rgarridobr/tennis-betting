@@ -20,7 +20,7 @@ export function PageHero({ title, subtitle, children }: PageHeroProps) {
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/95 via-emerald-800/90 to-teal-900/90" />
       
       {/* Content */}
-      <div className="relative py-10">
+      <div className="relative py-20">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
