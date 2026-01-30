@@ -54,7 +54,7 @@ export function TournamentHeader({ tournament, participants = 0, prizePool = 0 }
   const bgImage = tournament.image_url || surfaceImages[tournament.surface] || surfaceImages.hard
 
   return (
-    <div className="relative py-10 overflow-hidden">
+    <div className="relative py-16 md:py-22 overflow-hidden">
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url('${bgImage}')` }}

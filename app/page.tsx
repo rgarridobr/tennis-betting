@@ -1,15 +1,15 @@
-import { getSession } from '@/lib/auth'
-import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { 
-  Trophy, 
-  Target, 
-  Users, 
-  TrendingUp, 
-  ChevronRight, 
+import { getSession } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  Trophy,
+  Target,
+  Users,
+  TrendingUp,
+  ChevronRight,
   Medal,
   Calendar,
   ArrowRight,
@@ -17,20 +17,17 @@ import {
   Shield,
   Sparkles,
   CheckCircle2,
-  MapPin
-} from 'lucide-react'
-import { getLiveTournaments, getUpcomingTournaments } from '@/lib/data'
+  MapPin,
+} from 'lucide-react';
+import { getLiveTournaments, getUpcomingTournaments } from '@/lib/data';
 
 export default async function HomePage() {
-  const user = await getSession()
-  if (user) redirect('/dashboard')
-  
-  const [liveTournaments, upcomingTournaments] = await Promise.all([
-    getLiveTournaments(),
-    getUpcomingTournaments(),
-  ])
-  
-  const featuredTournaments = [...liveTournaments, ...upcomingTournaments].slice(0, 3)
+  const user = await getSession();
+  if (user) redirect('/dashboard');
+
+  const [liveTournaments, upcomingTournaments] = await Promise.all([getLiveTournaments(), getUpcomingTournaments()]);
+
+  const featuredTournaments = [...liveTournaments, ...upcomingTournaments].slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background">
@@ -56,18 +53,18 @@ export default async function HomePage() {
         {/* Hero Section */}
         <section className="relative min-h-[90vh] flex items-center overflow-hidden">
           {/* Background Image */}
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center"
             style={{
               backgroundImage: `url('https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=1920&q=80')`,
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/95 via-emerald-800/90 to-teal-900/85" />
-          
+
           {/* Decorative elements */}
           <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-amber-400/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-400/10 rounded-full blur-3xl" />
-          
+
           <div className="relative container mx-auto px-4 py-12">
             <div className="grid gap-12 items-center">
               {/* Left content */}
@@ -76,28 +73,40 @@ export default async function HomePage() {
                   <Sparkles className="w-4 h-4 mr-2" />
                   Roland Garros 2025 ao vivo!
                 </Badge>
-                
+
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1] text-balance">
                   Faça seus palpites e{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-amber-500">ganhe pontos</span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-amber-500">
+                    ganhe pontos
+                  </span>
                 </h1>
-                
+
                 <p className="mt-6 text-lg sm:text-xl text-white/70 max-w-lg leading-relaxed">
-                  Participe do bolão, dê seus palpites nos maiores torneios de tênis do mundo e dispute com seus amigos no ranking.
+                  Participe do bolão, dê seus palpites nos maiores torneios de tênis do mundo e dispute com seus amigos
+                  no ranking.
                 </p>
-                
+
                 <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                  <Button size="lg" className="bg-emerald-500 hover:bg-emerald-400 text-white text-lg h-14 px-8 shadow-lg shadow-emerald-500/30" asChild>
+                  <Button
+                    size="lg"
+                    className="bg-emerald-500 hover:bg-emerald-400 text-white text-lg h-14 px-8 shadow-lg shadow-emerald-500/30"
+                    asChild
+                  >
                     <Link href="/cadastro">
                       Começar agora
                       <ArrowRight className="w-5 h-5 ml-2" />
                     </Link>
                   </Button>
-                  <Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10 hover:text-white text-lg h-14 px-8 bg-white/5" asChild>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-white/20 text-white hover:bg-white/10 hover:text-white text-lg h-14 px-8 bg-white/5"
+                    asChild
+                  >
                     <Link href="/login">Já tenho uma conta</Link>
                   </Button>
                 </div>
-                
+
                 {/* Trust badges */}
                 <div className="mt-10 flex flex-wrap items-center gap-6 text-white/60 text-sm">
                   <span className="flex items-center gap-2">
@@ -114,7 +123,7 @@ export default async function HomePage() {
                   </span>
                 </div>
               </div>
-              
+
               {/* Right content - Stats cards */}
               {/* <div className="hidden lg:block">
                 <div className="relative">
@@ -168,9 +177,9 @@ export default async function HomePage() {
                   </Card>
                 </div>
               </div>*/}
-            </div> 
-          </div> 
-          
+            </div>
+          </div>
+
           {/* Scroll indicator */}
           <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/40">
             <span className="text-xs uppercase tracking-wider">Role para ver mais</span>
@@ -185,50 +194,50 @@ export default async function HomePage() {
           <div className="container mx-auto px-4">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
               <div>
-                <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 mb-4">
-                  Torneios
-                </Badge>
-                <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
-                  Torneios em destaque
-                </h2>
+                <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 mb-4">Torneios</Badge>
+                <h2 className="text-3xl md:text-4xl font-bold text-slate-900">Torneios em destaque</h2>
                 <p className="text-slate-600 mt-2 text-lg">Inscreva-se e comece a fazer seus palpites</p>
               </div>
-              <Button variant="outline" className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 self-start sm:self-auto bg-transparent" asChild>
+              <Button
+                variant="outline"
+                className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 self-start sm:self-auto bg-transparent"
+                asChild
+              >
                 <Link href="/cadastro">
                   Ver todos os torneios
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Link>
               </Button>
             </div>
-            
+
             <div className="grid md:grid-cols-3 gap-8">
               {featuredTournaments.map((tournament) => (
-                <Card key={tournament.id} className="overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1">
+                <Card
+                  key={tournament.id}
+                  className="overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1 pt-0"
+                >
                   <div className="relative h-52">
                     <img
-                      src={
-                        tournament.surface === 'clay' 
-                          ? 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=600&q=80'
-                          : tournament.surface === 'grass'
-                            ? 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=600&q=80'
-                            : 'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=600&q=80'
-                      }
+                      src={tournament.image_url || '/placeholder.svg'}
                       alt={tournament.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-cover"
                     />
+
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                    <Badge 
+                    <Badge
                       className={`absolute top-4 right-4 ${
-                        tournament.status === 'live' 
-                          ? 'bg-emerald-500 text-white' 
-                          : 'bg-amber-400 text-amber-900'
+                        tournament.status === 'live' ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-amber-900'
                       }`}
                     >
                       {tournament.status === 'live' ? 'Ao vivo' : 'Em breve'}
                     </Badge>
                     <div className="absolute bottom-4 left-4 right-4">
                       <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm mb-2">
-                        {tournament.surface === 'clay' ? 'Saibro' : tournament.surface === 'grass' ? 'Grama' : 'Quadra dura'}
+                        {tournament.surface === 'clay'
+                          ? 'Saibro'
+                          : tournament.surface === 'grass'
+                            ? 'Grama'
+                            : 'Quadra dura'}
                       </Badge>
                       <h3 className="text-2xl font-bold text-white">{tournament.name}</h3>
                       <p className="text-white/80 text-sm mt-1 flex items-center gap-1">
@@ -242,7 +251,15 @@ export default async function HomePage() {
                       <div className="flex items-center gap-2 text-sm text-slate-500">
                         <Calendar className="w-4 h-4" />
                         <span>
-                          {new Date(tournament.start_date).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })} - {new Date(tournament.end_date).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
+                          {new Date(tournament.start_date).toLocaleDateString('pt-BR', {
+                            day: 'numeric',
+                            month: 'short',
+                          })}{' '}
+                          -{' '}
+                          {new Date(tournament.end_date).toLocaleDateString('pt-BR', {
+                            day: 'numeric',
+                            month: 'short',
+                          })}
                         </span>
                       </div>
                       <div className="text-right">
@@ -261,17 +278,13 @@ export default async function HomePage() {
         <section className="py-24 bg-slate-50">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
-              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 mb-4">
-                Simples e rápido
-              </Badge>
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
-                Como funciona
-              </h2>
+              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 mb-4">Simples e rápido</Badge>
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-900">Como funciona</h2>
               <p className="text-slate-600 mt-3 text-lg max-w-md mx-auto">
                 Em apenas 4 passos você começa a competir pelos prêmios
               </p>
             </div>
-            
+
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
               {[
                 {
@@ -312,19 +325,22 @@ export default async function HomePage() {
                 },
               ].map((item, index) => (
                 <div key={item.title} className="relative">
-                  
-                  <Card className={`border-0 shadow-lg hover:shadow-xl transition-all h-full ${item.lightColor} hover:-translate-y-1`}>
+                  <Card
+                    className={`border-0 shadow-lg hover:shadow-xl transition-all h-full ${item.lightColor} hover:-translate-y-1`}
+                  >
                     <CardContent className="p-6">
                       {/* Step number */}
-                      <div className={`w-8 h-8 rounded-full ${item.color} text-white text-sm font-bold flex items-center justify-center mb-4`}>
+                      <div
+                        className={`w-8 h-8 rounded-full ${item.color} text-white text-sm font-bold flex items-center justify-center mb-4`}
+                      >
                         {index + 1}
                       </div>
-                      
+
                       {/* Icon */}
                       {/* <div className={`w-14 h-14 rounded-xl ${item.iconBg} flex items-center justify-center mb-4`}>
                         <item.icon className={`w-7 h-7 ${item.iconColor}`} />
                       </div> */}
-                      
+
                       {/* Content */}
                       <h3 className="font-bold text-slate-900 text-lg mb-2">{item.title}</h3>
                       <p className="text-slate-600 text-sm leading-relaxed">{item.description}</p>
@@ -333,10 +349,14 @@ export default async function HomePage() {
                 </div>
               ))}
             </div>
-            
+
             {/* CTA */}
             <div className="mt-16 text-center">
-              <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-lg h-14 px-8 shadow-lg shadow-emerald-600/30" asChild>
+              <Button
+                size="lg"
+                className="bg-emerald-600 hover:bg-emerald-700 text-lg h-14 px-8 shadow-lg shadow-emerald-600/30"
+                asChild
+              >
                 <Link href="/cadastro">
                   Começar agora - É grátis!
                   <ArrowRight className="w-5 h-5 ml-2" />
@@ -350,14 +370,10 @@ export default async function HomePage() {
         <section className="py-24 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
-              <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 mb-4">
-                Depoimentos
-              </Badge>
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
-                O que dizem nossos participantes
-              </h2>
+              <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 mb-4">Depoimentos</Badge>
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-900">O que dizem nossos participantes</h2>
             </div>
-            
+
             <div className="grid md:grid-cols-3 gap-8">
               {[
                 {
@@ -405,31 +421,40 @@ export default async function HomePage() {
 
         {/* Final CTA */}
         <section className="py-24 relative overflow-hidden">
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center"
             style={{
               backgroundImage: `url('https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=1920&q=80')`,
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/95 to-teal-900/95" />
-          
+
           <div className="relative container mx-auto px-4 text-center">
             <div className="max-w-2xl mx-auto">
               <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 text-balance">
                 Pronto para entrar no jogo?
               </h2>
               <p className="text-emerald-100 text-lg mb-8">
-                Crie sua conta grátis agora e participe do bolão do Roland Garros 2025. 
-                O torneio já começou e os prêmios estão te esperando!
+                Crie sua conta grátis agora e participe do bolão do Roland Garros 2025. O torneio já começou e os
+                prêmios estão te esperando!
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-white text-emerald-700 hover:bg-white/90 text-lg h-14 px-10 shadow-lg" asChild>
+                <Button
+                  size="lg"
+                  className="bg-white text-emerald-700 hover:bg-white/90 text-lg h-14 px-10 shadow-lg"
+                  asChild
+                >
                   <Link href="/cadastro">
                     Criar minha conta grátis
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 hover:text-white text-lg h-14 px-8 bg-transparent" asChild>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-white/30 text-white hover:bg-white/10 hover:text-white text-lg h-14 px-8 bg-transparent"
+                  asChild
+                >
                   <Link href="/login">Já tenho uma conta</Link>
                 </Button>
               </div>
@@ -450,35 +475,59 @@ export default async function HomePage() {
                 <span>Bolão de Tênis</span>
               </div>
               <p className="text-slate-400 max-w-sm">
-                Faça seus palpites e ganhe pontos nos maiores torneios de tênis do mundo. 
-                Divirta-se competindo com amigos!
+                Faça seus palpites e ganhe pontos nos maiores torneios de tênis do mundo. Divirta-se competindo com
+                amigos!
               </p>
             </div>
-            
+
             <div>
               <h4 className="font-semibold text-white mb-4">Links</h4>
               <ul className="space-y-2 text-slate-400">
-                <li><Link href="/cadastro" className="hover:text-white transition-colors">Criar conta</Link></li>
-                <li><Link href="/login" className="hover:text-white transition-colors">Entrar</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Como funciona</Link></li>
+                <li>
+                  <Link href="/cadastro" className="hover:text-white transition-colors">
+                    Criar conta
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/login" className="hover:text-white transition-colors">
+                    Entrar
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white transition-colors">
+                    Como funciona
+                  </Link>
+                </li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-semibold text-white mb-4">Legal</h4>
               <ul className="space-y-2 text-slate-400">
-                <li><Link href="#" className="hover:text-white transition-colors">Termos de uso</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Privacidade</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Contato</Link></li>
+                <li>
+                  <Link href="#" className="hover:text-white transition-colors">
+                    Termos de uso
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white transition-colors">
+                    Privacidade
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white transition-colors">
+                    Contato
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
-          
+
           <div className="pt-8 border-t border-slate-800 text-center text-slate-500 text-sm">
             <p>2025 Bolão de Tênis. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>
     </div>
-  )
+  );
 }

@@ -27,7 +27,7 @@ export default async function TournamentsPage() {
         subtitle="Participe dos maiores torneios de tênis do mundo"
       >
         <div className="flex items-center gap-3">
-          <Card className="bg-white/10 border-0 backdrop-blur-sm">
+          <Card className="bg-white/10 border-0 backdrop-blur-sm px-4">
             <CardContent className="p-4 flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-emerald-500/30 flex items-center justify-center">
                 <Zap className="w-5 h-5 text-emerald-300" />
@@ -38,7 +38,7 @@ export default async function TournamentsPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white/10 border-0 backdrop-blur-sm">
+          <Card className="bg-white/10 border-0 backdrop-blur-sm px-4">
             <CardContent className="p-4 flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-amber-500/30 flex items-center justify-center">
                 <Calendar className="w-5 h-5 text-amber-300" />

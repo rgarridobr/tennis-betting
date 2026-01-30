@@ -59,7 +59,7 @@ export default async function MeusPalpitesPage() {
       {/* Header with Stats */}
       <PageHero title="Meus Palpites" subtitle="Acompanhe todos os seus palpites e resultados">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full md:w-auto">
-          <Card className="bg-white/10 border-0 backdrop-blur-sm">
+          <Card className="bg-white/10 border-0 backdrop-blur-sm px-4">
             <CardContent className="p-3 md:p-4">
               <div className="flex items-center gap-3">
                 <Target className="w-6 h-6 text-emerald-300 hidden sm:block" />
@@ -208,11 +208,10 @@ function PredictionsList({ predictions }: { predictions: any[] }) {
   return (
     <div className="space-y-6">
       {Object.entries(grouped).map(([tournamentName, tournamentPredictions]) => (
-        <Card key={tournamentName} className="border-0 shadow-md overflow-hidden">
+        <Card key={tournamentName} className="border-0 shadow-md overflow-hidden pt-0">
           <div className="bg-slate-100 px-6 py-4 border-b">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Trophy className="w-5 h-5 text-emerald-600" />
                 <h3 className="font-semibold text-slate-900">{tournamentName}</h3>
                 <Badge variant="secondary" className="text-xs">
                   {tournamentPredictions[0]?.tournament_surface === 'clay' ? 'Saibro' : 

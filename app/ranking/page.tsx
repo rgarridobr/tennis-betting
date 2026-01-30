@@ -90,10 +90,9 @@ export default async function RankingPage() {
             )}
 
             {/* Rest of Rankings */}
-            <Card className="border-0 shadow-md overflow-hidden">
+            <Card className="border-0 shadow-md overflow-hidden pt-0">
               <div className="bg-slate-100 px-6 py-4 border-b">
                 <h2 className="font-semibold text-slate-900 flex items-center gap-2">
-                  <Medal className="w-5 h-5 text-slate-600" />
                   Classificação Completa
                 </h2>
               </div>

@@ -24,8 +24,8 @@ export function PageHero({ title, subtitle, children }: PageHeroProps) {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">{title}</h1>
-              <p className="text-emerald-100">{subtitle}</p>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white text-balance">{title}</h1>
+              <p className="mt-4 text-white/80 max-w-xl mx-auto text-balance">{subtitle}</p>
             </div>
             {children}
           </div>
