@@ -228,7 +228,7 @@ export default async function HomePage() {
                   <div className={`w-16 h-16 rounded-2xl ${item.color} flex items-center justify-center mb-5 shadow-lg`}>
                     <item.icon className="w-8 h-8 text-white" />
                   </div>
-                  <span className={`text-5xl font-bold ${item.color}/10 absolute -top-2 right-0`}>
+                  <span className={`text-5xl font-bold absolute -top-2 right-0`}>
                     {item.step}
                   </span>
                   <h3 className="font-bold text-slate-900 text-lg mb-2">{item.title}</h3>
