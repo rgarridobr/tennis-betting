@@ -54,7 +54,7 @@ export function TournamentHeader({ tournament, participants = 0, prizePool = 0 }
   const bgImage = tournament.image_url || surfaceImages[tournament.surface] || surfaceImages.hard
 
   return (
-    <div className="relative py-10 overflow-hidden">
+    <div className="relative py-16 md:py-22 overflow-hidden">
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url('${bgImage}')` }}
@@ -91,12 +91,10 @@ export function TournamentHeader({ tournament, participants = 0, prizePool = 0 }
 
           <div className="flex gap-4">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 text-center">
-              <Users className="w-5 h-5 text-white/80 mx-auto mb-1" />
               <p className="text-2xl font-bold text-white">{participants}</p>
               <p className="text-xs text-white/70">Participantes</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 text-center">
-              <Trophy className="w-5 h-5 text-amber-400 mx-auto mb-1" />
               <p className="text-2xl font-bold text-white">{formatCurrency(prizePool)}</p>
               <p className="text-xs text-white/70">Prêmio</p>
             </div>

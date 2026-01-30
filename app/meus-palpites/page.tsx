@@ -2,6 +2,7 @@ import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { getUserPredictionsWithDetails, getUserStats, getTournaments } from '@/lib/data'
 import { DashboardHeader } from '@/components/dashboard/dashboard-header'
+import { PageHero } from '@/components/shared/page-hero'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -56,63 +57,57 @@ export default async function MeusPalpitesPage() {
       <DashboardHeader user={user} />
       
       {/* Header with Stats */}
-      <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-700 py-10">
-        <div className="container mx-auto px-4">
-          <h1 className="text-3xl font-bold text-white mb-2">Meus Palpites</h1>
-          <p className="text-emerald-100 mb-8">Acompanhe todos os seus palpites e resultados</p>
+      <PageHero title="Meus Palpites" subtitle="Acompanhe todos os seus palpites e resultados">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full md:w-auto">
+          <Card className="bg-white/10 border-0 backdrop-blur-sm px-4">
+            <CardContent className="p-3 md:p-4">
+              <div className="flex items-center gap-3">
+                <Target className="w-6 h-6 text-emerald-300 hidden sm:block" />
+                <div>
+                  <p className="text-emerald-100 text-xs">Palpites</p>
+                  <p className="text-xl font-bold text-white">{stats.total_predictions}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
           
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="bg-white/10 border-0 backdrop-blur-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-emerald-100 text-sm">Total de Palpites</p>
-                    <p className="text-3xl font-bold text-white">{stats.total_predictions}</p>
-                  </div>
-                  <Target className="w-8 h-8 text-emerald-300" />
+          <Card className="bg-white/10 border-0 backdrop-blur-sm">
+            <CardContent className="p-3 md:p-4">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="w-6 h-6 text-emerald-300 hidden sm:block" />
+                <div>
+                  <p className="text-emerald-100 text-xs">Acertos</p>
+                  <p className="text-xl font-bold text-white">{stats.correct_predictions}</p>
                 </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-white/10 border-0 backdrop-blur-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-emerald-100 text-sm">Acertos</p>
-                    <p className="text-3xl font-bold text-white">{stats.correct_predictions}</p>
-                  </div>
-                  <CheckCircle2 className="w-8 h-8 text-emerald-300" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white/10 border-0 backdrop-blur-sm">
+            <CardContent className="p-3 md:p-4">
+              <div className="flex items-center gap-3">
+                <TrendingUp className="w-6 h-6 text-emerald-300 hidden sm:block" />
+                <div>
+                  <p className="text-emerald-100 text-xs">Precisão</p>
+                  <p className="text-xl font-bold text-white">{stats.accuracy}%</p>
                 </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-white/10 border-0 backdrop-blur-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-emerald-100 text-sm">Precisão</p>
-                    <p className="text-3xl font-bold text-white">{stats.accuracy}%</p>
-                  </div>
-                  <TrendingUp className="w-8 h-8 text-emerald-300" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white/10 border-0 backdrop-blur-sm">
+            <CardContent className="p-3 md:p-4">
+              <div className="flex items-center gap-3">
+                <Trophy className="w-6 h-6 text-emerald-300 hidden sm:block" />
+                <div>
+                  <p className="text-emerald-100 text-xs">Pontos</p>
+                  <p className="text-xl font-bold text-white">{stats.total_points}</p>
                 </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-white/10 border-0 backdrop-blur-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-emerald-100 text-sm">Pontos Totais</p>
-                    <p className="text-3xl font-bold text-white">{stats.total_points}</p>
-                  </div>
-                  <Trophy className="w-8 h-8 text-emerald-300" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </div>
+      </PageHero>
 
       <main className="container mx-auto px-4 py-8">
         {predictions.length === 0 ? (
@@ -213,11 +208,10 @@ function PredictionsList({ predictions }: { predictions: any[] }) {
   return (
     <div className="space-y-6">
       {Object.entries(grouped).map(([tournamentName, tournamentPredictions]) => (
-        <Card key={tournamentName} className="border-0 shadow-md overflow-hidden">
+        <Card key={tournamentName} className="border-0 shadow-md overflow-hidden pt-0">
           <div className="bg-slate-100 px-6 py-4 border-b">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Trophy className="w-5 h-5 text-emerald-600" />
                 <h3 className="font-semibold text-slate-900">{tournamentName}</h3>
                 <Badge variant="secondary" className="text-xs">
                   {tournamentPredictions[0]?.tournament_surface === 'clay' ? 'Saibro' : 

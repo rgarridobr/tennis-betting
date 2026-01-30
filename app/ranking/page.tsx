@@ -2,6 +2,7 @@ import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { getGlobalRanking, getUserStats } from '@/lib/data'
 import { DashboardHeader } from '@/components/dashboard/dashboard-header'
+import { PageHero } from '@/components/shared/page-hero'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Trophy, Medal, Target, TrendingUp, Crown, Award } from 'lucide-react'
@@ -28,30 +29,20 @@ export default async function RankingPage() {
       <DashboardHeader user={user} />
       
       {/* Header */}
-      <div className="bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 py-10">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Ranking Geral</h1>
-              <p className="text-violet-200">Veja quem está liderando o bolão</p>
+      <PageHero title="Ranking Geral" subtitle="Veja quem está liderando o bolão">
+        <Card className="bg-white/10 border-0 backdrop-blur-sm">
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
+              <span className="text-2xl font-bold text-white">{userPosition}º</span>
             </div>
-            
-            {/* User's Position Card */}
-            <Card className="bg-white/10 border-0 backdrop-blur-sm">
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-white">{userPosition}º</span>
-                </div>
-                <div>
-                  <p className="text-violet-200 text-sm">Sua posição</p>
-                  <p className="text-white font-semibold">{user.name}</p>
-                  <p className="text-amber-300 font-bold">{userStats.total_points} pontos</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
+            <div>
+              <p className="text-emerald-100 text-sm">Sua posição</p>
+              <p className="text-white font-semibold">{user.name}</p>
+              <p className="text-amber-300 font-bold">{userStats.total_points} pontos</p>
+            </div>
+          </CardContent>
+        </Card>
+      </PageHero>
 
       <main className="container mx-auto px-4 py-8">
         {ranking.length === 0 ? (
@@ -99,10 +90,9 @@ export default async function RankingPage() {
             )}
 
             {/* Rest of Rankings */}
-            <Card className="border-0 shadow-md overflow-hidden">
+            <Card className="border-0 shadow-md overflow-hidden pt-0">
               <div className="bg-slate-100 px-6 py-4 border-b">
                 <h2 className="font-semibold text-slate-900 flex items-center gap-2">
-                  <Medal className="w-5 h-5 text-slate-600" />
                   Classificação Completa
                 </h2>
               </div>
