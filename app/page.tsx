@@ -312,10 +312,6 @@ export default async function HomePage() {
                 },
               ].map((item, index) => (
                 <div key={item.title} className="relative">
-                  {/* Connector line */}
-                  {index < 3 && (
-                    <div className="hidden lg:block absolute top-12 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-slate-200 to-slate-100" />
-                  )}
                   
                   <Card className={`border-0 shadow-lg hover:shadow-xl transition-all h-full ${item.lightColor} hover:-translate-y-1`}>
                     <CardContent className="p-6">
