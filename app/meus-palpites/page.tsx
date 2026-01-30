@@ -133,25 +133,41 @@ export default async function MeusPalpitesPage() {
           </Card>
         ) : (
           <Tabs defaultValue="all" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <TabsList className="bg-white shadow-sm">
-                <TabsTrigger value="all" className="data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700">
-                  Todos ({predictions.length})
-                </TabsTrigger>
-                <TabsTrigger value="pending" className="data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700">
-                  <Clock className="w-4 h-4 mr-1" />
-                  Pendentes ({pendingPredictions.length})
-                </TabsTrigger>
-                <TabsTrigger value="correct" className="data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700">
-                  <CheckCircle2 className="w-4 h-4 mr-1" />
-                  Acertos ({correctPredictions.length})
-                </TabsTrigger>
-                <TabsTrigger value="wrong" className="data-[state=active]:bg-red-50 data-[state=active]:text-red-700">
-                  <XCircle className="w-4 h-4 mr-1" />
-                  Erros ({wrongPredictions.length})
-                </TabsTrigger>
-              </TabsList>
-            </div>
+            <TabsList className="bg-white shadow-sm w-full flex flex-wrap h-auto p-1 gap-1">
+              <TabsTrigger 
+                value="all" 
+                className="flex-1 min-w-[70px] text-xs sm:text-sm py-2 data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700"
+              >
+                Todos ({predictions.length})
+              </TabsTrigger>
+              <TabsTrigger 
+                value="pending" 
+                className="flex-1 min-w-[70px] text-xs sm:text-sm py-2 data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700"
+              >
+                <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                <span className="hidden sm:inline">Pendentes</span>
+                <span className="sm:hidden">Pend.</span>
+                <span className="ml-1">({pendingPredictions.length})</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="correct" 
+                className="flex-1 min-w-[70px] text-xs sm:text-sm py-2 data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700"
+              >
+                <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                <span className="hidden sm:inline">Acertos</span>
+                <span className="sm:hidden">Ok</span>
+                <span className="ml-1">({correctPredictions.length})</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="wrong" 
+                className="flex-1 min-w-[70px] text-xs sm:text-sm py-2 data-[state=active]:bg-red-50 data-[state=active]:text-red-700"
+              >
+                <XCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                <span className="hidden sm:inline">Erros</span>
+                <span className="sm:hidden">Err</span>
+                <span className="ml-1">({wrongPredictions.length})</span>
+              </TabsTrigger>
+            </TabsList>
 
             <TabsContent value="all">
               <PredictionsList predictions={predictions} />
