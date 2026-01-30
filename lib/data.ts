@@ -260,3 +260,66 @@ export async function getUserPredictions(userId: number, tournamentId?: number):
   `
   return predictions as Prediction[]
 }
+
+export interface PredictionWithDetails {
+  id: number
+  match_id: number
+  predicted_winner: number
+  is_correct: boolean | null
+  points_earned: number
+  created_at: string
+  player1_name: string
+  player2_name: string
+  player1_country: string
+  player2_country: string
+  round: string
+  match_date: string
+  match_status: string
+  winner: number | null
+  tournament_id: number
+  tournament_name: string
+  tournament_surface: string
+}
+
+export async function getUserPredictionsWithDetails(userId: number): Promise<PredictionWithDetails[]> {
+  const predictions = await sql`
+    SELECT 
+      p.id,
+      p.match_id,
+      p.predicted_winner,
+      p.is_correct,
+      p.points_earned,
+      p.created_at,
+      m.player1_name,
+      m.player2_name,
+      m.player1_country,
+      m.player2_country,
+      m.round,
+      m.match_date,
+      m.status as match_status,
+      m.winner,
+      t.id as tournament_id,
+      t.name as tournament_name,
+      t.surface as tournament_surface
+    FROM predictions p
+    JOIN matches m ON p.match_id = m.id
+    JOIN tournaments t ON m.tournament_id = t.id
+    WHERE p.user_id = ${userId}
+    ORDER BY m.match_date DESC
+  `
+  return predictions as PredictionWithDetails[]
+}
+
+export async function getUserPredictionsByTournament(userId: number): Promise<Record<number, PredictionWithDetails[]>> {
+  const predictions = await getUserPredictionsWithDetails(userId)
+  
+  const grouped: Record<number, PredictionWithDetails[]> = {}
+  for (const p of predictions) {
+    if (!grouped[p.tournament_id]) {
+      grouped[p.tournament_id] = []
+    }
+    grouped[p.tournament_id].push(p)
+  }
+  
+  return grouped
+}

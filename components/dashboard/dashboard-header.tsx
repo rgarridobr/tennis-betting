@@ -36,6 +36,9 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
           <Link href="/torneios" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             Torneios
           </Link>
+          <Link href="/meus-palpites" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            Meus Palpites
+          </Link>
           <Link href="/ranking" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             Ranking
           </Link>
