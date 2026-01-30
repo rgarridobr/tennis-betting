@@ -369,7 +369,7 @@ export default async function HomePage() {
                 {
                   name: 'Ana Rodrigues',
                   role: 'Top 10 no ranking',
-                  content: 'Adoro acompanhar os torneios e fazer meus palpites. Muito divertido competir com os amigos!',
+                  content: 'Adoro acompanhar os torneios e fazer palpites. Muito divertido competir com os amigos!',
                   avatar: 'AR',
                 },
                 {
