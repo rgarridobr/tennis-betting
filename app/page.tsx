@@ -120,7 +120,6 @@ export default async function HomePage() {
               {/* Right content - Stats cards */}
               {/* <div className="hidden lg:block">
                 <div className="relative">
-                  {/* Main stats card */}
                   <Card className="bg-white/10 backdrop-blur-md border-white/20 shadow-2xl">
                     <CardContent className="p-8">
                       <div className="text-center mb-6">
@@ -146,7 +145,6 @@ export default async function HomePage() {
                     </CardContent>
                   </Card>
                   
-                  {/* Floating mini cards */}
                   <Card className="absolute -top-6 -left-6 bg-white shadow-xl border-0 animate-pulse">
                     <CardContent className="p-4 flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
@@ -171,9 +169,9 @@ export default async function HomePage() {
                     </CardContent>
                   </Card>
                 </div>
-              </div>
+              </div>*/}
             </div> 
-          </div> */}
+          </div> 
           
           {/* Scroll indicator */}
           <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/40">
