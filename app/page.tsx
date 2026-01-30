@@ -35,16 +35,14 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/50 to-transparent">
-        <div className="container mx-auto px-4 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-white font-bold text-xl">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center">
-              <Trophy className="w-6 h-6" />
-            </div>
+      <header className="sticky top-0 z-50 border-b border-border/50 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 text-emerald-600 font-semibold">
+            <Trophy className="w-6 h-6" />
             <span className="hidden sm:inline">Bolão de Tênis</span>
-          </div>
+          </Link>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" className="text-white hover:bg-white/20 hover:text-white" asChild>
+            <Button variant="ghost" asChild>
               <Link href="/login">Entrar</Link>
             </Button>
             <Button className="bg-emerald-500 text-white hover:bg-emerald-600" asChild>
@@ -56,7 +54,7 @@ export default async function HomePage() {
 
       <main>
         {/* Hero Section */}
-        <section className="relative min-h-screen flex items-center overflow-hidden">
+        <section className="relative min-h-[90vh] flex items-center overflow-hidden">
           {/* Background Image */}
           <div 
             className="absolute inset-0 bg-cover bg-center"
@@ -70,7 +68,7 @@ export default async function HomePage() {
           <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-amber-400/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-400/10 rounded-full blur-3xl" />
           
-          <div className="relative container mx-auto px-4 pt-20">
+          <div className="relative container mx-auto px-4 py-12">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               {/* Left content */}
               <div>
