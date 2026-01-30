@@ -98,7 +98,7 @@ export default async function MeusPalpitesPage() {
           <Card className="bg-white/10 border-0 backdrop-blur-sm">
             <CardContent className="p-3 md:p-4">
               <div className="flex items-center gap-3">
-                <Trophy className="w-6 h-6 text-amber-300 hidden sm:block" />
+                <Trophy className="w-6 h-6 text-emerald-300 hidden sm:block" />
                 <div>
                   <p className="text-emerald-100 text-xs">Pontos</p>
                   <p className="text-xl font-bold text-white">{stats.total_points}</p>
