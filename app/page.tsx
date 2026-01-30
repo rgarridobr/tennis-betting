@@ -116,7 +116,7 @@ export default async function HomePage() {
                 </h2>
                 <p className="text-slate-600 mt-2">Inscreva-se e comece a fazer seus palpites</p>
               </div>
-              <Button variant="ghost" className="text-emerald-600 hover:text-emerald-700" asChild>
+              <Button variant="ghost" className="text-emerald-600 hover:text-emerald-700 hover:bg-transparent" asChild>
                 <Link href="/cadastro">
                   Ver todos
                   <ChevronRight className="w-4 h-4 ml-1" />
