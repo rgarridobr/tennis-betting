@@ -139,7 +139,7 @@ export default async function HomePage() {
                       alt={tournament.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent group-hover:scale-105"  />
                     <Badge 
                       className={`absolute top-4 right-4 ${
                         tournament.status === 'live' 
