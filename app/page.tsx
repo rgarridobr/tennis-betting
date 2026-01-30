@@ -65,12 +65,7 @@ export default async function HomePage() {
           <div className="absolute bottom-20 left-10 w-96 h-96 bg-emerald-400/20 rounded-full blur-3xl" />
           
           <div className="relative container mx-auto px-4 pt-20">
-            <div className="max-w-3xl">
-              <Badge className="bg-amber-400 text-amber-900 hover:bg-amber-400 mb-6 px-4 py-1.5 text-sm font-medium">
-                <Zap className="w-4 h-4 mr-1" />
-                Roland Garros 2025 ao vivo!
-              </Badge>
-              
+            <div className="max-w-3xl">    
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight text-balance">
                 Faça seus palpites e{' '}
                 <span className="text-amber-400">ganhe pontos</span>
