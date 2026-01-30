@@ -192,9 +192,6 @@ export default async function HomePage() {
             </div>
             
             <div className="relative">
-              {/* Connection line - hidden on mobile */}
-              <div className="hidden md:block absolute top-24 left-[12%] right-[12%] h-1 bg-gradient-to-r from-blue-200 via-amber-200 via-emerald-200 to-violet-200 rounded-full" />
-              
               <div className="grid md:grid-cols-4 gap-8 md:gap-6">
                 {[
                   {
