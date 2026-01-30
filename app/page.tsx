@@ -69,7 +69,7 @@ export default async function HomePage() {
           <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-400/10 rounded-full blur-3xl" />
           
           <div className="relative container mx-auto px-4 py-12">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="grid gap-12 items-center">
               {/* Left content */}
               <div>
                 <Badge className="bg-amber-400/20 text-amber-300 hover:bg-amber-400/20 mb-6 px-4 py-2 text-sm border border-amber-400/30">
