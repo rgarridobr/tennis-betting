@@ -106,7 +106,7 @@ export default async function MeusPalpitesPage() {
                     <p className="text-emerald-100 text-sm">Pontos Totais</p>
                     <p className="text-3xl font-bold text-amber-400">{stats.total_points}</p>
                   </div>
-                  <Trophy className="w-8 h-8 text-amber-400" />
+                  <Trophy className="w-8 h-8 text-emerald-300" />
                 </div>
               </CardContent>
             </Card>
