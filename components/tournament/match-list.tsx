@@ -90,7 +90,7 @@ function MatchCard({ match, userId, tournamentId, currentPrediction, canMakePred
     setSelected(currentPrediction)
   }, [currentPrediction])
   
-  const isFinished = match.status === 'finished'
+  const isFinished = match.status === 'finished' || match.status === 'completed'
   const isLive = match.status === 'live'
   const canPredict = match.status === 'scheduled' && canMakePredictions
 
@@ -132,7 +132,7 @@ function MatchCard({ match, userId, tournamentId, currentPrediction, canMakePred
           name={match.player1_name}
           country={match.player1_country}
           score={match.player1_score}
-          isWinner={match.winner === 1}
+          isWinner={Number(match.winner) === 1}
           isSelected={selected === 1}
           isPredicted={currentPrediction === 1}
           isFinished={isFinished}
@@ -149,7 +149,7 @@ function MatchCard({ match, userId, tournamentId, currentPrediction, canMakePred
           name={match.player2_name}
           country={match.player2_country}
           score={match.player2_score}
-          isWinner={match.winner === 2}
+          isWinner={Number(match.winner) === 2}
           isSelected={selected === 2}
           isPredicted={currentPrediction === 2}
           isFinished={isFinished}

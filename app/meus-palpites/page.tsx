@@ -47,8 +47,8 @@ export default async function MeusPalpitesPage() {
     predictionsByTournament[p.tournament_id].push(p)
   }
 
-  const pendingPredictions = predictions.filter(p => p.match_status === 'scheduled')
-  const finishedPredictions = predictions.filter(p => p.match_status === 'finished')
+  const pendingPredictions = predictions.filter(p => p.match_status === 'scheduled' || p.match_status === 'live')
+  const finishedPredictions = predictions.filter(p => p.match_status === 'finished' || p.match_status === 'completed')
   const correctPredictions = finishedPredictions.filter(p => p.is_correct)
   const wrongPredictions = finishedPredictions.filter(p => p.is_correct === false)
 
