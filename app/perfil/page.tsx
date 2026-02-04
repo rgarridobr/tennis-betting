@@ -13,7 +13,6 @@ import {
   Target, 
   TrendingUp,
   Medal,
-  Award,
   Shield
 } from 'lucide-react'
 import { ProfileEditForm } from '@/components/profile/profile-edit-form'
@@ -108,15 +107,19 @@ export default async function PerfilPage() {
                   </div>
                 </div>
 
-                <div className="mt-6 grid grid-cols-2 gap-4">
+                <div className="mt-6 grid grid-cols-3 gap-4">
                   <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg">
                     <span className="text-sm text-emerald-700">Acertos</span>
                     <span className="font-bold text-emerald-700">{stats.correct_predictions}</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
                     <span className="text-sm text-red-700">Erros</span>
-                    <span className="font-bold text-red-700">
-                      {stats.total_predictions - stats.correct_predictions}
+                    <span className="font-bold text-red-700">{stats.wrong_predictions}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
+                    <span className="text-sm text-amber-700">Pendentes</span>
+                    <span className="font-bold text-amber-700">
+                      {stats.total_predictions - stats.correct_predictions - stats.wrong_predictions}
                     </span>
                   </div>
                 </div>
@@ -195,60 +198,6 @@ export default async function PerfilPage() {
               </CardContent>
             </Card>
 
-            {/* Achievements placeholder */}
-            <Card className="border-0 shadow-md">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Award className="w-5 h-5 text-emerald-600" />
-                  Conquistas
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {stats.total_predictions >= 10 && (
-                    <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg">
-                      <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center">
-                        <Target className="w-4 h-4 text-white" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm text-emerald-900">Palpiteiro</p>
-                        <p className="text-xs text-emerald-600">10+ palpites</p>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {stats.correct_predictions >= 5 && (
-                    <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-lg">
-                      <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center">
-                        <Trophy className="w-4 h-4 text-white" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm text-amber-900">Vidente</p>
-                        <p className="text-xs text-amber-600">5+ acertos</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {Number(stats.accuracy) >= 70 && stats.total_predictions >= 5 && (
-                    <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
-                      <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center">
-                        <TrendingUp className="w-4 h-4 text-white" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm text-purple-900">Expert</p>
-                        <p className="text-xs text-purple-600">70%+ precisão</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {stats.total_predictions === 0 && (
-                    <p className="text-sm text-slate-500 text-center py-4">
-                      Faça palpites para desbloquear conquistas!
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </main>

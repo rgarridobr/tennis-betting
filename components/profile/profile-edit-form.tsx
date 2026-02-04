@@ -100,9 +100,10 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
             name="email"
             type="email"
             defaultValue={user.email}
-            placeholder="seu@email.com"
-            required
+            disabled
+            className="bg-slate-50 text-slate-500 cursor-not-allowed"
           />
+          <p className="text-xs text-slate-500">O email não pode ser alterado</p>
         </div>
 
         {message && (

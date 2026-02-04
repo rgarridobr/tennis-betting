@@ -47,10 +47,11 @@ export interface Prediction {
 export interface UserStats {
   total_points: number
   correct_predictions: number
+  wrong_predictions: number
   total_predictions: number
   accuracy: number
   active_tournaments: number
-}
+  }
 
 export interface RankingEntry {
   user_id: number
@@ -103,6 +104,7 @@ export async function getUserStats(userId: number): Promise<UserStats> {
     SELECT 
       COALESCE(SUM(p.points_earned), 0) as total_points,
       COUNT(CASE WHEN p.is_correct = true THEN 1 END) as correct_predictions,
+      COUNT(CASE WHEN p.is_correct = false THEN 1 END) as wrong_predictions,
       COUNT(p.id) as total_predictions
     FROM predictions p
     WHERE p.user_id = ${userId}
@@ -117,13 +119,16 @@ export async function getUserStats(userId: number): Promise<UserStats> {
   
   const totalPoints = Number(stats[0]?.total_points || 0)
   const correct = Number(stats[0]?.correct_predictions || 0)
+  const wrong = Number(stats[0]?.wrong_predictions || 0)
   const total = Number(stats[0]?.total_predictions || 0)
+  const resolved = correct + wrong
   
   return {
     total_points: totalPoints,
     correct_predictions: correct,
+    wrong_predictions: wrong,
     total_predictions: total,
-    accuracy: total > 0 ? Math.round((correct / total) * 100) : 0,
+    accuracy: resolved > 0 ? Math.round((correct / resolved) * 100) : 0,
     active_tournaments: Number(activeTournaments[0]?.count || 0),
   }
 }

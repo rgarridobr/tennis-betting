@@ -13,25 +13,19 @@ export async function updateProfile(formData: FormData) {
     }
 
     const name = formData.get('name') as string
-    const email = formData.get('email') as string
 
-    if (!name || !email) {
-      return { success: false, error: 'Nome e email são obrigatórios' }
+    if (!name || name.trim().length === 0) {
+      return { success: false, error: 'Nome é obrigatório' }
     }
 
-    // Check if email is already in use by another user
-    const existingUser = await sql`
-      SELECT id FROM users WHERE email = ${email} AND id != ${user.id}
-    `
-
-    if (existingUser.length > 0) {
-      return { success: false, error: 'Este email já está em uso' }
+    if (name.trim().length < 2) {
+      return { success: false, error: 'Nome deve ter pelo menos 2 caracteres' }
     }
 
-    // Update user
+    // Update user (email cannot be changed)
     await sql`
       UPDATE users 
-      SET name = ${name}, email = ${email}, updated_at = NOW()
+      SET name = ${name.trim()}, updated_at = NOW()
       WHERE id = ${user.id}
     `
 
@@ -49,18 +43,26 @@ export async function updatePassword(formData: FormData) {
   try {
     const user = await getSession()
     if (!user) {
-      return { success: false, error: 'Não autorizado' }
+      return { success: false, error: 'Você precisa estar logado para alterar a senha' }
     }
 
     const currentPassword = formData.get('currentPassword') as string
     const newPassword = formData.get('newPassword') as string
 
-    if (!currentPassword || !newPassword) {
-      return { success: false, error: 'Todos os campos são obrigatórios' }
+    if (!currentPassword) {
+      return { success: false, error: 'Digite sua senha atual' }
+    }
+
+    if (!newPassword) {
+      return { success: false, error: 'Digite a nova senha' }
     }
 
     if (newPassword.length < 6) {
       return { success: false, error: 'A nova senha deve ter pelo menos 6 caracteres' }
+    }
+
+    if (currentPassword === newPassword) {
+      return { success: false, error: 'A nova senha deve ser diferente da atual' }
     }
 
     // Get current user with password
@@ -90,9 +92,9 @@ export async function updatePassword(formData: FormData) {
 
     revalidatePath('/perfil')
     
-    return { success: true }
+    return { success: true, message: 'Senha alterada com sucesso!' }
   } catch (error) {
     console.error('Error updating password:', error)
-    return { success: false, error: 'Erro ao atualizar senha' }
+    return { success: false, error: 'Erro interno ao atualizar senha. Tente novamente.' }
   }
 }
