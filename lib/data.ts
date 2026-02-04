@@ -143,6 +143,7 @@ export async function getGlobalRanking(limit: number = 10): Promise<RankingEntry
       COALESCE(SUM(p.points_earned), 0) as total_points
     FROM users u
     LEFT JOIN predictions p ON u.id = p.user_id
+    WHERE u.is_admin = false
     GROUP BY u.id, u.name
     ORDER BY total_points DESC, correct_predictions DESC
     LIMIT ${limit}
