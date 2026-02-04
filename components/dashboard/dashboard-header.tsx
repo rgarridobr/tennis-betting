@@ -26,28 +26,45 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+      <div className="container mx-auto px-4 h-16 flex items-center">
+        {/* Logo - Left */}
         <Link href="/dashboard" className="flex items-center gap-2 text-emerald-600 font-semibold">
           <Trophy className="w-6 h-6" />
           <span className="hidden sm:inline">Bolão de Tênis</span>
         </Link>
 
-        <nav className="flex items-center gap-4">
-          <Link href="/torneios" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+        {/* Navigation - Center */}
+        <nav className="flex-1 flex items-center justify-center gap-1 sm:gap-2">
+          <Link 
+            href="/torneios" 
+            className="px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base font-medium text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+          >
             Torneios
           </Link>
-          <Link href="/meus-palpites" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Link 
+            href="/meus-palpites" 
+            className="px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base font-medium text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+          >
             Meus Palpites
           </Link>
-          <Link href="/ranking" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Link 
+            href="/ranking" 
+            className="px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base font-medium text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+          >
             Ranking
           </Link>
           {user.is_admin && (
-            <Link href="/admin" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link 
+              href="/admin" 
+              className="px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base font-medium text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+            >
               Admin
             </Link>
           )}
-          
+        </nav>
+
+        {/* User Avatar - Right */}
+        <div className="flex items-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
@@ -82,7 +99,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
               </form>
             </DropdownMenuContent>
           </DropdownMenu>
-        </nav>
+        </div>
       </div>
     </header>
   )
