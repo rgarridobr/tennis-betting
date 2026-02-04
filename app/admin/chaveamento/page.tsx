@@ -1,30 +1,20 @@
-import { getSession } from '@/lib/auth'
-import { redirect } from 'next/navigation'
 import { getTournaments } from '@/lib/data'
 import { getAthletes } from '@/lib/actions/bracket'
-import { AdminHeader } from '@/components/admin/admin-header'
 import { PageHero } from '@/components/shared/page-hero'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Users, Trophy, ChevronRight, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { AthleteManager } from '@/components/admin/athlete-manager'
 
 export default async function ChaveamentoPage() {
-  const user = await getSession()
-  if (!user) redirect('/login')
-  if (!user.is_admin) redirect('/dashboard')
-
   const tournaments = await getTournaments()
   const athletes = await getAthletes()
 
   const activeTournaments = tournaments.filter(t => t.status === 'live' || t.status === 'upcoming')
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <AdminHeader user={user} />
-      
+    <>
       <PageHero 
         title="Gerenciar Chaveamento" 
         subtitle="Cadastre atletas e gerencie as chaves dos torneios"
@@ -51,10 +41,9 @@ export default async function ChaveamentoPage() {
         </div>
       </PageHero>
       
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Athletes Manager */}
-          <AthleteManager athletes={athletes} />
+      <div className="grid lg:grid-cols-2 gap-8 mt-8">
+        {/* Athletes Manager */}
+        <AthleteManager athletes={athletes} />
 
           {/* Tournament Brackets */}
           <div className="space-y-6">
@@ -131,8 +120,7 @@ export default async function ChaveamentoPage() {
               </CardContent>
             </Card>
           </div>
-        </div>
-      </main>
-    </div>
+      </div>
+    </>
   )
 }
