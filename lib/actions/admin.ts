@@ -90,14 +90,25 @@ export async function updateMatchResultAction(formData: FormData) {
   const player2Score = formData.get('player2_score') as string
   const tournamentId = formData.get('tournament_id') as string
 
+  console.log("[v0] updateMatchResultAction called:", { matchId, winner, player1Score, player2Score, tournamentId })
+
   if (!matchId || !winner || !player1Score || !player2Score) {
-    return { error: 'Todos os campos são obrigatórios' }
+    console.log("[v0] Missing fields")
+    return { success: false, error: 'Todos os campos são obrigatórios' }
   }
 
-  await updateMatchResult(matchId, winner, player1Score, player2Score)
+  const result = await updateMatchResult(matchId, winner, player1Score, player2Score)
+  
+  if (!result.success) {
+    return { success: false, error: result.error }
+  }
+
   revalidatePath(`/admin/torneios/${tournamentId}`)
   revalidatePath(`/torneio/${tournamentId}`)
   revalidatePath('/ranking')
+  revalidatePath('/dashboard')
+  
+  return { success: true }
 }
 
 export async function toggleUserAdminAction(userId: number, isAdmin: boolean) {

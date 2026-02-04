@@ -114,19 +114,41 @@ export async function updateMatchResult(
   winner: number,
   player1Score: string,
   player2Score: string
-): Promise<void> {
-  await sql`
-    UPDATE matches
-    SET winner = ${winner}, player1_score = ${player1Score}, player2_score = ${player2Score}, status = 'finished'
-    WHERE id = ${matchId}
-  `
-  
-  await sql`
-    UPDATE predictions
-    SET is_correct = (predicted_winner = ${winner}),
-        points_earned = CASE WHEN predicted_winner = ${winner} THEN 10 ELSE 0 END
-    WHERE match_id = ${matchId}
-  `
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Get the match to determine winner name
+    const match = await sql`SELECT player1_name, player2_name FROM matches WHERE id = ${matchId}`
+    if (match.length === 0) {
+      console.log("[v0] Match not found:", matchId)
+      return { success: false, error: 'Partida não encontrada' }
+    }
+    
+    const winnerName = winner === 1 ? match[0].player1_name : match[0].player2_name
+    const score = `${player1Score} x ${player2Score}`
+    
+    console.log("[v0] Updating match:", { matchId, winnerName, score })
+    
+    const result = await sql`
+      UPDATE matches
+      SET winner = ${winnerName}, score = ${score}, status = 'completed'
+      WHERE id = ${matchId}
+      RETURNING *
+    `
+    
+    console.log("[v0] Match updated:", result)
+    
+    await sql`
+      UPDATE predictions
+      SET is_correct = (predicted_winner = ${winnerName}),
+          points_earned = CASE WHEN predicted_winner = ${winnerName} THEN 10 ELSE 0 END
+      WHERE match_id = ${matchId}
+    `
+    
+    return { success: true }
+  } catch (error) {
+    console.error("[v0] Error updating match result:", error)
+    return { success: false, error: 'Erro ao salvar resultado' }
+  }
 }
 
 export async function toggleUserAdmin(userId: number, isAdmin: boolean): Promise<void> {

@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { CheckCircle2, AlertCircle } from 'lucide-react'
 
 interface MatchResultFormProps {
   matchId: number
@@ -29,11 +30,25 @@ export function MatchResultForm({
 }: MatchResultFormProps) {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
 
   async function handleSubmit(formData: FormData) {
+    setError(null)
+    setSuccess(false)
+    
     startTransition(async () => {
-      await updateMatchResultAction(formData)
-      setOpen(false)
+      const result = await updateMatchResultAction(formData)
+      
+      if (result?.success) {
+        setSuccess(true)
+        setTimeout(() => {
+          setOpen(false)
+          setSuccess(false)
+        }, 1500)
+      } else {
+        setError(result?.error || 'Erro ao salvar resultado')
+      }
     })
   }
 
@@ -91,8 +106,22 @@ export function MatchResultForm({
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? 'Salvando...' : 'Salvar Resultado'}
+          {error && (
+            <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+              <AlertCircle className="w-4 h-4" />
+              {error}
+            </div>
+          )}
+          
+          {success && (
+            <div className="flex items-center gap-2 p-3 bg-emerald-50 text-emerald-700 rounded-lg text-sm">
+              <CheckCircle2 className="w-4 h-4" />
+              Resultado salvo com sucesso!
+            </div>
+          )}
+
+          <Button type="submit" className="w-full" disabled={isPending || success}>
+            {isPending ? 'Salvando...' : success ? 'Salvo!' : 'Salvar Resultado'}
           </Button>
         </form>
       </DialogContent>
