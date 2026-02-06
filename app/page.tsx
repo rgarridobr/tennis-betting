@@ -23,7 +23,13 @@ import { getTournaments } from '@/lib/data';
 
 export default async function HomePage() {
   const user = await getSession();
-  if (user) redirect('/dashboard');
+  if (user) {
+    if(user.is_admin) {
+      redirect('/admin');
+    } else {
+      redirect('/dashboard');
+    }
+  }
 
   const allTournaments = await getTournaments();
   const featuredTournaments = allTournaments.filter(t => t.status === 'active' || t.status === 'upcoming').slice(0, 3);

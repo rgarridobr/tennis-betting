@@ -1,12 +1,18 @@
-import { LoginForm } from '@/components/auth/login-form'
-import { getSession } from '@/lib/auth'
-import { redirect } from 'next/navigation'
-import Link from 'next/link'
+import { LoginForm } from '@/components/auth/login-form';
+import { getSession } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import Link from 'next/link';
 
 export default async function LoginPage() {
-  const user = await getSession()
-  if (user) redirect('/dashboard')
-  
+  const user = await getSession();
+  if (user) {
+    if (user.is_admin) {
+      redirect('/admin');
+    } else {
+      redirect('/dashboard');
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
@@ -21,9 +27,9 @@ export default async function LoginPage() {
           <h1 className="text-2xl font-bold text-foreground mt-6">Bem-vindo de volta</h1>
           <p className="text-muted-foreground mt-2">Entre na sua conta para continuar</p>
         </div>
-        
+
         <LoginForm />
-        
+
         <p className="text-center text-sm text-muted-foreground mt-6">
           Não tem uma conta?{' '}
           <Link href="/cadastro" className="text-primary font-medium hover:underline">
@@ -32,5 +38,5 @@ export default async function LoginPage() {
         </p>
       </div>
     </div>
-  )
+  );
 }
