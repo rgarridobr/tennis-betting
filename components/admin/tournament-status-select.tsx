@@ -38,8 +38,8 @@ export function TournamentStatusSelect({
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="upcoming">Em breve</SelectItem>
-        <SelectItem value="live">Ao vivo</SelectItem>
-        <SelectItem value="finished">Finalizado</SelectItem>
+        <SelectItem value="active">Ativo</SelectItem>
+        <SelectItem value="completed">Finalizado</SelectItem>
       </SelectContent>
     </Select>
   )

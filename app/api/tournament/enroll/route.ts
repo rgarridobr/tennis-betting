@@ -6,40 +6,29 @@ export async function POST(request: Request) {
   try {
     const user = await getCurrentUser()
     if (!user) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+      return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
     }
 
-    const { tournamentId, paymentMethod } = await request.json()
+    const { tournamentId } = await request.json()
 
-    if (!tournamentId || !paymentMethod) {
-      return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
+    if (!tournamentId) {
+      return NextResponse.json({ error: 'Dados invalidos' }, { status: 400 })
     }
 
-    // Check if already enrolled and paid
     const status = await getUserTournamentStatus(user.id, tournamentId)
     if (status.payment_status === 'paid') {
-      return NextResponse.json({ error: 'Já inscrito neste torneio' }, { status: 400 })
+      return NextResponse.json({ error: 'Ja inscrito neste torneio' }, { status: 400 })
     }
 
-    // Enroll user (creates pending entry if not exists)
+    // Enroll user
     await enrollInTournament(user.id, tournamentId)
 
-    // Simulate payment processing (in production, integrate with payment gateway)
-    // For now, we'll just confirm the payment after a small delay
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    // Confirm payment
+    // Auto-confirm payment (simplified flow)
     await confirmTournamentPayment(user.id, tournamentId)
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Inscrição realizada com sucesso!' 
-    })
+    return NextResponse.json({ success: true, message: 'Inscricao realizada com sucesso!' })
   } catch (error) {
     console.error('Enrollment error:', error)
-    return NextResponse.json(
-      { error: 'Erro ao processar inscrição' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Erro ao processar inscricao' }, { status: 500 })
   }
 }

@@ -17,8 +17,8 @@ import {
 function SubmitButton() {
   const { pending } = useFormStatus()
   return (
-    <Button type="submit" disabled={pending}>
-      {pending ? 'Criando...' : 'Criar Torneio'}
+    <Button type="submit" className="w-full" disabled={pending}>
+      {pending ? 'Criando torneio e gerando chaveamento...' : 'Criar Torneio (128 jogadores)'}
     </Button>
   )
 }
@@ -37,17 +37,15 @@ export function TournamentForm() {
   return (
     <form action={handleSubmit} className="space-y-4">
       {error && (
-        <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg">
-          {error}
-        </div>
+        <div className="bg-red-50 text-red-700 text-sm p-3 rounded-lg">{error}</div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="name">Nome do Torneio</Label>
-          <Input id="name" name="name" placeholder="Ex: Roland Garros 2025" required />
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="name">Nome do Torneio</Label>
+        <Input id="name" name="name" placeholder="Ex: Australian Open 2026" required />
+      </div>
 
+      <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="surface">Superfície</Label>
           <Select name="surface" required>
@@ -55,64 +53,32 @@ export function TournamentForm() {
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="clay">Saibro</SelectItem>
-              <SelectItem value="grass">Grama</SelectItem>
-              <SelectItem value="hard">Quadra dura</SelectItem>
+              <SelectItem value="Hard">Hard Court</SelectItem>
+              <SelectItem value="Clay">Saibro</SelectItem>
+              <SelectItem value="Grass">Grama</SelectItem>
             </SelectContent>
           </Select>
         </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="location">Local</Label>
-        <Input id="location" name="location" placeholder="Ex: Paris, França" required />
+        <div className="space-y-2">
+          <Label htmlFor="location">Local</Label>
+          <Input id="location" name="location" placeholder="Ex: Melbourne, Austrália" required />
+        </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="start_date">Data de Início</Label>
+          <Label htmlFor="start_date">Data Início</Label>
           <Input id="start_date" name="start_date" type="date" required />
         </div>
-
         <div className="space-y-2">
-          <Label htmlFor="end_date">Data de Término</Label>
+          <Label htmlFor="end_date">Data Fim</Label>
           <Input id="end_date" name="end_date" type="date" required />
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="entry_fee">Taxa de Inscrição (R$)</Label>
-          <Input 
-            id="entry_fee" 
-            name="entry_fee" 
-            type="number" 
-            min="0" 
-            step="0.01"
-            placeholder="Ex: 25.00" 
-            required 
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="status">Status</Label>
-          <Select name="status" defaultValue="upcoming">
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="upcoming">Em breve</SelectItem>
-              <SelectItem value="live">Ao vivo</SelectItem>
-              <SelectItem value="finished">Finalizado</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="image_url">URL da Imagem (opcional)</Label>
-        <Input id="image_url" name="image_url" type="url" placeholder="https://..." />
-      </div>
+      <p className="text-xs text-slate-500">
+        Ao criar o torneio, o chaveamento completo de 127 partidas (64 + 32 + 16 + 8 + 4 + 2 + 1) será gerado automaticamente.
+      </p>
 
       <SubmitButton />
     </form>

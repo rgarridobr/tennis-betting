@@ -1,7 +1,15 @@
 'use server'
 
 import { getSession } from '@/lib/auth'
-import { createTournament, createMatch, updateMatchResult, updateTournament, toggleUserAdmin } from '@/lib/admin'
+import {
+  createTournament,
+  updateTournamentStatus,
+  generateBracket,
+  updateMatchPlayers,
+  setMatchResult,
+  toggleUserAdmin,
+  confirmPayment,
+} from '@/lib/admin'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -13,106 +21,96 @@ async function requireAdmin() {
   return user
 }
 
+// ==================== TOURNAMENT ====================
+
 export async function createTournamentAction(formData: FormData) {
   await requireAdmin()
-  
+
   const name = formData.get('name') as string
   const surface = formData.get('surface') as string
   const location = formData.get('location') as string
   const start_date = formData.get('start_date') as string
   const end_date = formData.get('end_date') as string
-  const status = formData.get('status') as string
-  const image_url = formData.get('image_url') as string
-  const entry_fee = parseFloat(formData.get('entry_fee') as string)
 
-  if (!name || !surface || !location || !start_date || !end_date || !status || isNaN(entry_fee)) {
-    return { error: 'Todos os campos são obrigatórios' }
+  if (!name || !surface || !location || !start_date || !end_date) {
+    return { success: false, error: 'Todos os campos são obrigatórios' }
   }
 
-  await createTournament({
-    name,
-    surface,
-    location,
-    start_date,
-    end_date,
-    status,
-    entry_fee,
-    image_url: image_url || undefined,
-  })
+  const tournamentId = await createTournament({ name, surface, location, start_date, end_date })
+  
+  // Auto-generate bracket (127 matches)
+  await generateBracket(tournamentId)
 
   revalidatePath('/admin/torneios')
   revalidatePath('/dashboard')
-  redirect('/admin/torneios')
+  redirect(`/admin/torneios/${tournamentId}`)
 }
 
 export async function updateTournamentStatusAction(tournamentId: number, status: string) {
   await requireAdmin()
-  await updateTournament(tournamentId, { status })
+  await updateTournamentStatus(tournamentId, status)
   revalidatePath('/admin/torneios')
+  revalidatePath('/torneios')
   revalidatePath('/dashboard')
 }
 
-export async function createMatchAction(formData: FormData) {
+// ==================== BRACKET ====================
+
+export async function generateBracketAction(tournamentId: number) {
   await requireAdmin()
-
-  const tournament_id = parseInt(formData.get('tournament_id') as string, 10)
-  const player1_name = formData.get('player1_name') as string
-  const player2_name = formData.get('player2_name') as string
-  const player1_country = formData.get('player1_country') as string
-  const player2_country = formData.get('player2_country') as string
-  const round = formData.get('round') as string
-  const match_date = formData.get('match_date') as string
-
-  if (!tournament_id || !player1_name || !player2_name || !round || !match_date) {
-    return { error: 'Todos os campos são obrigatórios' }
+  try {
+    await generateBracket(tournamentId)
+    revalidatePath(`/admin/torneios/${tournamentId}`)
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: error.message }
   }
-
-  await createMatch({
-    tournament_id,
-    player1_name,
-    player2_name,
-    player1_country: player1_country || '',
-    player2_country: player2_country || '',
-    round,
-    match_date,
-  })
-
-  revalidatePath(`/admin/torneios/${tournament_id}`)
-  revalidatePath(`/torneio/${tournament_id}`)
 }
 
-export async function updateMatchResultAction(formData: FormData) {
+export async function updateMatchPlayersAction(
+  matchId: number,
+  player1Name: string,
+  player2Name: string,
+  player1Seed: number | null,
+  player2Seed: number | null,
+  tournamentId: number
+) {
   await requireAdmin()
-
-  const matchId = parseInt(formData.get('match_id') as string, 10)
-  const winner = parseInt(formData.get('winner') as string, 10)
-  const player1Score = formData.get('player1_score') as string
-  const player2Score = formData.get('player2_score') as string
-  const tournamentId = formData.get('tournament_id') as string
-
-  console.log("[v0] updateMatchResultAction called:", { matchId, winner, player1Score, player2Score, tournamentId })
-
-  if (!matchId || !winner || !player1Score || !player2Score) {
-    console.log("[v0] Missing fields")
-    return { success: false, error: 'Todos os campos são obrigatórios' }
-  }
-
-  const result = await updateMatchResult(matchId, winner, player1Score, player2Score)
-  
-  if (!result.success) {
-    return { success: false, error: result.error }
-  }
-
+  await updateMatchPlayers(matchId, player1Name, player2Name, player1Seed, player2Seed)
   revalidatePath(`/admin/torneios/${tournamentId}`)
   revalidatePath(`/torneio/${tournamentId}`)
-  revalidatePath('/ranking')
-  revalidatePath('/dashboard')
-  
   return { success: true }
 }
+
+export async function setMatchResultAction(
+  matchId: number,
+  winnerName: string,
+  score: string,
+  tournamentId: number
+) {
+  await requireAdmin()
+  const result = await setMatchResult(matchId, winnerName, score)
+
+  if (result.success) {
+    revalidatePath(`/admin/torneios/${tournamentId}`)
+    revalidatePath(`/torneio/${tournamentId}`)
+    revalidatePath('/ranking')
+    revalidatePath('/dashboard')
+  }
+
+  return result
+}
+
+// ==================== USERS ====================
 
 export async function toggleUserAdminAction(userId: number, isAdmin: boolean) {
   await requireAdmin()
   await toggleUserAdmin(userId, isAdmin)
   revalidatePath('/admin/usuarios')
+}
+
+export async function confirmPaymentAction(userId: number, tournamentId: number) {
+  await requireAdmin()
+  await confirmPayment(userId, tournamentId)
+  revalidatePath(`/admin/torneios/${tournamentId}`)
 }
