@@ -1,10 +1,12 @@
 import { notFound } from 'next/navigation'
 import { getTournamentById, getBracketMatches, getPlayers, ROUND_NAMES } from '@/lib/data'
+import { getTournamentEntries } from '@/lib/admin'
 import { PageHero } from '@/components/shared/page-hero'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { BracketRoundManager } from '@/components/admin/bracket-round-manager'
 import { PlayerManager } from '@/components/admin/player-manager'
+import { TournamentRegistration } from '@/components/admin/tournament-registration'
 import { TournamentStatusSelect } from '@/components/admin/tournament-status-select'
 import { Trophy, Clock, Hash, MapPin, Users, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -25,9 +27,10 @@ export default async function ManageTournamentPage({ params }: Props) {
   const tournament = await getTournamentById(tournamentId)
   if (!tournament) notFound()
 
-  const [matches, players] = await Promise.all([
+  const [matches, players, entries] = await Promise.all([
     getBracketMatches(tournamentId),
-    getPlayers()
+    getPlayers(),
+    getTournamentEntries(tournamentId)
   ])
 
   const completedMatches = matches.filter(m => m.status === 'completed').length
@@ -175,7 +178,16 @@ export default async function ManageTournamentPage({ params }: Props) {
           </CardContent>
         </Card>
 
-        {/* Gerenciar Jogadores */}
+        {/* Gerenciar Inscritos e Sorteio */}
+        <div className="mb-8">
+          <TournamentRegistration
+            tournament={tournament}
+            allPlayers={players}
+            currentEntries={entries}
+          />
+        </div>
+
+        {/* Gerenciar Jogadores Globais */}
         <div className="mb-8">
           <PlayerManager players={players} />
         </div>

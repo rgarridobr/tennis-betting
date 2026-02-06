@@ -11,6 +11,16 @@ export interface Tournament {
   end_date: string
   image_url: string | null
   status: string
+  type: string | null
+  bracket_size: number | null
+  seeds_count: number | null
+  byes_count: number | null
+  direct_entries_count: number | null
+  qualifiers_count: number | null
+  wildcards_count: number | null
+  draw_random_seed: string | null
+  draw_generated_at: string | null
+  ranking_id: number | null
   created_at: string
 }
 

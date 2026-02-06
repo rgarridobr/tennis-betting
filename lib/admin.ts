@@ -9,10 +9,25 @@ export async function createTournament(data: {
   location: string
   start_date: string
   end_date: string
+  type: string
+  bracket_size: number
+  seeds_count: number
+  byes_count: number
+  direct_entries_count: number
+  qualifiers_count: number
+  wildcards_count: number
 }): Promise<number> {
   const result = await sql`
-    INSERT INTO tournaments (name, surface, location, start_date, end_date, status)
-    VALUES (${data.name}, ${data.surface}, ${data.location}, ${data.start_date}, ${data.end_date}, 'upcoming')
+    INSERT INTO tournaments (
+      name, surface, location, start_date, end_date, status,
+      type, bracket_size, seeds_count, byes_count,
+      direct_entries_count, qualifiers_count, wildcards_count
+    )
+    VALUES (
+      ${data.name}, ${data.surface}, ${data.location}, ${data.start_date}, ${data.end_date}, 'upcoming',
+      ${data.type}, ${data.bracket_size}, ${data.seeds_count}, ${data.byes_count},
+      ${data.direct_entries_count}, ${data.qualifiers_count}, ${data.wildcards_count}
+    )
     RETURNING id
   `
   return result[0].id as number
@@ -224,4 +239,80 @@ export async function updateTournamentLocation(id: number, name: string): Promis
 
 export async function deleteTournamentLocation(id: number): Promise<void> {
   await sql`DELETE FROM tournament_locations WHERE id = ${id}`
+}
+
+// ==================== TOURNAMENT ENTRIES ====================
+
+export async function registerPlayerForTournament(data: {
+  tournamentId: number
+  playerId: number
+  entryType: string
+  rankingAtCutoff?: number
+  pointsAtCutoff?: number
+}) {
+  await sql`
+    INSERT INTO tournament_entries (tournament_id, player_id, entry_type, ranking_at_cutoff, points_at_cutoff)
+    VALUES (${data.tournamentId}, ${data.playerId}, ${data.entryType}, ${data.rankingAtCutoff}, ${data.pointsAtCutoff})
+    ON CONFLICT (tournament_id, player_id) DO UPDATE SET
+      entry_type = EXCLUDED.entry_type,
+      ranking_at_cutoff = EXCLUDED.ranking_at_cutoff,
+      points_at_cutoff = EXCLUDED.points_at_cutoff
+  `
+}
+
+export async function removePlayerFromTournament(tournamentId: number, playerId: number) {
+  await sql`DELETE FROM tournament_entries WHERE tournament_id = ${tournamentId} AND player_id = ${playerId}`
+}
+
+export interface TournamentEntry {
+  id: number
+  tournament_id: number
+  player_id: number
+  entry_type: string
+  ranking_at_cutoff: number | null
+  points_at_cutoff: number | null
+  player_name: string
+  player_country: string | null
+}
+
+export async function getTournamentEntries(tournamentId: number): Promise<TournamentEntry[]> {
+  const rows = await sql`
+    SELECT te.*, p.name as player_name, p.country as player_country
+    FROM tournament_entries te
+    JOIN players p ON te.player_id = p.id
+    WHERE te.tournament_id = ${tournamentId}
+    ORDER BY te.ranking_at_cutoff ASC NULLS LAST
+  `
+  return rows as unknown as TournamentEntry[]
+}
+
+export async function replacePlayerInDraw(tournamentId: number, oldPlayerId: number, newPlayerId: number) {
+  // 1. Update the tournament_entries
+  // Usually, the old player is removed or marked as withdrawn, and new player is added as LL.
+  // For simplicity, we'll swap the player_id in the bracket_matches.
+
+  await sql`
+    UPDATE bracket_matches
+    SET player1_id = ${newPlayerId}
+    WHERE tournament_id = ${tournamentId} AND player1_id = ${oldPlayerId}
+  `;
+
+  await sql`
+    UPDATE bracket_matches
+    SET player2_id = ${newPlayerId}
+    WHERE tournament_id = ${tournamentId} AND player2_id = ${oldPlayerId}
+  `;
+
+  await sql`
+    UPDATE bracket_matches
+    SET winner_id = ${newPlayerId}
+    WHERE tournament_id = ${tournamentId} AND winner_id = ${oldPlayerId}
+  `;
+
+  // 2. Also update tournament_entries to include the new player if not there
+  await sql`
+    INSERT INTO tournament_entries (tournament_id, player_id, entry_type)
+    VALUES (${tournamentId}, ${newPlayerId}, 'ENTRY_LUCKY_LOSER')
+    ON CONFLICT (tournament_id, player_id) DO UPDATE SET entry_type = 'ENTRY_LUCKY_LOSER'
+  `;
 }
