@@ -9,6 +9,7 @@ import {
   setMatchResult,
   createPlayer,
   deletePlayer,
+  updatePlayer,
   importPlayers,
   toggleUserAdmin,
 } from '@/lib/admin'
@@ -85,25 +86,36 @@ export async function deletePlayerAction(id: number) {
   return result
 }
 
+export async function updatePlayerAction(id: number, formData: FormData) {
+  await requireAdmin()
+  const name = formData.get('name') as string
+  const country = (formData.get('country') as string) || null
+
+  if (!name) return { success: false, error: 'Nome obrigatorio' }
+
+  const result = await updatePlayer(id, name, country)
+  if (result.success) {
+    revalidatePath('/admin/torneios')
+  }
+  return result
+}
+
 export async function importPlayersAction(playersText: string) {
   await requireAdmin()
-  // Format: "1. Player Name (Country)\n2. Player Name (Country)"
   const lines = playersText.split('\n').filter(l => l.trim())
   const players: Array<{ name: string; country: string | null; seed: number | null }> = []
 
   for (const line of lines) {
     const cleaned = line.trim()
-    // Try to parse "1. Name (Country)" or just "Name"
-    const seedMatch = cleaned.match(/^(\d+)\.\s*/)
-    const seed = seedMatch ? parseInt(seedMatch[1], 10) : null
-    const withoutSeed = seedMatch ? cleaned.slice(seedMatch[0].length) : cleaned
+    // Remove leading numbers like "1. " or "1) "
+    const withoutNumber = cleaned.replace(/^(\d+)[.)]\s*/, '')
 
-    const countryMatch = withoutSeed.match(/\(([^)]+)\)\s*$/)
+    const countryMatch = withoutNumber.match(/\(([^)]+)\)\s*$/)
     const country = countryMatch ? countryMatch[1] : null
-    const name = countryMatch ? withoutSeed.slice(0, withoutSeed.lastIndexOf('(')).trim() : withoutSeed.trim()
+    const name = countryMatch ? withoutNumber.slice(0, withoutNumber.lastIndexOf('(')).trim() : withoutNumber.trim()
 
     if (name) {
-      players.push({ name, country, seed })
+      players.push({ name, country, seed: null })
     }
   }
 

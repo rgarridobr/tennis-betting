@@ -70,6 +70,20 @@ export async function deletePlayer(id: number): Promise<{ success: boolean; erro
   }
 }
 
+export async function updatePlayer(id: number, name: string, country: string | null): Promise<{ success: boolean; error?: string }> {
+  try {
+    await sql`
+      UPDATE players
+      SET name = ${name}, country = ${country}
+      WHERE id = ${id}
+    `
+    return { success: true }
+  } catch (error) {
+    console.error("Error updating player:", error)
+    return { success: false, error: 'Erro ao atualizar jogador. Verifique se o nome já existe.' }
+  }
+}
+
 export async function importPlayers(players: Array<{ name: string; country: string | null; seed: number | null }>): Promise<number> {
   let count = 0
   for (const p of players) {

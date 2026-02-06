@@ -3,7 +3,7 @@
 import React from "react"
 
 import { useState, useTransition } from 'react'
-import { createPlayerAction, importPlayersAction, deletePlayerAction } from '@/lib/actions/admin'
+import { createPlayerAction, importPlayersAction, deletePlayerAction, updatePlayerAction } from '@/lib/actions/admin'
 import type { Player } from '@/lib/data'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,7 +17,7 @@ import {
 import {
   Tabs, TabsContent, TabsList, TabsTrigger,
 } from '@/components/ui/tabs'
-import { UserPlus, Upload, Search, CheckCircle2, AlertCircle, Users, Trash2 } from 'lucide-react'
+import { UserPlus, Upload, Search, CheckCircle2, AlertCircle, Users, Trash2, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Props {
@@ -69,17 +69,13 @@ export function PlayerManager({ players }: Props) {
             filtered.map(p => (
               <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50">
                 <div className="flex items-center gap-2">
-                  {p.seed && (
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">
-                      {p.seed}
-                    </Badge>
-                  )}
                   <span className="text-sm font-medium text-slate-800">{p.name}</span>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
                   {p.country && (
-                    <span className="text-xs text-slate-500">{p.country}</span>
+                    <span className="text-xs text-slate-500 mr-2">{p.country}</span>
                   )}
+                  <EditPlayerDialog player={p} />
                   <DeletePlayerDialog player={p} />
                 </div>
               </div>
@@ -169,21 +165,81 @@ function AddSinglePlayer({ onSuccess }: { onSuccess: () => void }) {
         <Input id="name" name="name" placeholder="Ex: Carlos Alcaraz" required />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <Label htmlFor="country">Pais</Label>
-          <Input id="country" name="country" placeholder="Ex: ESP" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="seed">Seed (cabeca de chave)</Label>
-          <Input id="seed" name="seed" type="number" min="1" max="32" placeholder="Ex: 1" />
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="country">Pais</Label>
+        <Input id="country" name="country" placeholder="Ex: ESP" />
       </div>
 
       <Button type="submit" className="w-full" disabled={isPending}>
         {isPending ? 'Salvando...' : 'Cadastrar Jogador'}
       </Button>
     </form>
+  )
+}
+
+function EditPlayerDialog({ player }: { player: Player }) {
+  const [open, setOpen] = useState(false)
+  const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setError(null)
+    const formData = new FormData(e.currentTarget)
+
+    startTransition(async () => {
+      const result = await updatePlayerAction(player.id, formData)
+      if (result.success) {
+        toast.success('Jogador atualizado com sucesso')
+        setOpen(false)
+      } else {
+        setError(result.error || 'Erro ao atualizar')
+      }
+    })
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50">
+          <Pencil className="w-4 h-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Editar Jogador</DialogTitle>
+          <DialogDescription>
+            Altere as informações do jogador conforme necessário.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+          {error && (
+            <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+              <AlertCircle className="w-4 h-4 shrink-0" />{error}
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-name">Nome do Jogador *</Label>
+            <Input id="edit-name" name="name" defaultValue={player.name} required />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-country">Pais</Label>
+            <Input id="edit-country" name="country" defaultValue={player.country || ''} placeholder="Ex: ESP" />
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? 'Salvando...' : 'Salvar Alterações'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -276,12 +332,12 @@ function ImportPlayersForm({ onSuccess }: { onSuccess: () => void }) {
         <Textarea
           name="players"
           rows={10}
-          placeholder={`Cole a lista no formato:\n1. Carlos Alcaraz (ESP)\n2. Jannik Sinner (ITA)\n3. Novak Djokovic (SRB)\n...\n\nOu apenas nomes:\nCarlos Alcaraz\nJannik Sinner\nNovak Djokovic`}
+          placeholder={`Cole a lista no formato:\nCarlos Alcaraz (ESP)\nJannik Sinner (ITA)\nNovak Djokovic (SRB)\n...\n\nOu apenas nomes:\nCarlos Alcaraz\nJannik Sinner\nNovak Djokovic`}
           className="font-mono text-xs max-h-50"
           required
         />
         <p className="text-xs text-slate-400">
-          Formatos aceitos: "1. Nome (Pais)" ou "Nome (Pais)" ou apenas "Nome". Um jogador por linha.
+          Formatos aceitos: "Nome (Pais)" ou apenas "Nome". Um jogador por linha. O sistema ignora numeracao caso exista.
         </p>
       </div>
 
