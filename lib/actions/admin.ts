@@ -8,6 +8,7 @@ import {
   setMatchPlayers,
   setMatchResult,
   createPlayer,
+  deletePlayer,
   importPlayers,
   toggleUserAdmin,
 } from '@/lib/admin'
@@ -73,6 +74,15 @@ export async function createPlayerAction(formData: FormData) {
   await createPlayer(name, country, seed)
   revalidatePath('/admin/torneios')
   return { success: true }
+}
+
+export async function deletePlayerAction(id: number) {
+  await requireAdmin()
+  const result = await deletePlayer(id)
+  if (result.success) {
+    revalidatePath('/admin/torneios')
+  }
+  return result
 }
 
 export async function importPlayersAction(playersText: string) {
