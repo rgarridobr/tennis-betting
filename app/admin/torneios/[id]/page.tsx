@@ -6,7 +6,9 @@ import { Badge } from '@/components/ui/badge'
 import { BracketRoundManager } from '@/components/admin/bracket-round-manager'
 import { PlayerManager } from '@/components/admin/player-manager'
 import { TournamentStatusSelect } from '@/components/admin/tournament-status-select'
-import { Trophy, Clock, Hash } from 'lucide-react'
+import { Trophy, Clock, Hash, MapPin, Users, ArrowLeft } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -14,10 +16,9 @@ interface Props {
 
 export default async function ManageTournamentPage({ params }: Props) {
   const { id } = await params
-  
-  // "novo" is handled by /admin/torneios/novo/page.tsx
+
   if (id === 'novo') return null
-  
+
   const tournamentId = parseInt(id, 10)
   if (isNaN(tournamentId)) notFound()
 
@@ -32,8 +33,8 @@ export default async function ManageTournamentPage({ params }: Props) {
   const completedMatches = matches.filter(m => m.status === 'completed').length
   const scheduledMatches = matches.filter(m => m.status === 'scheduled').length
   const pendingMatches = matches.filter(m => m.status === 'pending').length
+  const totalMatches = matches.length
 
-  // Group matches by round number
   const matchesByRound: Record<number, typeof matches> = {}
   for (const m of matches) {
     if (!matchesByRound[m.round]) matchesByRound[m.round] = []
@@ -46,83 +47,147 @@ export default async function ManageTournamentPage({ params }: Props) {
     completed: 'Finalizado',
   }
 
+  const surfaceLabels: Record<string, string> = {
+    Hard: 'Quadra Dura',
+    Clay: 'Saibro',
+    Grass: 'Grama',
+  }
+
   return (
     <>
       <PageHero
         title={tournament.name}
-        subtitle={`${tournament.location} - ${tournament.surface}`}
+        subtitle={`${tournament.location} \u2022 ${surfaceLabels[tournament.surface] || tournament.surface}`}
       >
-        <div className="flex items-center gap-3">
-          <Badge className="bg-white/20 text-white border-0 text-sm px-3 py-1">
-            {statusLabels[tournament.status] || tournament.status}
-          </Badge>
-          <TournamentStatusSelect 
-            tournamentId={tournament.id} 
-            currentStatus={tournament.status} 
-          />
+        <div className="flex flex-wrap items-center gap-3">
+          <Card className="bg-white/10 border-0 backdrop-blur-sm">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/30 flex items-center justify-center">
+                <Trophy className="w-5 h-5 text-emerald-300" />
+              </div>
+              <div>
+                <p className="text-emerald-100 text-xs">Finalizadas</p>
+                <p className="text-xl font-bold text-white">{completedMatches}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/10 border-0 backdrop-blur-sm">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-500/30 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-blue-300" />
+              </div>
+              <div>
+                <p className="text-emerald-100 text-xs">Agendadas</p>
+                <p className="text-xl font-bold text-white">{scheduledMatches}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/10 border-0 backdrop-blur-sm">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-500/30 flex items-center justify-center">
+                <Hash className="w-5 h-5 text-amber-300" />
+              </div>
+              <div>
+                <p className="text-emerald-100 text-xs">Pendentes</p>
+                <p className="text-xl font-bold text-white">{pendingMatches}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/10 border-0 backdrop-blur-sm">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-purple-500/30 flex items-center justify-center">
+                <Users className="w-5 h-5 text-purple-300" />
+              </div>
+              <div>
+                <p className="text-emerald-100 text-xs">Jogadores</p>
+                <p className="text-xl font-bold text-white">{players.length}</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </PageHero>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mt-6">
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-              <Trophy className="w-5 h-5 text-green-600" />
-            </div>
-            <div>
-              <p className="text-xs text-slate-500">Finalizadas</p>
-              <p className="text-lg font-bold text-slate-900">{completedMatches}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-              <Clock className="w-5 h-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-xs text-slate-500">Agendadas</p>
-              <p className="text-lg font-bold text-slate-900">{scheduledMatches}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
-              <Hash className="w-5 h-5 text-amber-600" />
-            </div>
-            <div>
-              <p className="text-xs text-slate-500">Pendentes</p>
-              <p className="text-lg font-bold text-slate-900">{pendingMatches}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Player Manager */}
-      <div className="mt-8">
-        <PlayerManager players={players} />
-      </div>
-
-      {/* Bracket Rounds */}
-      <div className="mt-8 space-y-6">
-        {[1, 2, 3, 4, 5, 6, 7].map(round => {
-          const roundMatches = matchesByRound[round] || []
-          if (roundMatches.length === 0) return null
-
-          return (
-            <BracketRoundManager
-              key={round}
-              round={round}
-              roundName={ROUND_NAMES[round]}
-              matches={roundMatches}
-              players={players}
-              tournamentId={tournamentId}
+      <main className="container mx-auto px-4 py-8">
+        {/* Status e Voltar */}
+        <div className="flex items-center justify-between mb-8">
+          <Button variant="outline" size="sm" asChild className="bg-transparent">
+            <Link href="/admin/torneios">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Voltar
+            </Link>
+          </Button>
+          <div className="flex items-center gap-3">
+            <Badge className={
+              tournament.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
+              tournament.status === 'upcoming' ? 'bg-amber-100 text-amber-700' :
+              'bg-slate-100 text-slate-600'
+            }>
+              {statusLabels[tournament.status] || tournament.status}
+            </Badge>
+            <TournamentStatusSelect
+              tournamentId={tournament.id}
+              currentStatus={tournament.status}
             />
-          )
-        })}
-      </div>
+          </div>
+        </div>
+
+        {/* Progresso do Torneio */}
+        <Card className="border-0 shadow-md mb-8">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-slate-900">Progresso do Chaveamento</h3>
+              <span className="text-sm text-slate-500">
+                {completedMatches} de {totalMatches} partidas
+              </span>
+            </div>
+            <div className="w-full bg-slate-100 rounded-full h-3">
+              <div
+                className="bg-emerald-500 h-3 rounded-full transition-all duration-500"
+                style={{ width: totalMatches > 0 ? `${(completedMatches / totalMatches) * 100}%` : '0%' }}
+              />
+            </div>
+            <div className="flex items-center gap-6 mt-3 text-xs text-slate-500">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                Finalizadas ({completedMatches})
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-blue-500" />
+                Agendadas ({scheduledMatches})
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-400" />
+                Pendentes ({pendingMatches})
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Gerenciar Jogadores */}
+        <div className="mb-8">
+          <PlayerManager players={players} />
+        </div>
+
+        {/* Rodadas do Chaveamento */}
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold text-slate-900">Chaveamento</h2>
+          {[1, 2, 3, 4, 5, 6, 7].map(round => {
+            const roundMatches = matchesByRound[round] || []
+            if (roundMatches.length === 0) return null
+
+            return (
+              <BracketRoundManager
+                key={round}
+                round={round}
+                roundName={ROUND_NAMES[round]}
+                matches={roundMatches}
+                players={players}
+                tournamentId={tournamentId}
+              />
+            )
+          })}
+        </div>
+      </main>
     </>
   )
 }
