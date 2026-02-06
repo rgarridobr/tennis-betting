@@ -285,3 +285,34 @@ export async function getTournamentEntries(tournamentId: number): Promise<Tourna
   `
   return rows as unknown as TournamentEntry[]
 }
+
+export async function replacePlayerInDraw(tournamentId: number, oldPlayerId: number, newPlayerId: number) {
+  // 1. Update the tournament_entries
+  // Usually, the old player is removed or marked as withdrawn, and new player is added as LL.
+  // For simplicity, we'll swap the player_id in the bracket_matches.
+
+  await sql`
+    UPDATE bracket_matches
+    SET player1_id = ${newPlayerId}
+    WHERE tournament_id = ${tournamentId} AND player1_id = ${oldPlayerId}
+  `;
+
+  await sql`
+    UPDATE bracket_matches
+    SET player2_id = ${newPlayerId}
+    WHERE tournament_id = ${tournamentId} AND player2_id = ${oldPlayerId}
+  `;
+
+  await sql`
+    UPDATE bracket_matches
+    SET winner_id = ${newPlayerId}
+    WHERE tournament_id = ${tournamentId} AND winner_id = ${oldPlayerId}
+  `;
+
+  // 2. Also update tournament_entries to include the new player if not there
+  await sql`
+    INSERT INTO tournament_entries (tournament_id, player_id, entry_type)
+    VALUES (${tournamentId}, ${newPlayerId}, 'ENTRY_LUCKY_LOSER')
+    ON CONFLICT (tournament_id, player_id) DO UPDATE SET entry_type = 'ENTRY_LUCKY_LOSER'
+  `;
+}
