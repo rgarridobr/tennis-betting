@@ -18,7 +18,10 @@ import {
   createTournamentLocation,
   updateTournamentLocation,
   deleteTournamentLocation,
+  registerPlayerForTournament,
+  removePlayerFromTournament,
 } from '@/lib/admin'
+import { generateATPDraw } from '@/lib/draw'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -40,14 +43,26 @@ export async function createTournamentAction(formData: FormData) {
   const location = formData.get('location') as string
   const start_date = formData.get('start_date') as string
   const end_date = formData.get('end_date') as string
+  const type = formData.get('type') as string
+  const bracket_size = parseInt(formData.get('bracket_size') as string, 10)
+  const seeds_count = parseInt(formData.get('seeds_count') as string, 10)
+  const byes_count = parseInt(formData.get('byes_count') as string, 10)
+  const direct_entries_count = parseInt(formData.get('direct_entries_count') as string, 10)
+  const qualifiers_count = parseInt(formData.get('qualifiers_count') as string, 10)
+  const wildcards_count = parseInt(formData.get('wildcards_count') as string, 10)
 
-  if (!name || !surface || !location || !start_date || !end_date) {
+  if (!name || !surface || !location || !start_date || !end_date || !type || isNaN(bracket_size)) {
     return { success: false, error: 'Todos os campos sao obrigatorios' }
   }
 
   try {
-    const tournamentId = await createTournament({ name, surface, location, start_date, end_date })
-    await generateBracket(tournamentId)
+    const tournamentId = await createTournament({
+      name, surface, location, start_date, end_date,
+      type, bracket_size, seeds_count, byes_count,
+      direct_entries_count, qualifiers_count, wildcards_count
+    })
+    // We don't generate the bracket yet, because it needs players and draw generation
+    // await generateBracket(tournamentId)
 
     revalidatePath('/admin/torneios')
     revalidatePath('/dashboard')
@@ -211,5 +226,40 @@ export async function deleteMetadataAction(type: 'name' | 'location', id: number
   } catch (error) {
     console.error("Error deleting metadata:", error)
     return { success: false, error: 'Erro ao excluir. O item pode estar em uso.' }
+  }
+}
+
+// ==================== TOURNAMENT REGISTRATION ====================
+
+export async function registerPlayerAction(data: {
+  tournamentId: number
+  playerId: number
+  entryType: string
+  rankingAtCutoff?: number
+  pointsAtCutoff?: number
+}) {
+  await requireAdmin()
+  await registerPlayerForTournament(data)
+  revalidatePath(`/admin/torneios/${data.tournamentId}`)
+  return { success: true }
+}
+
+export async function removePlayerEntryAction(tournamentId: number, playerId: number) {
+  await requireAdmin()
+  await removePlayerFromTournament(tournamentId, playerId)
+  revalidatePath(`/admin/torneios/${tournamentId}`)
+  return { success: true }
+}
+
+export async function generateDrawAction(tournamentId: number, randomSeed: string) {
+  await requireAdmin()
+  try {
+    await generateATPDraw(tournamentId, randomSeed)
+    revalidatePath(`/admin/torneios/${tournamentId}`)
+    revalidatePath(`/torneio/${tournamentId}`)
+    return { success: true }
+  } catch (error: any) {
+    console.error("Error generating draw:", error)
+    return { success: false, error: error.message || 'Erro ao gerar chaveamento' }
   }
 }
