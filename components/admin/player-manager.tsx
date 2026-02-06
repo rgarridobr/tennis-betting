@@ -166,7 +166,7 @@ function AddSinglePlayer({ onSuccess }: { onSuccess: () => void }) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="country">Pais</Label>
+        <Label htmlFor="country">Sigla do País</Label>
         <Input id="country" name="country" placeholder="Ex: ESP" />
       </div>
 
@@ -225,11 +225,11 @@ function EditPlayerDialog({ player }: { player: Player }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="edit-country">Pais</Label>
+            <Label htmlFor="edit-country">Sigla do País</Label>
             <Input id="edit-country" name="country" defaultValue={player.country || ''} placeholder="Ex: ESP" />
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
               Cancelar
             </Button>
@@ -273,7 +273,7 @@ function DeletePlayerDialog({ player }: { player: Player }) {
             Tem certeza que deseja excluir <strong>{player.name}</strong>? Esta acao nao pode ser desfeita.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="gap-2 sm:gap-0">
+        <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
             Cancelar
           </Button>

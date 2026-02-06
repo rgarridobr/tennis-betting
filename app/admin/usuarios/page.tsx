@@ -4,9 +4,13 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { UserAdminToggle } from '@/components/admin/user-admin-toggle'
 import { Users, ShieldCheck, UserCheck } from 'lucide-react'
+import { getSession } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 
 export default async function AdminUsersPage() {
-  const users = await getAllUsers()
+  const users = await getAllUsers();
+  const myUser = await getSession();
+  if (!myUser || !myUser.is_admin) redirect('/login');
 
   const adminCount = users.filter(u => u.is_admin).length
   const regularCount = users.filter(u => !u.is_admin).length
@@ -76,12 +80,13 @@ export default async function AdminUsersPage() {
                             <div>
                               <div className="flex items-center gap-2">
                                 <span className="font-medium text-slate-900">{user.name}</span>
-                                <Badge className="bg-emerald-100 text-emerald-700 text-xs">Admin</Badge>
-                              </div>
+                               </div>
                               <p className="text-sm text-slate-500">{user.email}</p>
                             </div>
                           </div>
+                          {user.id !== myUser?.id && (
                           <UserAdminToggle userId={user.id} isAdmin={user.is_admin} />
+                          )}
                         </div>
                       ))}
                     </div>
