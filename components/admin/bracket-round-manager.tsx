@@ -183,11 +183,13 @@ function SetPlayersDialog({ match, players, tournamentId }: { match: BracketMatc
             <Select value={player1Id} onValueChange={setPlayer1Id}>
               <SelectTrigger><SelectValue placeholder="Selecione o jogador" /></SelectTrigger>
               <SelectContent className="max-h-60">
-                {players.map(p => (
-                  <SelectItem key={p.id} value={p.id.toString()}>
-                    {p.seed ? `[${p.seed}] ` : ''}{p.name}{p.country ? ` (${p.country})` : ''}
-                  </SelectItem>
-                ))}
+                {players
+                  .filter(p => !player2Id || p.id.toString() !== player2Id)
+                  .map(p => (
+                    <SelectItem key={p.id} value={p.id.toString()}>
+                      {p.seed ? `[${p.seed}] ` : ''}{p.name}{p.country ? ` (${p.country})` : ''}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>
@@ -196,11 +198,13 @@ function SetPlayersDialog({ match, players, tournamentId }: { match: BracketMatc
             <Select value={player2Id} onValueChange={setPlayer2Id}>
               <SelectTrigger><SelectValue placeholder="Selecione o jogador" /></SelectTrigger>
               <SelectContent className="max-h-60">
-                {players.map(p => (
-                  <SelectItem key={p.id} value={p.id.toString()}>
-                    {p.seed ? `[${p.seed}] ` : ''}{p.name}{p.country ? ` (${p.country})` : ''}
-                  </SelectItem>
-                ))}
+                {players
+                  .filter(p => !player1Id || p.id.toString() !== player1Id)
+                  .map(p => (
+                    <SelectItem key={p.id} value={p.id.toString()}>
+                      {p.seed ? `[${p.seed}] ` : ''}{p.name}{p.country ? ` (${p.country})` : ''}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>
