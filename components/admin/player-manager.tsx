@@ -69,11 +69,6 @@ export function PlayerManager({ players }: Props) {
             filtered.map(p => (
               <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50">
                 <div className="flex items-center gap-2">
-                  {p.seed && (
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">
-                      {p.seed}
-                    </Badge>
-                  )}
                   <span className="text-sm font-medium text-slate-800">{p.name}</span>
                 </div>
                 <div className="flex items-center gap-4">
@@ -169,15 +164,9 @@ function AddSinglePlayer({ onSuccess }: { onSuccess: () => void }) {
         <Input id="name" name="name" placeholder="Ex: Carlos Alcaraz" required />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <Label htmlFor="country">Pais</Label>
-          <Input id="country" name="country" placeholder="Ex: ESP" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="seed">Seed (cabeca de chave)</Label>
-          <Input id="seed" name="seed" type="number" min="1" max="32" placeholder="Ex: 1" />
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="country">Pais</Label>
+        <Input id="country" name="country" placeholder="Ex: ESP" />
       </div>
 
       <Button type="submit" className="w-full" disabled={isPending}>
@@ -276,12 +265,12 @@ function ImportPlayersForm({ onSuccess }: { onSuccess: () => void }) {
         <Textarea
           name="players"
           rows={10}
-          placeholder={`Cole a lista no formato:\n1. Carlos Alcaraz (ESP)\n2. Jannik Sinner (ITA)\n3. Novak Djokovic (SRB)\n...\n\nOu apenas nomes:\nCarlos Alcaraz\nJannik Sinner\nNovak Djokovic`}
+          placeholder={`Cole a lista no formato:\nCarlos Alcaraz (ESP)\nJannik Sinner (ITA)\nNovak Djokovic (SRB)\n...\n\nOu apenas nomes:\nCarlos Alcaraz\nJannik Sinner\nNovak Djokovic`}
           className="font-mono text-xs max-h-50"
           required
         />
         <p className="text-xs text-slate-400">
-          Formatos aceitos: "1. Nome (Pais)" ou "Nome (Pais)" ou apenas "Nome". Um jogador por linha.
+          Formatos aceitos: "Nome (Pais)" ou apenas "Nome". Um jogador por linha. O sistema ignora numeracao caso exista.
         </p>
       </div>
 
