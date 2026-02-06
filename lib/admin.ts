@@ -57,6 +57,19 @@ export async function createPlayer(name: string, country: string | null, seed: n
   return result[0].id as number
 }
 
+export async function deletePlayer(id: number): Promise<{ success: boolean; error?: string }> {
+  try {
+    await sql`DELETE FROM players WHERE id = ${id}`
+    return { success: true }
+  } catch (error) {
+    console.error("Error deleting player:", error)
+    return {
+      success: false,
+      error: 'Nao e possivel excluir o jogador pois ele ja possui partidas ou palpites vinculados.'
+    }
+  }
+}
+
 export async function importPlayers(players: Array<{ name: string; country: string | null; seed: number | null }>): Promise<number> {
   let count = 0
   for (const p of players) {

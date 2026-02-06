@@ -3,7 +3,7 @@
 import React from "react"
 
 import { useState, useTransition } from 'react'
-import { createPlayerAction, importPlayersAction } from '@/lib/actions/admin'
+import { createPlayerAction, importPlayersAction, deletePlayerAction } from '@/lib/actions/admin'
 import type { Player } from '@/lib/data'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -12,12 +12,13 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription
 } from '@/components/ui/dialog'
 import {
   Tabs, TabsContent, TabsList, TabsTrigger,
 } from '@/components/ui/tabs'
-import { UserPlus, Upload, Search, CheckCircle2, AlertCircle, Users } from 'lucide-react'
+import { UserPlus, Upload, Search, CheckCircle2, AlertCircle, Users, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface Props {
   players: Player[]
@@ -75,9 +76,12 @@ export function PlayerManager({ players }: Props) {
                   )}
                   <span className="text-sm font-medium text-slate-800">{p.name}</span>
                 </div>
-                {p.country && (
-                  <span className="text-xs text-slate-500">{p.country}</span>
-                )}
+                <div className="flex items-center gap-4">
+                  {p.country && (
+                    <span className="text-xs text-slate-500">{p.country}</span>
+                  )}
+                  <DeletePlayerDialog player={p} />
+                </div>
               </div>
             ))
           )}
@@ -180,6 +184,49 @@ function AddSinglePlayer({ onSuccess }: { onSuccess: () => void }) {
         {isPending ? 'Salvando...' : 'Cadastrar Jogador'}
       </Button>
     </form>
+  )
+}
+
+function DeletePlayerDialog({ player }: { player: Player }) {
+  const [open, setOpen] = useState(false)
+  const [isPending, startTransition] = useTransition()
+
+  function handleDelete() {
+    startTransition(async () => {
+      const result = await deletePlayerAction(player.id)
+      if (result.success) {
+        toast.success('Jogador excluido com sucesso')
+        setOpen(false)
+      } else {
+        toast.error(result.error || 'Erro ao excluir jogador')
+      }
+    })
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50">
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Excluir Jogador</DialogTitle>
+          <DialogDescription>
+            Tem certeza que deseja excluir <strong>{player.name}</strong>? Esta acao nao pode ser desfeita.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
+            Cancelar
+          </Button>
+          <Button variant="destructive" onClick={handleDelete} disabled={isPending}>
+            {isPending ? 'Excluindo...' : 'Excluir Jogador'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
