@@ -13,6 +13,10 @@ interface Props {
 
 export default async function ManageTournamentPage({ params }: Props) {
   const { id } = await params
+  
+  // "novo" is handled by /admin/torneios/novo/page.tsx
+  if (id === 'novo') return null
+  
   const tournamentId = parseInt(id, 10)
   if (isNaN(tournamentId)) notFound()
 

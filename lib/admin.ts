@@ -31,15 +31,17 @@ export async function generateBracket(tournamentId: number): Promise<void> {
   }
 
   // Total: 64 + 32 + 16 + 8 + 4 + 2 + 1 = 127 matches
-  // Round 1: pos 1..64, Round 2: pos 1..32, etc.
+  // Build all values and insert per round to avoid timeout
   for (let round = 1; round <= 7; round++) {
     const matchCount = Math.pow(2, 7 - round) // 64, 32, 16, 8, 4, 2, 1
-    for (let pos = 1; pos <= matchCount; pos++) {
-      await sql`
-        INSERT INTO bracket_matches (tournament_id, round, position, status)
-        VALUES (${tournamentId}, ${round}, ${pos}, 'pending')
-      `
-    }
+    const values = Array.from({ length: matchCount }, (_, i) => i + 1)
+    
+    // Insert all matches for this round in parallel
+    await Promise.all(
+      values.map(pos => 
+        sql`INSERT INTO bracket_matches (tournament_id, round, position, status) VALUES (${tournamentId}, ${round}, ${pos}, 'pending')`
+      )
+    )
   }
 }
 
