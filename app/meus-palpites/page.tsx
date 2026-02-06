@@ -1,6 +1,6 @@
 import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { getUserPredictionsWithDetails, getUserStats, ROUND_POINTS } from '@/lib/data'
+import { getUserPredictionsWithDetails, getUserStats, ROUND_NAMES, ROUND_POINTS } from '@/lib/data'
 import { DashboardHeader } from '@/components/dashboard/dashboard-header'
 import { PageHero } from '@/components/shared/page-hero'
 import { Card, CardContent } from '@/components/ui/card'
@@ -179,12 +179,12 @@ function PredictionCard({ prediction }: { prediction: PredictionWithDetails }) {
   const isPending = prediction.match_status === 'scheduled' || prediction.match_status === 'pending'
   const isCorrect = prediction.is_correct === true
   const isWrong = prediction.is_correct === false
-  const points = ROUND_POINTS[prediction.round] || 5
+  const roundName = ROUND_NAMES[prediction.round] || `Rodada ${prediction.round}`
 
   return (
     <div className={`px-6 py-4 flex items-center justify-between ${isCorrect ? 'bg-emerald-50/50' : isWrong ? 'bg-red-50/50' : ''}`}>
       <div className="flex items-center gap-4">
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isPending ? 'bg-amber-100' : isCorrect ? 'bg-emerald-100' : 'bg-red-100'}`}>
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isPending ? 'bg-amber-100' : isCorrect ? 'bg-emerald-100' : 'bg-red-100'}`}>
           {isPending ? (
             <Clock className="w-5 h-5 text-amber-600" />
           ) : isCorrect ? (
@@ -200,16 +200,16 @@ function PredictionCard({ prediction }: { prediction: PredictionWithDetails }) {
             <span className="font-medium text-slate-900">{prediction.player2_name || 'TBD'}</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Badge variant="outline" className="text-xs font-normal">{prediction.round}</Badge>
+            <Badge variant="outline" className="text-xs font-normal">{roundName}</Badge>
             {prediction.score && <span className="font-mono text-xs">{prediction.score}</span>}
           </div>
         </div>
       </div>
 
-      <div className="text-right">
+      <div className="text-right shrink-0">
         <p className="text-sm text-slate-500 mb-1">Seu palpite:</p>
         <p className={`font-semibold ${isPending ? 'text-amber-600' : isCorrect ? 'text-emerald-600' : 'text-red-600'}`}>
-          {prediction.predicted_winner}
+          {prediction.predicted_winner_name}
         </p>
         {!isPending && prediction.winner_name && (
           <p className="text-xs text-slate-500 mt-1">

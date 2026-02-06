@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
-import { enrollInTournament, confirmTournamentPayment, getUserTournamentStatus } from '@/lib/data'
+import { isUserEnrolled, enrollUser } from '@/lib/data'
 
 export async function POST(request: Request) {
   try {
@@ -15,16 +15,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Dados invalidos' }, { status: 400 })
     }
 
-    const status = await getUserTournamentStatus(user.id, tournamentId)
-    if (status.payment_status === 'paid') {
+    const enrolled = await isUserEnrolled(user.id, tournamentId)
+    if (enrolled) {
       return NextResponse.json({ error: 'Ja inscrito neste torneio' }, { status: 400 })
     }
 
-    // Enroll user
-    await enrollInTournament(user.id, tournamentId)
-
-    // Auto-confirm payment (simplified flow)
-    await confirmTournamentPayment(user.id, tournamentId)
+    await enrollUser(user.id, tournamentId)
 
     return NextResponse.json({ success: true, message: 'Inscricao realizada com sucesso!' })
   } catch (error) {

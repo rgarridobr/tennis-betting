@@ -5,10 +5,11 @@ import {
   createTournament,
   updateTournamentStatus,
   generateBracket,
-  updateMatchPlayers,
+  setMatchPlayers,
   setMatchResult,
+  createPlayer,
+  importPlayers,
   toggleUserAdmin,
-  confirmPayment,
 } from '@/lib/admin'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -33,12 +34,10 @@ export async function createTournamentAction(formData: FormData) {
   const end_date = formData.get('end_date') as string
 
   if (!name || !surface || !location || !start_date || !end_date) {
-    return { success: false, error: 'Todos os campos são obrigatórios' }
+    return { success: false, error: 'Todos os campos sao obrigatorios' }
   }
 
   const tournamentId = await createTournament({ name, surface, location, start_date, end_date })
-  
-  // Auto-generate bracket (127 matches)
   await generateBracket(tournamentId)
 
   revalidatePath('/admin/torneios')
@@ -54,29 +53,61 @@ export async function updateTournamentStatusAction(tournamentId: number, status:
   revalidatePath('/dashboard')
 }
 
-// ==================== BRACKET ====================
+// ==================== PLAYERS ====================
 
-export async function generateBracketAction(tournamentId: number) {
+export async function createPlayerAction(formData: FormData) {
   await requireAdmin()
-  try {
-    await generateBracket(tournamentId)
-    revalidatePath(`/admin/torneios/${tournamentId}`)
-    return { success: true }
-  } catch (error: any) {
-    return { success: false, error: error.message }
-  }
+  const name = formData.get('name') as string
+  const country = (formData.get('country') as string) || null
+  const seedStr = formData.get('seed') as string
+  const seed = seedStr ? parseInt(seedStr, 10) : null
+
+  if (!name) return { success: false, error: 'Nome obrigatorio' }
+
+  await createPlayer(name, country, seed)
+  revalidatePath('/admin/torneios')
+  return { success: true }
 }
 
-export async function updateMatchPlayersAction(
+export async function importPlayersAction(playersText: string) {
+  await requireAdmin()
+  // Format: "1. Player Name (Country)\n2. Player Name (Country)"
+  const lines = playersText.split('\n').filter(l => l.trim())
+  const players: Array<{ name: string; country: string | null; seed: number | null }> = []
+
+  for (const line of lines) {
+    const cleaned = line.trim()
+    // Try to parse "1. Name (Country)" or just "Name"
+    const seedMatch = cleaned.match(/^(\d+)\.\s*/)
+    const seed = seedMatch ? parseInt(seedMatch[1], 10) : null
+    const withoutSeed = seedMatch ? cleaned.slice(seedMatch[0].length) : cleaned
+
+    const countryMatch = withoutSeed.match(/\(([^)]+)\)\s*$/)
+    const country = countryMatch ? countryMatch[1] : null
+    const name = countryMatch ? withoutSeed.slice(0, withoutSeed.lastIndexOf('(')).trim() : withoutSeed.trim()
+
+    if (name) {
+      players.push({ name, country, seed })
+    }
+  }
+
+  if (players.length === 0) return { success: false, error: 'Nenhum jogador encontrado' }
+
+  const count = await importPlayers(players)
+  revalidatePath('/admin/torneios')
+  return { success: true, count }
+}
+
+// ==================== BRACKET ====================
+
+export async function setMatchPlayersAction(
   matchId: number,
-  player1Name: string,
-  player2Name: string,
-  player1Seed: number | null,
-  player2Seed: number | null,
+  player1Id: number,
+  player2Id: number,
   tournamentId: number
 ) {
   await requireAdmin()
-  await updateMatchPlayers(matchId, player1Name, player2Name, player1Seed, player2Seed)
+  await setMatchPlayers(matchId, player1Id, player2Id)
   revalidatePath(`/admin/torneios/${tournamentId}`)
   revalidatePath(`/torneio/${tournamentId}`)
   return { success: true }
@@ -84,12 +115,12 @@ export async function updateMatchPlayersAction(
 
 export async function setMatchResultAction(
   matchId: number,
-  winnerName: string,
+  winnerId: number,
   score: string,
   tournamentId: number
 ) {
   await requireAdmin()
-  const result = await setMatchResult(matchId, winnerName, score)
+  const result = await setMatchResult(matchId, winnerId, score)
 
   if (result.success) {
     revalidatePath(`/admin/torneios/${tournamentId}`)
@@ -107,10 +138,4 @@ export async function toggleUserAdminAction(userId: number, isAdmin: boolean) {
   await requireAdmin()
   await toggleUserAdmin(userId, isAdmin)
   revalidatePath('/admin/usuarios')
-}
-
-export async function confirmPaymentAction(userId: number, tournamentId: number) {
-  await requireAdmin()
-  await confirmPayment(userId, tournamentId)
-  revalidatePath(`/admin/torneios/${tournamentId}`)
 }

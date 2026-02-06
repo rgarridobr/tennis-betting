@@ -1,48 +1,47 @@
 'use client'
 
-import { useState, useTransition, useEffect } from 'react'
+import { useState, useTransition } from 'react'
+import type { BracketMatch } from '@/lib/data'
+import { makePredictionAction } from '@/lib/actions/predictions'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Check, Loader2, Trophy, X, ChevronDown, ChevronUp } from 'lucide-react'
-import { makePredictionAction } from '@/lib/actions/predictions'
-import { ROUND_ORDER, ROUND_POINTS } from '@/lib/data'
-import type { Match } from '@/lib/data'
+import { Trophy, Check, ChevronDown, ChevronUp, Loader2, X } from 'lucide-react'
 
 interface MatchListProps {
-  matches: Match[]
+  matches: BracketMatch[]
   userId: number
   tournamentId: number
-  predictions: Record<number, string>
-  canMakePredictions?: boolean
+  predictions: Record<number, number>
+  canMakePredictions: boolean
+  roundNames: Record<number, string>
 }
 
-export function MatchList({ matches, userId, tournamentId, predictions, canMakePredictions = false }: MatchListProps) {
-  const matchesByRound: Record<string, Match[]> = {}
-  for (const round of ROUND_ORDER) {
-    const roundMatches = matches.filter(m => m.round === round)
-    if (roundMatches.length > 0) {
-      matchesByRound[round] = roundMatches
-    }
+const ROUND_POINTS: Record<number, number> = {
+  1: 5, 2: 10, 3: 15, 4: 20, 5: 30, 6: 40, 7: 50
+}
+
+export function MatchList({ matches, userId, tournamentId, predictions, canMakePredictions, roundNames }: MatchListProps) {
+  const matchesByRound: Record<number, BracketMatch[]> = {}
+  for (const m of matches) {
+    if (!matchesByRound[m.round]) matchesByRound[m.round] = []
+    matchesByRound[m.round].push(m)
   }
+
+  const rounds = Object.keys(matchesByRound).map(Number).sort((a, b) => a - b)
 
   return (
     <div className="space-y-6">
-      {ROUND_ORDER.map(round => {
+      {rounds.map(round => {
         const roundMatches = matchesByRound[round]
-        if (!roundMatches) return null
-
-        const completed = roundMatches.filter(m => m.status === 'completed').length
-        const scheduledWithPlayers = roundMatches.filter(m => m.status === 'scheduled' && m.player1_name && m.player2_name).length
-        const points = ROUND_POINTS[round] || 5
+        const hasAnyPlayers = roundMatches.some(m => m.player1_id || m.player2_id)
+        if (!hasAnyPlayers) return null
 
         return (
           <RoundSection
             key={round}
             round={round}
+            roundName={roundNames[round] || `Rodada ${round}`}
             matches={roundMatches}
-            completed={completed}
-            scheduledCount={scheduledWithPlayers}
-            points={points}
             userId={userId}
             tournamentId={tournamentId}
             predictions={predictions}
@@ -54,40 +53,23 @@ export function MatchList({ matches, userId, tournamentId, predictions, canMakeP
   )
 }
 
-interface RoundSectionProps {
-  round: string
-  matches: Match[]
-  completed: number
-  scheduledCount: number
-  points: number
+function RoundSection({
+  round, roundName, matches, userId, tournamentId, predictions, canMakePredictions
+}: {
+  round: number
+  roundName: string
+  matches: BracketMatch[]
   userId: number
   tournamentId: number
-  predictions: Record<number, string>
+  predictions: Record<number, number>
   canMakePredictions: boolean
-}
+}) {
+  const visibleMatches = matches.filter(m => m.player1_id || m.player2_id)
+  const [expanded, setExpanded] = useState(visibleMatches.some(m => m.status !== 'completed'))
+  const completedCount = visibleMatches.filter(m => m.status === 'completed').length
+  const points = ROUND_POINTS[round] || 5
 
-function RoundSection({ round, matches, completed, scheduledCount, points, userId, tournamentId, predictions, canMakePredictions }: RoundSectionProps) {
-  const [expanded, setExpanded] = useState(
-    // Auto-expand rounds that have scheduled matches with players
-    matches.some(m => m.status === 'scheduled' && m.player1_name && m.player2_name)
-  )
-
-  // Only show matches that have at least one player assigned
-  const visibleMatches = matches.filter(m => m.player1_name || m.player2_name)
-
-  if (visibleMatches.length === 0) {
-    return (
-      <div className="p-4 rounded-lg border border-slate-200 bg-slate-50">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h3 className="font-semibold text-slate-600">{round}</h3>
-            <Badge variant="outline" className="text-xs text-slate-400">{matches.length} partidas</Badge>
-          </div>
-          <span className="text-xs text-slate-400">Aguardando definição dos jogadores</span>
-        </div>
-      </div>
-    )
-  }
+  if (visibleMatches.length === 0) return null
 
   return (
     <div>
@@ -97,11 +79,11 @@ function RoundSection({ round, matches, completed, scheduledCount, points, userI
         className="w-full flex items-center justify-between p-4 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors mb-3"
       >
         <div className="flex items-center gap-3">
-          <h3 className="text-lg font-semibold text-slate-900">{round}</h3>
+          <h3 className="text-lg font-semibold text-slate-900">{roundName}</h3>
           <Badge variant="outline" className="text-xs">{visibleMatches.length} partidas</Badge>
           <Badge className="bg-emerald-100 text-emerald-700 text-xs">{points} pts cada</Badge>
-          {completed > 0 && (
-            <span className="text-xs text-emerald-600">{completed} finalizadas</span>
+          {completedCount > 0 && (
+            <span className="text-xs text-emerald-600">{completedCount} finalizadas</span>
           )}
         </div>
         {expanded ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
@@ -115,7 +97,7 @@ function RoundSection({ round, matches, completed, scheduledCount, points, userI
               match={match}
               userId={userId}
               tournamentId={tournamentId}
-              currentPrediction={predictions[match.id]}
+              currentPrediction={predictions[match.id] || null}
               canMakePredictions={canMakePredictions}
               points={points}
             />
@@ -126,32 +108,28 @@ function RoundSection({ round, matches, completed, scheduledCount, points, userI
   )
 }
 
-interface MatchCardProps {
-  match: Match
+function MatchCard({
+  match, userId, tournamentId, currentPrediction, canMakePredictions, points
+}: {
+  match: BracketMatch
   userId: number
   tournamentId: number
-  currentPrediction?: string
+  currentPrediction: number | null
   canMakePredictions: boolean
   points: number
-}
-
-function MatchCard({ match, userId, tournamentId, currentPrediction, canMakePredictions, points }: MatchCardProps) {
-  const [selected, setSelected] = useState<string | undefined>(currentPrediction)
+}) {
+  const [selected, setSelected] = useState<number | null>(currentPrediction)
   const [isPending, startTransition] = useTransition()
 
-  useEffect(() => {
-    setSelected(currentPrediction)
-  }, [currentPrediction])
-
   const isCompleted = match.status === 'completed'
-  const canPredict = match.status === 'scheduled' && canMakePredictions && match.player1_name && match.player2_name
+  const canPredict = canMakePredictions && !isCompleted && match.player1_id && match.player2_id
 
-  function handlePrediction(playerName: string) {
+  function handlePrediction(playerId: number) {
     if (!canPredict || isPending) return
-    setSelected(playerName)
+    setSelected(playerId)
     startTransition(async () => {
       try {
-        await makePredictionAction(userId, match.id, playerName, tournamentId)
+        await makePredictionAction(userId, match.id, playerId, tournamentId)
       } catch {
         setSelected(currentPrediction)
       }
@@ -161,21 +139,11 @@ function MatchCard({ match, userId, tournamentId, currentPrediction, canMakePred
   return (
     <Card className={`overflow-hidden ${isCompleted ? 'bg-slate-50' : 'bg-white'}`}>
       <div className="flex items-center justify-between px-4 py-2 bg-slate-100 border-b">
-        <span className="text-xs text-slate-500">Jogo {match.match_number}</span>
+        <span className="text-xs text-slate-500">Jogo {match.position}</span>
         <div className="flex items-center gap-2">
           {isCompleted && match.score && (
             <span className="text-xs font-mono font-medium text-slate-700">{match.score}</span>
           )}
-          <Badge
-            variant="secondary"
-            className={
-              isCompleted ? 'bg-slate-400 text-white' :
-              match.status === 'scheduled' ? 'bg-amber-100 text-amber-800' :
-              'bg-slate-200 text-slate-600'
-            }
-          >
-            {isCompleted ? 'Finalizado' : match.status === 'scheduled' ? 'Agendado' : 'Pendente'}
-          </Badge>
         </div>
       </div>
 
@@ -183,38 +151,42 @@ function MatchCard({ match, userId, tournamentId, currentPrediction, canMakePred
         <PlayerRow
           playerName={match.player1_name}
           seed={match.player1_seed}
-          isWinner={isCompleted && match.winner_name === match.player1_name}
-          isSelected={selected === match.player1_name}
-          isPredicted={currentPrediction === match.player1_name}
+          playerId={match.player1_id}
+          isWinner={isCompleted && match.winner_id === match.player1_id}
+          isSelected={selected === match.player1_id}
+          isPredicted={currentPrediction === match.player1_id}
           isCompleted={isCompleted}
+          winnerId={match.winner_id}
           canPredict={!!canPredict}
           isPending={isPending}
           points={points}
-          onSelect={() => match.player1_name && handlePrediction(match.player1_name)}
+          onSelect={() => match.player1_id && handlePrediction(match.player1_id)}
         />
         <div className="border-t border-slate-200" />
         <PlayerRow
           playerName={match.player2_name}
           seed={match.player2_seed}
-          isWinner={isCompleted && match.winner_name === match.player2_name}
-          isSelected={selected === match.player2_name}
-          isPredicted={currentPrediction === match.player2_name}
+          playerId={match.player2_id}
+          isWinner={isCompleted && match.winner_id === match.player2_id}
+          isSelected={selected === match.player2_id}
+          isPredicted={currentPrediction === match.player2_id}
           isCompleted={isCompleted}
+          winnerId={match.winner_id}
           canPredict={!!canPredict}
           isPending={isPending}
           points={points}
-          onSelect={() => match.player2_name && handlePrediction(match.player2_name)}
+          onSelect={() => match.player2_id && handlePrediction(match.player2_id)}
         />
 
-        {canPredict && !selected && (
+        {!!canPredict && !selected && (
           <div className="px-4 py-2 bg-emerald-50 border-t border-emerald-100">
             <p className="text-xs text-emerald-700 text-center">
-              Clique no jogador que você acha que vai vencer
+              Clique no jogador que voce acha que vai vencer
             </p>
           </div>
         )}
 
-        {canPredict && selected && !isPending && (
+        {!!canPredict && selected && !isPending && (
           <div className="px-4 py-2 bg-emerald-50 border-t border-emerald-100">
             <p className="text-xs text-emerald-700 text-center flex items-center justify-center gap-1">
               <Check className="w-3 h-3" />
@@ -227,23 +199,23 @@ function MatchCard({ match, userId, tournamentId, currentPrediction, canMakePred
   )
 }
 
-interface PlayerRowProps {
+function PlayerRow({
+  playerName, seed, playerId, isWinner, isSelected, isPredicted, isCompleted,
+  winnerId, canPredict, isPending, points, onSelect
+}: {
   playerName: string | null
   seed: number | null
+  playerId: number | null
   isWinner: boolean
   isSelected: boolean
   isPredicted: boolean
   isCompleted: boolean
+  winnerId: number | null
   canPredict: boolean
   isPending: boolean
   points: number
   onSelect: () => void
-}
-
-function PlayerRow({
-  playerName, seed, isWinner, isSelected, isPredicted, isCompleted,
-  canPredict, isPending, points, onSelect
-}: PlayerRowProps) {
+}) {
   if (!playerName) {
     return (
       <div className="flex items-center px-4 py-3.5 text-slate-400 italic text-sm">
@@ -258,7 +230,7 @@ function PlayerRow({
 
   let rowBg = ''
   let rowBorder = ''
-  if (isSelected) {
+  if (isSelected && !isCompleted) {
     rowBg = 'bg-emerald-50'
     if (canPredict) rowBorder = 'ring-2 ring-inset ring-emerald-500'
   } else if (showPredictionResult) {
@@ -271,12 +243,15 @@ function PlayerRow({
     <div
       className={`flex items-center justify-between px-4 py-3.5 ${rowBg} ${rowBorder} ${canPredict ? 'cursor-pointer hover:bg-emerald-50 transition-colors' : ''} ${isPending ? 'opacity-50' : ''}`}
       onClick={canPredict && !isPending ? onSelect : undefined}
+      role={canPredict ? 'button' : undefined}
+      tabIndex={canPredict ? 0 : undefined}
+      onKeyDown={canPredict ? (e) => { if (e.key === 'Enter' || e.key === ' ') onSelect() } : undefined}
     >
       <div className="flex items-center gap-2 flex-1 min-w-0">
         <div className="w-6 h-6 flex items-center justify-center shrink-0">
           {isPending && isSelected ? (
             <Loader2 className="w-4 h-4 text-emerald-600 animate-spin" />
-          ) : isSelected ? (
+          ) : isSelected && !isCompleted ? (
             <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
               <Check className="w-3 h-3 text-white" />
             </div>
@@ -303,7 +278,7 @@ function PlayerRow({
           )}
         </div>
 
-        <span className={`${isWinner && isCompleted ? 'font-bold text-slate-900' : 'text-slate-700'} ${isSelected ? 'font-semibold text-emerald-700' : ''}`}>
+        <span className={`${isWinner && isCompleted ? 'font-bold text-slate-900' : 'text-slate-700'} ${isSelected && !isCompleted ? 'font-semibold text-emerald-700' : ''}`}>
           {seed && <span className="text-xs text-slate-400 mr-1">[{seed}]</span>}
           {playerName}
         </span>

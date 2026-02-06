@@ -2,10 +2,11 @@ import { getSession } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
 import {
   getTournamentById,
-  getMatchesByTournament,
+  getBracketMatches,
   getUserPredictions,
-  getUserTournamentStatus,
-  getTournamentParticipants,
+  isUserEnrolled,
+  getTournamentParticipantCount,
+  ROUND_NAMES,
 } from '@/lib/data'
 import { DashboardHeader } from '@/components/dashboard/dashboard-header'
 import { TournamentHeader } from '@/components/tournament/tournament-header'
@@ -27,41 +28,33 @@ export default async function TournamentPage({ params }: TournamentPageProps) {
   const tournament = await getTournamentById(tournamentId)
   if (!tournament) notFound()
 
-  const [matches, userPredictions, enrollmentStatus, participants] =
-    await Promise.all([
-      getMatchesByTournament(tournamentId),
-      getUserPredictions(user.id, tournamentId),
-      getUserTournamentStatus(user.id, tournamentId),
-      getTournamentParticipants(tournamentId),
-    ])
+  const [matches, userPredictions, enrolled, participants] = await Promise.all([
+    getBracketMatches(tournamentId),
+    getUserPredictions(user.id, tournamentId),
+    isUserEnrolled(user.id, tournamentId),
+    getTournamentParticipantCount(tournamentId),
+  ])
 
-  const predictionsRecord: Record<number, string> = {}
+  // Map: bracketMatchId -> predicted_winner_id
+  const predictionsRecord: Record<number, number> = {}
   for (const p of userPredictions) {
-    predictionsRecord[p.match_id] = p.predicted_winner
+    predictionsRecord[p.bracket_match_id] = p.predicted_winner_id
   }
-
-  const canMakePredictions = enrollmentStatus.payment_status === 'paid'
 
   return (
     <div className="min-h-screen bg-slate-50">
       <DashboardHeader user={user} />
 
-      <TournamentHeader
-        tournament={tournament}
-        participants={participants}
-      />
+      <TournamentHeader tournament={tournament} participants={participants} />
 
       <main className="container mx-auto px-4 py-8">
-        {!canMakePredictions && (
-          <EnrollmentBanner
-            tournament={tournament}
-            enrollmentStatus={enrollmentStatus}
-          />
+        {!enrolled && (
+          <EnrollmentBanner tournament={tournament} />
         )}
 
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-slate-900">Chaveamento</h2>
-          {canMakePredictions && (
+          {enrolled && (
             <span className="text-sm text-emerald-600 font-medium">
               Inscrito - Faca seus palpites!
             </span>
@@ -79,7 +72,8 @@ export default async function TournamentPage({ params }: TournamentPageProps) {
             userId={user.id}
             tournamentId={tournamentId}
             predictions={predictionsRecord}
-            canMakePredictions={canMakePredictions}
+            canMakePredictions={enrolled}
+            roundNames={ROUND_NAMES}
           />
         )}
       </main>

@@ -19,15 +19,14 @@ import {
   CheckCircle2,
   MapPin,
 } from 'lucide-react';
-import { getLiveTournaments, getUpcomingTournaments } from '@/lib/data';
+import { getTournaments, getLiveTournaments, getUpcomingTournaments } from '@/lib/data';
 
 export default async function HomePage() {
   const user = await getSession();
   if (user) redirect('/dashboard');
 
-  const [liveTournaments, upcomingTournaments] = await Promise.all([getLiveTournaments(), getUpcomingTournaments()]);
-
-  const featuredTournaments = [...liveTournaments, ...upcomingTournaments].slice(0, 3);
+  const allTournaments = await getTournaments();
+  const featuredTournaments = allTournaments.filter(t => t.status === 'active' || t.status === 'upcoming').slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background">
@@ -226,16 +225,16 @@ export default async function HomePage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                     <Badge
                       className={`absolute top-4 right-4 ${
-                        tournament.status === 'live' ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-amber-900'
+                        tournament.status === 'active' ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-amber-900'
                       }`}
                     >
-                      {tournament.status === 'live' ? 'Ao vivo' : 'Em breve'}
+                      {tournament.status === 'active' ? 'Ativo' : 'Em breve'}
                     </Badge>
                     <div className="absolute bottom-4 left-4 right-4">
                       <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm mb-2">
-                        {tournament.surface === 'clay'
+                        {tournament.surface === 'Clay'
                           ? 'Saibro'
-                          : tournament.surface === 'grass'
+                          : tournament.surface === 'Grass'
                             ? 'Grama'
                             : 'Quadra dura'}
                       </Badge>
@@ -263,8 +262,8 @@ export default async function HomePage() {
                         </span>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs text-slate-500">Taxa de inscrição</p>
-                        <p className="text-lg font-bold text-emerald-600">R$ {tournament.entry_fee}</p>
+                        <p className="text-xs text-slate-500">128 jogadores</p>
+                        <p className="text-lg font-bold text-emerald-600">Grand Slam</p>
                       </div>
                     </div>
                   </CardContent>

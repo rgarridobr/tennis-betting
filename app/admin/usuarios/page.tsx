@@ -35,7 +35,7 @@ export default async function AdminUsersPage() {
                     </div>
                     <p className="text-sm text-muted-foreground">{user.email}</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {user.total_predictions} palpites • {user.total_points} pontos
+                      {user.total_predictions} palpites
                     </p>
                   </div>
                   <UserAdminToggle userId={user.id} isAdmin={user.is_admin} />

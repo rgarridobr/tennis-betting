@@ -9,12 +9,12 @@ export default async function AdminDashboardPage() {
     getAllUsers(),
   ])
 
-  const liveTournaments = tournaments.filter(t => t.status === 'live').length
+  const liveTournaments = tournaments.filter(t => t.status === 'active').length
   const totalPredictions = users.reduce((sum, u) => sum + Number(u.total_predictions), 0)
 
   const stats = [
     { label: 'Torneios', value: tournaments.length, icon: Trophy },
-    { label: 'Ao Vivo', value: liveTournaments, icon: Calendar },
+    { label: 'Ativos', value: liveTournaments, icon: Calendar },
     { label: 'Usuários', value: users.length, icon: Users },
     { label: 'Palpites', value: totalPredictions, icon: TrendingUp },
   ]
