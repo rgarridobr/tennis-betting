@@ -19,7 +19,7 @@ import {
   CheckCircle2,
   MapPin,
 } from 'lucide-react';
-import { getTournaments, getLiveTournaments, getUpcomingTournaments } from '@/lib/data';
+import { getTournaments } from '@/lib/data';
 
 export default async function HomePage() {
   const user = await getSession();

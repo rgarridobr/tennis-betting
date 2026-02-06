@@ -42,7 +42,8 @@ export async function createTournamentAction(formData: FormData) {
 
   revalidatePath('/admin/torneios')
   revalidatePath('/dashboard')
-  redirect(`/admin/torneios/${tournamentId}`)
+  
+  return { success: true, tournamentId }
 }
 
 export async function updateTournamentStatusAction(tournamentId: number, status: string) {

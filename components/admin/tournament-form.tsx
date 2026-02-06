@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useFormStatus } from 'react-dom'
 import { createTournamentAction } from '@/lib/actions/admin'
 import { Button } from '@/components/ui/button'
@@ -25,12 +26,15 @@ function SubmitButton() {
 
 export function TournamentForm() {
   const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
   async function handleSubmit(formData: FormData) {
     setError(null)
     const result = await createTournamentAction(formData)
     if (result?.error) {
       setError(result.error)
+    } else if (result?.success && result.tournamentId) {
+      router.push(`/admin/torneios/${result.tournamentId}`)
     }
   }
 
