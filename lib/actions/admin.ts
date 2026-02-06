@@ -79,7 +79,7 @@ export async function createPlayerAction(formData: FormData) {
   if (!name) return { success: false, error: 'Nome obrigatorio' }
 
   await createPlayer(name, country, seed)
-  revalidatePath('/admin/torneios')
+  revalidatePath('/admin/torneios', 'layout')
   return { success: true }
 }
 
@@ -87,7 +87,7 @@ export async function deletePlayerAction(id: number) {
   await requireAdmin()
   const result = await deletePlayer(id)
   if (result.success) {
-    revalidatePath('/admin/torneios')
+    revalidatePath('/admin/torneios', 'layout')
   }
   return result
 }
@@ -101,7 +101,7 @@ export async function updatePlayerAction(id: number, formData: FormData) {
 
   const result = await updatePlayer(id, name, country)
   if (result.success) {
-    revalidatePath('/admin/torneios')
+    revalidatePath('/admin/torneios', 'layout')
   }
   return result
 }
@@ -128,7 +128,7 @@ export async function importPlayersAction(playersText: string) {
   if (players.length === 0) return { success: false, error: 'Nenhum jogador encontrado' }
 
   const count = await importPlayers(players)
-  revalidatePath('/admin/torneios')
+  revalidatePath('/admin/torneios', 'layout')
   return { success: true, count }
 }
 
