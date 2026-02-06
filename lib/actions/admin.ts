@@ -38,12 +38,8 @@ export async function createTournamentAction(formData: FormData) {
   }
 
   try {
-    console.log("[v0] Creating tournament:", { name, surface, location, start_date, end_date })
     const tournamentId = await createTournament({ name, surface, location, start_date, end_date })
-    console.log("[v0] Tournament created with id:", tournamentId)
-    
     await generateBracket(tournamentId)
-    console.log("[v0] Bracket generated for tournament:", tournamentId)
 
     revalidatePath('/admin/torneios')
     revalidatePath('/dashboard')

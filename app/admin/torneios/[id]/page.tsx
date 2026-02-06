@@ -4,6 +4,7 @@ import { PageHero } from '@/components/shared/page-hero'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { BracketRoundManager } from '@/components/admin/bracket-round-manager'
+import { PlayerManager } from '@/components/admin/player-manager'
 import { TournamentStatusSelect } from '@/components/admin/tournament-status-select'
 import { Trophy, Clock, Hash } from 'lucide-react'
 
@@ -97,6 +98,11 @@ export default async function ManageTournamentPage({ params }: Props) {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Player Manager */}
+      <div className="mt-8">
+        <PlayerManager players={players} />
       </div>
 
       {/* Bracket Rounds */}
