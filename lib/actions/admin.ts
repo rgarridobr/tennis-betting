@@ -263,3 +263,17 @@ export async function generateDrawAction(tournamentId: number, randomSeed: strin
     return { success: false, error: error.message || 'Erro ao gerar chaveamento' }
   }
 }
+
+export async function replacePlayerInDrawAction(tournamentId: number, oldPlayerId: number, newPlayerId: number) {
+  await requireAdmin()
+  try {
+    const { replacePlayerInDraw } = await import('@/lib/admin')
+    await replacePlayerInDraw(tournamentId, oldPlayerId, newPlayerId)
+    revalidatePath(`/admin/torneios/${tournamentId}`)
+    revalidatePath(`/torneio/${tournamentId}`)
+    return { success: true }
+  } catch (error: any) {
+    console.error("Error replacing player:", error)
+    return { success: false, error: error.message || 'Erro ao substituir jogador' }
+  }
+}

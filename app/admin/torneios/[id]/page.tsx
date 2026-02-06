@@ -136,6 +136,19 @@ export default async function ManageTournamentPage({ params }: Props) {
 
         {/* Progresso do Torneio */}
         <Card className="border-0 shadow-md mb-8">
+          {tournament.draw_generated_at && (
+            <div className="px-6 py-3 bg-slate-50 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 text-[10px] text-slate-500 uppercase tracking-wider font-medium">
+              <div className="flex items-center gap-4">
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" /> Gerado em: {new Date(tournament.draw_generated_at).toLocaleString('pt-BR')}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Hash className="w-3 h-3" /> Seed: <code className="bg-slate-200 px-1 rounded">{tournament.draw_random_seed}</code>
+                </span>
+              </div>
+              <Badge variant="outline" className="text-[9px] border-emerald-200 text-emerald-600 bg-emerald-50">Sorteio Auditável</Badge>
+            </div>
+          )}
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-slate-900">Progresso do Chaveamento</h3>
