@@ -238,17 +238,13 @@ function PredictionsList({ predictions }: { predictions: any[] }) {
 }
 
 function PredictionCard({ prediction }: { prediction: any }) {
-  const predictedPlayerName = prediction.predicted_winner === 1 
-    ? prediction.player1_name 
-    : prediction.player2_name
+  const predictedPlayerName = prediction.predicted_winner
   
   const isPending = prediction.match_status === 'scheduled' || prediction.match_status === 'live'
   const isCorrect = prediction.is_correct === true
   const isWrong = prediction.is_correct === false
 
-  const winnerName = prediction.winner 
-    ? (prediction.winner === 1 ? prediction.player1_name : prediction.player2_name)
-    : null
+  const winnerName = prediction.winner || null
 
   return (
     <div className={`px-6 py-4 flex items-center justify-between ${

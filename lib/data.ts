@@ -28,17 +28,16 @@ export interface Match {
   player2_country: string
   round: string
   match_date: string
-  player1_score: string | null
-  player2_score: string | null
-  winner: number | null
-  status: 'scheduled' | 'live' | 'finished'
+  score: string | null
+  winner: string | null
+  status: 'scheduled' | 'live' | 'completed'
 }
 
 export interface Prediction {
   id: number
   user_id: number
   match_id: number
-  predicted_winner: number
+  predicted_winner: string
   is_correct: boolean | null
   points_earned: number
   created_at: string
@@ -241,13 +240,13 @@ export async function getTournamentPrizePool(tournamentId: number): Promise<numb
 export async function createPrediction(
   userId: number,
   matchId: number,
-  predictedWinner: number
+  predictedWinnerName: string
 ): Promise<void> {
   await sql`
     INSERT INTO predictions (user_id, match_id, predicted_winner)
-    VALUES (${userId}, ${matchId}, ${predictedWinner})
+    VALUES (${userId}, ${matchId}, ${predictedWinnerName})
     ON CONFLICT (user_id, match_id) 
-    DO UPDATE SET predicted_winner = ${predictedWinner}
+    DO UPDATE SET predicted_winner = ${predictedWinnerName}
   `
 }
 
@@ -270,7 +269,7 @@ export async function getUserPredictions(userId: number, tournamentId?: number):
 export interface PredictionWithDetails {
   id: number
   match_id: number
-  predicted_winner: number
+  predicted_winner: string
   is_correct: boolean | null
   points_earned: number
   created_at: string
@@ -281,7 +280,8 @@ export interface PredictionWithDetails {
   round: string
   match_date: string
   match_status: string
-  winner: number | null
+  score: string | null
+  winner: string | null
   tournament_id: number
   tournament_name: string
   tournament_surface: string
@@ -302,6 +302,7 @@ export async function getUserPredictionsWithDetails(userId: number): Promise<Pre
       m.player2_country,
       m.round,
       m.match_date,
+      m.score,
       m.status as match_status,
       m.winner,
       t.id as tournament_id,

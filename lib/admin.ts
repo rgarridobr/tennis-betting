@@ -111,31 +111,31 @@ export async function createMatch(data: {
 
 export async function updateMatchResult(
   matchId: number,
-  winner: number,
+  winnerNumber: number,
   player1Score: string,
   player2Score: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Verify match exists
-    const match = await sql`SELECT id FROM matches WHERE id = ${matchId}`
+    const match = await sql`SELECT player1_name, player2_name FROM matches WHERE id = ${matchId}`
     if (match.length === 0) {
       return { success: false, error: 'Partida não encontrada' }
     }
     
+    const winnerName = winnerNumber === 1 ? match[0].player1_name : match[0].player2_name
     const score = `${player1Score} x ${player2Score}`
     
-    // Save winner as number (1 or 2) and status as 'finished'
+    // winner column is VARCHAR - save player name, status is 'completed' per schema
     await sql`
       UPDATE matches
-      SET winner = ${winner}, score = ${score}, status = 'finished'
+      SET winner = ${winnerName}, score = ${score}, status = 'completed'
       WHERE id = ${matchId}
     `
     
-    // Update predictions - compare predicted_winner (number) with winner (number)
+    // predicted_winner column is VARCHAR - compare name with name
     await sql`
       UPDATE predictions
-      SET is_correct = (predicted_winner = ${winner}),
-          points_earned = CASE WHEN predicted_winner = ${winner} THEN 10 ELSE 0 END
+      SET is_correct = (predicted_winner = ${winnerName}),
+          points_earned = CASE WHEN predicted_winner = ${winnerName} THEN 10 ELSE 0 END
       WHERE match_id = ${matchId}
     `
     

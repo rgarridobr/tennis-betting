@@ -37,11 +37,10 @@ export default async function TournamentPage({ params }: TournamentPageProps) {
       getTournamentPrizePool(tournamentId),
     ])
 
-  // Convert to plain object for serialization to client component
-  // Note: predicted_winner comes as string from DB, need to convert to number
-  const predictionsRecord: Record<number, number> = {}
+  // Convert to plain object: matchId -> predicted winner name (string)
+  const predictionsRecord: Record<number, string> = {}
   for (const p of userPredictions) {
-    predictionsRecord[p.match_id] = Number(p.predicted_winner)
+    predictionsRecord[p.match_id] = p.predicted_winner
   }
 
   const canMakePredictions = enrollmentStatus.payment_status === 'paid'

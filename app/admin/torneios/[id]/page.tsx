@@ -53,23 +53,27 @@ export default async function ManageTournamentPage({ params }: ManageTournamentP
                     <div className="flex items-center justify-between mb-2">
                       <Badge variant="outline">{match.round}</Badge>
                       <Badge
-                        variant={match.status === 'finished' ? 'secondary' : 'outline'}
+                        variant={match.status === 'completed' ? 'secondary' : 'outline'}
                       >
-                        {match.status === 'finished' ? 'Finalizado' : 'Agendado'}
+                        {match.status === 'completed' ? 'Finalizado' : match.status === 'live' ? 'Ao Vivo' : 'Agendado'}
                       </Badge>
                     </div>
                     <p className="text-sm font-medium">
                       {match.player1_name} vs {match.player2_name}
                     </p>
-                    {match.status === 'finished' ? (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Placar: {match.player1_score} - {match.player2_score}
-                        {match.winner && (
-                          <span className="ml-2">
-                            (Vencedor: {match.winner === 1 ? match.player1_name : match.player2_name})
-                          </span>
+                    {match.status === 'completed' ? (
+                      <div className="mt-1 space-y-0.5">
+                        {match.score && (
+                          <p className="text-xs text-muted-foreground">
+                            Placar: <span className="font-medium">{match.score}</span>
+                          </p>
                         )}
-                      </p>
+                        {match.winner && (
+                          <p className="text-xs text-emerald-600 font-medium">
+                            Vencedor: {match.winner}
+                          </p>
+                        )}
+                      </div>
                     ) : (
                       <MatchResultForm
                         matchId={match.id}

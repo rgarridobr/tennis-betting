@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache'
 export async function makePredictionAction(
   userId: number,
   matchId: number,
-  predictedWinner: number,
+  predictedWinnerName: string,
   tournamentId: number
 ) {
   // Verify user has paid for this tournament before allowing prediction
@@ -16,7 +16,7 @@ export async function makePredictionAction(
     throw new Error('Você precisa estar inscrito no torneio para fazer palpites')
   }
   
-  await createPrediction(userId, matchId, predictedWinner)
+  await createPrediction(userId, matchId, predictedWinnerName)
   
   revalidatePath('/torneio/[id]', 'page')
 }

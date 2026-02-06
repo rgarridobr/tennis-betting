@@ -11,7 +11,7 @@ interface MatchListProps {
   matches: Match[]
   userId: number
   tournamentId: number
-  predictions: Record<number, number>
+  predictions: Record<number, string>  // matchId -> predicted winner name
   canMakePredictions?: boolean
 }
 
@@ -77,30 +77,29 @@ interface MatchCardProps {
   match: Match
   userId: number
   tournamentId: number
-  currentPrediction?: number
+  currentPrediction?: string  // predicted winner name
   canMakePredictions: boolean
 }
 
 function MatchCard({ match, userId, tournamentId, currentPrediction, canMakePredictions }: MatchCardProps) {
-  const [selected, setSelected] = useState<number | undefined>(currentPrediction)
+  const [selected, setSelected] = useState<string | undefined>(currentPrediction)
   const [isPending, startTransition] = useTransition()
   
-  // Sync selected state with currentPrediction from server
   useEffect(() => {
     setSelected(currentPrediction)
   }, [currentPrediction])
   
-  const isFinished = match.status === 'finished' || match.status === 'completed'
+  const isFinished = match.status === 'completed'
   const isLive = match.status === 'live'
   const canPredict = match.status === 'scheduled' && canMakePredictions
 
-  function handlePrediction(winner: number) {
+  function handlePrediction(playerName: string) {
     if (!canPredict || isPending) return
     
-    setSelected(winner)
+    setSelected(playerName)
     startTransition(async () => {
       try {
-        await makePredictionAction(userId, match.id, winner, tournamentId)
+        await makePredictionAction(userId, match.id, playerName, tournamentId)
       } catch (error) {
         setSelected(currentPrediction)
       }
@@ -113,52 +112,50 @@ function MatchCard({ match, userId, tournamentId, currentPrediction, canMakePred
         <span className="text-xs text-muted-foreground">
           {formatMatchDate(match.match_date)}
         </span>
-        <Badge 
-          variant="secondary"
-          className={
-            isLive ? 'bg-emerald-500 text-white' : 
-            isFinished ? 'bg-slate-400 text-white' : 
-            'bg-amber-100 text-amber-800'
-          }
-        >
-          {isLive ? 'Ao vivo' : isFinished ? 'Finalizado' : 'Agendado'}
-        </Badge>
+        <div className="flex items-center gap-2">
+          {isFinished && match.score && (
+            <span className="text-xs font-mono font-medium text-slate-700">{match.score}</span>
+          )}
+          <Badge 
+            variant="secondary"
+            className={
+              isLive ? 'bg-emerald-500 text-white' : 
+              isFinished ? 'bg-slate-400 text-white' : 
+              'bg-amber-100 text-amber-800'
+            }
+          >
+            {isLive ? 'Ao vivo' : isFinished ? 'Finalizado' : 'Agendado'}
+          </Badge>
+        </div>
       </div>
       
       <CardContent className="p-0">
-        {/* Player 1 Row */}
         <PlayerSelectableRow
-          playerNumber={1}
-          name={match.player1_name}
+          playerName={match.player1_name}
           country={match.player1_country}
-          score={match.player1_score}
-          isWinner={Number(match.winner) === 1}
-          isSelected={selected === 1}
-          isPredicted={currentPrediction === 1}
+          isWinner={match.winner === match.player1_name}
+          isSelected={selected === match.player1_name}
+          isPredicted={currentPrediction === match.player1_name}
           isFinished={isFinished}
           canPredict={canPredict}
           isPending={isPending}
-          onSelect={() => handlePrediction(1)}
+          onSelect={() => handlePrediction(match.player1_name)}
         />
         
         <div className="border-t border-slate-200" />
         
-        {/* Player 2 Row */}
         <PlayerSelectableRow
-          playerNumber={2}
-          name={match.player2_name}
+          playerName={match.player2_name}
           country={match.player2_country}
-          score={match.player2_score}
-          isWinner={Number(match.winner) === 2}
-          isSelected={selected === 2}
-          isPredicted={currentPrediction === 2}
+          isWinner={match.winner === match.player2_name}
+          isSelected={selected === match.player2_name}
+          isPredicted={currentPrediction === match.player2_name}
           isFinished={isFinished}
           canPredict={canPredict}
           isPending={isPending}
-          onSelect={() => handlePrediction(2)}
+          onSelect={() => handlePrediction(match.player2_name)}
         />
 
-        {/* Prediction Help Text */}
         {canPredict && !selected && (
           <div className="px-4 py-2 bg-emerald-50 border-t border-emerald-100">
             <p className="text-xs text-emerald-700 text-center">
@@ -181,10 +178,8 @@ function MatchCard({ match, userId, tournamentId, currentPrediction, canMakePred
 }
 
 interface PlayerSelectableRowProps {
-  playerNumber: number
-  name: string
+  playerName: string
   country: string
-  score: string | null
   isWinner: boolean
   isSelected: boolean
   isPredicted: boolean
@@ -195,10 +190,8 @@ interface PlayerSelectableRowProps {
 }
 
 function PlayerSelectableRow({ 
-  playerNumber,
-  name, 
+  playerName, 
   country, 
-  score, 
   isWinner, 
   isSelected,
   isPredicted,
@@ -211,7 +204,6 @@ function PlayerSelectableRow({
   const predictionCorrect = showPredictionResult && isWinner
   const showCurrentPrediction = isPredicted && !isFinished && !canPredict
   
-  // Determine row styling
   let rowBgClass = ''
   let rowBorderClass = ''
   
@@ -221,11 +213,7 @@ function PlayerSelectableRow({
       rowBorderClass = 'ring-2 ring-inset ring-emerald-500'
     }
   } else if (showPredictionResult) {
-    if (predictionCorrect) {
-      rowBgClass = 'bg-emerald-50'
-    } else {
-      rowBgClass = 'bg-red-50'
-    }
+    rowBgClass = predictionCorrect ? 'bg-emerald-50' : 'bg-red-50'
   } else if (showCurrentPrediction) {
     rowBgClass = 'bg-amber-50'
   } else if (isWinner && isFinished) {
@@ -243,7 +231,6 @@ function PlayerSelectableRow({
       onClick={canPredict && !isPending ? onSelect : undefined}
     >
       <div className="flex items-center gap-2 flex-1 min-w-0">
-        {/* Selection indicator / Result indicator */}
         <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
           {isPending && isSelected ? (
             <Loader2 className="w-4 h-4 text-emerald-600 animate-spin" />
@@ -274,20 +261,18 @@ function PlayerSelectableRow({
           )}
         </div>
 
-        {/* Player name and country inline */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <span className={`
             ${isWinner && isFinished ? 'font-bold text-foreground' : 'text-foreground'}
             ${isSelected ? 'font-semibold text-emerald-700' : ''}
           `}>
-            {name}
+            {playerName}
           </span>
           <span className="text-xs text-muted-foreground flex-shrink-0">
             ({country})
           </span>
         </div>
 
-        {/* Prediction badges */}
         {showPredictionResult && (
           <Badge 
             className={`
@@ -308,16 +293,6 @@ function PlayerSelectableRow({
           </Badge>
         )}
       </div>
-      
-      {/* Score */}
-      {score && (
-        <span className={`
-          font-mono text-sm ml-3 flex-shrink-0
-          ${isWinner ? 'font-bold text-foreground' : 'text-muted-foreground'}
-        `}>
-          {score}
-        </span>
-      )}
     </div>
   )
 }
