@@ -46,7 +46,7 @@ export async function createTournamentAction(formData: FormData) {
     
     return { success: true, tournamentId }
   } catch (error) {
-    console.error("[v0] Error creating tournament:", error)
+    console.error("Error creating tournament:", error)
     return { success: false, error: 'Erro ao criar torneio. Tente novamente.' }
   }
 }

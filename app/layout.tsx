@@ -10,7 +10,6 @@ const _geistMono = Geist_Mono({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Bolão de Tênis - Faça seus palpites e ganhe pontos',
   description: 'Participe do bolão, dê seus palpites nos jogos e dispute com seus amigos no ranking',
-    generator: 'v0.app'
 };
 
 export default function RootLayout({
