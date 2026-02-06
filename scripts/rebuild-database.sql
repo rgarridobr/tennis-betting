@@ -34,6 +34,32 @@ CREATE TABLE players (
 
 CREATE UNIQUE INDEX idx_players_name ON players(name);
 
+-- Pre-defined tournament names and locations
+CREATE TABLE tournament_names (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) UNIQUE NOT NULL
+);
+
+CREATE TABLE tournament_locations (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) UNIQUE NOT NULL
+);
+
+-- Seed some initial data
+INSERT INTO tournament_names (name) VALUES
+('Australian Open'), ('Roland Garros'), ('Wimbledon'), ('US Open'),
+('Indian Wells Masters'), ('Miami Open'), ('Monte-Carlo Masters'), ('Madrid Open'),
+('Italian Open'), ('Canadian Open'), ('Cincinnati Masters'), ('Shanghai Masters'),
+('Paris Masters'), ('ATP Finals')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO tournament_locations (name) VALUES
+('Melbourne, Austrália'), ('Paris, França'), ('Londres, Inglaterra'), ('Nova York, EUA'),
+('Indian Wells, EUA'), ('Miami, EUA'), ('Monte Carlo, Mônaco'), ('Madri, Espanha'),
+('Roma, Itália'), ('Montreal/Toronto, Canadá'), ('Cincinnati, EUA'), ('Xangai, China'),
+('Paris, França'), ('Turim, Itália')
+ON CONFLICT DO NOTHING;
+
 -- Bracket matches: each row = 1 match in the bracket
 -- round: 1=1st Round, 2=2nd Round, 3=3rd Round, 4=Oitavas, 5=Quartas, 6=Semi, 7=Final
 -- position: 1..64 for round 1, 1..32 for round 2, etc.

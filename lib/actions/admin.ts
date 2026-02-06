@@ -12,6 +12,12 @@ import {
   updatePlayer,
   importPlayers,
   toggleUserAdmin,
+  createTournamentName,
+  updateTournamentName,
+  deleteTournamentName,
+  createTournamentLocation,
+  updateTournamentLocation,
+  deleteTournamentLocation,
 } from '@/lib/admin'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -166,4 +172,44 @@ export async function toggleUserAdminAction(userId: number, isAdmin: boolean) {
   await requireAdmin()
   await toggleUserAdmin(userId, isAdmin)
   revalidatePath('/admin/usuarios')
+}
+
+// ==================== METADATA ====================
+
+export async function createMetadataAction(type: 'name' | 'location', name: string) {
+  await requireAdmin()
+  if (type === 'name') {
+    await createTournamentName(name)
+  } else {
+    await createTournamentLocation(name)
+  }
+  revalidatePath('/admin/torneios/novo')
+  return { success: true }
+}
+
+export async function updateMetadataAction(type: 'name' | 'location', id: number, name: string) {
+  await requireAdmin()
+  if (type === 'name') {
+    await updateTournamentName(id, name)
+  } else {
+    await updateTournamentLocation(id, name)
+  }
+  revalidatePath('/admin/torneios/novo')
+  return { success: true }
+}
+
+export async function deleteMetadataAction(type: 'name' | 'location', id: number) {
+  await requireAdmin()
+  try {
+    if (type === 'name') {
+      await deleteTournamentName(id)
+    } else {
+      await deleteTournamentLocation(id)
+    }
+    revalidatePath('/admin/torneios/novo')
+    return { success: true }
+  } catch (error) {
+    console.error("Error deleting metadata:", error)
+    return { success: false, error: 'Erro ao excluir. O item pode estar em uso.' }
+  }
 }

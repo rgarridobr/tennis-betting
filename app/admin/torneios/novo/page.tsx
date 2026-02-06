@@ -4,8 +4,13 @@ import { TournamentForm } from '@/components/admin/tournament-form'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { getTournamentNames, getTournamentLocations } from '@/lib/data'
 
-export default function NewTournamentPage() {
+export default async function NewTournamentPage() {
+  const [names, locations] = await Promise.all([
+    getTournamentNames(),
+    getTournamentLocations()
+  ])
   return (
     <>
       <PageHero
@@ -29,7 +34,7 @@ export default function NewTournamentPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <TournamentForm />
+            <TournamentForm names={names} locations={locations} />
           </CardContent>
         </Card>
       </main>

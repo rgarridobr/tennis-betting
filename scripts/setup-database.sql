@@ -68,6 +68,17 @@ CREATE TABLE IF NOT EXISTS user_tournaments (
   UNIQUE(user_id, tournament_id)
 );
 
+-- Pre-defined tournament names and locations
+CREATE TABLE IF NOT EXISTS tournament_names (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) UNIQUE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS tournament_locations (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) UNIQUE NOT NULL
+);
+
 -- Sessions table for authentication
 CREATE TABLE IF NOT EXISTS sessions (
   id SERIAL PRIMARY KEY,

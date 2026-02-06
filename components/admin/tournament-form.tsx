@@ -14,6 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { MetadataManager } from './metadata-manager'
+import type { TournamentMetadata } from '@/lib/data'
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -28,7 +30,12 @@ function SubmitButton() {
   )
 }
 
-export function TournamentForm() {
+interface Props {
+  names: TournamentMetadata[]
+  locations: TournamentMetadata[]
+}
+
+export function TournamentForm({ names, locations }: Props) {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
@@ -50,7 +57,21 @@ export function TournamentForm() {
 
       <div className="space-y-2">
         <Label htmlFor="name">Nome do Torneio</Label>
-        <Input id="name" name="name" placeholder="Ex: Australian Open 2026" required />
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <Select name="name" required>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o torneio" />
+              </SelectTrigger>
+              <SelectContent>
+                {names.map(opt => (
+                  <SelectItem key={opt.id} value={opt.name}>{opt.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <MetadataManager type="name" title="Torneio" options={names} />
+        </div>
       </div>
 
       <div className="grid md:grid-cols-4 gap-4">
@@ -69,7 +90,21 @@ export function TournamentForm() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="location">Local</Label>
-          <Input id="location" name="location" placeholder="Ex: Melbourne, Austrália" required />
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Select name="location" required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o local" />
+                </SelectTrigger>
+                <SelectContent>
+                  {locations.map(opt => (
+                    <SelectItem key={opt.id} value={opt.name}>{opt.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <MetadataManager type="location" title="Local" options={locations} />
+          </div>
         </div>
 
                 <div className="space-y-2">
