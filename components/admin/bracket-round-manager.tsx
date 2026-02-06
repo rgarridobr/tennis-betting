@@ -169,10 +169,10 @@ function SetPlayersDialog({ match, players, tournamentId }: { match: BracketMatc
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader>
+        <DialogHeader className="mb-4">
           <DialogTitle>Definir Jogadores - Jogo {match.position}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-4 gap-4 md:grid md:grid-cols-2">
           {error && (
             <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
               <AlertCircle className="w-4 h-4" />{error}
@@ -181,7 +181,7 @@ function SetPlayersDialog({ match, players, tournamentId }: { match: BracketMatc
           <div className="space-y-2">
             <Label>Jogador 1</Label>
             <Select value={player1Id} onValueChange={setPlayer1Id}>
-              <SelectTrigger><SelectValue placeholder="Selecione o jogador" /></SelectTrigger>
+              <SelectTrigger className="w-full"><SelectValue placeholder="Selecione o jogador" /></SelectTrigger>
               <SelectContent className="max-h-60">
                 {players
                   .filter(p => !player2Id || p.id.toString() !== player2Id)
@@ -196,7 +196,7 @@ function SetPlayersDialog({ match, players, tournamentId }: { match: BracketMatc
           <div className="space-y-2">
             <Label>Jogador 2</Label>
             <Select value={player2Id} onValueChange={setPlayer2Id}>
-              <SelectTrigger><SelectValue placeholder="Selecione o jogador" /></SelectTrigger>
+              <SelectTrigger className="w-full"><SelectValue placeholder="Selecione o jogador" /></SelectTrigger>
               <SelectContent className="max-h-60">
                 {players
                   .filter(p => !player1Id || p.id.toString() !== player1Id)
@@ -208,10 +208,10 @@ function SetPlayersDialog({ match, players, tournamentId }: { match: BracketMatc
               </SelectContent>
             </Select>
           </div>
+        </div>
           <Button onClick={handleSubmit} className="w-full" disabled={isPending}>
             {isPending ? 'Salvando...' : 'Salvar Jogadores'}
           </Button>
-        </div>
       </DialogContent>
     </Dialog>
   )

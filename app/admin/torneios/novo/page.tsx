@@ -13,7 +13,7 @@ export default function NewTournamentPage() {
         subtitle="Crie um novo Grand Slam com chaveamento de 128 jogadores"
       />
 
-      <main className="container mx-auto px-4 py-8 max-w-2xl">
+      <main className="container mx-auto px-4 py-8">
         <Button variant="outline" size="sm" asChild className="mb-6 bg-transparent">
           <Link href="/admin/torneios">
             <ArrowLeft className="w-4 h-4 mr-2" />

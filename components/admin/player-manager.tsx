@@ -230,7 +230,7 @@ function ImportPlayersForm({ onSuccess }: { onSuccess: () => void }) {
           name="players"
           rows={10}
           placeholder={`Cole a lista no formato:\n1. Carlos Alcaraz (ESP)\n2. Jannik Sinner (ITA)\n3. Novak Djokovic (SRB)\n...\n\nOu apenas nomes:\nCarlos Alcaraz\nJannik Sinner\nNovak Djokovic`}
-          className="font-mono text-xs"
+          className="font-mono text-xs max-h-50"
           required
         />
         <p className="text-xs text-slate-400">

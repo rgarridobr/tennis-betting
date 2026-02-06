@@ -41,7 +41,7 @@ export default async function DashboardPage() {
 
             {upcomingTournaments.length > 0 && (
               <section>
-                <h2 className="text-xl font-bold text-slate-900 mb-4">Proximos Torneios</h2>
+                <h2 className="text-xl font-bold text-slate-900 mb-4">Próximos Torneios</h2>
                 <div className="grid md:grid-cols-2 gap-4">
                   {upcomingTournaments.map(t => <TournamentCard key={t.id} tournament={t} />)}
                 </div>

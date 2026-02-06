@@ -18,7 +18,11 @@ import {
 function SubmitButton() {
   const { pending } = useFormStatus()
   return (
-    <Button type="submit" className="w-full" disabled={pending}>
+    <Button
+      type="submit"
+      className="w-full md:w-1/2 md:mx-auto flex justify-center"
+      disabled={pending}
+    >
       {pending ? 'Criando torneio e gerando chaveamento...' : 'Criar Torneio (128 jogadores)'}
     </Button>
   )
@@ -49,11 +53,11 @@ export function TournamentForm() {
         <Input id="name" name="name" placeholder="Ex: Australian Open 2026" required />
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-4 gap-4">
         <div className="space-y-2">
           <Label htmlFor="surface">Superfície</Label>
           <Select name="surface" required>
-            <SelectTrigger>
+            <SelectTrigger className='w-full'>
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
             <SelectContent>
@@ -67,10 +71,8 @@ export function TournamentForm() {
           <Label htmlFor="location">Local</Label>
           <Input id="location" name="location" placeholder="Ex: Melbourne, Austrália" required />
         </div>
-      </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="space-y-2">
+                <div className="space-y-2">
           <Label htmlFor="start_date">Data Início</Label>
           <Input id="start_date" name="start_date" type="date" required />
         </div>
