@@ -9,6 +9,7 @@ import {
   setMatchResult,
   createPlayer,
   deletePlayer,
+  updatePlayer,
   importPlayers,
   toggleUserAdmin,
 } from '@/lib/admin'
@@ -79,6 +80,20 @@ export async function createPlayerAction(formData: FormData) {
 export async function deletePlayerAction(id: number) {
   await requireAdmin()
   const result = await deletePlayer(id)
+  if (result.success) {
+    revalidatePath('/admin/torneios')
+  }
+  return result
+}
+
+export async function updatePlayerAction(id: number, formData: FormData) {
+  await requireAdmin()
+  const name = formData.get('name') as string
+  const country = (formData.get('country') as string) || null
+
+  if (!name) return { success: false, error: 'Nome obrigatorio' }
+
+  const result = await updatePlayer(id, name, country)
   if (result.success) {
     revalidatePath('/admin/torneios')
   }
