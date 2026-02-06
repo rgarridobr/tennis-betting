@@ -197,3 +197,31 @@ export async function getAllUsers() {
 export async function toggleUserAdmin(userId: number, isAdmin: boolean): Promise<void> {
   await sql`UPDATE users SET is_admin = ${isAdmin} WHERE id = ${userId}`
 }
+
+// ==================== METADATA MANAGEMENT ====================
+
+export async function createTournamentName(name: string): Promise<number> {
+  const result = await sql`INSERT INTO tournament_names (name) VALUES (${name}) RETURNING id`
+  return result[0].id as number
+}
+
+export async function updateTournamentName(id: number, name: string): Promise<void> {
+  await sql`UPDATE tournament_names SET name = ${name} WHERE id = ${id}`
+}
+
+export async function deleteTournamentName(id: number): Promise<void> {
+  await sql`DELETE FROM tournament_names WHERE id = ${id}`
+}
+
+export async function createTournamentLocation(name: string): Promise<number> {
+  const result = await sql`INSERT INTO tournament_locations (name) VALUES (${name}) RETURNING id`
+  return result[0].id as number
+}
+
+export async function updateTournamentLocation(id: number, name: string): Promise<void> {
+  await sql`UPDATE tournament_locations SET name = ${name} WHERE id = ${id}`
+}
+
+export async function deleteTournamentLocation(id: number): Promise<void> {
+  await sql`DELETE FROM tournament_locations WHERE id = ${id}`
+}

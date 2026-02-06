@@ -21,6 +21,11 @@ export interface Player {
   seed: number | null
 }
 
+export interface TournamentMetadata {
+  id: number
+  name: string
+}
+
 export interface BracketMatch {
   id: number
   tournament_id: number
@@ -143,6 +148,16 @@ export async function getPlayers(): Promise<Player[]> {
 export async function getPlayerById(id: number): Promise<Player | null> {
   const rows = await sql`SELECT * FROM players WHERE id = ${id}`
   return rows.length > 0 ? (rows[0] as Player) : null
+}
+
+export async function getTournamentNames(): Promise<TournamentMetadata[]> {
+  const rows = await sql`SELECT * FROM tournament_names ORDER BY name ASC`
+  return rows as TournamentMetadata[]
+}
+
+export async function getTournamentLocations(): Promise<TournamentMetadata[]> {
+  const rows = await sql`SELECT * FROM tournament_locations ORDER BY name ASC`
+  return rows as TournamentMetadata[]
 }
 
 // ==================== BRACKET MATCHES ====================
