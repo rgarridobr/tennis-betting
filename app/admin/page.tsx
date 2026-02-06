@@ -1,7 +1,11 @@
 import { getTournaments } from '@/lib/data'
 import { getAllUsers } from '@/lib/admin'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Trophy, Users, Calendar, TrendingUp } from 'lucide-react'
+import { PageHero } from '@/components/shared/page-hero'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+import { Trophy, Users, Calendar, TrendingUp, Plus, Settings, ChevronRight } from 'lucide-react'
 
 export default async function AdminDashboardPage() {
   const [tournaments, users] = await Promise.all([
@@ -9,35 +13,163 @@ export default async function AdminDashboardPage() {
     getAllUsers(),
   ])
 
-  const liveTournaments = tournaments.filter(t => t.status === 'active').length
+  const activeTournaments = tournaments.filter(t => t.status === 'active')
   const totalPredictions = users.reduce((sum, u) => sum + Number(u.total_predictions), 0)
 
-  const stats = [
-    { label: 'Torneios', value: tournaments.length, icon: Trophy },
-    { label: 'Ativos', value: liveTournaments, icon: Calendar },
-    { label: 'Usuários', value: users.length, icon: Users },
-    { label: 'Palpites', value: totalPredictions, icon: TrendingUp },
-  ]
-
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-foreground mb-6">Painel Admin</h1>
-      
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
-          <Card key={stat.label}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {stat.label}
-              </CardTitle>
-              <stat.icon className="w-4 h-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
+    <>
+      <PageHero
+        title="Painel Administrativo"
+        subtitle="Gerencie torneios, jogadores e participantes do bolao"
+      >
+        <div className="flex items-center gap-3">
+          <Card className="bg-white/10 border-0 backdrop-blur-sm">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/30 flex items-center justify-center">
+                <Trophy className="w-5 h-5 text-emerald-300" />
+              </div>
+              <div>
+                <p className="text-emerald-100 text-xs">Torneios</p>
+                <p className="text-xl font-bold text-white">{tournaments.length}</p>
+              </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
-    </div>
+          <Card className="bg-white/10 border-0 backdrop-blur-sm">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-500/30 flex items-center justify-center">
+                <Users className="w-5 h-5 text-amber-300" />
+              </div>
+              <div>
+                <p className="text-emerald-100 text-xs">Usuarios</p>
+                <p className="text-xl font-bold text-white">{users.length}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </PageHero>
+
+      <main className="container mx-auto px-4 py-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 -mt-2">
+          {[
+            { label: 'Total Torneios', value: tournaments.length, icon: Trophy, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+            { label: 'Ativos', value: activeTournaments.length, icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-50' },
+            { label: 'Usuarios', value: users.length, icon: Users, color: 'text-purple-600', bg: 'bg-purple-50' },
+            { label: 'Palpites', value: totalPredictions, icon: TrendingUp, color: 'text-amber-600', bg: 'bg-amber-50' },
+          ].map((stat) => (
+            <Card key={stat.label} className="border-0 shadow-md">
+              <CardContent className="p-5 flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-xl ${stat.bg} flex items-center justify-center`}>
+                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">{stat.label}</p>
+                  <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="mt-8 grid lg:grid-cols-3 gap-8">
+          {/* Torneios Recentes */}
+          <div className="lg:col-span-2">
+            <Card className="border-0 shadow-md overflow-hidden pt-0">
+              <div className="bg-slate-100 px-6 py-4 border-b flex items-center justify-between">
+                <h2 className="font-semibold text-slate-900 flex items-center gap-2">
+                  <Trophy className="w-4 h-4" />
+                  Torneios Recentes
+                </h2>
+                <Button variant="outline" size="sm" asChild className="bg-transparent">
+                  <Link href="/admin/torneios">Ver todos</Link>
+                </Button>
+              </div>
+              <CardContent className="p-0">
+                {tournaments.length === 0 ? (
+                  <div className="py-12 text-center">
+                    <Trophy className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                    <p className="text-slate-500 mb-4">Nenhum torneio cadastrado</p>
+                    <Button asChild>
+                      <Link href="/admin/torneios/novo">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Criar Torneio
+                      </Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-100">
+                    {tournaments.slice(0, 5).map((t) => {
+                      const statusConfig: Record<string, { label: string; class: string }> = {
+                        upcoming: { label: 'Em breve', class: 'bg-amber-100 text-amber-700' },
+                        active: { label: 'Ativo', class: 'bg-emerald-100 text-emerald-700' },
+                        completed: { label: 'Finalizado', class: 'bg-slate-100 text-slate-600' },
+                      }
+                      const status = statusConfig[t.status] || statusConfig.upcoming
+
+                      return (
+                        <Link
+                          key={t.id}
+                          href={`/admin/torneios/${t.id}`}
+                          className="flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
+                              <Trophy className="w-5 h-5 text-emerald-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-slate-900">{t.name}</p>
+                              <p className="text-xs text-slate-500">{t.location} - {t.surface}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Badge className={status.class}>{status.label}</Badge>
+                            <ChevronRight className="w-4 h-4 text-slate-400" />
+                          </div>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Usuarios Recentes */}
+          <div>
+            <Card className="border-0 shadow-md overflow-hidden pt-0">
+              <div className="bg-slate-100 px-6 py-4 border-b flex items-center justify-between">
+                <h2 className="font-semibold text-slate-900 flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Participantes
+                </h2>
+                <Button variant="outline" size="sm" asChild className="bg-transparent">
+                  <Link href="/admin/usuarios">Ver todos</Link>
+                </Button>
+              </div>
+              <CardContent className="p-0">
+                <div className="divide-y divide-slate-100">
+                  {users.slice(0, 8).map((u) => (
+                    <div key={u.id} className="flex items-center justify-between px-6 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-sm font-bold text-emerald-700">
+                          {u.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-slate-900">{u.name}</p>
+                          <p className="text-xs text-slate-500">{u.email}</p>
+                        </div>
+                      </div>
+                      {u.is_admin && (
+                        <Badge className="bg-emerald-100 text-emerald-700 text-xs">Admin</Badge>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </main>
+    </>
   )
 }
