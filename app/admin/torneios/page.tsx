@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Plus, Settings, Trophy, Zap, Calendar, ClipboardList, MapPin } from 'lucide-react';
 import { TournamentStatusSelect } from '@/components/admin/tournament-status-select';
+import { DeleteTournamentButton } from '@/components/admin/delete-tournament-button';
 
 export default async function AdminTournamentsPage() {
   const tournaments = await getTournaments();
@@ -162,11 +163,14 @@ export default async function AdminTournamentsPage() {
                                 {tournament.location}
                               </p>
                             </div>
-                            <Badge
-                              className={`${statusColors[tournament.status] || 'bg-slate-100 text-slate-600'} border-none font-black uppercase text-[10px] tracking-wider px-3 py-1 rounded-full`}
-                            >
-                              {statusLabels[tournament.status] || tournament.status}
-                            </Badge>
+                            <div className="flex flex-col items-end gap-2">
+                              <Badge className={`${statusColors[tournament.status] || 'bg-slate-100 text-slate-600'} border-none font-black uppercase text-[10px] tracking-wider px-3 py-1 rounded-full`}>
+                                {statusLabels[tournament.status] || tournament.status}
+                              </Badge>
+                              {(tournament.status === 'draft' || tournament.status === 'upcoming') && (
+                                <DeleteTournamentButton tournamentId={tournament.id} tournamentName={tournament.name} />
+                              )}
+                            </div>
                           </div>
 
                           <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-slate-500 mb-8">

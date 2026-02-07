@@ -39,6 +39,26 @@ export async function updateTournamentStatus(tournamentId: number, status: strin
   await sql`UPDATE tournaments SET status = ${status}, updated_at = NOW() WHERE id = ${tournamentId}`
 }
 
+export async function deleteTournament(tournamentId: number): Promise<{ success: boolean; error?: string }> {
+  const tournament = await sql`SELECT status FROM tournaments WHERE id = ${tournamentId}`
+  if (tournament.length === 0) return { success: false, error: 'Torneio não encontrado' }
+
+  const status = tournament[0].status
+  if (status !== 'draft' && status !== 'upcoming') {
+    return { success: false, error: 'Apenas torneios em rascunho ou em breve podem ser excluídos.' }
+  }
+
+  try {
+    // Due to foreign keys, we might need to delete in order if not ON DELETE CASCADE
+    // In this system, bracket_matches, user_tournaments, etc depend on tournament_id
+    await sql`DELETE FROM tournaments WHERE id = ${tournamentId}`
+    return { success: true }
+  } catch (error) {
+    console.error("Error deleting tournament:", error)
+    return { success: false, error: 'Erro ao excluir torneio. Verifique se existem dependências.' }
+  }
+}
+
 // ==================== BRACKET GENERATION ====================
 
 export async function generateBracket(tournamentId: number): Promise<void> {
