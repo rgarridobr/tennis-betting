@@ -185,54 +185,26 @@ function round1NeedsPlayers(match: BracketMatch): boolean {
   return match.round === 1 && (!match.player1_id || !match.player2_id)
 }
 
-function SetPlayersDialog({ match, players, tournamentId }: { match: BracketMatch; players: Player[]; tournamentId: number }) {
-  const [open, setOpen] = useState(false)
-  const [isPending, startTransition] = useTransition()
-  const [error, setError] = useState<string | null>(null)
-
-  const [p1Type, setP1Type] = useState(match.player1_type || 'PLAYER')
-  const [p1Id, setP1Id] = useState(match.player1_id?.toString() || '')
-  const [p1Seed, setP1Seed] = useState(match.player1_seed?.toString() || '')
-
-  const [p2Type, setP2Type] = useState(match.player2_type || 'PLAYER')
-  const [p2Id, setP2Id] = useState(match.player2_id?.toString() || '')
-  const [p2Seed, setP2Seed] = useState(match.player2_seed?.toString() || '')
-
-  function handleSubmit() {
-    setError(null)
-
-    const p1 = {
-      type: p1Type,
-      id: p1Type !== 'BYE' && p1Type !== 'QUALIFIER' && p1Type !== 'WILDCARD' ? parseInt(p1Id) : (p1Id ? parseInt(p1Id) : undefined),
-      seed: p1Type === 'SEED' ? parseInt(p1Seed) : null
-    }
-    const p2 = {
-      type: p2Type,
-      id: p2Type !== 'BYE' && p2Type !== 'QUALIFIER' && p2Type !== 'WILDCARD' ? parseInt(p2Id) : (p2Id ? parseInt(p2Id) : undefined),
-      seed: p2Type === 'SEED' ? parseInt(p2Seed) : null
-    }
-
-    if (p1.type === 'PLAYER' && !p1.id) return setError('Selecione o Jogador 1')
-    if (p2.type === 'PLAYER' && !p2.id) return setError('Selecione o Jogador 2')
-    if (p1.type === 'SEED' && (!p1.id || !p1.seed)) return setError('Defina o Seed e Jogador 1')
-    if (p2.type === 'SEED' && (!p2.id || !p2.seed)) return setError('Defina o Seed e Jogador 2')
-    if (p1.type === 'BYE' && p2.type === 'BYE') return setError('Bye nao pode enfrentar Bye')
-
-    startTransition(async () => {
-      await setMatchPlayersAction(match.id, p1 as any, p2 as any, tournamentId)
-      setOpen(false)
-    })
-  }
-
-  const SlotConfig = ({
-    label,
-    type,
-    setType,
-    playerId,
-    setPlayerId,
-    seed,
-    setSeed
-  }: any) => (
+function SlotConfig({
+  label,
+  type,
+  setType,
+  playerId,
+  setPlayerId,
+  seed,
+  setSeed,
+  players
+}: {
+  label: string
+  type: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE'
+  setType: (value: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE') => void
+  playerId: string
+  setPlayerId: (value: string) => void
+  seed: string
+  setSeed: (value: string) => void
+  players: Player[]
+}) {
+  return (
     <div className="space-y-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
       <Label className="text-xs font-black uppercase tracking-widest text-slate-400">{label}</Label>
       <Select value={type} onValueChange={setType}>
@@ -265,7 +237,6 @@ function SetPlayersDialog({ match, players, tournamentId }: { match: BracketMatc
           <Select value={playerId} onValueChange={setPlayerId}>
             <SelectTrigger className="font-bold rounded-xl border-2"><SelectValue placeholder="Selecione..." /></SelectTrigger>
             <SelectContent className="rounded-xl max-h-60">
-              <SelectItem value="">Vazio</SelectItem>
               {players.map(p => (
                 <SelectItem key={p.id} value={p.id.toString()}>{p.name}</SelectItem>
               ))}
@@ -275,6 +246,46 @@ function SetPlayersDialog({ match, players, tournamentId }: { match: BracketMatc
       )}
     </div>
   )
+}
+
+function SetPlayersDialog({ match, players, tournamentId }: { match: BracketMatch; players: Player[]; tournamentId: number }) {
+  const [open, setOpen] = useState(false)
+  const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
+
+  const [p1Type, setP1Type] = useState<'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE'>(match.player1_type as 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' || 'PLAYER')
+  const [p1Id, setP1Id] = useState(match.player1_id?.toString() || '')
+  const [p1Seed, setP1Seed] = useState(match.player1_seed?.toString() || '')
+
+  const [p2Type, setP2Type] = useState<'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE'>(match.player2_type as 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' || 'PLAYER')
+  const [p2Id, setP2Id] = useState(match.player2_id?.toString() || '')
+  const [p2Seed, setP2Seed] = useState(match.player2_seed?.toString() || '')
+
+  function handleSubmit() {
+    setError(null)
+
+    const p1 = {
+      type: p1Type,
+      id: p1Type !== 'BYE' && p1Type !== 'QUALIFIER' && p1Type !== 'WILDCARD' ? parseInt(p1Id) : (p1Id ? parseInt(p1Id) : undefined),
+      seed: p1Type === 'SEED' ? parseInt(p1Seed) : null
+    }
+    const p2 = {
+      type: p2Type,
+      id: p2Type !== 'BYE' && p2Type !== 'QUALIFIER' && p2Type !== 'WILDCARD' ? parseInt(p2Id) : (p2Id ? parseInt(p2Id) : undefined),
+      seed: p2Type === 'SEED' ? parseInt(p2Seed) : null
+    }
+
+    if (p1.type === 'PLAYER' && !p1.id) return setError('Selecione o Jogador 1')
+    if (p2.type === 'PLAYER' && !p2.id) return setError('Selecione o Jogador 2')
+    if (p1.type === 'SEED' && (!p1.id || !p1.seed)) return setError('Defina o Seed e Jogador 1')
+    if (p2.type === 'SEED' && (!p2.id || !p2.seed)) return setError('Defina o Seed e Jogador 2')
+    if (p1.type === 'BYE' && p2.type === 'BYE') return setError('Bye nao pode enfrentar Bye')
+
+    startTransition(async () => {
+      await setMatchPlayersAction(match.id, p1 as any, p2 as any, tournamentId)
+      setOpen(false)
+    })
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -292,18 +303,26 @@ function SetPlayersDialog({ match, players, tournamentId }: { match: BracketMatc
             <AlertCircle className="w-4 h-4" /> {error}
           </div>
         )}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 py-4">
           <SlotConfig
             label="Lado A"
-            type={p1Type} setType={setP1Type}
-            playerId={p1Id} setPlayerId={setP1Id}
-            seed={p1Seed} setSeed={setP1Seed}
+            type={p1Type}
+            setType={setP1Type}
+            playerId={p1Id}
+            setPlayerId={setP1Id}
+            seed={p1Seed}
+            setSeed={setP1Seed}
+            players={players}
           />
           <SlotConfig
             label="Lado B"
-            type={p2Type} setType={setP2Type}
-            playerId={p2Id} setPlayerId={setP2Id}
-            seed={p2Seed} setSeed={setP2Seed}
+            type={p2Type}
+            setType={setP2Type}
+            playerId={p2Id}
+            setPlayerId={setP2Id}
+            seed={p2Seed}
+            setSeed={setP2Seed}
+            players={players}
           />
         </div>
         <Button onClick={handleSubmit} disabled={isPending} className="w-full h-12 rounded-2xl font-black text-lg bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-100">
