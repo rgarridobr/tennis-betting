@@ -20,6 +20,7 @@ import {
   deleteTournamentLocation,
   publishTournament,
   updatePlaceholderPlayer,
+  deleteTournament,
 } from '@/lib/admin'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -81,6 +82,16 @@ export async function updateTournamentStatusAction(tournamentId: number, status:
   revalidatePath('/admin/torneios')
   revalidatePath('/torneios')
   revalidatePath('/dashboard')
+}
+
+export async function deleteTournamentAction(tournamentId: number) {
+  await requireAdmin()
+  const result = await deleteTournament(tournamentId)
+  if (result.success) {
+    revalidatePath('/admin/torneios')
+    revalidatePath('/dashboard')
+  }
+  return result
 }
 
 // ==================== PLAYERS ====================
