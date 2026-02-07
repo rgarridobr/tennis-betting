@@ -9,10 +9,27 @@ export async function createTournament(data: {
   location: string
   start_date: string
   end_date: string
+  category: string
+  category_custom?: string
+  format: string
+  sets_format: number
+  size: number
+  has_seeds: boolean
+  has_qualifiers: boolean
+  has_wildcards: boolean
+  has_byes: boolean
 }): Promise<number> {
   const result = await sql`
-    INSERT INTO tournaments (name, surface, location, start_date, end_date, status)
-    VALUES (${data.name}, ${data.surface}, ${data.location}, ${data.start_date}, ${data.end_date}, 'upcoming')
+    INSERT INTO tournaments (
+      name, surface, location, start_date, end_date, status,
+      category, category_custom, format, sets_format, size,
+      has_seeds, has_qualifiers, has_wildcards, has_byes
+    )
+    VALUES (
+      ${data.name}, ${data.surface}, ${data.location}, ${data.start_date}, ${data.end_date}, 'draft',
+      ${data.category}, ${data.category_custom || null}, ${data.format}, ${data.sets_format}, ${data.size},
+      ${data.has_seeds}, ${data.has_qualifiers}, ${data.has_wildcards}, ${data.has_byes}
+    )
     RETURNING id
   `
   return result[0].id as number
@@ -25,18 +42,21 @@ export async function updateTournamentStatus(tournamentId: number, status: strin
 // ==================== BRACKET GENERATION ====================
 
 export async function generateBracket(tournamentId: number): Promise<void> {
+  const tournament = await sql`SELECT size FROM tournaments WHERE id = ${tournamentId}`
+  if (tournament.length === 0) throw new Error('Torneio nao encontrado')
+
+  const size = tournament[0].size as number
+  const totalRounds = Math.log2(size)
+
   const existing = await sql`SELECT COUNT(*) as count FROM bracket_matches WHERE tournament_id = ${tournamentId}`
   if (Number(existing[0].count) > 0) {
     throw new Error('Chaveamento ja foi gerado para este torneio')
   }
 
-  // Total: 64 + 32 + 16 + 8 + 4 + 2 + 1 = 127 matches
-  // Build all values and insert per round to avoid timeout
-  for (let round = 1; round <= 7; round++) {
-    const matchCount = Math.pow(2, 7 - round) // 64, 32, 16, 8, 4, 2, 1
+  for (let round = 1; round <= totalRounds; round++) {
+    const matchCount = Math.pow(2, totalRounds - round)
     const values = Array.from({ length: matchCount }, (_, i) => i + 1)
     
-    // Insert all matches for this round in parallel
     await Promise.all(
       values.map(pos => 
         sql`INSERT INTO bracket_matches (tournament_id, round, position, status) VALUES (${tournamentId}, ${round}, ${pos}, 'pending')`
@@ -101,32 +121,96 @@ export async function importPlayers(players: Array<{ name: string; country: stri
 
 export async function setMatchPlayers(
   matchId: number,
-  player1Id: number,
-  player2Id: number
+  player1: { id?: number; type: string; seed?: number | null },
+  player2: { id?: number; type: string; seed?: number | null }
 ): Promise<void> {
   await sql`
     UPDATE bracket_matches 
-    SET player1_id = ${player1Id}, player2_id = ${player2Id}, status = 'scheduled', updated_at = NOW()
+    SET
+      player1_id = ${player1.id || null},
+      player1_type = ${player1.type},
+      player1_seed = ${player1.seed || null},
+      player2_id = ${player2.id || null},
+      player2_type = ${player2.type},
+      player2_seed = ${player2.seed || null},
+      status = 'pending',
+      updated_at = NOW()
     WHERE id = ${matchId}
   `
+}
+
+export function validateTennisScore(score: string, setsToWin: number): { valid: boolean; winner?: 1 | 2; error?: string } {
+  if (score.toUpperCase() === 'W/O' || score.toUpperCase() === 'WALKOVER') {
+    return { valid: true }
+  }
+
+  const sets = score.trim().split(/\s+/)
+  let player1Sets = 0
+  let player2Sets = 0
+
+  for (const set of sets) {
+    const games = set.split('-').map(Number)
+    if (games.length !== 2 || isNaN(games[0]) || isNaN(games[1])) {
+      return { valid: false, error: `Placar de set invalido: ${set}` }
+    }
+    const [g1, g2] = games
+    if (g1 < 0 || g2 < 0) return { valid: false, error: 'Games nao podem ser negativos' }
+
+    const isSetFinished = (g1 >= 6 || g2 >= 6) && Math.abs(g1 - g2) >= 2 || (g1 === 7 && g2 === 6) || (g1 === 6 && g2 === 7)
+
+    if (!isSetFinished) return { valid: false, error: `Set incompleto ou invalido: ${set}` }
+    if (g1 > 7 || g2 > 7) return { valid: false, error: `Placar impossivel: ${set}` }
+    if ((g1 === 7 && g2 < 5) || (g2 === 7 && g1 < 5)) return { valid: false, error: `Placar invalido: ${set}` }
+
+    if (g1 > g2) player1Sets++
+    else player2Sets++
+
+    if (player1Sets === setsToWin || player2Sets === setsToWin) {
+      if (sets.indexOf(set) !== sets.length - 1) {
+        return { valid: false, error: 'Sets extras apos o vencedor ser definido' }
+      }
+      return { valid: true, winner: player1Sets === setsToWin ? 1 : 2 }
+    }
+  }
+
+  return { valid: false, error: `Partida incompleta. Sao necessarios ${setsToWin} sets para vencer.` }
 }
 
 export async function setMatchResult(
   matchId: number,
   winnerId: number,
-  score: string
+  score: string,
+  options?: { isWalkover?: boolean }
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const match = await sql`
-      SELECT id, tournament_id, round, position, player1_id, player2_id
-      FROM bracket_matches WHERE id = ${matchId}
+    const matchData = await sql`
+      SELECT bm.*, t.sets_format, t.size
+      FROM bracket_matches bm
+      JOIN tournaments t ON bm.tournament_id = t.id
+      WHERE bm.id = ${matchId}
     `
-    if (match.length === 0) return { success: false, error: 'Partida nao encontrada' }
+    if (matchData.length === 0) return { success: false, error: 'Partida nao encontrada' }
 
-    const m = match[0]
+    const m = matchData[0]
     const round = m.round as number
     const position = m.position as number
     const tournamentId = m.tournament_id as number
+    const setsToWin = m.sets_format === 5 ? 3 : 2
+    const totalRounds = Math.log2(m.size as number)
+
+    if (!options?.isWalkover) {
+      const validation = validateTennisScore(score, setsToWin)
+      if (!validation.valid) return { success: false, error: validation.error }
+
+      // If validation returned a winner based on score, ensure it matches winnerId
+      if (validation.winner) {
+        const expectedWinnerId = validation.winner === 1 ? m.player1_id : m.player2_id
+        if (winnerId !== expectedWinnerId) {
+          return { success: false, error: 'O vencedor selecionado nao coincide com o placar dos sets' }
+        }
+      }
+    }
+
     const points = ROUND_POINTS[round] || 5
 
     // Update match result
@@ -144,39 +228,103 @@ export async function setMatchResult(
       WHERE bracket_match_id = ${matchId}
     `
 
-    // Advance winner to next round (if not Final)
-    if (round < 7) {
-      const nextRound = round + 1
-      const nextPosition = Math.ceil(position / 2)
-      const isPlayer1Slot = position % 2 === 1
-
-      // Find the next round match
-      const nextMatch = await sql`
-        SELECT id, player1_id, player2_id FROM bracket_matches
-        WHERE tournament_id = ${tournamentId} AND round = ${nextRound} AND position = ${nextPosition}
+    // Advance winner to next round
+    if (round < totalRounds) {
+      await advancePlayer(tournamentId, round, position, winnerId)
+    } else {
+      // Final round completed
+      const runnerUpId = m.player1_id === winnerId ? m.player2_id : m.player1_id
+      await sql`
+        UPDATE tournaments
+        SET status = 'finished', champion_id = ${winnerId}, runner_up_id = ${runnerUpId}, updated_at = NOW()
+        WHERE id = ${tournamentId}
       `
-
-      if (nextMatch.length > 0) {
-        const nextMatchId = nextMatch[0].id
-
-        if (isPlayer1Slot) {
-          await sql`UPDATE bracket_matches SET player1_id = ${winnerId}, updated_at = NOW() WHERE id = ${nextMatchId}`
-        } else {
-          await sql`UPDATE bracket_matches SET player2_id = ${winnerId}, updated_at = NOW() WHERE id = ${nextMatchId}`
-        }
-
-        // If both players are now set, mark as scheduled
-        const updated = await sql`SELECT player1_id, player2_id FROM bracket_matches WHERE id = ${nextMatchId}`
-        if (updated[0]?.player1_id && updated[0]?.player2_id) {
-          await sql`UPDATE bracket_matches SET status = 'scheduled', updated_at = NOW() WHERE id = ${nextMatchId}`
-        }
-      }
     }
 
     return { success: true }
   } catch (error) {
     console.error("Error setting match result:", error)
     return { success: false, error: 'Erro ao salvar resultado' }
+  }
+}
+
+async function advancePlayer(tournamentId: number, currentRound: number, currentPosition: number, winnerId: number) {
+  const nextRound = currentRound + 1
+  const nextPosition = Math.ceil(currentPosition / 2)
+  const isPlayer1Slot = currentPosition % 2 === 1
+
+  const nextMatch = await sql`
+    SELECT id, player1_id, player2_id, player1_type, player2_type
+    FROM bracket_matches
+    WHERE tournament_id = ${tournamentId} AND round = ${nextRound} AND position = ${nextPosition}
+  `
+
+  if (nextMatch.length > 0) {
+    const nextMatchId = nextMatch[0].id
+
+    if (isPlayer1Slot) {
+      await sql`UPDATE bracket_matches SET player1_id = ${winnerId}, player1_type = 'PLAYER', updated_at = NOW() WHERE id = ${nextMatchId}`
+    } else {
+      await sql`UPDATE bracket_matches SET player2_id = ${winnerId}, player2_type = 'PLAYER', updated_at = NOW() WHERE id = ${nextMatchId}`
+    }
+
+    // Check if the next match is now against a BYE
+    const updatedMatch = await sql`
+      SELECT * FROM bracket_matches WHERE id = ${nextMatchId}
+    `
+    const um = updatedMatch[0]
+
+    // Auto-resolve if opponent is BYE
+    if (um.player1_id && um.player2_type === 'BYE') {
+      await setMatchResult(nextMatchId, um.player1_id, 'BYE', { isWalkover: true })
+    } else if (um.player2_id && um.player1_type === 'BYE') {
+      await setMatchResult(nextMatchId, um.player2_id, 'BYE', { isWalkover: true })
+    } else if (um.player1_id && um.player2_id) {
+      await sql`UPDATE bracket_matches SET status = 'scheduled' WHERE id = ${nextMatchId}`
+    }
+  }
+}
+
+export async function publishTournament(tournamentId: number): Promise<void> {
+  const tournament = await sql`SELECT size FROM tournaments WHERE id = ${tournamentId}`
+  if (tournament.length === 0) throw new Error('Torneio nao encontrado')
+
+  // 1. Mark tournament as published
+  await sql`UPDATE tournaments SET status = 'published', updated_at = NOW() WHERE id = ${tournamentId}`
+
+  // 2. Resolve BYEs in the first round
+  const firstRoundMatches = await sql`
+    SELECT * FROM bracket_matches
+    WHERE tournament_id = ${tournamentId} AND round = 1
+  `
+
+  for (const match of firstRoundMatches) {
+    if (match.player1_type === 'BYE' && match.player2_id) {
+      await setMatchResult(match.id, match.player2_id, 'BYE', { isWalkover: true })
+    } else if (match.player2_type === 'BYE' && match.player1_id) {
+      await setMatchResult(match.id, match.player1_id, 'BYE', { isWalkover: true })
+    } else if (match.player1_id && match.player2_id) {
+      await sql`UPDATE bracket_matches SET status = 'scheduled' WHERE id = ${match.id}`
+    }
+  }
+}
+
+export async function updatePlaceholderPlayer(
+  matchId: number,
+  slot: 1 | 2,
+  playerId: number
+): Promise<void> {
+  if (slot === 1) {
+    await sql`UPDATE bracket_matches SET player1_id = ${playerId}, updated_at = NOW() WHERE id = ${matchId}`
+  } else {
+    await sql`UPDATE bracket_matches SET player2_id = ${playerId}, updated_at = NOW() WHERE id = ${matchId}`
+  }
+
+  // If both players are now set and it's not completed, mark as scheduled
+  const match = await sql`SELECT * FROM bracket_matches WHERE id = ${matchId}`
+  const m = match[0]
+  if (m.player1_id && m.player2_id && m.status !== 'completed') {
+    await sql`UPDATE bracket_matches SET status = 'scheduled' WHERE id = ${matchId}`
   }
 }
 

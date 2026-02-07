@@ -7,7 +7,7 @@ import { createTournamentAction } from '@/lib/actions/admin'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Trophy, MapPin, Layers, Calendar, ArrowRight, AlertCircle } from 'lucide-react'
+import { Trophy, MapPin, Layers, Calendar, ArrowRight, AlertCircle, Users, Hash } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -26,6 +26,7 @@ interface Props {
 export function TournamentForm({ names, locations }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
+  const [category, setCategory] = useState<string>('GRAND_SLAM')
   const router = useRouter()
 
   async function handleSubmit(formData: FormData) {
@@ -49,24 +50,53 @@ export function TournamentForm({ names, locations }: Props) {
         </div>
       )}
 
-      <div className="space-y-4">
-        <Label htmlFor="name" className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
-          <Trophy className="w-4 h-4 text-emerald-500" /> Nome do Torneio
-        </Label>
-        <div className="flex gap-3">
-          <div className="flex-1">
-            <Select name="name" required>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="space-y-4">
+          <Label htmlFor="name" className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
+            <Trophy className="w-4 h-4 text-emerald-500" /> Nome do Torneio
+          </Label>
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <Select name="name" required>
+                <SelectTrigger className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700">
+                  <SelectValue placeholder="Selecione o torneio" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl">
+                  {names.map(opt => (
+                    <SelectItem key={opt.id} value={opt.name} className="font-bold">{opt.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <MetadataManager type="name" title="Torneio" options={names} />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <Label htmlFor="category" className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
+            <Layers className="w-4 h-4 text-emerald-500" /> Categoria
+          </Label>
+          <div className="flex flex-col gap-3">
+            <Select name="category" required defaultValue="GRAND_SLAM" onValueChange={setCategory}>
               <SelectTrigger className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700">
-                <SelectValue placeholder="Selecione o torneio" />
+                <SelectValue placeholder="Selecione a categoria" />
               </SelectTrigger>
               <SelectContent className="rounded-2xl">
-                {names.map(opt => (
-                  <SelectItem key={opt.id} value={opt.name} className="font-bold">{opt.name}</SelectItem>
-                ))}
+                <SelectItem value="ATP_250" className="font-bold">ATP 250</SelectItem>
+                <SelectItem value="ATP_500" className="font-bold">ATP 500</SelectItem>
+                <SelectItem value="MASTERS_1000" className="font-bold">Masters 1000</SelectItem>
+                <SelectItem value="GRAND_SLAM" className="font-bold">Grand Slam</SelectItem>
+                <SelectItem value="CUSTOM" className="font-bold">Customizado</SelectItem>
               </SelectContent>
             </Select>
+            {category === 'CUSTOM' && (
+              <Input
+                name="category_custom"
+                placeholder="Ex: Torneio Regional"
+                className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700"
+              />
+            )}
           </div>
-          <MetadataManager type="name" title="Torneio" options={names} />
         </div>
       </div>
 
@@ -81,8 +111,8 @@ export function TournamentForm({ names, locations }: Props) {
             </SelectTrigger>
             <SelectContent className="rounded-2xl">
               <SelectItem value="Hard" className="font-bold">Hard Court</SelectItem>
-              <SelectItem value="Clay" className="font-bold">Saibro</SelectItem>
-              <SelectItem value="Grass" className="font-bold">Grama</SelectItem>
+              <SelectItem value="Saibro" className="font-bold">Saibro</SelectItem>
+              <SelectItem value="Grama" className="font-bold">Grama</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -135,10 +165,81 @@ export function TournamentForm({ names, locations }: Props) {
         </div>
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="space-y-4">
+          <Label htmlFor="format" className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
+            <Users className="w-4 h-4 text-emerald-500" /> Formato
+          </Label>
+          <Select name="format" required defaultValue="SIMPLES">
+            <SelectTrigger className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700">
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent className="rounded-2xl">
+              <SelectItem value="SIMPLES" className="font-bold">Simples</SelectItem>
+              <SelectItem value="DUPLAS" className="font-bold" disabled>Duplas (Em breve)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-4">
+          <Label htmlFor="sets_format" className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
+            <Hash className="w-4 h-4 text-emerald-500" /> Sets
+          </Label>
+          <Select name="sets_format" required defaultValue="3">
+            <SelectTrigger className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700">
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent className="rounded-2xl">
+              <SelectItem value="3" className="font-bold">Melhor de 3</SelectItem>
+              <SelectItem value="5" className="font-bold">Melhor de 5</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-4">
+          <Label htmlFor="size" className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
+            <Layers className="w-4 h-4 text-emerald-500" /> Tamanho da Chave
+          </Label>
+          <Select name="size" required defaultValue="128">
+            <SelectTrigger className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700">
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent className="rounded-2xl">
+              <SelectItem value="8" className="font-bold">8 jogadores (3 rodadas)</SelectItem>
+              <SelectItem value="16" className="font-bold">16 jogadores (4 rodadas)</SelectItem>
+              <SelectItem value="32" className="font-bold">32 jogadores (5 rodadas)</SelectItem>
+              <SelectItem value="64" className="font-bold">64 jogadores (6 rodadas)</SelectItem>
+              <SelectItem value="128" className="font-bold">128 jogadores (7 rodadas)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="p-8 bg-slate-50 rounded-[2rem] border-2 border-slate-100 space-y-6">
+        <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Recursos do Chaveamento</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="flex items-center gap-3">
+            <input type="checkbox" name="has_seeds" value="true" defaultChecked className="w-5 h-5 accent-emerald-600" />
+            <Label className="font-bold text-slate-700">Seeds</Label>
+          </div>
+          <div className="flex items-center gap-3">
+            <input type="checkbox" name="has_qualifiers" value="true" defaultChecked className="w-5 h-5 accent-emerald-600" />
+            <Label className="font-bold text-slate-700">Qualifiers</Label>
+          </div>
+          <div className="flex items-center gap-3">
+            <input type="checkbox" name="has_wildcards" value="true" defaultChecked className="w-5 h-5 accent-emerald-600" />
+            <Label className="font-bold text-slate-700">Wild Cards</Label>
+          </div>
+          <div className="flex items-center gap-3">
+            <input type="checkbox" name="has_byes" value="true" defaultChecked className="w-5 h-5 accent-emerald-600" />
+            <Label className="font-bold text-slate-700">Byes</Label>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-emerald-50/50 p-6 rounded-[2rem] border-2 border-dashed border-emerald-100">
         <p className="text-sm text-emerald-700 font-bold leading-relaxed">
-          Ao criar o torneio, o sistema gerará automaticamente o chaveamento completo de 128 jogadores (127 partidas no total).
-          Certifique-se de que as datas estão corretas antes de prosseguir.
+          O sistema gerará todas as rodadas e partidas vazias. Voce poderá definir manualmente cada confronto da 1a rodada na próxima etapa.
         </p>
       </div>
 

@@ -3,7 +3,7 @@
 import React from "react"
 import { useState, useTransition } from 'react'
 import type { BracketMatch, Player } from '@/lib/data'
-import { setMatchPlayersAction, setMatchResultAction } from '@/lib/actions/admin'
+import { setMatchPlayersAction, setMatchResultAction, updatePlaceholderPlayerAction } from '@/lib/actions/admin'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,9 +23,10 @@ interface Props {
   matches: BracketMatch[]
   players: Player[]
   tournamentId: number
+  tournamentStatus: string
 }
 
-export function BracketRoundManager({ round, roundName, matches, players, tournamentId }: Props) {
+export function BracketRoundManager({ round, roundName, matches, players, tournamentId, tournamentStatus }: Props) {
   const [expanded, setExpanded] = useState(round === 1)
   const completed = matches.filter(m => m.status === 'completed').length
   const scheduled = matches.filter(m => m.status === 'scheduled').length
@@ -57,7 +58,13 @@ export function BracketRoundManager({ round, roundName, matches, players, tourna
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {matches.map(match => (
-              <MatchCard key={match.id} match={match} players={players} tournamentId={tournamentId} />
+              <MatchCard
+                key={match.id}
+                match={match}
+                players={players}
+                tournamentId={tournamentId}
+                tournamentStatus={tournamentStatus}
+              />
             ))}
           </div>
         </CardContent>
@@ -66,64 +73,105 @@ export function BracketRoundManager({ round, roundName, matches, players, tourna
   )
 }
 
-function MatchCard({ match, players, tournamentId }: { match: BracketMatch; players: Player[]; tournamentId: number }) {
-  const hasPlayers = match.player1_id && match.player2_id
+function MatchCard({
+  match,
+  players,
+  tournamentId,
+  tournamentStatus
+}: {
+  match: BracketMatch;
+  players: Player[];
+  tournamentId: number;
+  tournamentStatus: string;
+}) {
+  const hasPlayers = (match.player1_id || match.player1_type !== 'PLAYER') &&
+                    (match.player2_id || match.player2_type !== 'PLAYER')
   const isCompleted = match.status === 'completed'
+  const isDraft = tournamentStatus === 'draft'
+
+  const getPlayerDisplay = (playerId: number | null, name: string | null, type: string, seedNum: number | null) => {
+    if (type === 'BYE') return <span className="text-slate-400 italic font-medium">BYE</span>
+    if (type === 'QUALIFIER') return <span className={name ? "text-slate-700" : "text-amber-600 italic font-bold"}>
+      {name ? `${name} (Q)` : "Qualifier (Q)"}
+    </span>
+    if (type === 'WILDCARD') return <span className={name ? "text-slate-700" : "text-blue-600 italic font-bold"}>
+      {name ? `${name} (WC)` : "Wild Card (WC)"}
+    </span>
+    if (type === 'SEED') return <span className={name ? "text-slate-700" : "text-emerald-600 italic font-bold"}>
+      {seedNum && <span className="text-xs mr-1">[{seedNum}]</span>}
+      {name || `Seed #${seedNum}`}
+    </span>
+    return name || <span className="text-slate-400 italic">A definir</span>
+  }
 
   return (
-    <div className={`p-3 rounded-lg border text-sm ${
-      isCompleted ? 'border-emerald-200 bg-emerald-50/50' :
-      hasPlayers ? 'border-blue-200 bg-blue-50/50' :
-      'border-slate-200 bg-slate-50/50'
+    <div className={`p-4 rounded-2xl border-2 transition-all ${
+      isCompleted ? 'border-emerald-100 bg-emerald-50/30' :
+      hasPlayers ? 'border-blue-100 bg-blue-50/30' :
+      'border-slate-100 bg-slate-50/30'
     }`}>
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs text-slate-500 font-medium">Jogo {match.position}</span>
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider">Jogo {match.position}</span>
         {isCompleted ? (
-          <Badge className="bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0">Finalizado</Badge>
-        ) : hasPlayers ? (
-          <Badge className="bg-blue-100 text-blue-700 text-[10px] px-1.5 py-0">Agendado</Badge>
+          <Badge className="bg-emerald-500 text-white text-[10px] font-black px-2 py-0 rounded-full">FINALIZADO</Badge>
+        ) : match.status === 'scheduled' ? (
+          <Badge className="bg-blue-500 text-white text-[10px] font-black px-2 py-0 rounded-full">AGENDADO</Badge>
         ) : (
-          <Badge className="bg-slate-100 text-slate-500 text-[10px] px-1.5 py-0">Pendente</Badge>
+          <Badge className="bg-slate-200 text-slate-500 text-[10px] font-black px-2 py-0 rounded-full">PENDENTE</Badge>
         )}
       </div>
 
-      {/* Player 1 */}
-      <div className={`flex items-center justify-between py-1 ${
-        isCompleted && match.winner_id === match.player1_id ? 'font-bold text-emerald-700' : 'text-slate-700'
-      }`}>
-        <span className="truncate">
-          {match.player1_seed && <span className="text-xs text-slate-400 mr-1">[{match.player1_seed}]</span>}
-          {match.player1_name || <span className="text-slate-400 italic">A definir</span>}
-        </span>
-        {isCompleted && match.winner_id === match.player1_id && <Trophy className="w-3 h-3 text-emerald-600 shrink-0" />}
-      </div>
+      <div className="space-y-2">
+        {/* Player 1 */}
+        <div className={`flex items-center justify-between p-2 rounded-xl ${
+          isCompleted && match.winner_id === match.player1_id ? 'bg-emerald-100/50 ring-1 ring-emerald-200' : ''
+        }`}>
+          <div className={`flex items-center gap-2 text-sm truncate ${
+            isCompleted && match.winner_id === match.player1_id ? 'font-black text-emerald-900' : 'font-bold text-slate-700'
+          }`}>
+            {getPlayerDisplay(match.player1_id, match.player1_name, match.player1_type, match.player1_seed)}
+          </div>
+          {isCompleted && match.winner_id === match.player1_id && <Trophy className="w-4 h-4 text-emerald-600 shrink-0" />}
+        </div>
 
-      <div className="border-t border-slate-200 my-0.5" />
-
-      {/* Player 2 */}
-      <div className={`flex items-center justify-between py-1 ${
-        isCompleted && match.winner_id === match.player2_id ? 'font-bold text-emerald-700' : 'text-slate-700'
-      }`}>
-        <span className="truncate">
-          {match.player2_seed && <span className="text-xs text-slate-400 mr-1">[{match.player2_seed}]</span>}
-          {match.player2_name || <span className="text-slate-400 italic">A definir</span>}
-        </span>
-        {isCompleted && match.winner_id === match.player2_id && <Trophy className="w-3 h-3 text-emerald-600 shrink-0" />}
+        {/* Player 2 */}
+        <div className={`flex items-center justify-between p-2 rounded-xl ${
+          isCompleted && match.winner_id === match.player2_id ? 'bg-emerald-100/50 ring-1 ring-emerald-200' : ''
+        }`}>
+          <div className={`flex items-center gap-2 text-sm truncate ${
+            isCompleted && match.winner_id === match.player2_id ? 'font-black text-emerald-900' : 'font-bold text-slate-700'
+          }`}>
+            {getPlayerDisplay(match.player2_id, match.player2_name, match.player2_type, match.player2_seed)}
+          </div>
+          {isCompleted && match.winner_id === match.player2_id && <Trophy className="w-4 h-4 text-emerald-600 shrink-0" />}
+        </div>
       </div>
 
       {/* Score */}
       {isCompleted && match.score && (
-        <p className="text-[10px] text-slate-500 mt-1 text-center">{match.score}</p>
+        <div className="mt-3 py-1 px-3 bg-white/50 rounded-lg border border-emerald-100 inline-block">
+          <p className="text-[11px] font-black text-emerald-700 tracking-widest">{match.score}</p>
+        </div>
       )}
 
       {/* Actions */}
       {!isCompleted && (
-        <div className="mt-2 flex gap-1">
-          {round1NeedsPlayers(match) && (
+        <div className="mt-4 flex gap-2">
+          {isDraft && match.round === 1 && (
             <SetPlayersDialog match={match} players={players} tournamentId={tournamentId} />
           )}
-          {hasPlayers && (
-            <SetResultDialog match={match} tournamentId={tournamentId} />
+          {!isDraft && (
+            <>
+              {(match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD') && !match.player1_id && (
+                <ReplacePlaceholderDialog match={match} slot={1} players={players} tournamentId={tournamentId} />
+              )}
+              {(match.player2_type === 'QUALIFIER' || match.player2_type === 'WILDCARD') && !match.player2_id && (
+                <ReplacePlaceholderDialog match={match} slot={2} players={players} tournamentId={tournamentId} />
+              )}
+              {match.player1_id && match.player2_id && (
+                <SetResultDialog match={match} tournamentId={tournamentId} />
+              )}
+            </>
           )}
         </div>
       )}
@@ -141,22 +189,152 @@ function SetPlayersDialog({ match, players, tournamentId }: { match: BracketMatc
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  const [player1Id, setPlayer1Id] = useState<string>(match.player1_id?.toString() || '')
-  const [player2Id, setPlayer2Id] = useState<string>(match.player2_id?.toString() || '')
+
+  const [p1Type, setP1Type] = useState(match.player1_type || 'PLAYER')
+  const [p1Id, setP1Id] = useState(match.player1_id?.toString() || '')
+  const [p1Seed, setP1Seed] = useState(match.player1_seed?.toString() || '')
+
+  const [p2Type, setP2Type] = useState(match.player2_type || 'PLAYER')
+  const [p2Id, setP2Id] = useState(match.player2_id?.toString() || '')
+  const [p2Seed, setP2Seed] = useState(match.player2_seed?.toString() || '')
 
   function handleSubmit() {
     setError(null)
-    if (!player1Id || !player2Id) {
-      setError('Selecione os dois jogadores')
-      return
+
+    const p1 = {
+      type: p1Type,
+      id: p1Type !== 'BYE' && p1Type !== 'QUALIFIER' && p1Type !== 'WILDCARD' ? parseInt(p1Id) : (p1Id ? parseInt(p1Id) : undefined),
+      seed: p1Type === 'SEED' ? parseInt(p1Seed) : null
     }
-    if (player1Id === player2Id) {
-      setError('Selecione jogadores diferentes')
-      return
+    const p2 = {
+      type: p2Type,
+      id: p2Type !== 'BYE' && p2Type !== 'QUALIFIER' && p2Type !== 'WILDCARD' ? parseInt(p2Id) : (p2Id ? parseInt(p2Id) : undefined),
+      seed: p2Type === 'SEED' ? parseInt(p2Seed) : null
     }
 
+    if (p1.type === 'PLAYER' && !p1.id) return setError('Selecione o Jogador 1')
+    if (p2.type === 'PLAYER' && !p2.id) return setError('Selecione o Jogador 2')
+    if (p1.type === 'SEED' && (!p1.id || !p1.seed)) return setError('Defina o Seed e Jogador 1')
+    if (p2.type === 'SEED' && (!p2.id || !p2.seed)) return setError('Defina o Seed e Jogador 2')
+    if (p1.type === 'BYE' && p2.type === 'BYE') return setError('Bye nao pode enfrentar Bye')
+
     startTransition(async () => {
-      await setMatchPlayersAction(match.id, parseInt(player1Id), parseInt(player2Id), tournamentId)
+      await setMatchPlayersAction(match.id, p1 as any, p2 as any, tournamentId)
+      setOpen(false)
+    })
+  }
+
+  const SlotConfig = ({
+    label,
+    type,
+    setType,
+    playerId,
+    setPlayerId,
+    seed,
+    setSeed
+  }: any) => (
+    <div className="space-y-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+      <Label className="text-xs font-black uppercase tracking-widest text-slate-400">{label}</Label>
+      <Select value={type} onValueChange={setType}>
+        <SelectTrigger className="font-bold rounded-xl border-2"><SelectValue /></SelectTrigger>
+        <SelectContent className="rounded-xl">
+          <SelectItem value="PLAYER" className="font-bold">Jogador Específico</SelectItem>
+          <SelectItem value="SEED" className="font-bold">Seed / Cabeça de Chave</SelectItem>
+          <SelectItem value="QUALIFIER" className="font-bold">Qualifier (Q)</SelectItem>
+          <SelectItem value="WILDCARD" className="font-bold">Wild Card (WC)</SelectItem>
+          <SelectItem value="BYE" className="font-bold">BYE</SelectItem>
+        </SelectContent>
+      </Select>
+
+      {type === 'SEED' && (
+        <div className="space-y-2">
+          <Label className="text-[10px] font-bold">Número do Seed</Label>
+          <Input
+            type="number"
+            value={seed}
+            onChange={(e) => setSeed(e.target.value)}
+            placeholder="Ex: 1"
+            className="rounded-xl border-2 font-bold"
+          />
+        </div>
+      )}
+
+      {(type === 'PLAYER' || type === 'SEED' || type === 'QUALIFIER' || type === 'WILDCARD') && (
+        <div className="space-y-2">
+          <Label className="text-[10px] font-bold">{type === 'QUALIFIER' || type === 'WILDCARD' ? 'Jogador (Opcional)' : 'Selecionar Jogador'}</Label>
+          <Select value={playerId} onValueChange={setPlayerId}>
+            <SelectTrigger className="font-bold rounded-xl border-2"><SelectValue placeholder="Selecione..." /></SelectTrigger>
+            <SelectContent className="rounded-xl max-h-60">
+              <SelectItem value="">Vazio</SelectItem>
+              {players.map(p => (
+                <SelectItem key={p.id} value={p.id.toString()}>{p.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+    </div>
+  )
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider border-2">
+          <Pencil className="w-3 h-3 mr-1.5" /> Definir Confronto
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl rounded-[2rem]">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-black">Configurar Jogo {match.position}</DialogTitle>
+        </DialogHeader>
+        {error && (
+          <div className="p-3 bg-red-50 text-red-700 rounded-xl text-xs font-bold border-2 border-red-100 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4" /> {error}
+          </div>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+          <SlotConfig
+            label="Lado A"
+            type={p1Type} setType={setP1Type}
+            playerId={p1Id} setPlayerId={setP1Id}
+            seed={p1Seed} setSeed={setP1Seed}
+          />
+          <SlotConfig
+            label="Lado B"
+            type={p2Type} setType={setP2Type}
+            playerId={p2Id} setPlayerId={setP2Id}
+            seed={p2Seed} setSeed={setP2Seed}
+          />
+        </div>
+        <Button onClick={handleSubmit} disabled={isPending} className="w-full h-12 rounded-2xl font-black text-lg bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-100">
+          {isPending ? 'Salvando...' : 'Confirmar Confronto'}
+        </Button>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function ReplacePlaceholderDialog({
+  match,
+  slot,
+  players,
+  tournamentId
+}: {
+  match: BracketMatch;
+  slot: 1 | 2;
+  players: Player[];
+  tournamentId: number
+}) {
+  const [open, setOpen] = useState(false)
+  const [isPending, startTransition] = useTransition()
+  const [playerId, setPlayerId] = useState<string>('')
+  const type = slot === 1 ? match.player1_type : match.player2_type
+
+  function handleSubmit() {
+    if (!playerId) return
+
+    startTransition(async () => {
+      await updatePlaceholderPlayerAction(match.id, slot, parseInt(playerId), tournamentId)
       setOpen(false)
     })
   }
@@ -164,54 +342,30 @@ function SetPlayersDialog({ match, players, tournamentId }: { match: BracketMatc
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="flex-1 text-xs h-7 bg-transparent">
-          <Pencil className="w-3 h-3 mr-1" /> Jogadores
+        <Button variant="outline" size="sm" className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider border-2 border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100">
+          Definir {type === 'QUALIFIER' ? 'Q' : 'WC'}
         </Button>
       </DialogTrigger>
-      <DialogContent>
-        <DialogHeader className="mb-4">
-          <DialogTitle>Definir Jogadores - Jogo {match.position}</DialogTitle>
+      <DialogContent className="rounded-[2rem]">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-black">Definir Jogador ({type})</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 gap-4 md:grid md:grid-cols-2">
-          {error && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
-              <AlertCircle className="w-4 h-4" />{error}
-            </div>
-          )}
-          <div className="space-y-2">
-            <Label>Jogador 1</Label>
-            <Select value={player1Id} onValueChange={setPlayer1Id}>
-              <SelectTrigger className="w-full"><SelectValue placeholder="Selecione o jogador" /></SelectTrigger>
-              <SelectContent className="max-h-60">
-                {players
-                  .filter(p => !player2Id || p.id.toString() !== player2Id)
-                  .map(p => (
-                    <SelectItem key={p.id} value={p.id.toString()}>
-                      {p.seed ? `[${p.seed}] ` : ''}{p.name}{p.country ? ` (${p.country})` : ''}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Jogador 2</Label>
-            <Select value={player2Id} onValueChange={setPlayer2Id}>
-              <SelectTrigger className="w-full"><SelectValue placeholder="Selecione o jogador" /></SelectTrigger>
-              <SelectContent className="max-h-60">
-                {players
-                  .filter(p => !player1Id || p.id.toString() !== player1Id)
-                  .map(p => (
-                    <SelectItem key={p.id} value={p.id.toString()}>
-                      {p.seed ? `[${p.seed}] ` : ''}{p.name}{p.country ? ` (${p.country})` : ''}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="py-4 space-y-4">
+          <p className="text-sm font-bold text-slate-500">
+            Associe um jogador real ao slot de {type === 'QUALIFIER' ? 'Qualifier' : 'Wild Card'}.
+          </p>
+          <Select value={playerId} onValueChange={setPlayerId}>
+            <SelectTrigger className="h-12 rounded-xl border-2 font-bold"><SelectValue placeholder="Selecione o jogador" /></SelectTrigger>
+            <SelectContent className="rounded-xl max-h-60">
+              {players.map(p => (
+                <SelectItem key={p.id} value={p.id.toString()}>{p.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-          <Button onClick={handleSubmit} className="w-full" disabled={isPending}>
-            {isPending ? 'Salvando...' : 'Salvar Jogadores'}
-          </Button>
+        <Button onClick={handleSubmit} disabled={isPending || !playerId} className="w-full h-12 rounded-2xl font-black text-lg bg-emerald-600 hover:bg-emerald-700">
+          {isPending ? 'Salvando...' : 'Confirmar Jogador'}
+        </Button>
       </DialogContent>
     </Dialog>
   )
@@ -250,68 +404,92 @@ function SetResultDialog({ match, tournamentId }: { match: BracketMatch; tournam
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="default" size="sm" className="flex-1 text-xs h-7">
-          <Trophy className="w-3 h-3 mr-1" /> Resultado
+        <Button variant="default" size="sm" className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-100">
+          <Trophy className="w-3 h-3 mr-1.5" /> Resultado
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="rounded-[2rem] max-w-lg">
         <DialogHeader>
-          <DialogTitle>Registrar Resultado</DialogTitle>
+          <DialogTitle className="text-2xl font-black">Registrar Resultado</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <p className="text-sm text-slate-600 font-medium text-center">
-            {match.player1_name} vs {match.player2_name}
-          </p>
+        <form onSubmit={handleSubmit} className="space-y-6 pt-4">
+          <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+            <div className="text-center flex-1">
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Jogador A</p>
+              <p className="font-bold text-slate-700">{match.player1_name}</p>
+            </div>
+            <div className="px-4 text-slate-300 font-black italic text-xl">VS</div>
+            <div className="text-center flex-1">
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Jogador B</p>
+              <p className="font-bold text-slate-700">{match.player2_name}</p>
+            </div>
+          </div>
 
           {error && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+            <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-xl text-xs font-bold border-2 border-red-100">
               <AlertCircle className="w-4 h-4" />{error}
             </div>
           )}
           {success && (
-            <div className="flex items-center gap-2 p-3 bg-emerald-50 text-emerald-700 rounded-lg text-sm">
-              <CheckCircle2 className="w-4 h-4" />Resultado salvo! Vencedor avancado.
+            <div className="flex items-center gap-2 p-3 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-bold border-2 border-emerald-100">
+              <CheckCircle2 className="w-4 h-4" />Resultado salvo! Vencedor avançado.
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label>Vencedor</Label>
-            <div className="grid grid-cols-2 gap-2">
-              <label className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors ${
-                winnerId === match.player1_id?.toString() ? 'bg-emerald-50 border-emerald-300' : ''
+          <div className="space-y-3">
+            <Label className="text-xs font-black uppercase tracking-widest text-slate-500">Selecione o Vencedor</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <label className={`flex flex-col items-center gap-2 p-4 border-2 rounded-2xl cursor-pointer transition-all ${
+                winnerId === match.player1_id?.toString() ? 'bg-emerald-50 border-emerald-500 ring-4 ring-emerald-50' : 'border-slate-100 hover:bg-slate-50'
               }`}>
                 <input
                   type="radio"
                   name="winner_radio"
                   checked={winnerId === match.player1_id?.toString()}
                   onChange={() => setWinnerId(match.player1_id?.toString() || '')}
-                  className="accent-emerald-600"
+                  className="hidden"
                 />
-                <span className="text-sm truncate">{match.player1_name}</span>
+                <span className="text-sm font-black text-center">{match.player1_name}</span>
+                {winnerId === match.player1_id?.toString() && <Badge className="bg-emerald-500">VENCEDOR</Badge>}
               </label>
-              <label className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors ${
-                winnerId === match.player2_id?.toString() ? 'bg-emerald-50 border-emerald-300' : ''
+              <label className={`flex flex-col items-center gap-2 p-4 border-2 rounded-2xl cursor-pointer transition-all ${
+                winnerId === match.player2_id?.toString() ? 'bg-emerald-50 border-emerald-500 ring-4 ring-emerald-50' : 'border-slate-100 hover:bg-slate-50'
               }`}>
                 <input
                   type="radio"
                   name="winner_radio"
                   checked={winnerId === match.player2_id?.toString()}
                   onChange={() => setWinnerId(match.player2_id?.toString() || '')}
-                  className="accent-emerald-600"
+                  className="hidden"
                 />
-                <span className="text-sm truncate">{match.player2_name}</span>
+                <span className="text-sm font-black text-center">{match.player2_name}</span>
+                {winnerId === match.player2_id?.toString() && <Badge className="bg-emerald-500">VENCEDOR</Badge>}
               </label>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Placar</Label>
-            <Input name="score" placeholder="Ex: 6-4 6-3 7-5" required />
-            <p className="text-xs text-slate-400">Sets separados por espaco (ex: 6-4 3-6 7-6)</p>
+          <div className="space-y-3">
+            <Label className="text-xs font-black uppercase tracking-widest text-slate-500">Placar Final</Label>
+            <Input
+              name="score"
+              placeholder="Ex: 6-4 6-3 7-5"
+              required
+              className="h-14 rounded-2xl border-2 border-slate-100 focus:border-emerald-500 text-lg font-black tracking-widest"
+            />
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => {
+                const input = document.querySelector('input[name="score"]') as HTMLInputElement;
+                if (input) input.value = 'W/O';
+              }} className="text-[10px] h-7 rounded-lg font-bold">W/O</Button>
+              <p className="text-[10px] text-slate-400 font-bold ml-auto flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                Sets separados por espaço (6-4 3-6 7-6)
+              </p>
+            </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isPending || success}>
-            {isPending ? 'Salvando...' : success ? 'Salvo!' : 'Confirmar Resultado'}
+          <Button type="submit" className="w-full h-14 rounded-2xl font-black text-lg bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-100" disabled={isPending || success}>
+            {isPending ? 'Salvando...' : success ? 'Sucesso!' : 'Confirmar Resultado'}
           </Button>
         </form>
       </DialogContent>
