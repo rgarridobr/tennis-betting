@@ -18,6 +18,8 @@ import {
   createTournamentLocation,
   updateTournamentLocation,
   deleteTournamentLocation,
+  publishTournament,
+  updatePlaceholderPlayer,
 } from '@/lib/admin'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -40,13 +42,27 @@ export async function createTournamentAction(formData: FormData) {
   const location = formData.get('location') as string
   const start_date = formData.get('start_date') as string
   const end_date = formData.get('end_date') as string
+  const category = formData.get('category') as string
+  const category_custom = formData.get('category_custom') as string
+  const format = formData.get('format') as string
+  const sets_format = parseInt(formData.get('sets_format') as string, 10)
+  const size = parseInt(formData.get('size') as string, 10)
 
-  if (!name || !surface || !location || !start_date || !end_date) {
+  const has_seeds = formData.get('has_seeds') === 'true'
+  const has_qualifiers = formData.get('has_qualifiers') === 'true'
+  const has_wildcards = formData.get('has_wildcards') === 'true'
+  const has_byes = formData.get('has_byes') === 'true'
+
+  if (!name || !surface || !location || !start_date || !end_date || !category || !format || isNaN(sets_format) || isNaN(size)) {
     return { success: false, error: 'Todos os campos sao obrigatorios' }
   }
 
   try {
-    const tournamentId = await createTournament({ name, surface, location, start_date, end_date })
+    const tournamentId = await createTournament({
+      name, surface, location, start_date, end_date,
+      category, category_custom, format, sets_format, size,
+      has_seeds, has_qualifiers, has_wildcards, has_byes
+    })
     await generateBracket(tournamentId)
 
     revalidatePath('/admin/torneios')
@@ -136,12 +152,39 @@ export async function importPlayersAction(playersText: string) {
 
 export async function setMatchPlayersAction(
   matchId: number,
-  player1Id: number,
-  player2Id: number,
+  player1: { id?: number; type: string; seed?: number | null },
+  player2: { id?: number; type: string; seed?: number | null },
   tournamentId: number
 ) {
   await requireAdmin()
-  await setMatchPlayers(matchId, player1Id, player2Id)
+  await setMatchPlayers(matchId, player1, player2)
+  revalidatePath(`/admin/torneios/${tournamentId}`)
+  revalidatePath(`/torneio/${tournamentId}`)
+  return { success: true }
+}
+
+export async function publishTournamentAction(tournamentId: number) {
+  await requireAdmin()
+  try {
+    await publishTournament(tournamentId)
+    revalidatePath(`/admin/torneios/${tournamentId}`)
+    revalidatePath(`/torneio/${tournamentId}`)
+    revalidatePath('/dashboard')
+    return { success: true }
+  } catch (error) {
+    console.error("Error publishing tournament:", error)
+    return { success: false, error: 'Erro ao publicar torneio' }
+  }
+}
+
+export async function updatePlaceholderPlayerAction(
+  matchId: number,
+  slot: 1 | 2,
+  playerId: number,
+  tournamentId: number
+) {
+  await requireAdmin()
+  await updatePlaceholderPlayer(matchId, slot, playerId)
   revalidatePath(`/admin/torneios/${tournamentId}`)
   revalidatePath(`/torneio/${tournamentId}`)
   return { success: true }

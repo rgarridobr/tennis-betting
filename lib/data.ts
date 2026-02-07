@@ -12,6 +12,17 @@ export interface Tournament {
   image_url: string | null
   status: string
   created_at: string
+  category: string
+  category_custom: string | null
+  format: string
+  sets_format: number
+  size: number
+  has_seeds: boolean
+  has_qualifiers: boolean
+  has_wildcards: boolean
+  has_byes: boolean
+  champion_id: number | null
+  runner_up_id: number | null
 }
 
 export interface Player {
@@ -37,13 +48,17 @@ export interface BracketMatch {
   score: string | null
   match_date: string | null
   status: string
+  player1_type: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE'
+  player2_type: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE'
+  player1_seed: number | null
+  player2_seed: number | null
   // Joined player names
   player1_name: string | null
   player1_country: string | null
-  player1_seed: number | null
+  player1_seed_val: number | null // Renamed from player1_seed to avoid conflict with bracket_matches.player1_seed
   player2_name: string | null
   player2_country: string | null
-  player2_seed: number | null
+  player2_seed_val: number | null
   winner_name: string | null
 }
 
@@ -166,8 +181,8 @@ export async function getBracketMatches(tournamentId: number): Promise<BracketMa
   const rows = await sql`
     SELECT 
       bm.*,
-      p1.name as player1_name, p1.country as player1_country, p1.seed as player1_seed,
-      p2.name as player2_name, p2.country as player2_country, p2.seed as player2_seed,
+      p1.name as player1_name, p1.country as player1_country, p1.seed as player1_seed_val,
+      p2.name as player2_name, p2.country as player2_country, p2.seed as player2_seed_val,
       w.name as winner_name
     FROM bracket_matches bm
     LEFT JOIN players p1 ON bm.player1_id = p1.id
@@ -183,8 +198,8 @@ export async function getBracketMatchesByRound(tournamentId: number, round: numb
   const rows = await sql`
     SELECT 
       bm.*,
-      p1.name as player1_name, p1.country as player1_country, p1.seed as player1_seed,
-      p2.name as player2_name, p2.country as player2_country, p2.seed as player2_seed,
+      p1.name as player1_name, p1.country as player1_country, p1.seed as player1_seed_val,
+      p2.name as player2_name, p2.country as player2_country, p2.seed as player2_seed_val,
       w.name as winner_name
     FROM bracket_matches bm
     LEFT JOIN players p1 ON bm.player1_id = p1.id

@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge'
 import { BracketRoundManager } from '@/components/admin/bracket-round-manager'
 import { PlayerManager } from '@/components/admin/player-manager'
 import { TournamentStatusSelect } from '@/components/admin/tournament-status-select'
-import { Trophy, Clock, Hash, MapPin, Users, ArrowLeft } from 'lucide-react'
+import { PublishBracketButton } from '@/components/admin/publish-bracket-button'
+import { Trophy, Clock, Hash, MapPin, Users, ArrowLeft, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
@@ -42,6 +43,9 @@ export default async function ManageTournamentPage({ params }: Props) {
   }
 
   const statusLabels: Record<string, string> = {
+    draft: 'Rascunho',
+    published: 'Publicado',
+    finished: 'Finalizado',
     upcoming: 'Em breve',
     active: 'Ativo',
     completed: 'Finalizado',
@@ -49,6 +53,8 @@ export default async function ManageTournamentPage({ params }: Props) {
 
   const surfaceLabels: Record<string, string> = {
     Hard: 'Quadra Dura',
+    Saibro: 'Saibro',
+    Grama: 'Grama',
     Clay: 'Saibro',
     Grass: 'Grama',
   }
@@ -168,9 +174,34 @@ export default async function ManageTournamentPage({ params }: Props) {
           <PlayerManager players={players} />
         </div>
 
+        {/* Alerta de Rascunho */}
+        {tournament.status === 'draft' && (
+          <div className="mb-8 p-6 bg-amber-50 border-2 border-amber-200 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4 text-amber-800">
+              <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-black text-lg">Modo Rascunho</h3>
+                <p className="text-sm font-bold opacity-80">
+                  O chaveamento está sendo definido. Publique para permitir resultados e palpites.
+                </p>
+              </div>
+            </div>
+            <PublishBracketButton tournamentId={tournamentId} />
+          </div>
+        )}
+
         {/* Rodadas do Chaveamento */}
         <div className="space-y-6">
-          <h2 className="text-xl font-bold text-slate-900">Chaveamento</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Chaveamento</h2>
+            {tournament.status !== 'draft' && (
+              <Badge className="bg-emerald-500 text-white font-black px-4 py-1.5 rounded-full">
+                CHAVE FIXA
+              </Badge>
+            )}
+          </div>
           {[1, 2, 3, 4, 5, 6, 7].map(round => {
             const roundMatches = matchesByRound[round] || []
             if (roundMatches.length === 0) return null
@@ -183,6 +214,7 @@ export default async function ManageTournamentPage({ params }: Props) {
                 matches={roundMatches}
                 players={players}
                 tournamentId={tournamentId}
+                tournamentStatus={tournament.status}
               />
             )
           })}
