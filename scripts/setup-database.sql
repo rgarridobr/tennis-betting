@@ -27,33 +27,49 @@ CREATE TABLE IF NOT EXISTS tournaments (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Players table
+CREATE TABLE IF NOT EXISTS players (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  country VARCHAR(100),
+  seed INTEGER,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_players_name ON players(name);
+
 -- Matches table
-CREATE TABLE IF NOT EXISTS matches (
+-- Bracket matches table
+CREATE TABLE IF NOT EXISTS bracket_matches (
   id SERIAL PRIMARY KEY,
   tournament_id INTEGER REFERENCES tournaments(id) ON DELETE CASCADE,
-  round VARCHAR(100) NOT NULL, -- Final, Semifinal, Quartas, Oitavas, etc.
-  player1_name VARCHAR(255) NOT NULL,
-  player1_country VARCHAR(100),
-  player2_name VARCHAR(255) NOT NULL,
-  player2_country VARCHAR(100),
-  match_date TIMESTAMP NOT NULL,
-  winner VARCHAR(255), -- player1_name or player2_name after match completes
-  score VARCHAR(100), -- e.g., "6-4, 7-5, 6-3"
-  status VARCHAR(50) DEFAULT 'scheduled', -- scheduled, live, completed
+  round INTEGER NOT NULL,
+  position INTEGER NOT NULL,
+  player1_id INTEGER REFERENCES players(id),
+  player2_id INTEGER REFERENCES players(id),
+  winner_id INTEGER REFERENCES players(id),
+  score VARCHAR(200),
+  match_date TIMESTAMP,
+  status VARCHAR(50) DEFAULT 'pending',
+  player1_type VARCHAR(20) DEFAULT 'PLAYER',
+  player2_type VARCHAR(20) DEFAULT 'PLAYER',
+  player1_seed INTEGER,
+  player2_seed INTEGER,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(tournament_id, round, position)
 );
 
 -- User predictions (palpites)
 CREATE TABLE IF NOT EXISTS predictions (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-  match_id INTEGER REFERENCES matches(id) ON DELETE CASCADE,
-  predicted_winner VARCHAR(255) NOT NULL,
+  bracket_match_id INTEGER REFERENCES bracket_matches(id) ON DELETE CASCADE,
+  predicted_winner_id INTEGER REFERENCES players(id) NOT NULL,
   is_correct BOOLEAN, -- null until match completes
   points_earned INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(user_id, match_id)
+  UNIQUE(user_id, bracket_match_id)
 );
 
 -- User tournament participation
@@ -89,10 +105,10 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 
 -- Create indexes for better query performance
-CREATE INDEX IF NOT EXISTS idx_matches_tournament ON matches(tournament_id);
-CREATE INDEX IF NOT EXISTS idx_matches_status ON matches(status);
+CREATE INDEX IF NOT EXISTS idx_bracket_matches_tournament ON bracket_matches(tournament_id);
+CREATE INDEX IF NOT EXISTS idx_bracket_matches_round ON bracket_matches(tournament_id, round);
 CREATE INDEX IF NOT EXISTS idx_predictions_user ON predictions(user_id);
-CREATE INDEX IF NOT EXISTS idx_predictions_match ON predictions(match_id);
+CREATE INDEX IF NOT EXISTS idx_predictions_match ON predictions(bracket_match_id);
 CREATE INDEX IF NOT EXISTS idx_user_tournaments_user ON user_tournaments(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_tournaments_tournament ON user_tournaments(tournament_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
@@ -105,10 +121,5 @@ INSERT INTO tournaments (name, slug, surface, location, start_date, end_date, st
 ('US Open 2025', 'us-open-2025', 'Quadra dura', 'Nova York, EUA', '2025-08-24', '2025-09-06', 'upcoming', 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800')
 ON CONFLICT (slug) DO NOTHING;
 
--- Insert sample matches for Roland Garros
-INSERT INTO matches (tournament_id, round, player1_name, player1_country, player2_name, player2_country, match_date, status) VALUES
-((SELECT id FROM tournaments WHERE slug = 'roland-garros-2025'), 'Oitavas de Final', 'Carlos Alcaraz', 'Espanha', 'Stefanos Tsitsipas', 'Grécia', '2025-06-01 14:00:00', 'scheduled'),
-((SELECT id FROM tournaments WHERE slug = 'roland-garros-2025'), 'Oitavas de Final', 'Jannik Sinner', 'Itália', 'Daniil Medvedev', 'Rússia', '2025-06-01 16:00:00', 'scheduled'),
-((SELECT id FROM tournaments WHERE slug = 'roland-garros-2025'), 'Oitavas de Final', 'Novak Djokovic', 'Sérvia', 'Alexander Zverev', 'Alemanha', '2025-06-02 14:00:00', 'scheduled'),
-((SELECT id FROM tournaments WHERE slug = 'roland-garros-2025'), 'Oitavas de Final', 'Rafael Nadal', 'Espanha', 'Casper Ruud', 'Noruega', '2025-06-02 16:00:00', 'scheduled')
-ON CONFLICT DO NOTHING;
+-- Note: Sample matches are now typically generated via the admin interface
+-- or script-based bracket generation.
