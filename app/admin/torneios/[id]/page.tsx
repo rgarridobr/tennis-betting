@@ -175,7 +175,7 @@ export default async function ManageTournamentPage({ params }: Props) {
         </div>
 
         {/* Alerta de Rascunho */}
-        {tournament.status === 'draft' && (
+        {(tournament.status === 'draft' || tournament.status === 'upcoming') && (
           <div className="mb-8 p-6 bg-amber-50 border-2 border-amber-200 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4 text-amber-800">
               <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
@@ -184,7 +184,7 @@ export default async function ManageTournamentPage({ params }: Props) {
               <div>
                 <h3 className="font-black text-lg">Modo Rascunho</h3>
                 <p className="text-sm font-bold opacity-80">
-                  O chaveamento está sendo definido. Publique para permitir resultados e palpites.
+                  O chaveamento está sendo definido. Use os botões <b>"Definir Confronto"</b> na 1ª Rodada abaixo para cadastrar os jogadores. Publique para permitir resultados.
                 </p>
               </div>
             </div>

@@ -37,6 +37,8 @@ export function TournamentStatusSelect({
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
+        <SelectItem value="draft">Rascunho</SelectItem>
+        <SelectItem value="published">Publicado</SelectItem>
         <SelectItem value="upcoming">Em breve</SelectItem>
         <SelectItem value="active">Ativo</SelectItem>
         <SelectItem value="completed">Finalizado</SelectItem>

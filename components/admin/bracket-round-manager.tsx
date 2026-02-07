@@ -87,7 +87,7 @@ function MatchCard({
   const hasPlayers = (match.player1_id || match.player1_type !== 'PLAYER') &&
                     (match.player2_id || match.player2_type !== 'PLAYER')
   const isCompleted = match.status === 'completed'
-  const isDraft = tournamentStatus === 'draft'
+  const isDraft = tournamentStatus === 'draft' || tournamentStatus === 'upcoming'
 
   const getPlayerDisplay = (playerId: number | null, name: string | null, type: string, seedNum: number | null) => {
     if (type === 'BYE') return <span className="text-slate-400 italic font-medium">BYE</span>
