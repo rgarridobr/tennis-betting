@@ -18,29 +18,29 @@ export default async function AdminUsersPage() {
   return (
     <>
       <PageHero
-        title="Gerenciar Usuarios"
-        subtitle="Administre os participantes do bolao"
+        title="Gerenciar Usuários"
+        subtitle="Administre os participantes do bolão"
       >
-        <div className="flex items-center gap-3">
-          <Card className="bg-white/10 border-0 backdrop-blur-sm">
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-500/30 flex items-center justify-center">
-                <Users className="w-5 h-5 text-emerald-300" />
+        <div className="flex items-center gap-4">
+          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl">
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
+                <Users className="w-6 h-6 text-emerald-400" />
               </div>
               <div>
-                <p className="text-emerald-100 text-xs">Total</p>
-                <p className="text-xl font-bold text-white">{users.length}</p>
+                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Total</p>
+                <p className="text-2xl font-black text-white">{users.length}</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white/10 border-0 backdrop-blur-sm">
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-amber-500/30 flex items-center justify-center">
-                <ShieldCheck className="w-5 h-5 text-amber-300" />
+          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl">
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
+                <ShieldCheck className="w-6 h-6 text-amber-400" />
               </div>
               <div>
-                <p className="text-emerald-100 text-xs">Admins</p>
-                <p className="text-xl font-bold text-white">{adminCount}</p>
+                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Admins</p>
+                <p className="text-2xl font-black text-white">{adminCount}</p>
               </div>
             </CardContent>
           </Card>
@@ -61,27 +61,30 @@ export default async function AdminUsersPage() {
             {/* Admins */}
             {adminCount > 0 && (
               <section>
-                <h2 className="text-xl font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                  Administradores
-                </h2>
-                <Card className="border-0 shadow-md overflow-hidden pt-0">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="w-2 h-8 bg-emerald-500 rounded-full" />
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                    <ShieldCheck className="w-6 h-6 text-emerald-600" />
+                    Administradores
+                  </h2>
+                </div>
+                <Card className="border-0 shadow-xl overflow-hidden pt-0 rounded-[2rem] bg-white">
                   <CardContent className="p-0">
                     <div className="divide-y divide-slate-100">
                       {users.filter(u => u.is_admin).map((user) => (
                         <div
                           key={user.id}
-                          className="flex items-center justify-between px-6 py-4 bg-emerald-50/50"
+                          className="flex items-center justify-between px-8 py-6 bg-emerald-50/30"
                         >
-                          <div className="flex items-center gap-4">
-                            <div className="w-11 h-11 rounded-full bg-emerald-100 flex items-center justify-center text-base font-bold text-emerald-700">
+                          <div className="flex items-center gap-6">
+                            <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center text-xl font-black text-emerald-700 shadow-sm">
                               {user.name.charAt(0).toUpperCase()}
                             </div>
                             <div>
                               <div className="flex items-center gap-2">
-                                <span className="font-medium text-slate-900">{user.name}</span>
+                                <span className="text-lg font-black text-slate-900">{user.name}</span>
                                </div>
-                              <p className="text-sm text-slate-500">{user.email}</p>
+                              <p className="text-sm font-semibold text-slate-400">{user.email}</p>
                             </div>
                           </div>
                           {user.id !== myUser?.id && (
@@ -98,26 +101,29 @@ export default async function AdminUsersPage() {
             {/* Regular Users */}
             {regularCount > 0 && (
               <section>
-                <h2 className="text-xl font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                  <UserCheck className="w-5 h-5 text-blue-600" />
-                  Participantes ({regularCount})
-                </h2>
-                <Card className="border-0 shadow-md overflow-hidden pt-0">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="w-2 h-8 bg-blue-500 rounded-full" />
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                    <UserCheck className="w-6 h-6 text-blue-600" />
+                    Participantes ({regularCount})
+                  </h2>
+                </div>
+                <Card className="border-0 shadow-xl overflow-hidden pt-0 rounded-[2rem] bg-white">
                   <CardContent className="p-0">
                     <div className="divide-y divide-slate-100">
                       {users.filter(u => !u.is_admin).map((user) => (
                         <div
                           key={user.id}
-                          className="flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors"
+                          className="flex items-center justify-between px-8 py-6 hover:bg-slate-50 transition-all group"
                         >
-                          <div className="flex items-center gap-4">
-                            <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center text-base font-bold text-slate-600">
+                          <div className="flex items-center gap-6">
+                            <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center text-xl font-black text-slate-600 shadow-sm group-hover:scale-110 transition-transform">
                               {user.name.charAt(0).toUpperCase()}
                             </div>
                             <div>
-                              <span className="font-medium text-slate-900">{user.name}</span>
-                              <p className="text-sm text-slate-500">{user.email}</p>
-                              <p className="text-xs text-slate-400 mt-0.5">{user.total_predictions} palpites</p>
+                              <span className="text-lg font-black text-slate-900">{user.name}</span>
+                              <p className="text-sm font-semibold text-slate-400">{user.email}</p>
+                              <p className="text-xs font-bold text-emerald-600 mt-1 uppercase tracking-wider">{user.total_predictions} palpites</p>
                             </div>
                           </div>
                           <UserAdminToggle userId={user.id} isAdmin={user.is_admin} />

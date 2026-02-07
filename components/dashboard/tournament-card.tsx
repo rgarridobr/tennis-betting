@@ -39,36 +39,38 @@ export function TournamentCard({ tournament }: TournamentCardProps) {
       : 'Em breve'
 
   const statusColor = tournament.status === 'active'
-    ? 'bg-emerald-500 text-white'
+    ? 'bg-emerald-500 text-white border-none'
     : tournament.status === 'completed'
-      ? 'bg-slate-500 text-white'
-      : 'bg-amber-400 text-amber-900'
+      ? 'bg-slate-500 text-white border-none'
+      : 'bg-amber-500 text-white border-none'
 
   const imageUrl = surfaceImages[tournament.surface] || surfaceImages.Hard
 
   return (
     <Link href={`/torneio/${tournament.id}`}>
-      <Card className="overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1 pt-0">
-        <div className="relative h-52">
+      <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1 pt-0 rounded-[2rem]">
+        <div className="relative h-60">
           <img src={imageUrl || "/placeholder.svg"} alt={tournament.name} className="w-full h-full object-cover" crossOrigin="anonymous" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-          <Badge className={`absolute top-3 right-3 ${statusColor} font-medium`}>{statusLabel}</Badge>
-          <div className="absolute bottom-3 left-3 right-3">
-            <h3 className="font-bold text-white text-lg drop-shadow-md">{tournament.name}</h3>
-            <Badge className={`mt-1 ${surfaceColors[tournament.surface] || 'bg-slate-500 text-white'}`}>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+          <Badge className={`absolute top-4 right-4 ${statusColor} px-3 py-1 text-[10px] uppercase tracking-wider font-bold shadow-lg`}>
+            {statusLabel}
+          </Badge>
+          <div className="absolute bottom-4 left-5 right-5">
+            <h3 className="font-black text-white text-xl drop-shadow-lg leading-tight">{tournament.name}</h3>
+            <Badge className={`mt-2 ${surfaceColors[tournament.surface] || 'bg-slate-500 text-white'} border-none font-bold px-3`}>
               {surfaceLabels[tournament.surface] || tournament.surface}
             </Badge>
           </div>
         </div>
-        <CardContent className="p-4 bg-white">
-          <div className="flex items-center justify-between text-sm text-slate-500">
+        <CardContent className="px-6 py-5 bg-white">
+          <div className="flex items-center justify-between text-sm font-semibold text-slate-500">
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-emerald-600" />
+              <Calendar className="w-4 h-4 text-emerald-500" />
               <span>{formatDate(tournament.start_date)} - {formatDate(tournament.end_date)}</span>
             </div>
             <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-emerald-600" />
-              <span className="truncate max-w-[120px]">{tournament.location}</span>
+              <MapPin className="w-4 h-4 text-emerald-500" />
+              <span className="truncate max-w-[140px]">{tournament.location}</span>
             </div>
           </div>
         </CardContent>

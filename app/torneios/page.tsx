@@ -18,53 +18,59 @@ export default async function TournamentsPage() {
   const completedTournaments = tournaments.filter(t => t.status === 'completed')
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#f8fafc]">
       <DashboardHeader user={user} />
 
       <PageHero
         title="Torneios"
-        subtitle="Participe dos maiores Grand Slams do tenis mundial"
+        subtitle="Participe dos maiores Grand Slams do tênis mundial"
       >
-        <div className="flex items-center gap-3">
-          <Card className="bg-white/10 border-0 backdrop-blur-sm px-4">
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-500/30 flex items-center justify-center">
-                <Zap className="w-5 h-5 text-emerald-300" />
+        <div className="flex items-center gap-4">
+          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl">
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
+                <Zap className="w-6 h-6 text-emerald-400" />
               </div>
               <div>
-                <p className="text-emerald-100 text-xs">Ativos</p>
-                <p className="text-xl font-bold text-white">{activeTournaments.length}</p>
+                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Ativos</p>
+                <p className="text-2xl font-black text-white">{activeTournaments.length}</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white/10 border-0 backdrop-blur-sm px-4">
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-amber-500/30 flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-amber-300" />
+          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl">
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
+                <Calendar className="w-6 h-6 text-amber-400" />
               </div>
               <div>
-                <p className="text-emerald-100 text-xs">Próximos</p>
-                <p className="text-xl font-bold text-white">{upcomingTournaments.length}</p>
+                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Próximos</p>
+                <p className="text-2xl font-black text-white">{upcomingTournaments.length}</p>
               </div>
             </CardContent>
           </Card>
         </div>
       </PageHero>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-12">
         {activeTournaments.length > 0 && (
-          <section className="mb-8">
-            <h2 className="text-xl font-semibold text-slate-900 mb-4">Ativos</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <section className="mb-12">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-2 h-8 bg-emerald-500 rounded-full" />
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Torneios ao Vivo</h2>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {activeTournaments.map(t => <TournamentCard key={t.id} tournament={t} />)}
             </div>
           </section>
         )}
 
         {upcomingTournaments.length > 0 && (
-          <section className="mb-8">
-            <h2 className="text-xl font-semibold text-slate-900 mb-4">Próximos</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <section className="mb-12">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-2 h-8 bg-amber-500 rounded-full" />
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Próximos Torneios</h2>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {upcomingTournaments.map(t => <TournamentCard key={t.id} tournament={t} />)}
             </div>
           </section>
@@ -72,8 +78,11 @@ export default async function TournamentsPage() {
 
         {completedTournaments.length > 0 && (
           <section>
-            <h2 className="text-xl font-semibold text-slate-900 mb-4">Finalizados</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-2 h-8 bg-slate-300 rounded-full" />
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Torneios Finalizados</h2>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {completedTournaments.map(t => <TournamentCard key={t.id} tournament={t} />)}
             </div>
           </section>

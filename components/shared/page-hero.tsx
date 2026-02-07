@@ -8,8 +8,8 @@ interface PageHeroProps {
 
 export function PageHero({ title, subtitle, children }: PageHeroProps) {
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="relative overflow-hidden rounded-2xl">
+    <div className="container mx-auto px-4 py-8">
+      <div className="relative overflow-hidden rounded-[2.5rem] shadow-2xl">
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"
@@ -18,16 +18,22 @@ export function PageHero({ title, subtitle, children }: PageHeroProps) {
           }}
         />
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/95 via-emerald-800/90 to-teal-900/90" />
+        <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/20 to-black/80" />
         
         {/* Content */}
-        <div className="relative px-6 py-8 sm:px-8 sm:py-10 md:px-10 md:py-12">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6">
-            <div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white text-balance">{title}</h1>
-              <p className="mt-2 sm:mt-3 md:mt-4 text-sm sm:text-base text-white/80 max-w-xl text-balance">{subtitle}</p>
+        <div className="relative px-8 py-10 sm:px-10 sm:py-12 md:px-12 md:py-16">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div className="space-y-4">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white text-balance tracking-tight leading-tight">
+                {title}
+              </h1>
+              <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl text-balance font-medium">
+                {subtitle}
+              </p>
             </div>
-            {children}
+            <div className="flex shrink-0">
+              {children}
+            </div>
           </div>
         </div>
       </div>
