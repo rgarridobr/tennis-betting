@@ -53,7 +53,7 @@ export default async function AdminUsersPage() {
             <CardContent className="py-16 text-center">
               <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-slate-900 mb-2">Nenhum usuario cadastrado</h2>
-              <p className="text-slate-500">Convide participantes para comecar o bolao.</p>
+              <p className="text-slate-500">Convide participantes para começar o bolao.</p>
             </CardContent>
           </Card>
         ) : (

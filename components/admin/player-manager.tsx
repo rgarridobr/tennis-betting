@@ -63,7 +63,7 @@ export function PlayerManager({ players }: Props) {
         <div className="max-h-80 overflow-y-auto space-y-1">
           {filtered.length === 0 ? (
             <p className="text-sm text-slate-400 text-center py-6">
-              {players.length === 0 ? 'Nenhum jogador cadastrado. Adicione jogadores para comecar.' : 'Nenhum jogador encontrado.'}
+              {players.length === 0 ? 'Nenhum jogador cadastrado. Adicione jogadores para começar.' : 'Nenhum jogador encontrado.'}
             </p>
           ) : (
             filtered.map(p => (

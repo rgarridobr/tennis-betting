@@ -103,7 +103,7 @@ export default async function AdminTournamentsPage() {
             <CardContent className="py-16 text-center">
               <Trophy className="w-16 h-16 text-slate-300 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-slate-900 mb-2">Nenhum torneio cadastrado</h2>
-              <p className="text-slate-500 mb-6">Crie seu primeiro Grand Slam para comecar!</p>
+              <p className="text-slate-500 mb-6">Crie seu primeiro Grand Slam para começar!</p>
               <Button asChild size="lg">
                 <Link href="/admin/torneios/novo">
                   <Plus className="w-5 h-5 mr-2" />
