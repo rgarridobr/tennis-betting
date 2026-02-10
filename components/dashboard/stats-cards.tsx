@@ -53,27 +53,24 @@ export function StatsCards({ stats }: StatsCardsProps) {
   ]
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 -mt-16 relative z-10">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 -mt-12 relative z-10">
       {cards.map((card) => (
         <Card 
           key={card.label} 
-          className={`border-0 shadow-xl rounded-[2rem] bg-white transition-transform hover:scale-[1.02] duration-300`}
+          className={`border-0 shadow-lg rounded-[2rem] bg-white transition-all hover:shadow-xl duration-300`}
         >
-          <CardContent className="p-6">
-            <div className="flex flex-col gap-4">
-              <div className="flex items-start justify-between">
-                <p className="text-sm font-medium text-slate-500">{card.label}</p>
-                <div className={`p-3 rounded-2xl ${card.bgColor}`}>
-                  <card.icon className={`w-6 h-6 ${card.iconColor}`} />
-                </div>
-              </div>
-
-              <div>
-                <p className={`text-4xl font-black ${card.valueColor}`}>
+          <CardContent className="p-5 flex items-center gap-4">
+            <div className={`w-12 h-12 rounded-2xl ${card.bgColor} flex items-center justify-center shrink-0`}>
+              <card.icon className={`w-6 h-6 ${card.iconColor}`} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-slate-500 truncate uppercase tracking-wider">{card.label}</p>
+              <div className="flex items-baseline gap-1.5">
+                <p className={`text-2xl font-black ${card.valueColor}`}>
                   {card.value}
                 </p>
                 {card.subtext && (
-                  <p className="text-xs font-semibold text-slate-400 mt-1">{card.subtext}</p>
+                  <p className="text-[10px] font-bold text-slate-400 truncate">{card.subtext}</p>
                 )}
               </div>
             </div>

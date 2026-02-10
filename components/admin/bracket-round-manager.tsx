@@ -105,7 +105,7 @@ function MatchCard({
   }
 
   return (
-    <div className={`p-4 rounded-2xl border-2 transition-all ${
+    <div className={`p-4 rounded-2xl border-2 transition-all group ${
       isCompleted ? 'border-emerald-100 bg-emerald-50/30' :
       hasPlayers ? 'border-blue-100 bg-blue-50/30' :
       'border-slate-100 bg-slate-50/30'
@@ -123,28 +123,100 @@ function MatchCard({
 
       <div className="space-y-2">
         {/* Player 1 */}
-        <div className={`flex items-center justify-between p-2 rounded-xl ${
-          isCompleted && match.winner_id === match.player1_id ? 'bg-emerald-100/50 ring-1 ring-emerald-200' : ''
-        }`}>
-          <div className={`flex items-center gap-2 text-sm truncate ${
-            isCompleted && match.winner_id === match.player1_id ? 'font-black text-emerald-900' : 'font-bold text-slate-700'
+        {isDraft && match.round === 1 ? (
+          <SetPlayersDialog
+            match={match}
+            players={players}
+            tournamentId={tournamentId}
+            trigger={
+              <div className={`flex items-center justify-between p-2 rounded-xl cursor-pointer hover:bg-white/50 transition-colors ${
+                isCompleted && match.winner_id === match.player1_id ? 'bg-emerald-100/50 ring-1 ring-emerald-200' : ''
+              }`}>
+                <div className={`flex items-center gap-2 text-sm truncate ${
+                  isCompleted && match.winner_id === match.player1_id ? 'font-black text-emerald-900' : 'font-bold text-slate-700'
+                }`}>
+                  {getPlayerDisplay(match.player1_id, match.player1_name, match.player1_type, match.player1_seed)}
+                </div>
+                {isCompleted && match.winner_id === match.player1_id && <Trophy className="w-4 h-4 text-emerald-600 shrink-0" />}
+                {!match.player1_id && match.player1_type === 'PLAYER' && <Pencil className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />}
+              </div>
+            }
+          />
+        ) : !isDraft && (match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD') && !match.player1_id ? (
+          <ReplacePlaceholderDialog
+            match={match}
+            slot={1}
+            players={players}
+            tournamentId={tournamentId}
+            trigger={
+              <div className="flex items-center justify-between p-2 rounded-xl cursor-pointer hover:bg-amber-100/50 transition-colors border border-dashed border-amber-300">
+                <div className="flex items-center gap-2 text-sm truncate font-bold text-amber-700">
+                  {getPlayerDisplay(match.player1_id, match.player1_name, match.player1_type, match.player1_seed)}
+                </div>
+                <Pencil className="w-3 h-3 text-amber-500" />
+              </div>
+            }
+          />
+        ) : (
+          <div className={`flex items-center justify-between p-2 rounded-xl ${
+            isCompleted && match.winner_id === match.player1_id ? 'bg-emerald-100/50 ring-1 ring-emerald-200' : ''
           }`}>
-            {getPlayerDisplay(match.player1_id, match.player1_name, match.player1_type, match.player1_seed)}
+            <div className={`flex items-center gap-2 text-sm truncate ${
+              isCompleted && match.winner_id === match.player1_id ? 'font-black text-emerald-900' : 'font-bold text-slate-700'
+            }`}>
+              {getPlayerDisplay(match.player1_id, match.player1_name, match.player1_type, match.player1_seed)}
+            </div>
+            {isCompleted && match.winner_id === match.player1_id && <Trophy className="w-4 h-4 text-emerald-600 shrink-0" />}
           </div>
-          {isCompleted && match.winner_id === match.player1_id && <Trophy className="w-4 h-4 text-emerald-600 shrink-0" />}
-        </div>
+        )}
 
         {/* Player 2 */}
-        <div className={`flex items-center justify-between p-2 rounded-xl ${
-          isCompleted && match.winner_id === match.player2_id ? 'bg-emerald-100/50 ring-1 ring-emerald-200' : ''
-        }`}>
-          <div className={`flex items-center gap-2 text-sm truncate ${
-            isCompleted && match.winner_id === match.player2_id ? 'font-black text-emerald-900' : 'font-bold text-slate-700'
+        {isDraft && match.round === 1 ? (
+          <SetPlayersDialog
+            match={match}
+            players={players}
+            tournamentId={tournamentId}
+            trigger={
+              <div className={`flex items-center justify-between p-2 rounded-xl cursor-pointer hover:bg-white/50 transition-colors ${
+                isCompleted && match.winner_id === match.player2_id ? 'bg-emerald-100/50 ring-1 ring-emerald-200' : ''
+              }`}>
+                <div className={`flex items-center gap-2 text-sm truncate ${
+                  isCompleted && match.winner_id === match.player2_id ? 'font-black text-emerald-900' : 'font-bold text-slate-700'
+                }`}>
+                  {getPlayerDisplay(match.player2_id, match.player2_name, match.player2_type, match.player2_seed)}
+                </div>
+                {isCompleted && match.winner_id === match.player2_id && <Trophy className="w-4 h-4 text-emerald-600 shrink-0" />}
+                {!match.player2_id && match.player2_type === 'PLAYER' && <Pencil className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />}
+              </div>
+            }
+          />
+        ) : !isDraft && (match.player2_type === 'QUALIFIER' || match.player2_type === 'WILDCARD') && !match.player2_id ? (
+          <ReplacePlaceholderDialog
+            match={match}
+            slot={2}
+            players={players}
+            tournamentId={tournamentId}
+            trigger={
+              <div className="flex items-center justify-between p-2 rounded-xl cursor-pointer hover:bg-amber-100/50 transition-colors border border-dashed border-amber-300">
+                <div className="flex items-center gap-2 text-sm truncate font-bold text-amber-700">
+                  {getPlayerDisplay(match.player2_id, match.player2_name, match.player2_type, match.player2_seed)}
+                </div>
+                <Pencil className="w-3 h-3 text-amber-500" />
+              </div>
+            }
+          />
+        ) : (
+          <div className={`flex items-center justify-between p-2 rounded-xl ${
+            isCompleted && match.winner_id === match.player2_id ? 'bg-emerald-100/50 ring-1 ring-emerald-200' : ''
           }`}>
-            {getPlayerDisplay(match.player2_id, match.player2_name, match.player2_type, match.player2_seed)}
+            <div className={`flex items-center gap-2 text-sm truncate ${
+              isCompleted && match.winner_id === match.player2_id ? 'font-black text-emerald-900' : 'font-bold text-slate-700'
+            }`}>
+              {getPlayerDisplay(match.player2_id, match.player2_name, match.player2_type, match.player2_seed)}
+            </div>
+            {isCompleted && match.winner_id === match.player2_id && <Trophy className="w-4 h-4 text-emerald-600 shrink-0" />}
           </div>
-          {isCompleted && match.winner_id === match.player2_id && <Trophy className="w-4 h-4 text-emerald-600 shrink-0" />}
-        </div>
+        )}
       </div>
 
       {/* Score */}
@@ -248,7 +320,17 @@ function SlotConfig({
   )
 }
 
-function SetPlayersDialog({ match, players, tournamentId }: { match: BracketMatch; players: Player[]; tournamentId: number }) {
+function SetPlayersDialog({
+  match,
+  players,
+  tournamentId,
+  trigger
+}: {
+  match: BracketMatch;
+  players: Player[];
+  tournamentId: number;
+  trigger?: React.ReactNode;
+}) {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -290,9 +372,11 @@ function SetPlayersDialog({ match, players, tournamentId }: { match: BracketMatc
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider border-2">
-          <Pencil className="w-3 h-3 mr-1.5" /> Definir Confronto
-        </Button>
+        {trigger || (
+          <Button variant="outline" size="sm" className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider border-2">
+            <Pencil className="w-3 h-3 mr-1.5" /> Definir Confronto
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-w-2xl rounded-[2rem]">
         <DialogHeader>
@@ -337,12 +421,14 @@ function ReplacePlaceholderDialog({
   match,
   slot,
   players,
-  tournamentId
+  tournamentId,
+  trigger
 }: {
   match: BracketMatch;
   slot: 1 | 2;
   players: Player[];
-  tournamentId: number
+  tournamentId: number;
+  trigger?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -361,9 +447,11 @@ function ReplacePlaceholderDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider border-2 border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100">
-          Definir {type === 'QUALIFIER' ? 'Q' : 'WC'}
-        </Button>
+        {trigger || (
+          <Button variant="outline" size="sm" className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider border-2 border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100">
+            Definir {type === 'QUALIFIER' ? 'Q' : 'WC'}
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="rounded-[2rem]">
         <DialogHeader>
