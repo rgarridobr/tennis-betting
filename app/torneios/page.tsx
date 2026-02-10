@@ -5,7 +5,7 @@ import { DashboardHeader } from '@/components/dashboard/dashboard-header'
 import { TournamentCard } from '@/components/dashboard/tournament-card'
 import { PageHero } from '@/components/shared/page-hero'
 import { Card, CardContent } from '@/components/ui/card'
-import { Calendar, Zap } from 'lucide-react'
+import { Calendar, Zap, Trophy } from 'lucide-react'
 
 export default async function TournamentsPage() {
   const user = await getSession()
@@ -89,9 +89,17 @@ export default async function TournamentsPage() {
         )}
 
         {tournaments.length === 0 && (
-          <div className="text-center py-12 text-slate-500">
-            <p>Nenhum torneio disponivel no momento.</p>
-          </div>
+          <Card className="border-0 shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
+            <CardContent className="py-20 text-center">
+              <div className="w-20 h-20 rounded-3xl bg-slate-50 flex items-center justify-center mx-auto mb-6">
+                <Trophy className="w-10 h-10 text-slate-300" />
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 mb-2">Nenhum torneio disponível</h2>
+              <p className="text-slate-500 font-bold max-w-xs mx-auto">
+                No momento não temos torneios abertos para palpites. Volte em breve!
+              </p>
+            </CardContent>
+          </Card>
         )}
       </main>
     </div>

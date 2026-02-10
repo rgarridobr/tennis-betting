@@ -68,17 +68,17 @@ export function AdminHeader({ user }: AdminHeaderProps) {
         </nav>
 
         {/* User Info - Right */}
-        <div className="flex items-center gap-3">
-          <div className="hidden md:block text-right">
-            <p className="text-sm font-medium text-slate-900">{user.name}</p>
-            <p className="text-xs text-slate-500">{user.email}</p>
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:flex flex-col items-end mr-1">
+             <p className="text-sm font-black text-slate-900 leading-none">{user.name}</p>
+             <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mt-1">Administrador</p>
           </div>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                <Avatar className="h-9 w-9">
-                  <AvatarFallback className="bg-emerald-500 text-white">
+              <Button variant="ghost" className="relative h-11 w-11 rounded-2xl p-0 overflow-hidden hover:bg-transparent">
+                <Avatar className="h-11 w-11 rounded-2xl">
+                  <AvatarFallback className="bg-slate-100 text-emerald-600 font-black rounded-2xl border-2 border-emerald-100">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
