@@ -1,6 +1,6 @@
 'use client'
 
-import React from "react"
+import React, { useEffect } from "react"
 import { useState, useTransition } from 'react'
 import type { BracketMatch, Player } from '@/lib/data'
 import { setMatchPlayersAction, setMatchResultAction, updatePlaceholderPlayerAction } from '@/lib/actions/admin'
@@ -129,7 +129,10 @@ function MatchCard({
             players={players}
             tournamentId={tournamentId}
             trigger={
-              <div className={`flex items-center justify-between p-2 rounded-xl cursor-pointer hover:bg-white/50 transition-colors ${
+              <div
+                role="button"
+                tabIndex={0}
+                className={`flex items-center justify-between p-2 rounded-xl cursor-pointer hover:bg-white/50 transition-colors ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
                 isCompleted && match.winner_id === match.player1_id ? 'bg-emerald-100/50 ring-1 ring-emerald-200' : ''
               }`}>
                 <div className={`flex items-center gap-2 text-sm truncate ${
@@ -138,7 +141,7 @@ function MatchCard({
                   {getPlayerDisplay(match.player1_id, match.player1_name, match.player1_type, match.player1_seed)}
                 </div>
                 {isCompleted && match.winner_id === match.player1_id && <Trophy className="w-4 h-4 text-emerald-600 shrink-0" />}
-                {!match.player1_id && match.player1_type === 'PLAYER' && <Pencil className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />}
+                <Pencil className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             }
           />
@@ -177,7 +180,10 @@ function MatchCard({
             players={players}
             tournamentId={tournamentId}
             trigger={
-              <div className={`flex items-center justify-between p-2 rounded-xl cursor-pointer hover:bg-white/50 transition-colors ${
+              <div
+                role="button"
+                tabIndex={0}
+                className={`flex items-center justify-between p-2 rounded-xl cursor-pointer hover:bg-white/50 transition-colors ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
                 isCompleted && match.winner_id === match.player2_id ? 'bg-emerald-100/50 ring-1 ring-emerald-200' : ''
               }`}>
                 <div className={`flex items-center gap-2 text-sm truncate ${
@@ -186,7 +192,7 @@ function MatchCard({
                   {getPlayerDisplay(match.player2_id, match.player2_name, match.player2_type, match.player2_seed)}
                 </div>
                 {isCompleted && match.winner_id === match.player2_id && <Trophy className="w-4 h-4 text-emerald-600 shrink-0" />}
-                {!match.player2_id && match.player2_type === 'PLAYER' && <Pencil className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />}
+                <Pencil className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             }
           />
@@ -335,13 +341,26 @@ function SetPlayersDialog({
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
-  const [p1Type, setP1Type] = useState<'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE'>(match.player1_type as 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' || 'PLAYER')
+  const [p1Type, setP1Type] = useState<'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE'>(match.player1_type as any || 'PLAYER')
   const [p1Id, setP1Id] = useState(match.player1_id?.toString() || '')
   const [p1Seed, setP1Seed] = useState(match.player1_seed?.toString() || '')
 
-  const [p2Type, setP2Type] = useState<'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE'>(match.player2_type as 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' || 'PLAYER')
+  const [p2Type, setP2Type] = useState<'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE'>(match.player2_type as any || 'PLAYER')
   const [p2Id, setP2Id] = useState(match.player2_id?.toString() || '')
   const [p2Seed, setP2Seed] = useState(match.player2_seed?.toString() || '')
+
+  // Sync state when dialog opens or match data changes
+  useEffect(() => {
+    if (open) {
+      setP1Type(match.player1_type as any || 'PLAYER')
+      setP1Id(match.player1_id?.toString() || '')
+      setP1Seed(match.player1_seed?.toString() || '')
+      setP2Type(match.player2_type as any || 'PLAYER')
+      setP2Id(match.player2_id?.toString() || '')
+      setP2Seed(match.player2_seed?.toString() || '')
+      setError(null)
+    }
+  }, [open, match])
 
   function handleSubmit() {
     setError(null)
@@ -364,8 +383,16 @@ function SetPlayersDialog({
     if (p1.type === 'BYE' && p2.type === 'BYE') return setError('Bye nao pode enfrentar Bye')
 
     startTransition(async () => {
-      await setMatchPlayersAction(match.id, p1 as any, p2 as any, tournamentId)
-      setOpen(false)
+      try {
+        const result = await setMatchPlayersAction(match.id, p1 as any, p2 as any, tournamentId)
+        if (result?.success) {
+          setOpen(false)
+        } else {
+          setError(result?.error || 'Erro ao salvar confronto')
+        }
+      } catch (e) {
+        setError('Ocorreu um erro inesperado')
+      }
     })
   }
 
@@ -434,6 +461,12 @@ function ReplacePlaceholderDialog({
   const [isPending, startTransition] = useTransition()
   const [playerId, setPlayerId] = useState<string>('')
   const type = slot === 1 ? match.player1_type : match.player2_type
+
+  useEffect(() => {
+    if (open) {
+      setPlayerId(slot === 1 ? match.player1_id?.toString() || '' : match.player2_id?.toString() || '')
+    }
+  }, [open, match, slot])
 
   function handleSubmit() {
     if (!playerId) return
