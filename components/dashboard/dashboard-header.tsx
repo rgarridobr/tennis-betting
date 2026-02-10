@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import {
@@ -96,13 +98,13 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                 <Link href="/perfil">Meu Perfil</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <form action={logoutAction}>
-                <DropdownMenuItem asChild>
-                  <button type="submit" className="w-full cursor-pointer">
-                    Sair
-                  </button>
-                </DropdownMenuItem>
-              </form>
+              <DropdownMenuItem
+                onSelect={() => logoutAction()}
+                className="cursor-pointer"
+                variant="destructive"
+              >
+                Sair
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
