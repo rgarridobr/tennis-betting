@@ -309,8 +309,8 @@ export async function publishTournament(tournamentId: number): Promise<void> {
   const tournament = await sql`SELECT size FROM tournaments WHERE id = ${tournamentId}`
   if (tournament.length === 0) throw new Error('Torneio nao encontrado')
 
-  // 1. Mark tournament as published
-  await sql`UPDATE tournaments SET status = 'published', updated_at = NOW() WHERE id = ${tournamentId}`
+  // 1. Mark tournament as active
+  await sql`UPDATE tournaments SET status = 'active', updated_at = NOW() WHERE id = ${tournamentId}`
 
   // 2. Resolve BYEs in the first round
   const firstRoundMatches = await sql`
@@ -392,4 +392,25 @@ export async function updateTournamentLocation(id: number, name: string): Promis
 
 export async function deleteTournamentLocation(id: number): Promise<void> {
   await sql`DELETE FROM tournament_locations WHERE id = ${id}`
+}
+
+export async function isRound1Complete(tournamentId: number): Promise<boolean> {
+  const matches = await sql`
+    SELECT player1_id, player1_type, player2_id, player2_type
+    FROM bracket_matches
+    WHERE tournament_id = ${tournamentId} AND round = 1
+  `
+
+  if (matches.length === 0) return false
+
+  return matches.every(m => {
+    // Both types must be defined
+    if (!m.player1_type || !m.player2_type) return false
+
+    // If type is PLAYER or SEED, id must be defined
+    if ((m.player1_type === 'PLAYER' || m.player1_type === 'SEED') && !m.player1_id) return false
+    if ((m.player2_type === 'PLAYER' || m.player2_type === 'SEED') && !m.player2_id) return false
+
+    return true
+  })
 }

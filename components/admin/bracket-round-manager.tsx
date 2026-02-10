@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter
 } from '@/components/ui/dialog'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -24,9 +24,10 @@ interface Props {
   players: Player[]
   tournamentId: number
   tournamentStatus: string
+  isFinalRound?: boolean
 }
 
-export function BracketRoundManager({ round, roundName, matches, players, tournamentId, tournamentStatus }: Props) {
+export function BracketRoundManager({ round, roundName, matches, players, tournamentId, tournamentStatus, isFinalRound }: Props) {
   const [expanded, setExpanded] = useState(round === 1)
   const completed = matches.filter(m => m.status === 'completed').length
   const scheduled = matches.filter(m => m.status === 'scheduled').length
@@ -64,6 +65,7 @@ export function BracketRoundManager({ round, roundName, matches, players, tourna
                 players={players}
                 tournamentId={tournamentId}
                 tournamentStatus={tournamentStatus}
+                isFinalRound={isFinalRound}
               />
             ))}
           </div>
@@ -77,17 +79,20 @@ function MatchCard({
   match,
   players,
   tournamentId,
-  tournamentStatus
+  tournamentStatus,
+  isFinalRound
 }: {
   match: BracketMatch;
   players: Player[];
   tournamentId: number;
   tournamentStatus: string;
+  isFinalRound?: boolean;
 }) {
   const hasPlayers = (match.player1_id || match.player1_type !== 'PLAYER') &&
                     (match.player2_id || match.player2_type !== 'PLAYER')
   const isCompleted = match.status === 'completed'
   const isDraft = tournamentStatus === 'draft'
+  const isLocked = tournamentStatus === 'finished' || tournamentStatus === 'completed'
 
   const getPlayerDisplay = (playerId: number | null, name: string | null, type: string, seedNum: number | null) => {
     if (type === 'BYE') return <span className="text-slate-400 italic font-medium">BYE</span>
@@ -233,7 +238,7 @@ function MatchCard({
       )}
 
       {/* Actions */}
-      {!isCompleted && (
+      {!isCompleted && !isLocked && (
         <div className="mt-4 flex gap-2">
           {isDraft && match.round === 1 && (
             <SetPlayersDialog match={match} players={players} tournamentId={tournamentId} />
@@ -247,7 +252,7 @@ function MatchCard({
                 <ReplacePlaceholderDialog match={match} slot={2} players={players} tournamentId={tournamentId} />
               )}
               {match.player1_id && match.player2_id && (
-                <SetResultDialog match={match} tournamentId={tournamentId} />
+                <SetResultDialog match={match} tournamentId={tournamentId} isFinalRound={isFinalRound} />
               )}
             </>
           )}
@@ -511,22 +516,29 @@ function ReplacePlaceholderDialog({
   )
 }
 
-function SetResultDialog({ match, tournamentId }: { match: BracketMatch; tournamentId: number }) {
+function SetResultDialog({ match, tournamentId, isFinalRound }: { match: BracketMatch; tournamentId: number; isFinalRound?: boolean }) {
   const [open, setOpen] = useState(false)
+  const [showConfirmFinish, setShowConfirmFinish] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [winnerId, setWinnerId] = useState<string>('')
+  const [score, setScore] = useState('')
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
+  function handleSubmit(e?: React.FormEvent<HTMLFormElement>) {
+    if (e) e.preventDefault()
     setError(null)
     setSuccess(false)
-    const form = new FormData(e.currentTarget)
-    const score = form.get('score') as string
+
+    // Check if we need to show confirmation for final round
+    if (isFinalRound && !showConfirmFinish) {
+      setShowConfirmFinish(true)
+      return
+    }
 
     if (!winnerId || !score) {
       setError('Selecione o vencedor e o placar')
+      setShowConfirmFinish(false)
       return
     }
 
@@ -534,9 +546,11 @@ function SetResultDialog({ match, tournamentId }: { match: BracketMatch; tournam
       const result = await setMatchResultAction(match.id, parseInt(winnerId), score.trim(), tournamentId)
       if (result.success) {
         setSuccess(true)
+        setShowConfirmFinish(false)
         setTimeout(() => { setOpen(false); setSuccess(false); setWinnerId('') }, 1000)
       } else {
         setError(result.error || 'Erro ao salvar')
+        setShowConfirmFinish(false)
       }
     })
   }
@@ -611,16 +625,14 @@ function SetResultDialog({ match, tournamentId }: { match: BracketMatch; tournam
           <div className="space-y-3">
             <Label className="text-xs font-black uppercase tracking-widest text-slate-500">Placar Final</Label>
             <Input
-              name="score"
+              value={score}
+              onChange={(e) => setScore(e.target.value)}
               placeholder="Ex: 6-4 6-3 7-5"
               required
               className="h-14 rounded-2xl border-2 border-slate-100 focus:border-emerald-500 text-lg font-black tracking-widest"
             />
             <div className="flex flex-wrap gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => {
-                const input = document.querySelector('input[name="score"]') as HTMLInputElement;
-                if (input) input.value = 'W/O';
-              }} className="text-[10px] h-7 rounded-lg font-bold">W/O</Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => setScore('W/O')} className="text-[10px] h-7 rounded-lg font-bold">W/O</Button>
               <p className="text-[10px] text-slate-400 font-bold ml-auto flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
                 Sets separados por espaço (6-4 3-6 7-6)
@@ -632,6 +644,35 @@ function SetResultDialog({ match, tournamentId }: { match: BracketMatch; tournam
             {isPending ? 'Salvando...' : success ? 'Sucesso!' : 'Confirmar Resultado'}
           </Button>
         </form>
+
+        <Dialog open={showConfirmFinish} onOpenChange={setShowConfirmFinish}>
+          <DialogContent className="rounded-[2rem] border-none shadow-2xl max-w-md">
+            <DialogHeader className="pt-4">
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
+                <Trophy className="w-8 h-8 text-amber-600" />
+              </div>
+              <DialogTitle className="text-2xl font-black text-center text-slate-900">Finalizar Torneio?</DialogTitle>
+              <DialogDescription className="text-center text-slate-500 font-medium px-4">
+                Este é o jogo da <strong>FINAL</strong>. Ao confirmar este resultado, o torneio será marcado como <strong>FINALIZADO</strong> e não poderá mais ser alterado.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex flex-col sm:flex-row gap-3 p-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowConfirmFinish(false)}
+                className="flex-1 rounded-xl font-bold h-12 border-2"
+              >
+                Revisar
+              </Button>
+              <Button
+                onClick={() => handleSubmit()}
+                className="flex-1 rounded-xl font-black h-12 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-100"
+              >
+                Sim, Finalizar!
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </DialogContent>
     </Dialog>
   )

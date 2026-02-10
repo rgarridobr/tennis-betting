@@ -16,9 +16,10 @@ import {
 
 interface Props {
   tournamentId: number
+  isReady: boolean
 }
 
-export function PublishBracketButton({ tournamentId }: Props) {
+export function PublishBracketButton({ tournamentId, isReady }: Props) {
   const [isPending, startTransition] = useTransition()
   const [showConfirm, setShowConfirm] = useState(false)
 
@@ -36,10 +37,15 @@ export function PublishBracketButton({ tournamentId }: Props) {
 
   return (
     <>
+      <div className="flex flex-col items-end gap-2">
       <Button
         onClick={() => setShowConfirm(true)}
-        disabled={isPending}
-        className="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-8 h-12 rounded-2xl shadow-lg shadow-emerald-200 transition-all active:scale-95 gap-2"
+        disabled={isPending || !isReady}
+        className={`${
+          isReady
+            ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200'
+            : 'bg-slate-400 cursor-not-allowed opacity-70'
+        } text-white font-black px-8 h-12 rounded-2xl shadow-lg transition-all active:scale-95 gap-2`}
       >
         {isPending ? (
           <Loader2 className="w-5 h-5 animate-spin" />
@@ -48,6 +54,12 @@ export function PublishBracketButton({ tournamentId }: Props) {
         )}
         {isPending ? 'Publicando...' : 'Publicar Chaveamento'}
       </Button>
+      {!isReady && (
+        <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest bg-rose-50 px-3 py-1 rounded-full border border-rose-100 flex items-center gap-1.5 animate-pulse">
+          <AlertTriangle className="w-3 h-3" /> Preencha toda a 1ª rodada
+        </p>
+      )}
+      </div>
 
       <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
         <DialogContent className="rounded-[2rem] border-none shadow-2xl max-w-md">
@@ -57,7 +69,7 @@ export function PublishBracketButton({ tournamentId }: Props) {
             </div>
             <DialogTitle className="text-2xl font-black text-center text-slate-900">Confirmar Publicação?</DialogTitle>
             <DialogDescription className="text-center text-slate-500 font-medium px-4">
-              Ao publicar, o chaveamento será bloqueado para mudanças estruturais e o torneio ficará disponível para palpites e resultados.
+              Ao publicar, o chaveamento será bloqueado para mudanças estruturais e o torneio ficará <strong>ATIVO</strong> para palpites e resultados.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex flex-col sm:flex-row gap-3 p-2">
