@@ -89,13 +89,11 @@ export default async function TournamentsPage() {
         )}
 
         {tournaments.length === 0 && (
-          <Card className="border-0 shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
-            <CardContent className="py-20 text-center">
-              <div className="w-20 h-20 rounded-3xl bg-slate-50 flex items-center justify-center mx-auto mb-6">
-                <Trophy className="w-10 h-10 text-slate-300" />
-              </div>
-              <h2 className="text-2xl font-black text-slate-900 mb-2">Nenhum torneio disponível</h2>
-              <p className="text-slate-500 font-bold max-w-xs mx-auto">
+          <Card className="border-0 shadow-md">
+            <CardContent className="py-16 text-center">
+              <Trophy className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-slate-900 mb-2">Nenhum torneio disponível</h2>
+              <p className="text-slate-600 mb-6">
                 No momento não temos torneios abertos para palpites. Volte em breve!
               </p>
             </CardContent>
