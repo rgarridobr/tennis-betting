@@ -92,14 +92,14 @@ export function AdminHeader({ user }: AdminHeaderProps) {
                 </div>
               </div>
               <DropdownMenuSeparator />
-              <form action={logoutAction}>
-                <DropdownMenuItem asChild>
-                  <button type="submit" className="w-full cursor-pointer flex items-center gap-2">
-                    <LogOut className="w-4 h-4" />
-                    Sair
-                  </button>
-                </DropdownMenuItem>
-              </form>
+              <DropdownMenuItem
+                onSelect={() => logoutAction()}
+                className="cursor-pointer"
+                variant="destructive"
+              >
+                <LogOut className="w-4 h-4" />
+                Sair
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
