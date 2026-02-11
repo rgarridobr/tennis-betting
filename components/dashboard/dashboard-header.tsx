@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Trophy } from 'lucide-react'
+import { Trophy, Target, TrendingUp, Shield, LogOut, User as UserIcon } from 'lucide-react'
 import { logoutAction } from '@/lib/actions/auth'
 import type { User } from '@/lib/auth'
 
@@ -41,27 +41,31 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         <nav className="hidden md:flex items-center gap-1">
           <Link 
             href="/torneios" 
-            className="px-5 py-2.5 text-sm font-bold text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
+            className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all flex items-center gap-2"
           >
+            <Trophy className="w-4 h-4" />
             Torneios
           </Link>
           <Link 
             href="/meus-palpites" 
-            className="px-5 py-2.5 text-sm font-bold text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
+            className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all flex items-center gap-2"
           >
+            <Target className="w-4 h-4" />
             Meus Palpites
           </Link>
           <Link 
             href="/ranking" 
-            className="px-5 py-2.5 text-sm font-bold text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
+            className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all flex items-center gap-2"
           >
+            <TrendingUp className="w-4 h-4" />
             Ranking
           </Link>
           {user.is_admin && (
             <Link 
               href="/admin" 
-              className="px-5 py-2.5 text-sm font-bold text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
+              className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all flex items-center gap-2"
             >
+              <Shield className="w-4 h-4" />
               Admin
             </Link>
           )}
@@ -92,17 +96,23 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/meus-palpites">Meus Palpites</Link>
+                <Link href="/meus-palpites" className="flex items-center gap-2">
+                  <Target className="w-4 h-4" />
+                  Meus Palpites
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/perfil">Meu Perfil</Link>
+                <Link href="/perfil" className="flex items-center gap-2">
+                  <UserIcon className="w-4 h-4" />
+                  Meu Perfil
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onSelect={() => logoutAction()}
-                className="cursor-pointer"
-                variant="destructive"
+                className="cursor-pointer text-red-600 focus:text-red-600"
               >
+                <LogOut className="w-4 h-4 mr-2" />
                 Sair
               </DropdownMenuItem>
             </DropdownMenuContent>
