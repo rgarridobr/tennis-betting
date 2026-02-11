@@ -13,9 +13,9 @@ export default async function TournamentsPage() {
 
   const tournaments = await getTournaments()
 
-  const activeTournaments = tournaments.filter(t => t.status === 'active')
+  const activeTournaments = tournaments.filter(t => t.status === 'active' || t.status === 'published')
   const upcomingTournaments = tournaments.filter(t => t.status === 'upcoming')
-  const completedTournaments = tournaments.filter(t => t.status === 'completed')
+  const completedTournaments = tournaments.filter(t => t.status === 'finished' || t.status === 'completed')
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">

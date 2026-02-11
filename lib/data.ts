@@ -273,7 +273,7 @@ export async function getUserStats(userId: number): Promise<UserStats> {
     SELECT COUNT(DISTINCT ut.tournament_id) as count
     FROM user_tournaments ut
     JOIN tournaments t ON ut.tournament_id = t.id
-    WHERE ut.user_id = ${userId} AND t.status IN ('upcoming', 'active')
+    WHERE ut.user_id = ${userId} AND t.status IN ('upcoming', 'active', 'published')
   `
   const totalPoints = Number(stats[0]?.total_points || 0)
   const correct = Number(stats[0]?.correct_predictions || 0)

@@ -33,13 +33,13 @@ function formatDate(dateString: string): string {
 export function TournamentHeader({ tournament, participants = 0 }: TournamentHeaderProps) {
   const statusLabel = tournament.status === 'active'
     ? 'Ativo'
-    : tournament.status === 'completed'
+    : tournament.status === 'finished'
       ? 'Finalizado'
       : 'Em breve'
 
   const statusColor = tournament.status === 'active'
     ? 'bg-emerald-500 text-white'
-    : tournament.status === 'completed'
+    : tournament.status === 'finished'
       ? 'bg-slate-500 text-white'
       : 'bg-amber-400 text-amber-900'
 

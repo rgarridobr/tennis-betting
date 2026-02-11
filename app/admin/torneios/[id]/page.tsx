@@ -1,11 +1,11 @@
 import { notFound } from 'next/navigation'
 import { getTournamentById, getBracketMatches, getPlayers, ROUND_NAMES } from '@/lib/data'
+import { isRound1Complete } from '@/lib/admin'
 import { PageHero } from '@/components/shared/page-hero'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { BracketRoundManager } from '@/components/admin/bracket-round-manager'
 import { PlayerManager } from '@/components/admin/player-manager'
-import { TournamentStatusSelect } from '@/components/admin/tournament-status-select'
 import { PublishBracketButton } from '@/components/admin/publish-bracket-button'
 import { Trophy, Clock, Hash, MapPin, Users, ArrowLeft, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -26,9 +26,10 @@ export default async function ManageTournamentPage({ params }: Props) {
   const tournament = await getTournamentById(tournamentId)
   if (!tournament) notFound()
 
-  const [matches, players] = await Promise.all([
+  const [matches, players, round1Complete] = await Promise.all([
     getBracketMatches(tournamentId),
-    getPlayers()
+    getPlayers(),
+    isRound1Complete(tournamentId)
   ])
 
   const completedMatches = matches.filter(m => m.status === 'completed').length
@@ -41,6 +42,8 @@ export default async function ManageTournamentPage({ params }: Props) {
     if (!matchesByRound[m.round]) matchesByRound[m.round] = []
     matchesByRound[m.round].push(m)
   }
+
+  const maxRound = matches.length > 0 ? Math.max(...matches.map(m => m.round)) : 0
 
   const statusLabels: Record<string, string> = {
     draft: 'Rascunho',
@@ -130,10 +133,6 @@ export default async function ManageTournamentPage({ params }: Props) {
             }>
               {statusLabels[tournament.status] || tournament.status}
             </Badge>
-            <TournamentStatusSelect
-              tournamentId={tournament.id}
-              currentStatus={tournament.status}
-            />
           </div>
         </div>
 
@@ -188,7 +187,7 @@ export default async function ManageTournamentPage({ params }: Props) {
                 </p>
               </div>
             </div>
-            <PublishBracketButton tournamentId={tournamentId} />
+            <PublishBracketButton tournamentId={tournamentId} isReady={round1Complete} />
           </div>
         )}
 
@@ -215,6 +214,7 @@ export default async function ManageTournamentPage({ params }: Props) {
                 players={players}
                 tournamentId={tournamentId}
                 tournamentStatus={tournament.status}
+                isFinalRound={round === maxRound}
               />
             )
           })}

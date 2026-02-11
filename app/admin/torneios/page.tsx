@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Plus, Settings, Trophy, Zap, Calendar, ClipboardList, MapPin } from 'lucide-react';
-import { TournamentStatusSelect } from '@/components/admin/tournament-status-select';
 import { DeleteTournamentButton } from '@/components/admin/delete-tournament-button';
 
 export default async function AdminTournamentsPage() {
@@ -14,24 +13,24 @@ export default async function AdminTournamentsPage() {
   const draftTournaments = tournaments.filter((t) => t.status === 'draft');
   const activeTournaments = tournaments.filter((t) => t.status === 'active' || t.status === 'published');
   const upcomingTournaments = tournaments.filter((t) => t.status === 'upcoming');
-  const completedTournaments = tournaments.filter((t) => t.status === 'completed' || t.status === 'finished');
+  const completedTournaments = tournaments.filter((t) => t.status === 'finished' || t.status === 'completed');
 
   const statusLabels: Record<string, string> = {
     draft: 'Rascunho',
     upcoming: 'Em breve',
     active: 'Ativo',
-    published: 'Publicado',
-    completed: 'Finalizado',
+    published: 'Ativo',
     finished: 'Finalizado',
+    completed: 'Finalizado',
   };
 
   const statusColors: Record<string, string> = {
     draft: 'bg-rose-100 text-rose-700',
     upcoming: 'bg-amber-100 text-amber-700',
     active: 'bg-emerald-100 text-emerald-700',
-    published: 'bg-blue-100 text-blue-700',
-    completed: 'bg-slate-100 text-slate-600',
+    published: 'bg-emerald-100 text-emerald-700',
     finished: 'bg-slate-100 text-slate-600',
+    completed: 'bg-slate-100 text-slate-600',
   };
 
   const surfaceEmojis: Record<string, string> = {
@@ -181,14 +180,6 @@ export default async function AdminTournamentsPage() {
                           </div>
 
                           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-6 border-t border-slate-100">
-                            {tournament.status !== 'completed' &&
-                              tournament.status !== 'finished' &&
-                              tournament.status !== 'draft' && (
-                                <TournamentStatusSelect
-                                  tournamentId={tournament.id}
-                                  currentStatus={tournament.status}
-                                />
-                              )}
                             <Button
                               variant="outline"
                               size="lg"

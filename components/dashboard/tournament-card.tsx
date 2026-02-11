@@ -34,13 +34,13 @@ function formatDate(dateString: string): string {
 export function TournamentCard({ tournament }: TournamentCardProps) {
   const statusLabel = tournament.status === 'active'
     ? 'Ativo'
-    : tournament.status === 'completed'
+    : tournament.status === 'finished'
       ? 'Finalizado'
       : 'Em breve'
 
   const statusColor = tournament.status === 'active'
     ? 'bg-emerald-500 text-white border-none'
-    : tournament.status === 'completed'
+    : tournament.status === 'finished'
       ? 'bg-slate-500 text-white border-none'
       : 'bg-amber-500 text-white border-none'
 
