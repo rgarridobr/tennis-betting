@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
 import { Trophy } from 'lucide-react'
+import { RotatingQuote } from '@/components/auth/rotating-quote'
 
 export default async function RegisterPage() {
   const user = await getSession()
@@ -12,21 +13,26 @@ export default async function RegisterPage() {
   return (
     <div className="min-h-screen flex bg-[#f8fafc]">
       {/* Left Side - Image */}
-      <div className="hidden lg:block lg:w-1/2 relative">
-        <img 
+      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
+        {/* Imagem */}
+        <img
           src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=1200&q=80" 
-          alt="Tennis Professional" 
-          className="absolute inset-0 w-full h-full object-cover"
+          alt="Tennis Professional"
+          className="absolute inset-0 w-full h-full object-cover scale-105"
         />
-        <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]" />
-        <div className="absolute bottom-12 left-12 right-12">
-          <div className="flex items-center gap-3 text-white font-black text-4xl tracking-tighter mb-4">
-            <Trophy className="w-10 h-10" />
-            <span>BOLÃO</span>
-          </div>
-          <p className="text-white/90 text-xl font-medium max-w-md">
-            "A vitória pertence àqueles que acreditam nela por mais tempo."
-          </p>
+
+        {/* Overlay com gradiente */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-emerald-950/80 via-emerald-900/50 to-emerald-800/30" />
+
+        {/* Conteúdo */}
+        <div className="absolute bottom-14 left-14 right-14 space-y-6">
+          {/* Linha decorativa */}
+
+          {/* Quote */}
+          <RotatingQuote />
+
+          {/* Assinatura sutil */}
+          <span className="text-emerald-200/80 text-sm tracking-wide uppercase">Viva o jogo</span>
         </div>
       </div>
 

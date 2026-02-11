@@ -41,8 +41,8 @@ export default async function AdminTournamentsPage() {
 
   return (
     <>
-      <PageHero title="Gerenciar Torneios" subtitle="Crie e gerencie os Grand Slams do bolão">
-        <div className="flex flex-wrap items-center gap-4">
+      <PageHero title="Gerenciar Torneios" subtitle="Crie, edite e acompanhe seus campeonatos para o bolão de tênis">
+        <div className="flex flex-wrap items-center gap-4 md:grid md:grid-cols-2 lg:flex">
           <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl shrink-0">
             <CardContent className="p-4 flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-rose-500/20 flex items-center justify-center border border-rose-500/30">

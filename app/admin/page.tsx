@@ -1,47 +1,41 @@
-import { getTournaments } from '@/lib/data'
-import { getAllUsers } from '@/lib/admin'
-import { PageHero } from '@/components/shared/page-hero'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-import { Trophy, Users, Calendar, TrendingUp, Plus, Settings, ChevronRight } from 'lucide-react'
+import { getTournaments } from '@/lib/data';
+import { getAllUsers } from '@/lib/admin';
+import { PageHero } from '@/components/shared/page-hero';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { Trophy, Users, Calendar, TrendingUp, Plus, Settings, ChevronRight } from 'lucide-react';
 
 export default async function AdminDashboardPage() {
-  const [tournaments, users] = await Promise.all([
-    getTournaments(),
-    getAllUsers(),
-  ])
+  const [tournaments, users] = await Promise.all([getTournaments(), getAllUsers()]);
 
-  const activeTournaments = tournaments.filter(t => t.status === 'active')
-  const totalPredictions = users.reduce((sum, u) => sum + Number(u.total_predictions), 0)
+  const activeTournaments = tournaments.filter((t) => t.status === 'active');
+  const totalPredictions = users.reduce((sum, u) => sum + Number(u.total_predictions), 0);
 
   return (
     <>
-      <PageHero
-        title="Painel Administrativo"
-        subtitle="Gerencie torneios, jogadores e participantes do bolao"
-      >
-        <div className="flex items-center gap-3">
-          <Card className="bg-white/10 border-0 backdrop-blur-sm">
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-500/30 flex items-center justify-center">
-                <Trophy className="w-5 h-5 text-emerald-300" />
+      <PageHero title="Painel Administrativo" subtitle="Gerencie torneios, jogadores e participantes do bolao">
+        <div className="items-center gap-3 grid grid-cols-1 lg:flex">
+          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl shrink-0">
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/30 flex items-center justify-center border border-emerald-500/30">
+                <Trophy className="w-6 h-6 text-emerald-400" />
               </div>
               <div>
-                <p className="text-emerald-100 text-xs">Torneios</p>
-                <p className="text-xl font-bold text-white">{tournaments.length}</p>
+                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Torneios</p>
+                <p className="text-2xl font-black text-white">{tournaments.length}</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white/10 border-0 backdrop-blur-sm">
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-amber-500/30 flex items-center justify-center">
-                <Users className="w-5 h-5 text-amber-300" />
+          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl shrink-0">
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
+                <Users className="w-6 h-6 text-amber-300" />
               </div>
               <div>
-                <p className="text-emerald-100 text-xs">Usuarios</p>
-                <p className="text-xl font-bold text-white">{users.length}</p>
+                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Usuários</p>
+                <p className="text-2xl font-black text-white">{users.length}</p>
               </div>
             </CardContent>
           </Card>
@@ -52,10 +46,28 @@ export default async function AdminDashboardPage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 -mt-2">
           {[
-            { label: 'Total Torneios', value: tournaments.length, icon: Trophy, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-            { label: 'Ativos', value: activeTournaments.length, icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-50' },
+            {
+              label: 'Torneios',
+              value: tournaments.length,
+              icon: Trophy,
+              color: 'text-emerald-600',
+              bg: 'bg-emerald-50',
+            },
+            {
+              label: 'Ativos',
+              value: activeTournaments.length,
+              icon: Calendar,
+              color: 'text-blue-600',
+              bg: 'bg-blue-50',
+            },
             { label: 'Usuarios', value: users.length, icon: Users, color: 'text-purple-600', bg: 'bg-purple-50' },
-            { label: 'Palpites', value: totalPredictions, icon: TrendingUp, color: 'text-amber-600', bg: 'bg-amber-50' },
+            {
+              label: 'Palpites',
+              value: totalPredictions,
+              icon: TrendingUp,
+              color: 'text-amber-600',
+              bg: 'bg-amber-50',
+            },
           ].map((stat) => (
             <Card key={stat.label} className="border-0 shadow-md">
               <CardContent className="p-5 flex items-center gap-4">
@@ -103,8 +115,8 @@ export default async function AdminDashboardPage() {
                         upcoming: { label: 'Em breve', class: 'bg-amber-100 text-amber-700' },
                         active: { label: 'Ativo', class: 'bg-emerald-100 text-emerald-700' },
                         completed: { label: 'Finalizado', class: 'bg-slate-100 text-slate-600' },
-                      }
-                      const status = statusConfig[t.status] || statusConfig.upcoming
+                      };
+                      const status = statusConfig[t.status] || statusConfig.upcoming;
 
                       return (
                         <Link
@@ -118,7 +130,9 @@ export default async function AdminDashboardPage() {
                             </div>
                             <div>
                               <p className="font-medium text-slate-900">{t.name}</p>
-                              <p className="text-xs text-slate-500">{t.location} - {t.surface}</p>
+                              <p className="text-xs text-slate-500">
+                                {t.location} - {t.surface}
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-3">
@@ -126,7 +140,7 @@ export default async function AdminDashboardPage() {
                             <ChevronRight className="w-4 h-4 text-slate-400" />
                           </div>
                         </Link>
-                      )
+                      );
                     })}
                   </div>
                 )}
@@ -159,9 +173,7 @@ export default async function AdminDashboardPage() {
                           <p className="text-xs text-slate-500">{u.email}</p>
                         </div>
                       </div>
-                      {u.is_admin && (
-                        <Badge className="bg-emerald-100 text-emerald-700 text-xs">Admin</Badge>
-                      )}
+                      {u.is_admin && <Badge className="bg-emerald-100 text-emerald-700 text-xs">Admin</Badge>}
                     </div>
                   ))}
                 </div>
@@ -171,5 +183,5 @@ export default async function AdminDashboardPage() {
         </div>
       </main>
     </>
-  )
+  );
 }

@@ -1,83 +1,76 @@
-import { getSession } from '@/lib/auth'
-import { redirect } from 'next/navigation'
-import { getUserPredictionsWithDetails, getUserStats, ROUND_NAMES, ROUND_POINTS } from '@/lib/data'
-import { DashboardHeader } from '@/components/dashboard/dashboard-header'
-import { PageHero } from '@/components/shared/page-hero'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Trophy,
-  Target,
-  TrendingUp,
-  CheckCircle2,
-  XCircle,
-  Clock,
-} from 'lucide-react'
-import Link from 'next/link'
-import type { PredictionWithDetails } from '@/lib/data'
+import { getSession } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import { getUserPredictionsWithDetails, getUserStats, ROUND_NAMES, ROUND_POINTS } from '@/lib/data';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { PageHero } from '@/components/shared/page-hero';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Trophy, Target, TrendingUp, CheckCircle2, XCircle, Clock, Medal } from 'lucide-react';
+import Link from 'next/link';
+import type { PredictionWithDetails } from '@/lib/data';
 
 export default async function MeusPalpitesPage() {
-  const user = await getSession()
-  if (!user) redirect('/login')
+  const user = await getSession();
+  if (!user) redirect('/login');
 
-  const [predictions, stats] = await Promise.all([
-    getUserPredictionsWithDetails(user.id),
-    getUserStats(user.id),
-  ])
+  const [predictions, stats] = await Promise.all([getUserPredictionsWithDetails(user.id), getUserStats(user.id)]);
 
-  const pendingPredictions = predictions.filter(p => p.match_status === 'scheduled' || p.match_status === 'pending')
-  const completedPredictions = predictions.filter(p => p.match_status === 'completed')
-  const correctPredictions = completedPredictions.filter(p => p.is_correct)
-  const wrongPredictions = completedPredictions.filter(p => p.is_correct === false)
+  const pendingPredictions = predictions.filter((p) => p.match_status === 'scheduled' || p.match_status === 'pending');
+  const completedPredictions = predictions.filter((p) => p.match_status === 'completed');
+  const correctPredictions = completedPredictions.filter((p) => p.is_correct);
+  const wrongPredictions = completedPredictions.filter((p) => p.is_correct === false);
 
   return (
     <div className="min-h-screen bg-slate-50">
       <DashboardHeader user={user} />
 
       <PageHero title="Meus Palpites" subtitle="Acompanhe todos os seus palpites e resultados">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full md:w-auto">
-          <Card className="bg-white/10 border-0 backdrop-blur-sm px-4">
-            <CardContent className="p-3 md:p-4">
-              <div className="flex items-center gap-3">
-                <Target className="w-6 h-6 text-emerald-300 hidden sm:block" />
-                <div>
-                  <p className="text-emerald-100 text-xs">Palpites</p>
-                  <p className="text-xl font-bold text-white">{stats.total_predictions}</p>
-                </div>
+        <div className="flex items-center gap-4">
+          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl">
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
+                <Target className="w-6 h-6 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Palpites</p>
+                <p className="text-2xl font-black text-white">{stats.total_predictions}</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white/10 border-0 backdrop-blur-sm">
-            <CardContent className="p-3 md:p-4">
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="w-6 h-6 text-emerald-300 hidden sm:block" />
-                <div>
-                  <p className="text-emerald-100 text-xs">Acertos</p>
-                  <p className="text-xl font-bold text-white">{stats.correct_predictions}</p>
-                </div>
+
+          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl">
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
+                <CheckCircle2 className="w-6 h-6 text-blue-400" />
+              </div>
+              <div>
+                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Acertos</p>
+                <p className="text-2xl font-black text-white">{stats.correct_predictions}</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white/10 border-0 backdrop-blur-sm">
-            <CardContent className="p-3 md:p-4">
-              <div className="flex items-center gap-3">
-                <TrendingUp className="w-6 h-6 text-emerald-300 hidden sm:block" />
-                <div>
-                  <p className="text-emerald-100 text-xs">Precisao</p>
-                  <p className="text-xl font-bold text-white">{stats.accuracy}%</p>
-                </div>
+
+          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl">
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center border border-orange-500/30">
+                <CheckCircle2 className="w-6 h-6 text-orange-400" />
+              </div>
+              <div>
+                <p className="text-orange-100/70 text-xs font-bold uppercase tracking-wider">Precisão</p>
+                <p className="text-2xl font-black text-white">{stats.accuracy}%</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white/10 border-0 backdrop-blur-sm">
-            <CardContent className="p-3 md:p-4">
-              <div className="flex items-center gap-3">
-                <Trophy className="w-6 h-6 text-emerald-300 hidden sm:block" />
-                <div>
-                  <p className="text-emerald-100 text-xs">Pontos</p>
-                  <p className="text-xl font-bold text-white">{stats.total_points}</p>
-                </div>
+
+          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl">
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-yellow-500/20 flex items-center justify-center border border-yellow-500/30">
+                <Medal className="w-6 h-6 text-yellow-400" />
+              </div>
+              <div>
+                <p className="text-yellow-100/70 text-xs font-bold uppercase tracking-wider">Pontos</p>
+                <p className="text-2xl font-black text-white">{stats.total_points}</p>
               </div>
             </CardContent>
           </Card>
@@ -90,9 +83,7 @@ export default async function MeusPalpitesPage() {
             <CardContent className="py-16 text-center">
               <Target className="w-16 h-16 text-slate-300 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-slate-900 mb-2">Nenhum palpite ainda</h2>
-              <p className="text-slate-600 mb-6">
-                Inscreva-se em um torneio e comece a fazer seus palpites!
-              </p>
+              <p className="text-slate-600 mb-6">Inscreva-se em um torneio e comece a fazer seus palpites!</p>
               <Link
                 href="/torneios"
                 className="inline-flex items-center justify-center px-6 py-3 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition-colors"
@@ -104,32 +95,52 @@ export default async function MeusPalpitesPage() {
         ) : (
           <Tabs defaultValue="all" className="space-y-6">
             <TabsList className="bg-white shadow-sm w-full flex flex-wrap h-auto p-1 gap-1">
-              <TabsTrigger value="all" className="flex-1 min-w-[70px] text-xs sm:text-sm py-2 data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700">
+              <TabsTrigger
+                value="all"
+                className="flex-1 min-w-[70px] text-xs sm:text-sm py-2 data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700"
+              >
                 Todos ({predictions.length})
               </TabsTrigger>
-              <TabsTrigger value="pending" className="flex-1 min-w-[70px] text-xs sm:text-sm py-2 data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700">
+              <TabsTrigger
+                value="pending"
+                className="flex-1 min-w-[70px] text-xs sm:text-sm py-2 data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700"
+              >
                 <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 Pendentes ({pendingPredictions.length})
               </TabsTrigger>
-              <TabsTrigger value="correct" className="flex-1 min-w-[70px] text-xs sm:text-sm py-2 data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700">
+              <TabsTrigger
+                value="correct"
+                className="flex-1 min-w-[70px] text-xs sm:text-sm py-2 data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700"
+              >
                 <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 Acertos ({correctPredictions.length})
               </TabsTrigger>
-              <TabsTrigger value="wrong" className="flex-1 min-w-[70px] text-xs sm:text-sm py-2 data-[state=active]:bg-red-50 data-[state=active]:text-red-700">
+              <TabsTrigger
+                value="wrong"
+                className="flex-1 min-w-[70px] text-xs sm:text-sm py-2 data-[state=active]:bg-red-50 data-[state=active]:text-red-700"
+              >
                 <XCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 Erros ({wrongPredictions.length})
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="all"><PredictionsList predictions={predictions} /></TabsContent>
-            <TabsContent value="pending"><PredictionsList predictions={pendingPredictions} /></TabsContent>
-            <TabsContent value="correct"><PredictionsList predictions={correctPredictions} /></TabsContent>
-            <TabsContent value="wrong"><PredictionsList predictions={wrongPredictions} /></TabsContent>
+            <TabsContent value="all">
+              <PredictionsList predictions={predictions} />
+            </TabsContent>
+            <TabsContent value="pending">
+              <PredictionsList predictions={pendingPredictions} />
+            </TabsContent>
+            <TabsContent value="correct">
+              <PredictionsList predictions={correctPredictions} />
+            </TabsContent>
+            <TabsContent value="wrong">
+              <PredictionsList predictions={wrongPredictions} />
+            </TabsContent>
           </Tabs>
         )}
       </main>
     </div>
-  )
+  );
 }
 
 function PredictionsList({ predictions }: { predictions: PredictionWithDetails[] }) {
@@ -140,14 +151,14 @@ function PredictionsList({ predictions }: { predictions: PredictionWithDetails[]
           <p className="text-slate-500">Nenhum palpite nesta categoria</p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  const grouped: Record<string, PredictionWithDetails[]> = {}
+  const grouped: Record<string, PredictionWithDetails[]> = {};
   for (const p of predictions) {
-    const key = p.tournament_name
-    if (!grouped[key]) grouped[key] = []
-    grouped[key].push(p)
+    const key = p.tournament_name;
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(p);
   }
 
   return (
@@ -164,7 +175,7 @@ function PredictionsList({ predictions }: { predictions: PredictionWithDetails[]
           </div>
           <CardContent className="p-0">
             <div className="divide-y divide-slate-100">
-              {tournamentPredictions.map(prediction => (
+              {tournamentPredictions.map((prediction) => (
                 <PredictionCard key={prediction.id} prediction={prediction} />
               ))}
             </div>
@@ -172,19 +183,23 @@ function PredictionsList({ predictions }: { predictions: PredictionWithDetails[]
         </Card>
       ))}
     </div>
-  )
+  );
 }
 
 function PredictionCard({ prediction }: { prediction: PredictionWithDetails }) {
-  const isPending = prediction.match_status === 'scheduled' || prediction.match_status === 'pending'
-  const isCorrect = prediction.is_correct === true
-  const isWrong = prediction.is_correct === false
-  const roundName = ROUND_NAMES[prediction.round] || `Rodada ${prediction.round}`
+  const isPending = prediction.match_status === 'scheduled' || prediction.match_status === 'pending';
+  const isCorrect = prediction.is_correct === true;
+  const isWrong = prediction.is_correct === false;
+  const roundName = ROUND_NAMES[prediction.round] || `Rodada ${prediction.round}`;
 
   return (
-    <div className={`px-6 py-4 flex items-center justify-between ${isCorrect ? 'bg-emerald-50/50' : isWrong ? 'bg-red-50/50' : ''}`}>
+    <div
+      className={`px-6 py-4 flex items-center justify-between ${isCorrect ? 'bg-emerald-50/50' : isWrong ? 'bg-red-50/50' : ''}`}
+    >
       <div className="flex items-center gap-4">
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isPending ? 'bg-amber-100' : isCorrect ? 'bg-emerald-100' : 'bg-red-100'}`}>
+        <div
+          className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isPending ? 'bg-amber-100' : isCorrect ? 'bg-emerald-100' : 'bg-red-100'}`}
+        >
           {isPending ? (
             <Clock className="w-5 h-5 text-amber-600" />
           ) : isCorrect ? (
@@ -200,7 +215,9 @@ function PredictionCard({ prediction }: { prediction: PredictionWithDetails }) {
             <span className="font-medium text-slate-900">{prediction.player2_name || 'TBD'}</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Badge variant="outline" className="text-xs font-normal">{roundName}</Badge>
+            <Badge variant="outline" className="text-xs font-normal">
+              {roundName}
+            </Badge>
             {prediction.score && <span className="font-mono text-xs">{prediction.score}</span>}
           </div>
         </div>
@@ -208,7 +225,9 @@ function PredictionCard({ prediction }: { prediction: PredictionWithDetails }) {
 
       <div className="text-right shrink-0">
         <p className="text-sm text-slate-500 mb-1">Seu palpite:</p>
-        <p className={`font-semibold ${isPending ? 'text-amber-600' : isCorrect ? 'text-emerald-600' : 'text-red-600'}`}>
+        <p
+          className={`font-semibold ${isPending ? 'text-amber-600' : isCorrect ? 'text-emerald-600' : 'text-red-600'}`}
+        >
           {prediction.predicted_winner_name}
         </p>
         {!isPending && prediction.winner_name && (
@@ -216,10 +235,8 @@ function PredictionCard({ prediction }: { prediction: PredictionWithDetails }) {
             Vencedor: <span className="font-medium text-slate-700">{prediction.winner_name}</span>
           </p>
         )}
-        {isCorrect && (
-          <Badge className="mt-1 bg-emerald-500 text-white text-xs">+{prediction.points_earned} pts</Badge>
-        )}
+        {isCorrect && <Badge className="mt-1 bg-emerald-500 text-white text-xs">+{prediction.points_earned} pts</Badge>}
       </div>
     </div>
-  )
+  );
 }

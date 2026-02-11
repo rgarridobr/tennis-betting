@@ -21,7 +21,7 @@ export default async function AdminUsersPage() {
         title="Gerenciar Usuários"
         subtitle="Administre os participantes do bolão"
       >
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4 md:grid md:grid-cols-2 lg:flex">
           <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl">
             <CardContent className="p-4 flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">

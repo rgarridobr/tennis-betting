@@ -36,12 +36,14 @@ export function AdminHeader({ user }: AdminHeaderProps) {
   ]
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/50 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="container mx-auto px-4 h-16 flex items-center">
+    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60">
+      <div className="container mx-auto px-4 h-20 flex items-center justify-between">
         {/* Logo - Left */}
-        <Link href="/admin" className="flex items-center gap-2 text-emerald-600 font-semibold">
-          <Trophy className="w-6 h-6" />
-          <span className="hidden sm:inline">TennisPool</span>
+        <Link href="/admin" className="flex items-center gap-2.5 text-emerald-600 group">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-200 group-hover:scale-110 transition-transform">
+            <Trophy className="w-6 h-6 text-white" />
+          </div>
+          <span className="hidden sm:inline font-black text-xl tracking-tight text-slate-900">Bolão de Tênis</span>
         </Link>
 
         {/* Navigation - Center */}

@@ -37,18 +37,20 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border/50 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-emerald-600 font-semibold">
-            <Trophy className="w-6 h-6" />
-            <span className="hidden sm:inline">Bolão de Tênis</span>
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60">
+        <div className="container mx-auto px-4 h-20 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5 text-emerald-600 group">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-200 group-hover:scale-110 transition-transform">
+              <Trophy className="w-6 h-6 text-white" />
+            </div>
+            <span className="hidden sm:inline font-black text-xl tracking-tight text-slate-900">Bolão de Tênis</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" asChild>
+            <Button variant="ghost" asChild className="font-bold text-slate-600 hover:text-emerald-600 rounded-xl">
               <Link href="/login">Entrar</Link>
             </Button>
-            <Button className="bg-emerald-500 text-white hover:bg-emerald-600" asChild>
-              <Link href="/cadastro">Criar conta</Link>
+            <Button className="bg-emerald-500 text-white hover:bg-emerald-600 font-bold px-6 rounded-xl shadow-lg shadow-emerald-100" asChild>
+              <Link href="/cadastro">Começar Agora</Link>
             </Button>
           </div>
         </div>
@@ -56,161 +58,90 @@ export default async function HomePage() {
 
       <main>
         {/* Hero Section */}
-        <section className="relative min-h-[90vh] flex items-center overflow-hidden">
-          {/* Background Image */}
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=1920&q=80')`,
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/95 via-emerald-800/90 to-teal-900/85" />
-
-          {/* Decorative elements */}
-          <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-amber-400/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-400/10 rounded-full blur-3xl" />
-
-          <div className="relative container mx-auto px-4 py-12">
-            <div className="grid gap-12 items-center">
-              {/* Left content */}
-              <div>
-                <Badge className="bg-amber-400/20 text-amber-300 hover:bg-amber-400/20 mb-6 px-4 py-2 text-sm border border-amber-400/30">
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Roland Garros 2025 ao vivo!
-                </Badge>
-
-                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1] text-balance">
+        <section className="relative pt-6 pb-20 overflow-hidden bg-[#f8fafc]">
+          <div className="container mx-auto px-4">
+            <div className="relative overflow-hidden rounded-[2.5rem] min-h-[600px] flex items-center">
+              {/* Background Image */}
+              <div 
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 group-hover:scale-105"
+                style={{
+                  backgroundImage: `url('https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=1920&q=80')`,
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
+              
+              <div className="relative px-8 py-20 md:px-16 w-full max-w-3xl">
+                <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-white leading-[1.05] tracking-tight text-balance">
                   Faça seus palpites e{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-amber-500">
+                  <span className="text-emerald-400">
                     ganhe pontos
                   </span>
                 </h1>
 
-                <p className="mt-6 text-lg sm:text-xl text-white/70 max-w-lg leading-relaxed">
-                  Participe do bolão, dê seus palpites nos maiores torneios de tênis do mundo e dispute com seus amigos
-                  no ranking.
+                <p className="mt-8 text-lg sm:text-xl text-white/80 max-w-xl leading-relaxed font-medium">
+                  Participe do bolão, dê seus palpites nos maiores torneios de tênis do mundo e dispute com seus amigos no ranking.
                 </p>
 
-                <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                <div className="mt-10 flex flex-col sm:flex-row gap-4">
                   <Button
                     size="lg"
-                    className="bg-emerald-500 hover:bg-emerald-400 text-white text-lg h-14 px-8 shadow-lg shadow-emerald-500/30"
+                    className="bg-emerald-500 hover:bg-emerald-400 text-white text-lg h-16 px-10 rounded-2xl shadow-xl shadow-emerald-500/20 font-black transition-all hover:-translate-y-1"
                     asChild
                   >
                     <Link href="/cadastro">
-                      Começar agora
+                      Criar minha conta
                       <ArrowRight className="w-5 h-5 ml-2" />
                     </Link>
                   </Button>
                   <Button
                     size="lg"
                     variant="outline"
-                    className="border-white/20 text-white hover:bg-white/10 hover:text-white text-lg h-14 px-8 bg-white/5"
+                    className="border-white/20 text-white hover:bg-white/10 hover:text-white text-lg h-16 px-10 rounded-2xl bg-white/5 backdrop-blur-md font-bold transition-all hover:-translate-y-1"
                     asChild
                   >
-                    <Link href="/login">Já tenho uma conta</Link>
+                    <Link href="/login">Fazer login</Link>
                   </Button>
                 </div>
 
                 {/* Trust badges */}
-                <div className="mt-10 flex flex-wrap items-center gap-6 text-white/60 text-sm">
+                {/* <div className="mt-12 flex flex-wrap items-center gap-8 text-white/60 text-sm font-bold">
                   <span className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    Cadastro gratuito
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    Grátis
                   </span>
                   <span className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-emerald-400" />
-                    Pagamento seguro
+                    <Shield className="w-5 h-5 text-emerald-400" />
+                    Seguro
                   </span>
                   <span className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-emerald-400" />
-                    500+ participantes
+                    <Star className="w-5 h-5 text-emerald-400" />
+                    500+ membros
                   </span>
-                </div>
+                </div> */}
               </div>
-
-              {/* Right content - Stats cards */}
-              {/* <div className="hidden lg:block">
-                <div className="relative">
-                  <Card className="bg-white/10 backdrop-blur-md border-white/20 shadow-2xl">
-                    <CardContent className="p-8">
-                      <div className="text-center mb-6">
-                        <p className="text-white/60 text-sm uppercase tracking-wider">Prêmio acumulado</p>
-                        <p className="text-5xl font-bold text-white mt-2">R$ 5.250</p>
-                        <p className="text-emerald-400 text-sm mt-1">Roland Garros 2025</p>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-4 pt-6 border-t border-white/10">
-                        <div className="text-center">
-                          <p className="text-3xl font-bold text-white">127</p>
-                          <p className="text-white/60 text-xs mt-1">Participantes</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-3xl font-bold text-white">64</p>
-                          <p className="text-white/60 text-xs mt-1">Partidas</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-3xl font-bold text-amber-400">10</p>
-                          <p className="text-white/60 text-xs mt-1">Pts/acerto</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card className="absolute -top-6 -left-6 bg-white shadow-xl border-0 animate-pulse">
-                    <CardContent className="p-4 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
-                        <Trophy className="w-5 h-5 text-emerald-600" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-slate-500">1o lugar</p>
-                        <p className="font-bold text-slate-900">R$ 2.625</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card className="absolute -bottom-4 -right-4 bg-white shadow-xl border-0">
-                    <CardContent className="p-4 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-                        <Target className="w-5 h-5 text-amber-600" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-slate-500">Acertos</p>
-                        <p className="font-bold text-slate-900">85%</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>*/}
-            </div>
-          </div>
-
-          {/* Scroll indicator */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/40">
-            <span className="text-xs uppercase tracking-wider">Role para ver mais</span>
-            <div className="w-6 h-10 rounded-full border-2 border-white/20 flex items-start justify-center p-2">
-              <div className="w-1.5 h-3 bg-white/40 rounded-full animate-bounce" />
             </div>
           </div>
         </section>
 
         {/* Featured Tournaments */}
-        <section className="py-24 bg-white">
+        <section className="py-24 bg-white relative overflow-hidden">
           <div className="container mx-auto px-4">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
               <div>
-                <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 mb-4">Torneios</Badge>
-                <h2 className="text-3xl md:text-4xl font-bold text-slate-900">Torneios em destaque</h2>
-                <p className="text-slate-600 mt-2 text-lg">Inscreva-se e comece a fazer seus palpites</p>
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-2 h-8 bg-emerald-500 rounded-full" />
+                  <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Torneios em destaque</h2>
+                </div>
+                <p className="text-slate-500 text-lg font-medium">Inscreva-se e comece a fazer seus palpites agora mesmo</p>
               </div>
               <Button
-                variant="outline"
-                className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 self-start sm:self-auto bg-transparent"
+                variant="ghost"
+                className="text-emerald-600 hover:bg-emerald-50 font-bold rounded-xl px-6"
                 asChild
               >
-                <Link href="/cadastro">
-                  Ver todos os torneios
-                  <ChevronRight className="w-4 h-4 ml-1" />
+                <Link href="/cadastro" className="flex items-center gap-2">
+                  Ver todos
+                  <ChevronRight className="w-4 h-4" />
                 </Link>
               </Button>
             </div>
@@ -219,58 +150,51 @@ export default async function HomePage() {
               {featuredTournaments.map((tournament) => (
                 <Card
                   key={tournament.id}
-                  className="overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1 pt-0"
+                  className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group hover:-translate-y-2 pt-0 rounded-[2rem]"
                 >
-                  <div className="relative h-52">
+                  <div className="relative h-64">
                     <img
-                      src={tournament.image_url || '/placeholder.svg'}
+                      src={tournament.image_url || 'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=600&q=80'}
                       alt={tournament.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent group-hover:scale-110 duration-500" />
                     <Badge
-                      className={`absolute top-4 right-4 ${
-                        tournament.status === 'active' ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-amber-900'
+                      className={`absolute top-4 right-4 px-3 py-1 text-[10px] uppercase tracking-wider font-bold shadow-lg border-none ${
+                        tournament.status === 'active' ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'
                       }`}
                     >
                       {tournament.status === 'active' ? 'Ativo' : 'Em breve'}
                     </Badge>
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm mb-2">
-                        {tournament.surface === 'Clay'
-                          ? 'Saibro'
-                          : tournament.surface === 'Grass'
-                            ? 'Grama'
-                            : 'Quadra dura'}
-                      </Badge>
-                      <h3 className="text-2xl font-bold text-white">{tournament.name}</h3>
-                      <p className="text-white/80 text-sm mt-1 flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        {tournament.location}
-                      </p>
+                    <div className="absolute bottom-5 left-6 right-6">
+                      <h3 className="text-2xl font-black text-white leading-tight drop-shadow-md">{tournament.name}</h3>
+                      <div className="flex items-center gap-3 mt-3">
+                        <Badge className="bg-emerald-500 text-white border-0 font-bold px-3 py-0.5">
+                          {tournament.surface === 'Clay' ? 'Saibro' : tournament.surface === 'Grass' ? 'Grama' : 'Hard'}
+                        </Badge>
+                        <span className="text-white/90 text-sm font-bold flex items-center gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+                          {tournament.location}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <CardContent className="p-5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm text-slate-500">
-                        <Calendar className="w-4 h-4" />
+                  <CardContent className="p-6 bg-white">
+                    <div className="flex items-center justify-between font-bold">
+                      <div className="flex items-center gap-2 text-slate-500 text-sm">
+                        <Calendar className="w-4 h-4 text-emerald-500" />
                         <span>
                           {new Date(tournament.start_date).toLocaleDateString('pt-BR', {
                             day: 'numeric',
                             month: 'short',
-                          })}{' '}
-                          -{' '}
-                          {new Date(tournament.end_date).toLocaleDateString('pt-BR', {
+                          })} - {new Date(tournament.end_date).toLocaleDateString('pt-BR', {
                             day: 'numeric',
                             month: 'short',
                           })}
                         </span>
                       </div>
-                      <div className="text-right">
-                        <p className="text-xs text-slate-500">128 jogadores</p>
-                        <p className="text-lg font-bold text-emerald-600">Grand Slam</p>
-                      </div>
+                      <p className="text-emerald-600">Grand Slam</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -280,141 +204,112 @@ export default async function HomePage() {
         </section>
 
         {/* How it works */}
-        <section className="py-24 bg-slate-50">
+        <section className="py-24 bg-[#f8fafc]">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
-              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 mb-4">Simples e rápido</Badge>
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900">Como funciona</h2>
-              <p className="text-slate-600 mt-3 text-lg max-w-md mx-auto">
-                Em apenas 4 passos você começa a competir pelos prêmios
-              </p>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 mb-4 border border-emerald-100">
+                <Target className="w-4 h-4" />
+                <span className="font-bold text-xs tracking-wide uppercase">Simples e rápido</span>
+              </div>
+              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">Como funciona</h2>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
                 {
                   icon: Users,
-                  color: 'bg-blue-500',
-                  lightColor: 'bg-blue-50',
-                  iconBg: 'bg-blue-100',
-                  iconColor: 'text-blue-600',
+                  color: 'bg-emerald-500',
+                  iconColor: 'text-emerald-500',
                   title: 'Crie sua conta',
-                  description: 'Cadastre-se gratuitamente em menos de 1 minuto.',
+                  description: 'Cadastre-se gratuitamente em menos de 1 minuto e entre no jogo.',
                 },
                 {
                   icon: Trophy,
-                  color: 'bg-amber-500',
-                  lightColor: 'bg-amber-50',
-                  iconBg: 'bg-amber-100',
-                  iconColor: 'text-amber-600',
+                  color: 'bg-emerald-500',
                   title: 'Escolha o torneio',
-                  description: 'Pague a taxa de inscrição para entrar no bolão.',
+                  description: 'Selecione o torneio ativo que deseja participar do bolão.',
                 },
                 {
                   icon: Target,
                   color: 'bg-emerald-500',
-                  lightColor: 'bg-emerald-50',
-                  iconBg: 'bg-emerald-100',
-                  iconColor: 'text-emerald-600',
                   title: 'Faça seus palpites',
-                  description: 'Escolha o vencedor de cada partida do torneio.',
+                  description: 'Escolha o vencedor de cada partida e acumule pontos por acerto.',
                 },
                 {
                   icon: Medal,
-                  color: 'bg-violet-500',
-                  lightColor: 'bg-violet-50',
-                  iconBg: 'bg-violet-100',
-                  iconColor: 'text-violet-600',
-                  title: 'Ganhe prêmios',
-                  description: 'Acerte os resultados e leve o prêmio do bolão!',
+                  color: 'bg-emerald-500',
+                  title: 'Suba no Ranking',
+                  description: 'Dispute o topo do ranking global com outros participantes.',
                 },
               ].map((item, index) => (
-                <div key={item.title} className="relative">
-                  <Card
-                    className={`border-0 shadow-lg hover:shadow-xl transition-all h-full ${item.lightColor} hover:-translate-y-1`}
-                  >
-                    <CardContent className="p-6">
-                      {/* Step number */}
-                      <div
-                        className={`w-8 h-8 rounded-full ${item.color} text-white text-sm font-bold flex items-center justify-center mb-4`}
-                      >
-                        {index + 1}
-                      </div>
-
-                      {/* Icon */}
-                      {/* <div className={`w-14 h-14 rounded-xl ${item.iconBg} flex items-center justify-center mb-4`}>
-                        <item.icon className={`w-7 h-7 ${item.iconColor}`} />
-                      </div> */}
-
-                      {/* Content */}
-                      <h3 className="font-bold text-slate-900 text-lg mb-2">{item.title}</h3>
-                      <p className="text-slate-600 text-sm leading-relaxed">{item.description}</p>
-                    </CardContent>
-                  </Card>
-                </div>
+                <Card
+                  key={item.title}
+                  className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-[2rem] bg-white group hover:-translate-y-1"
+                >
+                  <CardContent className="p-8">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                      <item.icon className="w-6 h-6 text-emerald-600" />
+                    </div>
+                    <h3 className="font-black text-slate-900 text-xl mb-3 tracking-tight">{item.title}</h3>
+                    <p className="text-slate-500 font-medium leading-relaxed">{item.description}</p>
+                    <div className="mt-6 flex items-center gap-2 text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em]">
+                      <span className="w-8 h-[2px] bg-emerald-100" />
+                      Passo 0{index + 1}
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
-            </div>
-
-            {/* CTA */}
-            <div className="mt-16 text-center">
-              <Button
-                size="lg"
-                className="bg-emerald-600 hover:bg-emerald-700 text-lg h-14 px-8 shadow-lg shadow-emerald-600/30"
-                asChild
-              >
-                <Link href="/cadastro">
-                  Começar agora - É grátis!
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Link>
-              </Button>
             </div>
           </div>
         </section>
 
-        {/* Testimonials / Social proof */}
+        {/* Testimonials */}
         <section className="py-24 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
-              <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 mb-4">Depoimentos</Badge>
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900">O que dizem nossos participantes</h2>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 text-amber-600 mb-4 border border-amber-100">
+                <Star className="w-4 h-4 fill-amber-500" />
+                <span className="font-bold text-xs tracking-wide uppercase">Depoimentos</span>
+              </div>
+              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight text-balance">O que dizem nossos participantes</h2>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
               {[
                 {
                   name: 'Carlos Silva',
-                  role: 'Participante desde 2026',
-                  content: 'Já ganhei dois bolões! A plataforma é muito fácil de usar e os pagamentos são rápidos.',
+                  role: 'Participante desde 2024',
+                  content: 'A plataforma é incrível! Interface intuitiva e acompanhar o ranking em tempo real dá um gás a mais na competição.',
                   avatar: 'CS',
                 },
                 {
                   name: 'Ana Rodrigues',
-                  role: 'Participante desde 2026',
-                  content: 'Adoro acompanhar os torneios e fazer palpites. Muito divertido competir com amigos!',
+                  role: 'Participante desde 2024',
+                  content: 'Adoro a facilidade de dar os palpites. O sistema de pontos é justo e muito divertido de competir com os amigos.',
                   avatar: 'AR',
                 },
                 {
                   name: 'Pedro Santos',
-                  role: 'Participante desde 2026',
-                  content: 'A melhor plataforma de bolão de tênis. Interface limpa e funcionalidades incríveis.',
+                  role: 'Participante desde 2024',
+                  content: 'Melhor bolão de tênis que já participei. Todo Grand Slam eu tô aqui firme e forte. Recomendo demais!',
                   avatar: 'PS',
                 },
               ].map((testimonial) => (
-                <Card key={testimonial.name} className="border-0 shadow-lg">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-1 mb-4">
+                <Card key={testimonial.name} className="border-0 shadow-xl rounded-[2.5rem] bg-slate-50/50">
+                  <CardContent className="p-8">
+                    <div className="flex items-center gap-1 mb-6">
                       {[...Array(5)].map((_, i) => (
                         <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
                       ))}
                     </div>
-                    <p className="text-slate-600 mb-6 leading-relaxed">"{testimonial.content}"</p>
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold">
+                    <p className="text-slate-600 mb-8 leading-relaxed font-medium italic">"{testimonial.content}"</p>
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center text-white font-black shadow-lg shadow-emerald-200">
                         {testimonial.avatar}
                       </div>
                       <div>
-                        <p className="font-semibold text-slate-900">{testimonial.name}</p>
-                        <p className="text-sm text-slate-500">{testimonial.role}</p>
+                        <p className="font-black text-slate-900">{testimonial.name}</p>
+                        <p className="text-sm text-slate-500 font-bold">{testimonial.role}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -425,43 +320,43 @@ export default async function HomePage() {
         </section>
 
         {/* Final CTA */}
-        <section className="py-24 relative overflow-hidden">
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=1920&q=80')`,
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/95 to-teal-900/95" />
-
-          <div className="relative container mx-auto px-4 text-center">
-            <div className="max-w-2xl mx-auto">
-              <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 text-balance">
-                Pronto para entrar no jogo?
-              </h2>
-              <p className="text-emerald-100 text-lg mb-8">
-                Crie sua conta grátis agora e participe do bolão do Roland Garros 2025. O torneio já começou e os
-                prêmios estão te esperando!
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  size="lg"
-                  className="bg-white text-emerald-700 hover:bg-white/90 text-lg h-14 px-10 shadow-lg"
-                  asChild
-                >
-                  <Link href="/cadastro">
-                    Criar minha conta grátis
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Link>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-white/30 text-white hover:bg-white/10 hover:text-white text-lg h-14 px-8 bg-transparent"
-                  asChild
-                >
-                  <Link href="/login">Já tenho uma conta</Link>
-                </Button>
+        <section className="py-24 px-4">
+          <div className="container mx-auto max-w-6xl">
+            <div className="relative overflow-hidden rounded-[3rem] bg-slate-900 py-20 px-8 text-center">
+              <div 
+                className="absolute inset-0 opacity-20 bg-cover bg-center"
+                style={{
+                  backgroundImage: `url('https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=1920&q=80')`,
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/20 to-transparent" />
+              
+              <div className="relative max-w-3xl mx-auto">
+                <h2 className="text-3xl md:text-5xl font-black text-white mb-6 text-balance tracking-tight">
+                  Pronto para entrar no jogo?
+                </h2>
+                <p className="text-emerald-100/80 text-lg mb-10 font-medium">
+                  Crie sua conta grátis agora e comece a pontuar nos maiores torneios de tênis do mundo.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button
+                    size="lg"
+                    className="bg-emerald-500 hover:bg-emerald-400 text-white text-lg h-16 px-12 rounded-2xl shadow-xl shadow-emerald-500/20 font-black transition-all hover:-translate-y-1"
+                    asChild
+                  >
+                    <Link href="/cadastro">
+                      Criar minha conta grátis
+                    </Link>
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-white/20 text-white hover:bg-white/10 hover:text-white text-lg h-16 px-10 rounded-2xl bg-white/5 backdrop-blur-md font-bold transition-all hover:-translate-y-1"
+                    asChild
+                  >
+                    <Link href="/login">Já tenho uma conta</Link>
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -469,19 +364,18 @@ export default async function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-900 py-16">
+      <footer className="py-10">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-12 mb-12">
+          {/* <div className="grid md:grid-cols-4 gap-12 mb-16">
             <div className="md:col-span-2">
-              <div className="flex items-center gap-2 text-white font-bold text-xl mb-4">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center">
-                  <Trophy className="w-6 h-6" />
+              <Link href="/" className="flex items-center gap-2.5 text-white mb-6 group">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                  <Trophy className="w-6 h-6 text-white" />
                 </div>
-                <span>Bolão de Tênis</span>
-              </div>
-              <p className="text-slate-400 max-w-sm">
-                Faça seus palpites e ganhe pontos nos maiores torneios de tênis do mundo. Divirta-se competindo com
-                amigos!
+                <span className="font-black text-2xl tracking-tight">Bolão de Tênis</span>
+              </Link>
+              <p className="text-slate-500 max-w-sm font-medium leading-relaxed">
+                A plataforma definitiva para fãs de tênis. Faça seus palpites, acompanhe os resultados ao vivo e dispute o topo do ranking mundial.
               </p>
             </div>
 
@@ -526,9 +420,9 @@ export default async function HomePage() {
                 </li>
               </ul>
             </div>
-          </div>
+          </div> */}
 
-          <div className="pt-8 border-t border-slate-800 text-center text-slate-500 text-sm">
+          <div className="text-center text-slate-500 text-sm">
             <p>2025 Bolão de Tênis. Todos os direitos reservados.</p>
           </div>
         </div>
