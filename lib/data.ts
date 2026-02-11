@@ -143,6 +143,11 @@ export const ROUND_POINTS: Record<number, number> = {
 
 // ==================== TOURNAMENTS ====================
 
+export async function getTournamentsActive(): Promise<Tournament[]> {
+  const rows = await sql`SELECT * FROM tournaments WHERE status = 'active' ORDER BY start_date DESC`
+  return rows as Tournament[]
+}
+
 export async function getTournaments(): Promise<Tournament[]> {
   const rows = await sql`SELECT * FROM tournaments ORDER BY start_date DESC`
   return rows as Tournament[]
