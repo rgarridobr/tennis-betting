@@ -23,7 +23,7 @@ export default async function TournamentsPage() {
 
       <PageHero
         title="Torneios"
-        subtitle="Participe dos maiores Grand Slams do tênis mundial"
+        subtitle="Participe dos maiores torneios do tênis mundial"
       >
         <div className="flex items-center gap-4">
           <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl">
