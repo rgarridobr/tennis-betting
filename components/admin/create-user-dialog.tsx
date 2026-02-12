@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createUserAction } from '@/lib/actions/admin'
-import { UserPlus, Mail, Lock, User, AlertCircle, Loader2 } from 'lucide-react'
+import { UserPlus, Mail, Lock, User, AlertCircle, Loader2, Phone } from 'lucide-react'
 import { toast } from 'sonner'
+import { formatBrazilianPhoneNumber } from '@/lib/utils'
 import {
   Dialog,
   DialogContent,
@@ -21,6 +22,12 @@ export function CreateUserDialog() {
   const [isPending, startTransition] = useTransition()
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [whatsapp, setWhatsapp] = useState('')
+
+  const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedValue = formatBrazilianPhoneNumber(e.target.value)
+    setWhatsapp(formattedValue)
+  }
 
   async function handleSubmit(formData: FormData) {
     setError(null)
@@ -107,6 +114,21 @@ export function CreateUserDialog() {
                 className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300"
               />
               <p className="text-[10px] text-slate-400 font-bold px-1 italic">Mínimo de 6 caracteres</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="whatsapp" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest ml-1">
+                <Phone className="w-3 h-3 text-emerald-500" /> WhatsApp (Opcional)
+              </Label>
+              <Input
+                id="whatsapp"
+                name="whatsapp"
+                placeholder="(99) 99999-9999"
+                value={whatsapp}
+                onChange={handleWhatsappChange}
+                maxLength={15}
+                className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300"
+              />
             </div>
           </div>
 
