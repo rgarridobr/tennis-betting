@@ -173,6 +173,8 @@ function BracketMatchCard({
         seed={match.player1_seed_val}
         isWinner={match.winner_id === match.player1_id && isCompleted}
         isSelected={selected === match.player1_id}
+        isPredicted={currentPrediction === match.player1_id}
+        isCompleted={isCompleted}
         onSelect={() => match.player1_id && handlePrediction(match.player1_id)}
         canPredict={!!canPredict}
         score={match.score}
@@ -187,6 +189,8 @@ function BracketMatchCard({
         seed={match.player2_seed_val}
         isWinner={match.winner_id === match.player2_id && isCompleted}
         isSelected={selected === match.player2_id}
+        isPredicted={currentPrediction === match.player2_id}
+        isCompleted={isCompleted}
         onSelect={() => match.player2_id && handlePrediction(match.player2_id)}
         canPredict={!!canPredict}
         score={match.score}
@@ -201,6 +205,8 @@ function PlayerRow({
   seed,
   isWinner,
   isSelected,
+  isPredicted,
+  isCompleted,
   onSelect,
   canPredict,
   score,
@@ -210,6 +216,8 @@ function PlayerRow({
   seed: number | null
   isWinner: boolean
   isSelected: boolean
+  isPredicted: boolean
+  isCompleted: boolean
   onSelect: () => void
   canPredict: boolean
   score: string | null
@@ -225,24 +233,32 @@ function PlayerRow({
 
   const sets = score ? score.split(' ') : []
 
+  const showPredictionResult = isCompleted && isPredicted
+  const predictionCorrect = showPredictionResult && isWinner
+
   return (
     <div
       onClick={canPredict ? onSelect : undefined}
       className={cn(
         "flex items-center px-4 py-3 cursor-default transition-all relative min-h-[48px]",
         canPredict && "cursor-pointer hover:bg-emerald-50/40",
-        isSelected && "bg-emerald-50/60"
+        isSelected && !isCompleted && "bg-emerald-50/60",
+        showPredictionResult && (predictionCorrect ? "bg-emerald-50/80" : "bg-red-50/80")
       )}
     >
-      {isSelected && (
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500 rounded-r-full shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
+      {(isSelected || showPredictionResult) && (
+        <div className={cn(
+          "absolute left-0 top-0 bottom-0 w-1 rounded-r-full shadow-[0_0_8px_rgba(0,0,0,0.1)]",
+          predictionCorrect ? "bg-emerald-500" : (showPredictionResult ? "bg-red-500" : "bg-emerald-500")
+        )} />
       )}
 
       <div className="flex-1 min-w-0 flex items-center gap-2">
         <span className={cn(
           "text-xs font-black truncate tracking-tight",
           isWinner ? "text-slate-900" : "text-slate-600",
-          isSelected && "text-emerald-900"
+          (isSelected && !isCompleted) && "text-emerald-900",
+          showPredictionResult && (predictionCorrect ? "text-emerald-900" : "text-red-900")
         )}>
           {name}
         </span>
@@ -253,10 +269,10 @@ function PlayerRow({
         )}
       </div>
 
-      {/* Scores or Selection Mark */}
-      <div className="flex items-center gap-1 ml-3">
-        {sets.length > 0 ? (
-          sets.map((set, i) => {
+      {/* Scores */}
+      {sets.length > 0 && (
+        <div className="flex items-center gap-1.5 ml-3">
+          {sets.map((set, i) => {
             const parts = set.split('-')
             const setScore = isP1 ? parts[0] : parts[1]
             const opponentScore = isP1 ? parts[1] : parts[0]
@@ -273,15 +289,24 @@ function PlayerRow({
                 {setScore}
               </div>
             )
-          })
-        ) : isSelected ? (
-          <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-200">
+          })}
+        </div>
+      )}
+
+      {/* Indicators (Selection, Winner, Prediction Result) */}
+      <div className="flex items-center justify-center w-6 ml-2 shrink-0">
+        {isSelected && !isCompleted ? (
+          <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-200 animate-in zoom-in duration-200">
             <Check className="w-3 h-3 text-white" />
           </div>
         ) : isWinner ? (
-          <div className="w-5 h-5 rounded-full bg-amber-400 flex items-center justify-center">
+          <div className="w-5 h-5 rounded-full bg-amber-400 flex items-center justify-center shadow-lg shadow-amber-100">
             <Trophy className="w-3 h-3 text-white" />
           </div>
+        ) : showPredictionResult && !predictionCorrect ? (
+          <Badge variant="outline" className="text-[8px] font-black h-4 px-1 rounded-sm bg-red-50 border-red-200 text-red-500 uppercase tracking-tighter">
+            Errou
+          </Badge>
         ) : null}
       </div>
     </div>
