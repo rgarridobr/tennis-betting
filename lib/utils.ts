@@ -7,11 +7,17 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatBrazilianPhoneNumber(value: string) {
   if (!value) return value
-  const phoneNumber = value.replace(/\D/g, '')
-  const phoneNumberLength = phoneNumber.length
-  if (phoneNumberLength < 3) return phoneNumber
-  if (phoneNumberLength < 7) {
-    return `(${phoneNumber.slice(0, 2)}) ${phoneNumber.slice(2)}`
+  const digits = value.replace(/\D/g, '')
+  const length = digits.length
+
+  if (length <= 2) {
+    return digits
   }
-  return `(${phoneNumber.slice(0, 2)}) ${phoneNumber.slice(2, 7)}-${phoneNumber.slice(7, 11)}`
+  if (length <= 6) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+  }
+  if (length <= 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`
+  }
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`
 }
