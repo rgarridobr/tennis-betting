@@ -181,7 +181,7 @@ function MatchCard({
         {!!canPredict && !selected && (
           <div className="px-4 py-2 bg-emerald-50 border-t border-emerald-100">
             <p className="text-xs text-emerald-700 text-center">
-              Clique no jogador que voce acha que vai vencer
+              Clique no jogador que você acha que vai vencer
             </p>
           </div>
         )}

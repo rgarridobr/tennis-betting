@@ -385,7 +385,7 @@ function SetPlayersDialog({
     if (p2.type === 'PLAYER' && !p2.id) return setError('Selecione o Jogador 2')
     if (p1.type === 'SEED' && (!p1.id || !p1.seed)) return setError('Defina o Seed e Jogador 1')
     if (p2.type === 'SEED' && (!p2.id || !p2.seed)) return setError('Defina o Seed e Jogador 2')
-    if (p1.type === 'BYE' && p2.type === 'BYE') return setError('Bye nao pode enfrentar Bye')
+    if (p1.type === 'BYE' && p2.type === 'BYE') return setError('Bye não pode enfrentar Bye')
 
     startTransition(async () => {
       try {
@@ -393,7 +393,7 @@ function SetPlayersDialog({
         if (result?.success) {
           setOpen(false)
         } else {
-          setError(result?.error || 'Erro ao salvar confronto')
+          setError('Erro ao salvar confronto')
         }
       } catch (e) {
         setError('Ocorreu um erro inesperado')

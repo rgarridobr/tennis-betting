@@ -239,7 +239,7 @@ export function TournamentForm({ names, locations }: Props) {
 
       <div className="bg-emerald-50/50 p-6 rounded-[2rem] border-2 border-dashed border-emerald-100">
         <p className="text-sm text-emerald-700 font-bold leading-relaxed">
-          O sistema gerará todas as rodadas e partidas vazias. Voce poderá definir manualmente cada confronto da 1a rodada na próxima etapa.
+          O sistema gerará todas as rodadas e partidas vazias. Você poderá definir manualmente cada confronto da 1ª rodada na próxima etapa.
         </p>
       </div>
 

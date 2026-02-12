@@ -13,7 +13,7 @@ export async function makePredictionAction(
   // Verify user is enrolled
   const enrolled = await isUserEnrolled(userId, tournamentId)
   if (!enrolled) {
-    throw new Error('Voce precisa estar inscrito no torneio para fazer palpites')
+    throw new Error('Você precisa estar inscrito no torneio para fazer palpites')
   }
 
   // Verify match is open for predictions
@@ -21,8 +21,8 @@ export async function makePredictionAction(
     SELECT id, status FROM bracket_matches 
     WHERE id = ${bracketMatchId} AND tournament_id = ${tournamentId}
   `
-  if (match.length === 0) throw new Error('Partida nao encontrada')
-  if (match[0].status === 'completed') throw new Error('Esta partida ja foi finalizada')
+  if (match.length === 0) throw new Error('Partida não encontrada')
+  if (match[0].status === 'completed') throw new Error('Esta partida já foi finalizada')
 
   await createPrediction(userId, bracketMatchId, predictedWinnerId)
   revalidatePath(`/torneio/${tournamentId}`)

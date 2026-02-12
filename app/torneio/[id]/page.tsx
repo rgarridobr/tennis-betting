@@ -56,14 +56,14 @@ export default async function TournamentPage({ params }: TournamentPageProps) {
           <h2 className="text-xl font-bold text-slate-900">Chaveamento</h2>
           {enrolled && (
             <span className="text-sm text-emerald-600 font-medium">
-              Inscrito - Faca seus palpites!
+              Inscrito - Faça seus palpites!
             </span>
           )}
         </div>
 
         {matches.length === 0 ? (
           <div className="text-center py-12 text-slate-500">
-            <p>O chaveamento ainda nao foi gerado.</p>
+            <p>O chaveamento ainda não foi gerado.</p>
             <p className="text-sm mt-2">Volte mais tarde para fazer seus palpites.</p>
           </div>
         ) : (

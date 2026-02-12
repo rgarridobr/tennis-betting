@@ -56,7 +56,7 @@ export async function createTournamentAction(formData: FormData) {
   const has_byes = formData.get('has_byes') === 'true'
 
   if (!name || !surface || !location || !start_date || !end_date || !category || !format || isNaN(sets_format) || isNaN(size)) {
-    return { success: false, error: 'Todos os campos sao obrigatorios' }
+    return { success: false, error: 'Todos os campos são obrigatórios' }
   }
 
   try {
@@ -104,7 +104,7 @@ export async function createPlayerAction(formData: FormData) {
   const seedStr = formData.get('seed') as string
   const seed = seedStr ? parseInt(seedStr, 10) : null
 
-  if (!name) return { success: false, error: 'Nome obrigatorio' }
+  if (!name) return { success: false, error: 'Nome obrigatório' }
 
   await createPlayer(name, country, seed)
   revalidatePath('/admin/torneios')
@@ -125,7 +125,7 @@ export async function updatePlayerAction(id: number, formData: FormData) {
   const name = formData.get('name') as string
   const country = (formData.get('country') as string) || null
 
-  if (!name) return { success: false, error: 'Nome obrigatorio' }
+  if (!name) return { success: false, error: 'Nome obrigatório' }
 
   const result = await updatePlayer(id, name, country)
   if (result.success) {

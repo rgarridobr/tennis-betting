@@ -63,14 +63,14 @@ export async function deleteTournament(tournamentId: number): Promise<{ success:
 
 export async function generateBracket(tournamentId: number): Promise<void> {
   const tournament = await sql`SELECT size FROM tournaments WHERE id = ${tournamentId}`
-  if (tournament.length === 0) throw new Error('Torneio nao encontrado')
+  if (tournament.length === 0) throw new Error('Torneio não encontrado')
 
   const size = tournament[0].size as number
   const totalRounds = Math.log2(size)
 
   const existing = await sql`SELECT COUNT(*) as count FROM bracket_matches WHERE tournament_id = ${tournamentId}`
   if (Number(existing[0].count) > 0) {
-    throw new Error('Chaveamento ja foi gerado para este torneio')
+    throw new Error('Chaveamento já foi gerado para este torneio')
   }
 
   for (let round = 1; round <= totalRounds; round++) {
@@ -105,7 +105,7 @@ export async function deletePlayer(id: number): Promise<{ success: boolean; erro
     console.error("Error deleting player:", error)
     return {
       success: false,
-      error: 'Nao e possivel excluir o jogador pois ele ja possui partidas ou palpites vinculados.'
+      error: 'Não é possível excluir o jogador, pois ele já possui partidas ou palpites vinculados.'
     }
   }
 }
@@ -171,29 +171,29 @@ export function validateTennisScore(score: string, setsToWin: number): { valid: 
   for (const set of sets) {
     const games = set.split('-').map(Number)
     if (games.length !== 2 || isNaN(games[0]) || isNaN(games[1])) {
-      return { valid: false, error: `Placar de set invalido: ${set}` }
+      return { valid: false, error: `Placar de set inválido: ${set}` }
     }
     const [g1, g2] = games
-    if (g1 < 0 || g2 < 0) return { valid: false, error: 'Games nao podem ser negativos' }
+    if (g1 < 0 || g2 < 0) return { valid: false, error: 'Games não podem ser negativos' }
 
     const isSetFinished = (g1 >= 6 || g2 >= 6) && Math.abs(g1 - g2) >= 2 || (g1 === 7 && g2 === 6) || (g1 === 6 && g2 === 7)
 
-    if (!isSetFinished) return { valid: false, error: `Set incompleto ou invalido: ${set}` }
-    if (g1 > 7 || g2 > 7) return { valid: false, error: `Placar impossivel: ${set}` }
-    if ((g1 === 7 && g2 < 5) || (g2 === 7 && g1 < 5)) return { valid: false, error: `Placar invalido: ${set}` }
+    if (!isSetFinished) return { valid: false, error: `Set incompleto ou inválido: ${set}` }
+    if (g1 > 7 || g2 > 7) return { valid: false, error: `Placar impossível: ${set}` }
+    if ((g1 === 7 && g2 < 5) || (g2 === 7 && g1 < 5)) return { valid: false, error: `Placar inválido: ${set}` }
 
     if (g1 > g2) player1Sets++
     else player2Sets++
 
     if (player1Sets === setsToWin || player2Sets === setsToWin) {
       if (sets.indexOf(set) !== sets.length - 1) {
-        return { valid: false, error: 'Sets extras apos o vencedor ser definido' }
+        return { valid: false, error: 'Sets extras após o vencedor ser definido' }
       }
       return { valid: true, winner: player1Sets === setsToWin ? 1 : 2 }
     }
   }
 
-  return { valid: false, error: `Partida incompleta. Sao necessarios ${setsToWin} sets para vencer.` }
+  return { valid: false, error: `Partida incompleta. São necessários ${setsToWin} sets para vencer.` }
 }
 
 export async function setMatchResult(
@@ -209,7 +209,7 @@ export async function setMatchResult(
       JOIN tournaments t ON bm.tournament_id = t.id
       WHERE bm.id = ${matchId}
     `
-    if (matchData.length === 0) return { success: false, error: 'Partida nao encontrada' }
+    if (matchData.length === 0) return { success: false, error: 'Partida não encontrada' }
 
     const m = matchData[0]
     const round = m.round as number
@@ -231,7 +231,7 @@ export async function setMatchResult(
       if (validation.winner) {
         const expectedWinnerId = validation.winner === 1 ? m.player1_id : m.player2_id
         if (winnerId !== expectedWinnerId) {
-          return { success: false, error: 'O vencedor selecionado nao coincide com o placar dos sets' }
+          return { success: false, error: 'O vencedor selecionado não coincide com o placar dos sets' }
         }
       }
     }
@@ -329,7 +329,7 @@ async function advancePlayer(tournamentId: number, currentRound: number, current
 
 export async function publishTournament(tournamentId: number): Promise<void> {
   const tournament = await sql`SELECT size FROM tournaments WHERE id = ${tournamentId}`
-  if (tournament.length === 0) throw new Error('Torneio nao encontrado')
+  if (tournament.length === 0) throw new Error('Torneio não encontrado')
 
   // 1. Mark tournament as active
   await sql`UPDATE tournaments SET status = 'active', updated_at = NOW() WHERE id = ${tournamentId}`

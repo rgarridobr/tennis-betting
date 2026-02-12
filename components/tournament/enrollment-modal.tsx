@@ -81,7 +81,7 @@ export function EnrollmentModal({ isOpen, onClose, tournament }: EnrollmentModal
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2 text-slate-600">
                   <Check className="w-4 h-4 text-emerald-500" />
-                  <span>Faca palpites em todas as 127 partidas do Grand Slam</span>
+                  <span>Faça palpites em todas as 127 partidas do Grand Slam</span>
                 </div>
                 <div className="flex items-center gap-2 text-slate-600">
                   <Check className="w-4 h-4 text-emerald-500" />
@@ -118,7 +118,7 @@ export function EnrollmentModal({ isOpen, onClose, tournament }: EnrollmentModal
               <Check className="w-8 h-8 text-emerald-600" />
             </div>
             <p className="font-semibold text-lg text-emerald-600">Inscricao confirmada!</p>
-            <p className="text-sm text-slate-500 mt-1">Agora voce pode fazer seus palpites</p>
+            <p className="text-sm text-slate-500 mt-1">Agora você pode fazer seus palpites</p>
           </div>
         )}
       </DialogContent>

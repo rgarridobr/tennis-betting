@@ -270,7 +270,7 @@ function DeletePlayerDialog({ player }: { player: Player }) {
         <DialogHeader>
           <DialogTitle>Excluir Jogador</DialogTitle>
           <DialogDescription>
-            Tem certeza que deseja excluir <strong>{player.name}</strong>? Esta acao nao pode ser desfeita.
+            Tem certeza de que deseja excluir <strong>{player.name}</strong>? Esta ação não pode ser desfeita.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2">
