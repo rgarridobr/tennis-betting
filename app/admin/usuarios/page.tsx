@@ -3,6 +3,7 @@ import { PageHero } from '@/components/shared/page-hero'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { UserAdminToggle } from '@/components/admin/user-admin-toggle'
+import { CreateUserDialog } from '@/components/admin/create-user-dialog'
 import { Users, ShieldCheck, UserCheck } from 'lucide-react'
 import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
@@ -48,6 +49,14 @@ export default async function AdminUsersPage() {
       </PageHero>
 
       <main className="container mx-auto px-4 md:px-32 py-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+          <div>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight">Lista de Usuários</h2>
+            <p className="text-slate-500 font-medium">Gerencie o acesso e permissões dos participantes</p>
+          </div>
+          <CreateUserDialog />
+        </div>
+
         {users.length === 0 ? (
           <Card className="border-0 shadow-md">
             <CardContent className="py-16 text-center">

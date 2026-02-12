@@ -1,6 +1,6 @@
 'use server'
 
-import { getSession } from '@/lib/auth'
+import { getSession, registerUser } from '@/lib/auth'
 import {
   createTournament,
   updateTournamentStatus,
@@ -222,6 +222,34 @@ export async function setMatchResultAction(
 }
 
 // ==================== USERS ====================
+
+export async function createUserAction(formData: FormData) {
+  await requireAdmin()
+
+  const name = formData.get('name') as string
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
+
+  if (!name || !email || !password) {
+    return { success: false, error: 'Todos os campos são obrigatórios' }
+  }
+
+  if (password.length < 6) {
+    return { success: false, error: 'A senha deve ter pelo menos 6 caracteres' }
+  }
+
+  try {
+    await registerUser(name, email, password)
+    revalidatePath('/admin/usuarios')
+    return { success: true }
+  } catch (error: any) {
+    console.error("Error creating user:", error)
+    if (error.message?.includes('unique') || error.code === '23505') {
+      return { success: false, error: 'Este email já está cadastrado' }
+    }
+    return { success: false, error: 'Erro ao criar conta. Tente novamente.' }
+  }
+}
 
 export async function toggleUserAdminAction(userId: number, isAdmin: boolean) {
   await requireAdmin()
