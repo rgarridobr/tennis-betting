@@ -7,6 +7,7 @@ export interface User {
   name: string
   email: string
   is_admin: boolean
+  is_active: boolean
   created_at: string
 }
 
@@ -46,11 +47,12 @@ export async function getSession(): Promise<User | null> {
   if (!token) return null
   
   const sessions = await sql`
-    SELECT u.id, u.name, u.email, u.is_admin, u.created_at
+    SELECT u.id, u.name, u.email, u.is_admin, u.is_active, u.created_at
     FROM sessions s
     JOIN users u ON s.user_id = u.id
     WHERE s.token = ${token}
     AND s.expires_at > NOW()
+    AND u.is_active = TRUE
   `
   
   if (sessions.length === 0) return null
@@ -74,7 +76,7 @@ export async function registerUser(name: string, email: string, password: string
   const users = await sql`
     INSERT INTO users (name, email, password_hash)
     VALUES (${name}, ${email}, ${hashedPassword})
-    RETURNING id, name, email, is_admin, created_at
+    RETURNING id, name, email, is_admin, is_active, created_at
   `
   
   return users[0] as User
@@ -82,7 +84,7 @@ export async function registerUser(name: string, email: string, password: string
 
 export async function loginUser(email: string, password: string): Promise<User | null> {
   const users = await sql`
-    SELECT id, name, email, password_hash, is_admin, created_at
+    SELECT id, name, email, password_hash, is_admin, is_active, created_at
     FROM users WHERE email = ${email}
   `
   
@@ -98,6 +100,7 @@ export async function loginUser(email: string, password: string): Promise<User |
     name: user.name as string,
     email: user.email as string,
     is_admin: user.is_admin as boolean,
+    is_active: user.is_active as boolean,
     created_at: user.created_at as string,
   }
 }

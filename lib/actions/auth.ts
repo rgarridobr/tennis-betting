@@ -43,6 +43,10 @@ export async function loginAction(formData: FormData) {
     return { error: 'Email ou senha incorretos' };
   }
 
+  if (!user.is_active) {
+    return { error: 'Sua conta está inativa. Por favor, entre em contato com admin informando o email bolaocadastro@gmail.com' };
+  }
+
   await createSession(user.id);
   if (user.is_admin) {
     redirect('/admin');

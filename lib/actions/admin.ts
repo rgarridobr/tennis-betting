@@ -12,6 +12,7 @@ import {
   updatePlayer,
   importPlayers,
   toggleUserAdmin,
+  toggleUserActive,
   createTournamentName,
   updateTournamentName,
   deleteTournamentName,
@@ -25,6 +26,7 @@ import {
 } from '@/lib/admin'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { registerUser } from '@/lib/auth'
 
 async function requireAdmin() {
   const user = await getSession()
@@ -227,6 +229,40 @@ export async function toggleUserAdminAction(userId: number, isAdmin: boolean) {
   await requireAdmin()
   await toggleUserAdmin(userId, isAdmin)
   revalidatePath('/admin/usuarios')
+}
+
+export async function toggleUserActiveAction(userId: number, isActive: boolean) {
+  await requireAdmin()
+  await toggleUserActive(userId, isActive)
+  revalidatePath('/admin/usuarios')
+}
+
+export async function adminRegisterUserAction(formData: FormData) {
+  await requireAdmin()
+
+  const name = formData.get('name') as string
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
+
+  if (!name || !email || !password) {
+    return { success: false, error: 'Todos os campos são obrigatórios' }
+  }
+
+  if (password.length < 6) {
+    return { success: false, error: 'A senha deve ter pelo menos 6 caracteres' }
+  }
+
+  try {
+    await registerUser(name, email, password)
+    revalidatePath('/admin/usuarios')
+    return { success: true }
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message.includes('unique')) {
+      return { success: false, error: 'Este email já está cadastrado' }
+    }
+    console.error("Error creating user:", error)
+    return { success: false, error: 'Erro ao criar conta. Tente novamente.' }
+  }
 }
 
 // ==================== METADATA ====================

@@ -3,6 +3,8 @@ import { PageHero } from '@/components/shared/page-hero'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { UserAdminToggle } from '@/components/admin/user-admin-toggle'
+import { UserStatusToggle } from '@/components/admin/user-status-toggle'
+import { CreateUserDialog } from '@/components/admin/create-user-dialog'
 import { Users, ShieldCheck, UserCheck } from 'lucide-react'
 import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
@@ -48,6 +50,14 @@ export default async function AdminUsersPage() {
       </PageHero>
 
       <main className="container mx-auto px-4 md:px-32 py-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+          <div>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight">Lista de Usuários</h2>
+            <p className="text-slate-500 font-medium">Gerencie o acesso e permissões dos participantes</p>
+          </div>
+          <CreateUserDialog />
+        </div>
+
         {users.length === 0 ? (
           <Card className="border-0 shadow-md">
             <CardContent className="py-16 text-center">
@@ -88,7 +98,10 @@ export default async function AdminUsersPage() {
                             </div>
                           </div>
                           {user.id !== myUser?.id && (
-                          <UserAdminToggle userId={user.id} isAdmin={user.is_admin} />
+                            <div className="flex items-center gap-4">
+                              <UserStatusToggle userId={user.id} isActive={user.is_active} />
+                              <UserAdminToggle userId={user.id} isAdmin={user.is_admin} />
+                            </div>
                           )}
                         </div>
                       ))}
@@ -126,7 +139,10 @@ export default async function AdminUsersPage() {
                               <p className="text-xs font-bold text-emerald-600 mt-1 uppercase tracking-wider">{user.total_predictions} palpites</p>
                             </div>
                           </div>
-                          <UserAdminToggle userId={user.id} isAdmin={user.is_admin} />
+                          <div className="flex items-center gap-4">
+                            <UserStatusToggle userId={user.id} isActive={user.is_active} />
+                            <UserAdminToggle userId={user.id} isAdmin={user.is_admin} />
+                          </div>
                         </div>
                       ))}
                     </div>
