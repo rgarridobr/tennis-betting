@@ -45,6 +45,16 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
     predictionsRecord[p.bracket_match_id] = p.predicted_winner_id
   }
 
+  const maxRound = matches.length > 0 ? Math.max(...matches.map(m => m.round)) : 0
+  const dynamicRoundNames: Record<number, string> = {}
+  for (let r = 1; r <= maxRound; r++) {
+    if (r === maxRound) dynamicRoundNames[r] = 'Final'
+    else if (r === maxRound - 1) dynamicRoundNames[r] = 'Semifinais'
+    else if (r === maxRound - 2) dynamicRoundNames[r] = 'Quartas de Final'
+    else if (r === maxRound - 3) dynamicRoundNames[r] = 'Oitavas de Final'
+    else dynamicRoundNames[r] = `${r}a Rodada`
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       <DashboardHeader user={user} />
@@ -81,7 +91,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
             tournamentId={tournamentId}
             predictions={predictionsRecord}
             canMakePredictions={enrolled}
-            roundNames={ROUND_NAMES}
+            roundNames={dynamicRoundNames}
           />
         ) : (
           <TournamentBracket
@@ -90,7 +100,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
             tournamentId={tournamentId}
             predictions={predictionsRecord}
             canMakePredictions={enrolled}
-            roundNames={ROUND_NAMES}
+            roundNames={dynamicRoundNames}
           />
         )}
       </main>
