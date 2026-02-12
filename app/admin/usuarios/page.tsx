@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { UserAdminToggle } from '@/components/admin/user-admin-toggle'
 import { CreateUserDialog } from '@/components/admin/create-user-dialog'
-import { Users, ShieldCheck, UserCheck } from 'lucide-react'
+import { Users, ShieldCheck, UserCheck, Phone } from 'lucide-react'
 import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 
@@ -94,6 +94,11 @@ export default async function AdminUsersPage() {
                                 <span className="text-lg font-black text-slate-900">{user.name}</span>
                                </div>
                               <p className="text-sm font-semibold text-slate-400">{user.email}</p>
+                              {user.whatsapp && (
+                                <p className="text-xs font-bold text-slate-500 mt-0.5 flex items-center gap-1">
+                                  <Phone className="w-3 h-3" /> {user.whatsapp}
+                                </p>
+                              )}
                             </div>
                           </div>
                           {user.id !== myUser?.id && (
@@ -132,6 +137,11 @@ export default async function AdminUsersPage() {
                             <div>
                               <span className="text-lg font-black text-slate-900">{user.name}</span>
                               <p className="text-sm font-semibold text-slate-400">{user.email}</p>
+                              {user.whatsapp && (
+                                <p className="text-xs font-bold text-slate-500 mt-0.5 flex items-center gap-1">
+                                  <Phone className="w-3 h-3 text-emerald-500" /> {user.whatsapp}
+                                </p>
+                              )}
                               <p className="text-xs font-bold text-emerald-600 mt-1 uppercase tracking-wider">{user.total_predictions} palpites</p>
                             </div>
                           </div>

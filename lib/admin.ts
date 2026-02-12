@@ -374,11 +374,11 @@ export async function updatePlaceholderPlayer(
 
 export async function getAllUsers() {
   const users = await sql`
-    SELECT u.id, u.name, u.email, u.is_admin, u.created_at,
+    SELECT u.id, u.name, u.email, u.whatsapp, u.is_admin, u.created_at,
       COUNT(p.id) as total_predictions
     FROM users u
     LEFT JOIN predictions p ON u.id = p.user_id
-    GROUP BY u.id, u.name, u.email, u.is_admin, u.created_at
+    GROUP BY u.id, u.name, u.email, u.whatsapp, u.is_admin, u.created_at
     ORDER BY u.created_at DESC
   `
   return users

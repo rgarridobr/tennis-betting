@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
+import { formatBrazilianPhoneNumber } from '@/lib/utils'
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -19,6 +20,12 @@ function SubmitButton() {
 
 export function RegisterForm() {
   const [error, setError] = useState<string | null>(null)
+  const [whatsapp, setWhatsapp] = useState('')
+
+  const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedValue = formatBrazilianPhoneNumber(e.target.value)
+    setWhatsapp(formattedValue)
+  }
   
   async function handleSubmit(formData: FormData) {
     setError(null)
@@ -69,6 +76,19 @@ export function RegisterForm() {
               placeholder="••••••••"
               minLength={6}
               required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="whatsapp">WhatsApp (Opcional)</Label>
+            <Input
+              id="whatsapp"
+              name="whatsapp"
+              type="text"
+              placeholder="(99) 99999-9999"
+              value={whatsapp}
+              onChange={handleWhatsappChange}
+              maxLength={15}
             />
           </div>
           
