@@ -238,7 +238,7 @@ function MatchCard({
       )}
 
       {/* Actions */}
-      {!isCompleted && !isLocked && (
+      {!isLocked && (
         <div className="mt-4 flex gap-2">
           {isDraft && match.round === 1 && (
             <SetPlayersDialog match={match} players={players} tournamentId={tournamentId} />
@@ -522,8 +522,18 @@ function SetResultDialog({ match, tournamentId, isFinalRound }: { match: Bracket
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-  const [winnerId, setWinnerId] = useState<string>('')
-  const [score, setScore] = useState('')
+  const [winnerId, setWinnerId] = useState<string>(match.winner_id?.toString() || '')
+  const [score, setScore] = useState(match.score || '')
+
+  useEffect(() => {
+    if (open) {
+      setWinnerId(match.winner_id?.toString() || '')
+      setScore(match.score || '')
+      setError(null)
+      setSuccess(false)
+      setShowConfirmFinish(false)
+    }
+  }, [open, match])
 
   function handleSubmit(e?: React.FormEvent<HTMLFormElement>) {
     if (e) e.preventDefault()
