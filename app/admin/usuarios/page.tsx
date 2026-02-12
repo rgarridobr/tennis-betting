@@ -47,7 +47,7 @@ export default async function AdminUsersPage() {
         </div>
       </PageHero>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 md:px-32 py-8">
         {users.length === 0 ? (
           <Card className="border-0 shadow-md">
             <CardContent className="py-16 text-center">

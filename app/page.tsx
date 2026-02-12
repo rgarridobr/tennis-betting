@@ -38,7 +38,7 @@ export default async function HomePage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60">
-        <div className="container mx-auto px-4 h-20 flex items-center justify-between">
+        <div className="container mx-auto px-4 md:px-32 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 text-emerald-600 group">
             <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-200 group-hover:scale-110 transition-transform">
               <Trophy className="w-6 h-6 text-white" />
@@ -59,7 +59,7 @@ export default async function HomePage() {
       <main>
         {/* Hero Section */}
         <section className="relative pt-6 pb-20 overflow-hidden bg-[#f8fafc]">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 md:px-32">
             <div className="relative overflow-hidden rounded-[2.5rem] min-h-[600px] flex items-center">
               {/* Background Image */}
               <div 
@@ -125,7 +125,7 @@ export default async function HomePage() {
 
         {/* Featured Tournaments */}
         <section className="py-24 bg-white relative overflow-hidden">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 md:px-32">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
               <div>
                 <div className="flex items-center gap-2 mb-4">
@@ -205,7 +205,7 @@ export default async function HomePage() {
 
         {/* How it works */}
         <section className="py-24 bg-[#f8fafc]">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 md:px-32">
             <div className="text-center mb-16">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 mb-4 border border-emerald-100">
                 <Target className="w-4 h-4" />
@@ -265,7 +265,7 @@ export default async function HomePage() {
 
         {/* Testimonials */}
         <section className="py-24 bg-white">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 md:px-32">
             <div className="text-center mb-16">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 text-amber-600 mb-4 border border-amber-100">
                 <Star className="w-4 h-4 fill-amber-500" />
@@ -365,7 +365,7 @@ export default async function HomePage() {
 
       {/* Footer */}
       <footer className="py-10">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 md:px-32">
           {/* <div className="grid md:grid-cols-4 gap-12 mb-16">
             <div className="md:col-span-2">
               <Link href="/" className="flex items-center gap-2.5 text-white mb-6 group">

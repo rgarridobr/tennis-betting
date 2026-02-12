@@ -22,7 +22,7 @@ export default async function DashboardPage() {
       <DashboardHeader user={user} />
       <HeroSection user={user} />
 
-      <main className="container mx-auto px-4 pb-12">
+      <main className="container mx-auto px-4 md:px-32 pb-12">
         <StatsCards stats={stats} />
 
         <div className="mt-12 grid lg:grid-cols-3 gap-12">

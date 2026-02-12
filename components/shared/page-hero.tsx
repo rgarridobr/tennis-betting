@@ -21,7 +21,7 @@ export function PageHero({ title, subtitle, children }: PageHeroProps) {
   }, [])
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 md:px-32 py-8">
       <div className="relative overflow-hidden rounded-[2.5rem] shadow-2xl">
         
         {/* Background Image */}

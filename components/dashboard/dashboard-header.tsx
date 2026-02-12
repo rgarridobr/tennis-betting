@@ -37,7 +37,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60">
-      <div className="container mx-auto px-4 h-20 flex items-center justify-between">
+      <div className="container mx-auto px-4 md:px-32 h-20 flex items-center justify-between">
         {/* Logo - Left */}
         <Link href="/dashboard" className="flex items-center gap-2.5 text-emerald-600 group">
           <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-200 group-hover:scale-110 transition-transform">

@@ -36,7 +36,7 @@ export default async function TournamentsPage() {
         </div>
       </PageHero>
 
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 md:px-32 py-12">
         {tournaments.length > 0 && (
           <section className="mb-12">
             <div className="flex items-center gap-2 mb-6">

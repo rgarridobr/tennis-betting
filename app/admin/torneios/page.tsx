@@ -79,7 +79,7 @@ export default async function AdminTournamentsPage() {
         </div>
       </PageHero>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 md:px-32 py-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
             <h2 className="text-3xl font-black text-slate-900 tracking-tight">Lista de Torneios</h2>

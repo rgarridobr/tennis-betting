@@ -7,7 +7,7 @@ interface HeroSectionProps {
 
 export function HeroSection({ user }: HeroSectionProps) {
   return (
-    <div className="container mx-auto px-4 pt-6">
+    <div className="container mx-auto px-4 md:px-32 pt-6">
       <div className="relative overflow-hidden rounded-2xl">
         {/* Background image with green overlay */}
         <div 

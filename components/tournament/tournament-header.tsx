@@ -53,7 +53,7 @@ export function TournamentHeader({ tournament, participants = 0 }: TournamentHea
       />
       <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-800/85 to-slate-900/80" />
 
-      <div className="relative container mx-auto px-4">
+      <div className="relative container mx-auto px-4 md:px-32">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <div className="flex flex-wrap items-center gap-3 mb-3">

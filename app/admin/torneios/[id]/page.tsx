@@ -116,7 +116,7 @@ export default async function ManageTournamentPage({ params }: Props) {
         </div>
       </PageHero>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 md:px-32 py-8">
         {/* Status e Voltar */}
         <div className="flex items-center justify-between mb-8">
           <Button variant="outline" size="sm" asChild className="bg-transparent">

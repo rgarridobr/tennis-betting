@@ -3,7 +3,7 @@ import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
-import { Trophy } from 'lucide-react';
+import { ArrowLeft, Trophy } from 'lucide-react';
 import { RotatingQuote } from '@/components/auth/rotating-quote';
 
 export default async function LoginPage() {
@@ -17,7 +17,7 @@ export default async function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex bg-[#f8fafc]">
+    <div className="min-h-screen flex bg-[#f8fafc] container mx-auto px-4 md:px-32">
       {/* Left Side - Image */}
       <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
         <img
@@ -35,7 +35,7 @@ export default async function LoginPage() {
       </div>
 
       {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-12">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center lg:text-left">
             <h1 className="text-4xl font-black text-slate-900 tracking-tight">Bem-vindo de volta</h1>
@@ -48,6 +48,13 @@ export default async function LoginPage() {
             Não tem uma conta?{' '}
             <Link href="/cadastro" className="text-emerald-600 font-black hover:underline underline-offset-4">
               Cadastre-se grátis
+            </Link>
+          </p>
+
+          <p className="text-center text-slate-500 font-medium">
+            <Link href="/" className="text-emerald-600 font-black hover:underline underline-offset-4">
+              <ArrowLeft className="inline-block mr-1" size={16} />
+              Voltar à página inicial
             </Link>
           </p>
         </div>

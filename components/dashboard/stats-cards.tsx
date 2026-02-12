@@ -53,13 +53,13 @@ export function StatsCards({ stats }: StatsCardsProps) {
   ]
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 -mt-12 relative z-10">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 -mt-12 relative z-10 py-2 px-4">
       {cards.map((card) => (
         <Card 
           key={card.label} 
           className={`border-0 shadow-lg rounded-[2rem] bg-white transition-all hover:shadow-xl duration-300`}
         >
-          <CardContent className="p-5 flex items-center gap-4">
+          <CardContent className="p-2 flex items-center gap-4">
             <div className={`w-12 h-12 rounded-2xl ${card.bgColor} flex items-center justify-center shrink-0`}>
               <card.icon className={`w-6 h-6 ${card.iconColor}`} />
             </div>
