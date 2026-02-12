@@ -204,7 +204,7 @@ export async function setMatchResult(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const matchData = await sql`
-      SELECT bm.*, t.sets_format, t.size
+      SELECT bm.*, t.sets_format, t.size, t.status as tournament_status
       FROM bracket_matches bm
       JOIN tournaments t ON bm.tournament_id = t.id
       WHERE bm.id = ${matchId}
@@ -217,6 +217,11 @@ export async function setMatchResult(
     const tournamentId = m.tournament_id as number
     const setsToWin = m.sets_format === 5 ? 3 : 2
     const totalRounds = Math.log2(m.size as number)
+
+    if (m.tournament_status === 'finished' || m.tournament_status === 'completed') {
+      return { success: false, error: 'O torneio já foi finalizado e os resultados não podem ser alterados.' }
+    }
+
 
     if (!options?.isWalkover) {
       const validation = validateTennisScore(score, setsToWin)
@@ -268,19 +273,25 @@ export async function setMatchResult(
   }
 }
 
-async function advancePlayer(tournamentId: number, currentRound: number, currentPosition: number, winnerId: number) {
+async function advancePlayer(tournamentId: number, currentRound: number, currentPosition: number, winnerId: number | null) {
   const nextRound = currentRound + 1
   const nextPosition = Math.ceil(currentPosition / 2)
   const isPlayer1Slot = currentPosition % 2 === 1
 
   const nextMatch = await sql`
-    SELECT id, player1_id, player2_id, player1_type, player2_type
-    FROM bracket_matches
-    WHERE tournament_id = ${tournamentId} AND round = ${nextRound} AND position = ${nextPosition}
+    SELECT bm.id, bm.player1_id, bm.player2_id, bm.player1_type, bm.player2_type, bm.status, t.size
+    FROM bracket_matches bm
+    JOIN tournaments t ON bm.tournament_id = t.id
+    WHERE bm.tournament_id = ${tournamentId} AND bm.round = ${nextRound} AND bm.position = ${nextPosition}
   `
 
   if (nextMatch.length > 0) {
-    const nextMatchId = nextMatch[0].id
+    const nm = nextMatch[0]
+    const nextMatchId = nm.id
+
+    // If we are advancing a winner, but the match was already completed, we need to reset it
+    // especially if the participant is changing.
+    const playerChanged = isPlayer1Slot ? (nm.player1_id !== winnerId) : (nm.player2_id !== winnerId)
 
     if (isPlayer1Slot) {
       await sql`UPDATE bracket_matches SET player1_id = ${winnerId}, player1_type = 'PLAYER', updated_at = NOW() WHERE id = ${nextMatchId}`
@@ -288,19 +299,30 @@ async function advancePlayer(tournamentId: number, currentRound: number, current
       await sql`UPDATE bracket_matches SET player2_id = ${winnerId}, player2_type = 'PLAYER', updated_at = NOW() WHERE id = ${nextMatchId}`
     }
 
-    // Check if the next match is now against a BYE
-    const updatedMatch = await sql`
-      SELECT * FROM bracket_matches WHERE id = ${nextMatchId}
-    `
-    const um = updatedMatch[0]
+    if (nm.status === 'completed' && playerChanged) {
+      // Reset this match because one of the participants changed
+      await sql`UPDATE bracket_matches SET status = 'pending', winner_id = NULL, score = NULL, updated_at = NOW() WHERE id = ${nextMatchId}`
+      await sql`UPDATE predictions SET is_correct = NULL, points_earned = 0 WHERE bracket_match_id = ${nextMatchId}`
 
-    // Auto-resolve if opponent is BYE
-    if (um.player1_id && um.player2_type === 'BYE') {
-      await setMatchResult(nextMatchId, um.player1_id, 'BYE', { isWalkover: true })
-    } else if (um.player2_id && um.player1_type === 'BYE') {
-      await setMatchResult(nextMatchId, um.player2_id, 'BYE', { isWalkover: true })
-    } else if (um.player1_id && um.player2_id) {
-      await sql`UPDATE bracket_matches SET status = 'scheduled' WHERE id = ${nextMatchId}`
+      // Cascade reset to next rounds
+      const totalRounds = Math.log2(nm.size)
+      if (nextRound < totalRounds) {
+        await advancePlayer(tournamentId, nextRound, nextPosition, null)
+      }
+    }
+
+    // Only proceed with auto-advancement if we have a winnerId
+    if (winnerId) {
+      const updatedMatch = await sql`SELECT * FROM bracket_matches WHERE id = ${nextMatchId}`
+      const um = updatedMatch[0]
+
+      if (um.player1_id && um.player2_type === 'BYE') {
+        await setMatchResult(nextMatchId, um.player1_id, 'BYE', { isWalkover: true })
+      } else if (um.player2_id && um.player1_type === 'BYE') {
+        await setMatchResult(nextMatchId, um.player2_id, 'BYE', { isWalkover: true })
+      } else if (um.player1_id && um.player2_id && um.status !== 'completed') {
+        await sql`UPDATE bracket_matches SET status = 'scheduled' WHERE id = ${nextMatchId}`
+      }
     }
   }
 }
