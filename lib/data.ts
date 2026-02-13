@@ -107,6 +107,7 @@ export interface PredictionWithDetails {
   winner_name: string | null
   tournament_id: number
   tournament_name: string
+  tournament_size: number
 }
 
 export interface BonusPrediction {
@@ -124,16 +125,6 @@ export interface BonusPrediction {
 }
 
 // ==================== ROUND CONFIG ====================
-
-export const ROUND_NAMES: Record<number, string> = {
-  1: '1a Rodada',
-  2: '2a Rodada',
-  3: '3a Rodada',
-  4: 'Oitavas de Final',
-  5: 'Quartas de Final',
-  6: 'Semifinais',
-  7: 'Final'
-}
 
 export const ROUND_MATCHES: Record<number, number> = {
   1: 64,
@@ -262,7 +253,7 @@ export async function getUserPredictionsWithDetails(userId: number): Promise<Pre
       p1.name as player1_name, p2.name as player2_name,
       bm.round, bm.match_date, bm.score, bm.status as match_status,
       w.name as winner_name,
-      t.id as tournament_id, t.name as tournament_name
+      t.id as tournament_id, t.name as tournament_name, t.size as tournament_size
     FROM predictions p
     JOIN bracket_matches bm ON p.bracket_match_id = bm.id
     LEFT JOIN players p1 ON bm.player1_id = p1.id

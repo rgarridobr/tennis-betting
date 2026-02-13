@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
-import { getTournamentById, getBracketMatches, getPlayers, ROUND_NAMES } from '@/lib/data'
+import { getTournamentById, getBracketMatches, getPlayers } from '@/lib/data'
+import { getDynamicRoundNames } from '@/lib/utils'
 import { isRound1Complete } from '@/lib/admin'
 import { PageHero } from '@/components/shared/page-hero'
 import { Card, CardContent } from '@/components/ui/card'
@@ -7,16 +8,20 @@ import { Badge } from '@/components/ui/badge'
 import { BracketRoundManager } from '@/components/admin/bracket-round-manager'
 import { PlayerManager } from '@/components/admin/player-manager'
 import { PublishBracketButton } from '@/components/admin/publish-bracket-button'
-import { Trophy, Clock, Hash, MapPin, Users, ArrowLeft, AlertTriangle } from 'lucide-react'
+import { TournamentViewToggle } from '@/components/tournament/tournament-view-toggle'
+import { TournamentBracket } from '@/components/tournament/tournament-bracket'
+import { Trophy, Clock, Hash, Users, ArrowLeft, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
 interface Props {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ view?: string }>
 }
 
-export default async function ManageTournamentPage({ params }: Props) {
+export default async function ManageTournamentPage({ params, searchParams }: Props) {
   const { id } = await params
+  const { view = 'list' } = await searchParams
 
   if (id === 'novo') return null
 
@@ -44,6 +49,7 @@ export default async function ManageTournamentPage({ params }: Props) {
   }
 
   const maxRound = matches.length > 0 ? Math.max(...matches.map(m => m.round)) : 0
+  const dynamicRoundNames = getDynamicRoundNames(maxRound)
 
   const statusLabels: Record<string, string> = {
     draft: 'Rascunho',
@@ -192,32 +198,53 @@ export default async function ManageTournamentPage({ params }: Props) {
         )}
 
         {/* Rodadas do Chaveamento */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Chaveamento</h2>
-            {tournament.status !== 'draft' && (
-              <Badge className="bg-emerald-500 text-white font-black px-4 py-1.5 rounded-full">
-                CHAVE FIXA
-              </Badge>
-            )}
+        <div className="space-y-6 pb-20">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Chaveamento</h2>
+              {tournament.status !== 'draft' && (
+                <Badge className="bg-emerald-500 text-white font-black px-4 py-1.5 rounded-full">
+                  CHAVE FIXA
+                </Badge>
+              )}
+            </div>
+            {matches.length > 0 && <TournamentViewToggle currentView={view} />}
           </div>
-          {[1, 2, 3, 4, 5, 6, 7].map(round => {
-            const roundMatches = matchesByRound[round] || []
-            if (roundMatches.length === 0) return null
 
-            return (
-              <BracketRoundManager
-                key={round}
-                round={round}
-                roundName={ROUND_NAMES[round]}
-                matches={roundMatches}
-                players={players}
-                tournamentId={tournamentId}
-                tournamentStatus={tournament.status}
-                isFinalRound={round === maxRound}
-              />
-            )
-          })}
+          {matches.length === 0 ? (
+            <Card className="border-dashed border-2 bg-slate-50/50">
+              <CardContent className="p-12 text-center">
+                <p className="text-slate-500 font-medium">O chaveamento ainda não foi gerado.</p>
+              </CardContent>
+            </Card>
+          ) : view === 'bracket' ? (
+            <TournamentBracket
+              matches={matches}
+              userId={0}
+              tournamentId={tournamentId}
+              predictions={{}}
+              canMakePredictions={false}
+              roundNames={dynamicRoundNames}
+            />
+          ) : (
+            <div className="space-y-6">
+              {Object.keys(matchesByRound).map(Number).sort((a, b) => a - b).map(round => {
+                const roundMatches = matchesByRound[round] || []
+                return (
+                  <BracketRoundManager
+                    key={round}
+                    round={round}
+                    roundName={dynamicRoundNames[round]}
+                    matches={roundMatches}
+                    players={players}
+                    tournamentId={tournamentId}
+                    tournamentStatus={tournament.status}
+                    isFinalRound={round === maxRound}
+                  />
+                )
+              })}
+            </div>
+          )}
         </div>
       </main>
     </>
