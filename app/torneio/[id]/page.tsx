@@ -6,10 +6,14 @@ import {
   getUserPredictions,
   isUserEnrolled,
   getTournamentParticipantCount,
+  getBonusPredictions,
+  getTournamentPlayers,
+  hasTournamentStarted,
   ROUND_NAMES,
 } from '@/lib/data'
 import { DashboardHeader } from '@/components/dashboard/dashboard-header'
 import { TournamentHeader } from '@/components/tournament/tournament-header'
+import { BonusPredictions } from '@/components/tournament/bonus-predictions'
 import { MatchList } from '@/components/tournament/match-list'
 import { TournamentBracket } from '@/components/tournament/tournament-bracket'
 import { EnrollmentBanner } from '@/components/tournament/enrollment-banner'
@@ -32,11 +36,14 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
   const tournament = await getTournamentById(tournamentId)
   if (!tournament) notFound()
 
-  const [matches, userPredictions, enrolled, participants] = await Promise.all([
+  const [matches, userPredictions, enrolled, participants, bonusPrediction, tournamentPlayers, started] = await Promise.all([
     getBracketMatches(tournamentId),
     getUserPredictions(user.id, tournamentId),
     isUserEnrolled(user.id, tournamentId),
     getTournamentParticipantCount(tournamentId),
+    getBonusPredictions(user.id, tournamentId),
+    getTournamentPlayers(tournamentId),
+    hasTournamentStarted(tournamentId),
   ])
 
   // Map: bracketMatchId -> predicted_winner_id
@@ -64,6 +71,16 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
       <main className="container mx-auto px-4 md:px-8 py-8">
         {!enrolled && (
           <EnrollmentBanner tournament={tournament} />
+        )}
+
+        {enrolled && tournamentPlayers.length > 0 && (
+          <BonusPredictions
+            tournamentId={tournamentId}
+            userId={user.id}
+            players={tournamentPlayers}
+            currentBonus={bonusPrediction}
+            hasStarted={started}
+          />
         )}
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
