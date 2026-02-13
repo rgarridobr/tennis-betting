@@ -225,6 +225,9 @@ export default async function ManageTournamentPage({ params, searchParams }: Pro
               predictions={{}}
               canMakePredictions={false}
               roundNames={dynamicRoundNames}
+              isAdmin={true}
+              players={players}
+              tournamentStatus={tournament.status}
             />
           ) : (
             <div className="space-y-6">
