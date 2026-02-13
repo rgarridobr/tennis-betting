@@ -222,6 +222,10 @@ export async function setMatchResult(
       return { success: false, error: 'O torneio já foi finalizado e os resultados não podem ser alterados.' }
     }
 
+    if (m.tournament_status === 'draft' || m.tournament_status === 'upcoming') {
+      return { success: false, error: 'O torneio ainda não foi publicado. Publique-o antes de lançar resultados.' }
+    }
+
 
     if (!options?.isWalkover) {
       const validation = validateTennisScore(score, setsToWin)

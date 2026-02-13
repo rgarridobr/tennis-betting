@@ -82,6 +82,7 @@ function MatchCard({
   const hasPlayers = (match.player1_id || match.player1_type !== 'PLAYER') &&
                     (match.player2_id || match.player2_type !== 'PLAYER')
   const isCompleted = match.status === 'completed'
+  const isPublished = tournamentStatus === 'active' || tournamentStatus === 'published'
   const isDraft = tournamentStatus === 'draft'
   const isLocked = tournamentStatus === 'finished' || tournamentStatus === 'completed'
 
@@ -234,7 +235,7 @@ function MatchCard({
           {isDraft && match.round === 1 && (
             <SetPlayersDialog match={match} players={players} tournamentId={tournamentId} />
           )}
-          {!isDraft && (
+          {isPublished && (
             <>
               {(match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD') && !match.player1_id && (
                 <ReplacePlaceholderDialog match={match} slot={1} players={players} tournamentId={tournamentId} />
@@ -246,6 +247,12 @@ function MatchCard({
                 <SetResultDialog match={match} tournamentId={tournamentId} isFinalRound={isFinalRound} />
               )}
             </>
+          )}
+          {!isPublished && !isDraft && (
+            <div className="flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100">
+              <AlertCircle className="w-3 h-3" />
+              Publique para lançar resultados
+            </div>
           )}
         </div>
       )}
