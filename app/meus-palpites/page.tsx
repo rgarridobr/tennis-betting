@@ -1,6 +1,7 @@
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { getUserPredictionsWithDetails, getUserStats, ROUND_NAMES, ROUND_POINTS } from '@/lib/data';
+import { getUserPredictionsWithDetails, getUserStats, ROUND_POINTS } from '@/lib/data';
+import { getRoundName } from '@/lib/utils';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { PageHero } from '@/components/shared/page-hero';
 import { Card, CardContent } from '@/components/ui/card';
@@ -190,7 +191,8 @@ function PredictionCard({ prediction }: { prediction: PredictionWithDetails }) {
   const isPending = prediction.match_status === 'scheduled' || prediction.match_status === 'pending';
   const isCorrect = prediction.is_correct === true;
   const isWrong = prediction.is_correct === false;
-  const roundName = ROUND_NAMES[prediction.round] || `Rodada ${prediction.round}`;
+  const maxRound = Math.ceil(Math.log2(prediction.tournament_size || 2));
+  const roundName = getRoundName(prediction.round, maxRound);
 
   return (
     <div
