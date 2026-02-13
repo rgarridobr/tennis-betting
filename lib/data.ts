@@ -109,6 +109,20 @@ export interface PredictionWithDetails {
   tournament_name: string
 }
 
+export interface BonusPrediction {
+  id: number
+  user_id: number
+  tournament_id: number
+  champion_id: number | null
+  runner_up_id: number | null
+  semi1_id: number | null
+  semi2_id: number | null
+  semi3_id: number | null
+  semi4_id: number | null
+  points_earned: number
+  created_at: string
+}
+
 // ==================== ROUND CONFIG ====================
 
 export const ROUND_NAMES: Record<number, string> = {
@@ -133,12 +147,12 @@ export const ROUND_MATCHES: Record<number, number> = {
 
 export const ROUND_POINTS: Record<number, number> = {
   1: 5,
-  2: 10,
-  3: 15,
-  4: 20,
-  5: 30,
-  6: 40,
-  7: 50
+  2: 5,
+  3: 5,
+  4: 5,
+  5: 5,
+  6: 5,
+  7: 5
 }
 
 // ==================== TOURNAMENTS ====================
@@ -267,12 +281,17 @@ export async function getUserPredictionsWithDetails(userId: number): Promise<Pre
 export async function getUserStats(userId: number): Promise<UserStats> {
   const stats = await sql`
     SELECT 
-      COALESCE(SUM(p.points_earned), 0) as total_points,
+      COALESCE(SUM(p.points_earned), 0) as match_points,
       COUNT(CASE WHEN p.is_correct = true THEN 1 END) as correct_predictions,
       COUNT(CASE WHEN p.is_correct = false THEN 1 END) as wrong_predictions,
       COUNT(p.id) as total_predictions
     FROM predictions p
     WHERE p.user_id = ${userId}
+  `
+  const bonusStats = await sql`
+    SELECT COALESCE(SUM(points_earned), 0) as bonus_points
+    FROM bonus_predictions
+    WHERE user_id = ${userId}
   `
   const activeTournaments = await sql`
     SELECT COUNT(DISTINCT ut.tournament_id) as count
@@ -280,7 +299,9 @@ export async function getUserStats(userId: number): Promise<UserStats> {
     JOIN tournaments t ON ut.tournament_id = t.id
     WHERE ut.user_id = ${userId} AND t.status IN ('upcoming', 'active', 'published')
   `
-  const totalPoints = Number(stats[0]?.total_points || 0)
+  const matchPoints = Number(stats[0]?.match_points || 0)
+  const bonusPoints = Number(bonusStats[0]?.bonus_points || 0)
+  const totalPoints = matchPoints + bonusPoints
   const correct = Number(stats[0]?.correct_predictions || 0)
   const wrong = Number(stats[0]?.wrong_predictions || 0)
   const total = Number(stats[0]?.total_predictions || 0)
@@ -300,13 +321,12 @@ export async function getGlobalRanking(limit: number = 50): Promise<RankingEntry
   const ranking = await sql`
     SELECT 
       u.id as user_id, u.name as user_name,
-      COUNT(CASE WHEN p.is_correct = true THEN 1 END) as correct_predictions,
-      COUNT(p.id) as total_predictions,
-      COALESCE(SUM(p.points_earned), 0) as total_points
+      (SELECT COUNT(*) FROM predictions WHERE user_id = u.id AND is_correct = true) as correct_predictions,
+      (SELECT COUNT(*) FROM predictions WHERE user_id = u.id) as total_predictions,
+      COALESCE((SELECT SUM(points_earned) FROM predictions WHERE user_id = u.id), 0) +
+      COALESCE((SELECT SUM(points_earned) FROM bonus_predictions WHERE user_id = u.id), 0) as total_points
     FROM users u
-    LEFT JOIN predictions p ON u.id = p.user_id
     WHERE u.is_admin = false
-    GROUP BY u.id, u.name
     ORDER BY total_points DESC, correct_predictions DESC
     LIMIT ${limit}
   `
@@ -348,4 +368,34 @@ export async function getTournamentParticipantCount(tournamentId: number): Promi
     SELECT COUNT(*) as count FROM user_tournaments WHERE tournament_id = ${tournamentId}
   `
   return Number(result[0]?.count || 0)
+}
+
+// ==================== BONUS PREDICTIONS ====================
+
+export async function getBonusPredictions(userId: number, tournamentId: number): Promise<BonusPrediction | null> {
+  const rows = await sql`
+    SELECT * FROM bonus_predictions
+    WHERE user_id = ${userId} AND tournament_id = ${tournamentId}
+  `
+  return rows.length > 0 ? (rows[0] as BonusPrediction) : null
+}
+
+export async function getTournamentPlayers(tournamentId: number): Promise<Player[]> {
+  const players = await sql`
+    SELECT DISTINCT p.id, p.name, p.country, p.seed
+    FROM players p
+    JOIN bracket_matches bm ON (p.id = bm.player1_id OR p.id = bm.player2_id)
+    WHERE bm.tournament_id = ${tournamentId}
+    ORDER BY p.name ASC
+  `
+  return players as Player[]
+}
+
+export async function hasTournamentStarted(tournamentId: number): Promise<boolean> {
+  const result = await sql`
+    SELECT COUNT(*) as count
+    FROM bracket_matches
+    WHERE tournament_id = ${tournamentId} AND status = 'completed' AND score != 'BYE'
+  `
+  return Number(result[0]?.count || 0) > 0
 }

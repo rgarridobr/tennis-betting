@@ -266,6 +266,9 @@ export async function setMatchResult(
       `
     }
 
+    // Always recalculate bonus points when a result is set
+    await recalculateBonusPoints(tournamentId)
+
     return { success: true }
   } catch (error) {
     console.error("Error setting match result:", error)
@@ -435,4 +438,60 @@ export async function isRound1Complete(tournamentId: number): Promise<boolean> {
 
     return true
   })
+}
+
+// ==================== BONUS POINTS CALCULATION ====================
+
+export async function recalculateBonusPoints(tournamentId: number): Promise<void> {
+  const tournament = await sql`SELECT size FROM tournaments WHERE id = ${tournamentId}`
+  if (tournament.length === 0) return
+  const maxRound = Math.log2(Number(tournament[0].size))
+
+  // 1. Get Actual Semifinalists (players in Round max-1 matches)
+  const semiMatches = await sql`
+    SELECT player1_id, player2_id FROM bracket_matches
+    WHERE tournament_id = ${tournamentId} AND round = ${maxRound - 1}
+  `
+  const actualSemis = new Set<number>()
+  for (const m of semiMatches) {
+    if (m.player1_id) actualSemis.add(m.player1_id)
+    if (m.player2_id) actualSemis.add(m.player2_id)
+  }
+
+  // 2. Get Actual Finalists (players in Round max match)
+  const finalMatch = await sql`
+    SELECT player1_id, player2_id, winner_id, status FROM bracket_matches
+    WHERE tournament_id = ${tournamentId} AND round = ${maxRound}
+  `
+  let actualChampion: number | null = null
+  let actualRunnerUp: number | null = null
+
+  if (finalMatch.length > 0) {
+    const fm = finalMatch[0]
+    if (fm.status === 'completed' && fm.winner_id) {
+      actualChampion = fm.winner_id
+      actualRunnerUp = fm.winner_id === fm.player1_id ? fm.player2_id : fm.player1_id
+    }
+  }
+
+  // 3. Update all bonus predictions for this tournament
+  const predictions = await sql`SELECT * FROM bonus_predictions WHERE tournament_id = ${tournamentId}`
+
+  for (const p of predictions) {
+    let points = 0
+
+    // Semis points (10 each)
+    if (p.semi1_id && actualSemis.has(p.semi1_id)) points += 10
+    if (p.semi2_id && actualSemis.has(p.semi2_id)) points += 10
+    if (p.semi3_id && actualSemis.has(p.semi3_id)) points += 10
+    if (p.semi4_id && actualSemis.has(p.semi4_id)) points += 10
+
+    // Champion points (30)
+    if (p.champion_id && actualChampion && p.champion_id === actualChampion) points += 30
+
+    // Runner-up points (20)
+    if (p.runner_up_id && actualRunnerUp && p.runner_up_id === actualRunnerUp) points += 20
+
+    await sql`UPDATE bonus_predictions SET points_earned = ${points} WHERE id = ${p.id}`
+  }
 }
