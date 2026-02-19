@@ -53,7 +53,7 @@ function SlotConfig({
   players: Player[]
 }) {
   return (
-    <div className="space-y-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+    <div className="space-y-4 bg-slate-50 rounded-2xl border border-slate-100">
       <Label className="text-xs font-black uppercase tracking-widest text-slate-400">{label}</Label>
       <Select value={type} onValueChange={setType}>
         <SelectTrigger className="font-bold rounded-xl border-2"><SelectValue /></SelectTrigger>

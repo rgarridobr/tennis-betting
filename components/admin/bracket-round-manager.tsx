@@ -48,7 +48,7 @@ export function BracketRoundManager({ round, roundName, matches, players, tourna
 
       {expanded && (
         <CardContent>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
             {matches.map(match => (
               <MatchCard
                 key={match.id}
