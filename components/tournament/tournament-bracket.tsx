@@ -3,7 +3,7 @@
 import React, { useRef, useState, useTransition } from 'react';
 import type { BracketMatch, Player } from '@/lib/data';
 import { makePredictionAction } from '@/lib/actions/predictions';
-import { Check, Trophy, X, Pencil } from 'lucide-react';
+import { Check, Trophy, X, Pencil, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SetPlayersDialog, ReplacePlaceholderDialog, SetResultDialog } from '@/components/admin/match-dialogs';
 
@@ -163,6 +163,8 @@ function BracketMatchCard({
 
   const isCompleted = match.status === 'completed';
   const isDraft = tournamentStatus === 'draft';
+  const isPublished = tournamentStatus === 'active' || tournamentStatus === 'published';
+  const isLocked = tournamentStatus === 'finished' || tournamentStatus === 'completed';
   const canPredict = canMakePredictions && !isCompleted && match.player1_id && match.player2_id;
 
   function handlePrediction(playerId: number) {
@@ -323,13 +325,20 @@ function BracketMatchCard({
         />
       )}
 
-      {isAdmin && !isCompleted && match.player1_id && match.player2_id && (
+      {isAdmin && !isLocked && !isCompleted && match.player1_id && match.player2_id && (
         <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 flex justify-center">
-          <SetResultDialog
-            match={match}
-            tournamentId={tournamentId}
-            isFinalRound={isFinalRound}
-          />
+          {isPublished ? (
+            <SetResultDialog
+              match={match}
+              tournamentId={tournamentId}
+              isFinalRound={isFinalRound}
+            />
+          ) : (
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-100 shadow-sm">
+              <AlertCircle className="w-3 h-3" />
+              Publique para lançar resultados
+            </div>
+          )}
         </div>
       )}
     </div>
