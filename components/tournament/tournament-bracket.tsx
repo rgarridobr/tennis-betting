@@ -194,6 +194,7 @@ function BracketMatchCard({
               <PlayerRow
                 name={match.player1_name}
                 seed={match.player1_seed_val || match.player1_seed}
+                type={match.player1_type}
                 isWinner={match.winner_id === match.player1_id && isCompleted}
                 isSelected={selected === match.player1_id}
                 isPredicted={currentPrediction === match.player1_id}
@@ -203,6 +204,7 @@ function BracketMatchCard({
                 score={match.score}
                 isP1={true}
                 isAdmin={true}
+                isPlaceholder={!match.player1_id && match.player1_type !== 'PLAYER' && match.player1_type !== 'BYE'}
               />
             </div>
           }
@@ -216,8 +218,9 @@ function BracketMatchCard({
           trigger={
             <div className="cursor-pointer">
               <PlayerRow
-                name={match.player1_name || (match.player1_type === 'QUALIFIER' ? 'Qualifier' : 'Wild Card')}
+                name={match.player1_name}
                 seed={match.player1_seed_val || match.player1_seed}
+                type={match.player1_type}
                 isWinner={match.winner_id === match.player1_id && isCompleted}
                 isSelected={selected === match.player1_id}
                 isPredicted={currentPrediction === match.player1_id}
@@ -236,6 +239,7 @@ function BracketMatchCard({
         <PlayerRow
           name={match.player1_name}
           seed={match.player1_seed_val || match.player1_seed}
+          type={match.player1_type}
           isWinner={match.winner_id === match.player1_id && isCompleted}
           isSelected={selected === match.player1_id}
           isPredicted={currentPrediction === match.player1_id}
@@ -244,6 +248,7 @@ function BracketMatchCard({
           canPredict={!!canPredict}
           score={match.score}
           isP1={true}
+          isPlaceholder={!match.player1_id && match.player1_type !== 'BYE' && match.player1_type !== 'PLAYER'}
         />
       )}
 
@@ -260,6 +265,7 @@ function BracketMatchCard({
               <PlayerRow
                 name={match.player2_name}
                 seed={match.player2_seed_val || match.player2_seed}
+                type={match.player2_type}
                 isWinner={match.winner_id === match.player2_id && isCompleted}
                 isSelected={selected === match.player2_id}
                 isPredicted={currentPrediction === match.player2_id}
@@ -269,6 +275,7 @@ function BracketMatchCard({
                 score={match.score}
                 isP1={false}
                 isAdmin={true}
+                isPlaceholder={!match.player2_id && match.player2_type !== 'PLAYER' && match.player2_type !== 'BYE'}
               />
             </div>
           }
@@ -282,8 +289,9 @@ function BracketMatchCard({
           trigger={
             <div className="cursor-pointer">
               <PlayerRow
-                name={match.player2_name || (match.player2_type === 'QUALIFIER' ? 'Qualifier' : 'Wild Card')}
+              name={match.player2_name}
                 seed={match.player2_seed_val || match.player2_seed}
+              type={match.player2_type}
                 isWinner={match.winner_id === match.player2_id && isCompleted}
                 isSelected={selected === match.player2_id}
                 isPredicted={currentPrediction === match.player2_id}
@@ -302,6 +310,7 @@ function BracketMatchCard({
         <PlayerRow
           name={match.player2_name}
           seed={match.player2_seed_val || match.player2_seed}
+          type={match.player2_type}
           isWinner={match.winner_id === match.player2_id && isCompleted}
           isSelected={selected === match.player2_id}
           isPredicted={currentPrediction === match.player2_id}
@@ -310,6 +319,7 @@ function BracketMatchCard({
           canPredict={!!canPredict}
           score={match.score}
           isP1={false}
+          isPlaceholder={!match.player2_id && match.player2_type !== 'BYE' && match.player2_type !== 'PLAYER'}
         />
       )}
 
@@ -329,6 +339,7 @@ function BracketMatchCard({
 function PlayerRow({
   name,
   seed,
+  type,
   isWinner,
   isSelected,
   isPredicted,
@@ -342,6 +353,7 @@ function PlayerRow({
 }: {
   name: string | null;
   seed: number | null;
+  type?: string;
   isWinner: boolean;
   isSelected: boolean;
   isPredicted: boolean;
@@ -353,7 +365,14 @@ function PlayerRow({
   isAdmin?: boolean;
   isPlaceholder?: boolean;
 }) {
-  if (!name) {
+  const displayName = name || (
+    type === 'QUALIFIER' ? 'Qualifier' :
+    type === 'WILDCARD' ? 'Wild Card' :
+    type === 'BYE' ? 'BYE' :
+    null
+  );
+
+  if (!displayName) {
     return (
       <div className={cn(
         "flex items-center justify-between px-4 py-3 min-h-[48px]",
@@ -369,6 +388,16 @@ function PlayerRow({
 
   const showPredictionResult = isCompleted && isPredicted;
   const predictionCorrect = showPredictionResult && isWinner;
+
+  const getIndicator = () => {
+    if (isPlaceholder) return null;
+    if (seed) return `(${seed})`;
+    if (type === 'QUALIFIER') return '(Q)';
+    if (type === 'WILDCARD') return '(WC)';
+    return null;
+  };
+
+  const indicator = getIndicator();
 
   return (
     <div
@@ -401,9 +430,9 @@ function PlayerRow({
             isPlaceholder && 'text-amber-600'
           )}
         >
-          {name}
+          {displayName}
         </span>
-        {seed && <span className="text-[9px] font-black text-slate-400">({seed})</span>}
+        {indicator && <span className="text-[9px] font-black text-slate-400">{indicator}</span>}
         {isAdmin && !isCompleted && (
           <Pencil className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
         )}

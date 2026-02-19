@@ -150,7 +150,8 @@ function MatchCard({
       <CardContent className="p-0">
         <PlayerRow
           playerName={match.player1_name}
-          seed={match.player1_seed}
+          seed={match.player1_seed_val || match.player1_seed}
+          type={match.player1_type}
           playerId={match.player1_id}
           isWinner={isCompleted && match.winner_id === match.player1_id}
           isSelected={selected === match.player1_id}
@@ -161,11 +162,13 @@ function MatchCard({
           isPending={isPending}
           points={points}
           onSelect={() => match.player1_id && handlePrediction(match.player1_id)}
+          isPlaceholder={!match.player1_id && match.player1_type !== 'BYE' && match.player1_type !== 'PLAYER'}
         />
         <div className="border-t border-slate-200" />
         <PlayerRow
           playerName={match.player2_name}
-          seed={match.player2_seed}
+          seed={match.player2_seed_val || match.player2_seed}
+          type={match.player2_type}
           playerId={match.player2_id}
           isWinner={isCompleted && match.winner_id === match.player2_id}
           isSelected={selected === match.player2_id}
@@ -176,6 +179,7 @@ function MatchCard({
           isPending={isPending}
           points={points}
           onSelect={() => match.player2_id && handlePrediction(match.player2_id)}
+          isPlaceholder={!match.player2_id && match.player2_type !== 'BYE' && match.player2_type !== 'PLAYER'}
         />
 
         {!!canPredict && !selected && (
@@ -200,11 +204,12 @@ function MatchCard({
 }
 
 function PlayerRow({
-  playerName, seed, playerId, isWinner, isSelected, isPredicted, isCompleted,
-  winnerId, canPredict, isPending, points, onSelect
+  playerName, seed, type, playerId, isWinner, isSelected, isPredicted, isCompleted,
+  winnerId, canPredict, isPending, points, onSelect, isPlaceholder
 }: {
   playerName: string | null
   seed: number | null
+  type?: string
   playerId: number | null
   isWinner: boolean
   isSelected: boolean
@@ -215,8 +220,16 @@ function PlayerRow({
   isPending: boolean
   points: number
   onSelect: () => void
+  isPlaceholder?: boolean
 }) {
-  if (!playerName) {
+  const displayName = playerName || (
+    type === 'QUALIFIER' ? 'Qualifier' :
+    type === 'WILDCARD' ? 'Wild Card' :
+    type === 'BYE' ? 'BYE' :
+    null
+  );
+
+  if (!displayName) {
     return (
       <div className="flex items-center px-4 py-3.5 text-slate-400 italic text-sm">
         A definir
@@ -238,6 +251,16 @@ function PlayerRow({
   } else if (showCurrentPrediction) {
     rowBg = 'bg-amber-50'
   }
+
+  const getIndicator = () => {
+    if (isPlaceholder) return null;
+    if (seed) return `(${seed})`;
+    if (type === 'QUALIFIER') return '(Q)';
+    if (type === 'WILDCARD') return '(WC)';
+    return null;
+  };
+
+  const indicator = getIndicator();
 
   return (
     <div
@@ -278,9 +301,9 @@ function PlayerRow({
           )}
         </div>
 
-        <span className={`${isWinner && isCompleted ? 'font-bold text-slate-900' : 'text-slate-700'} ${isSelected && !isCompleted ? 'font-semibold text-emerald-700' : ''}`}>
-          {seed && <span className="text-xs text-slate-400 mr-1">[{seed}]</span>}
-          {playerName}
+        <span className={`${isWinner && isCompleted ? 'font-bold text-slate-900' : 'text-slate-700'} ${isSelected && !isCompleted ? 'font-semibold text-emerald-700' : ''} ${isPlaceholder ? 'text-amber-600 italic font-bold' : ''}`}>
+          {displayName}
+          {indicator && <span className="text-xs text-slate-400 ml-1">{indicator}</span>}
         </span>
 
         {showPredictionResult && (
