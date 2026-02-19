@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createUserAction } from '@/lib/actions/admin'
-import { UserPlus, Mail, Lock, User, AlertCircle, Loader2, Phone } from 'lucide-react'
+import { UserPlus, Mail, Lock, User, AlertCircle, Loader2, Phone, Home } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatBrazilianPhoneNumber } from '@/lib/utils'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -23,10 +24,21 @@ export function CreateUserDialog() {
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [whatsapp, setWhatsapp] = useState('')
+  const [tennisClub, setTennisClub] = useState('')
+  const [isNoneChecked, setIsNoneChecked] = useState(false)
 
   const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formattedValue = formatBrazilianPhoneNumber(e.target.value)
     setWhatsapp(formattedValue)
+  }
+
+  const handleNoneChange = (checked: boolean) => {
+    setIsNoneChecked(checked)
+    if (checked) {
+      setTennisClub('nenhum')
+    } else {
+      setTennisClub('')
+    }
   }
 
   async function handleSubmit(formData: FormData) {
@@ -75,7 +87,7 @@ export function CreateUserDialog() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest ml-1">
-                <User className="w-3 h-3 text-emerald-500" /> Nome Completo
+                <User className="w-3 h-3 text-emerald-500" /> Nome Completo *
               </Label>
               <Input
                 id="name"
@@ -88,7 +100,7 @@ export function CreateUserDialog() {
 
             <div className="space-y-2">
               <Label htmlFor="email" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest ml-1">
-                <Mail className="w-3 h-3 text-emerald-500" /> E-mail
+                <Mail className="w-3 h-3 text-emerald-500" /> E-mail *
               </Label>
               <Input
                 id="email"
@@ -102,7 +114,7 @@ export function CreateUserDialog() {
 
             <div className="space-y-2">
               <Label htmlFor="password" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest ml-1">
-                <Lock className="w-3 h-3 text-emerald-500" /> Senha
+                <Lock className="w-3 h-3 text-emerald-500" /> Senha *
               </Label>
               <Input
                 id="password"
@@ -130,6 +142,42 @@ export function CreateUserDialog() {
                 className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300"
               />
             </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between ml-1">
+                <Label htmlFor="tennis_club" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest">
+                  <Home className="w-3 h-3 text-emerald-500" /> Clube em que joga tênis *
+                </Label>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="no_club_admin"
+                    checked={isNoneChecked}
+                    onCheckedChange={handleNoneChange}
+                    className="w-3 h-3 border-slate-300 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
+                  />
+                  <label
+                    htmlFor="no_club_admin"
+                    className="text-[10px] font-black uppercase tracking-widest text-slate-400 cursor-pointer"
+                  >
+                    nenhum
+                  </label>
+                </div>
+              </div>
+              <Input
+                id="tennis_club"
+                name="tennis_club"
+                placeholder="Ex: Club Med"
+                value={tennisClub}
+                onChange={(e) => setTennisClub(e.target.value)}
+                readOnly={isNoneChecked}
+                required
+                className={`h-12 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300 ${isNoneChecked ? 'bg-slate-100 cursor-not-allowed' : 'bg-slate-50'}`}
+              />
+            </div>
+          </div>
+
+          <div className="text-[10px] text-slate-400 font-black uppercase tracking-widest text-center">
+            Campos com * são obrigatórios
           </div>
 
           <DialogFooter className="pt-4">

@@ -13,9 +13,14 @@ export async function updateProfile(formData: FormData) {
     }
 
     const name = formData.get('name') as string
+    const tennis_club = formData.get('tennis_club') as string
 
     if (!name || name.trim().length === 0) {
       return { success: false, error: 'Nome é obrigatório' }
+    }
+
+    if (!tennis_club || tennis_club.trim().length === 0) {
+      return { success: false, error: 'Clube em que joga tênis é obrigatório' }
     }
 
     if (name.trim().length < 2) {
@@ -25,7 +30,7 @@ export async function updateProfile(formData: FormData) {
     // Update user (email cannot be changed)
     await sql`
       UPDATE users 
-      SET name = ${name.trim()}, updated_at = NOW()
+      SET name = ${name.trim()}, tennis_club = ${tennis_club.trim()}, updated_at = NOW()
       WHERE id = ${user.id}
     `
 
@@ -67,7 +72,7 @@ export async function updatePassword(formData: FormData) {
 
     // Get current user with password
     const users = await sql`
-      SELECT password FROM users WHERE id = ${user.id}
+      SELECT password_hash FROM users WHERE id = ${user.id}
     `
 
     if (users.length === 0) {
@@ -75,7 +80,7 @@ export async function updatePassword(formData: FormData) {
     }
 
     // Verify current password
-    const isValid = await bcrypt.compare(currentPassword, users[0].password)
+    const isValid = await bcrypt.compare(currentPassword, users[0].password_hash)
     if (!isValid) {
       return { success: false, error: 'Senha atual incorreta' }
     }
@@ -86,7 +91,7 @@ export async function updatePassword(formData: FormData) {
     // Update password
     await sql`
       UPDATE users 
-      SET password = ${hashedPassword}, updated_at = NOW()
+      SET password_hash = ${hashedPassword}, updated_at = NOW()
       WHERE id = ${user.id}
     `
 

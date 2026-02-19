@@ -8,8 +8,9 @@ export async function registerAction(formData: FormData) {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
   const whatsapp = formData.get('whatsapp') as string;
+  const tennis_club = formData.get('tennis_club') as string;
 
-  if (!name || !email || !password) {
+  if (!name || !email || !password || !tennis_club) {
     return { error: 'Todos os campos são obrigatórios' };
   }
 
@@ -18,7 +19,7 @@ export async function registerAction(formData: FormData) {
   }
 
   try {
-    const user = await registerUser(name, email, password, whatsapp);
+    const user = await registerUser(name, email, password, whatsapp, tennis_club);
     await createSession(user.id);
   } catch (error: unknown) {
     if (error instanceof Error && error.message.includes('unique')) {
