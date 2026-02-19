@@ -216,7 +216,7 @@ function PlayerSelect({
             value={p.id.toString()}
             className="rounded-xl font-medium focus:bg-emerald-50 focus:text-emerald-900"
           >
-            {p.name} {p.seed ? `(${p.seed})` : ''}
+            {p.name}
           </SelectItem>
         ))}
       </SelectContent>

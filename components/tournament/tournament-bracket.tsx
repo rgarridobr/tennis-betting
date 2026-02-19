@@ -193,7 +193,7 @@ function BracketMatchCard({
             <div className="cursor-pointer">
               <PlayerRow
                 name={match.player1_name}
-                seed={match.player1_seed_val || match.player1_seed}
+                seed={match.player1_seed}
                 type={match.player1_type}
                 isWinner={match.winner_id === match.player1_id && isCompleted}
                 isSelected={selected === match.player1_id}
@@ -219,7 +219,7 @@ function BracketMatchCard({
             <div className="cursor-pointer">
               <PlayerRow
                 name={match.player1_name}
-                seed={match.player1_seed_val || match.player1_seed}
+                seed={match.player1_seed}
                 type={match.player1_type}
                 isWinner={match.winner_id === match.player1_id && isCompleted}
                 isSelected={selected === match.player1_id}
@@ -238,7 +238,7 @@ function BracketMatchCard({
       ) : (
         <PlayerRow
           name={match.player1_name}
-          seed={match.player1_seed_val || match.player1_seed}
+          seed={match.player1_seed}
           type={match.player1_type}
           isWinner={match.winner_id === match.player1_id && isCompleted}
           isSelected={selected === match.player1_id}
@@ -264,7 +264,7 @@ function BracketMatchCard({
             <div className="cursor-pointer">
               <PlayerRow
                 name={match.player2_name}
-                seed={match.player2_seed_val || match.player2_seed}
+                seed={match.player2_seed}
                 type={match.player2_type}
                 isWinner={match.winner_id === match.player2_id && isCompleted}
                 isSelected={selected === match.player2_id}
@@ -290,7 +290,7 @@ function BracketMatchCard({
             <div className="cursor-pointer">
               <PlayerRow
               name={match.player2_name}
-                seed={match.player2_seed_val || match.player2_seed}
+                seed={match.player2_seed}
               type={match.player2_type}
                 isWinner={match.winner_id === match.player2_id && isCompleted}
                 isSelected={selected === match.player2_id}
@@ -309,7 +309,7 @@ function BracketMatchCard({
       ) : (
         <PlayerRow
           name={match.player2_name}
-          seed={match.player2_seed_val || match.player2_seed}
+          seed={match.player2_seed}
           type={match.player2_type}
           isWinner={match.winner_id === match.player2_id && isCompleted}
           isSelected={selected === match.player2_id}
@@ -391,7 +391,7 @@ function PlayerRow({
 
   const getIndicator = () => {
     if (isPlaceholder) return null;
-    if (seed) return `(${seed})`;
+    if (type === 'SEED' && seed) return `(${seed})`;
     if (type === 'QUALIFIER') return '(Q)';
     if (type === 'WILDCARD') return '(WC)';
     return null;

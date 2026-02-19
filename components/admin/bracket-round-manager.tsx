@@ -97,7 +97,7 @@ function MatchCard({
 
     const getIndicator = () => {
       if (isPlaceholder) return null;
-      if (seedNum) return `(${seedNum})`;
+      if (type === 'SEED' && seedNum) return `(${seedNum})`;
       if (type === 'QUALIFIER') return '(Q)';
       if (type === 'WILDCARD') return '(WC)';
       return null;
@@ -149,7 +149,7 @@ function MatchCard({
                 <div className={`flex items-center gap-2 text-sm truncate ${
                   isCompleted && match.winner_id === match.player1_id ? 'font-black text-emerald-900' : 'font-bold text-slate-700'
                 }`}>
-                  {getPlayerDisplay(match.player1_id, match.player1_name, match.player1_type, match.player1_seed_val || match.player1_seed)}
+                  {getPlayerDisplay(match.player1_id, match.player1_name, match.player1_type, match.player1_seed)}
                 </div>
                 {isCompleted && match.winner_id === match.player1_id && <Trophy className="w-4 h-4 text-emerald-600 shrink-0" />}
                 <Pencil className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -165,7 +165,7 @@ function MatchCard({
             trigger={
               <div className="flex items-center justify-between p-2 rounded-xl cursor-pointer hover:bg-amber-100/50 transition-colors border border-dashed border-amber-300">
                 <div className="flex items-center gap-2 text-sm truncate font-bold text-amber-700">
-                  {getPlayerDisplay(match.player1_id, match.player1_name, match.player1_type, match.player1_seed_val || match.player1_seed)}
+                  {getPlayerDisplay(match.player1_id, match.player1_name, match.player1_type, match.player1_seed)}
                 </div>
                 <Pencil className="w-3 h-3 text-amber-500" />
               </div>
@@ -178,7 +178,7 @@ function MatchCard({
             <div className={`flex items-center gap-2 text-sm truncate ${
               isCompleted && match.winner_id === match.player1_id ? 'font-black text-emerald-900' : 'font-bold text-slate-700'
             }`}>
-              {getPlayerDisplay(match.player1_id, match.player1_name, match.player1_type, match.player1_seed_val || match.player1_seed)}
+              {getPlayerDisplay(match.player1_id, match.player1_name, match.player1_type, match.player1_seed)}
             </div>
             {isCompleted && match.winner_id === match.player1_id && <Trophy className="w-4 h-4 text-emerald-600 shrink-0" />}
           </div>
@@ -200,7 +200,7 @@ function MatchCard({
                 <div className={`flex items-center gap-2 text-sm truncate ${
                   isCompleted && match.winner_id === match.player2_id ? 'font-black text-emerald-900' : 'font-bold text-slate-700'
                 }`}>
-                  {getPlayerDisplay(match.player2_id, match.player2_name, match.player2_type, match.player2_seed_val || match.player2_seed)}
+                  {getPlayerDisplay(match.player2_id, match.player2_name, match.player2_type, match.player2_seed)}
                 </div>
                 {isCompleted && match.winner_id === match.player2_id && <Trophy className="w-4 h-4 text-emerald-600 shrink-0" />}
                 <Pencil className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -216,7 +216,7 @@ function MatchCard({
             trigger={
               <div className="flex items-center justify-between p-2 rounded-xl cursor-pointer hover:bg-amber-100/50 transition-colors border border-dashed border-amber-300">
                 <div className="flex items-center gap-2 text-sm truncate font-bold text-amber-700">
-                  {getPlayerDisplay(match.player2_id, match.player2_name, match.player2_type, match.player2_seed_val || match.player2_seed)}
+                  {getPlayerDisplay(match.player2_id, match.player2_name, match.player2_type, match.player2_seed)}
                 </div>
                 <Pencil className="w-3 h-3 text-amber-500" />
               </div>
@@ -229,7 +229,7 @@ function MatchCard({
             <div className={`flex items-center gap-2 text-sm truncate ${
               isCompleted && match.winner_id === match.player2_id ? 'font-black text-emerald-900' : 'font-bold text-slate-700'
             }`}>
-              {getPlayerDisplay(match.player2_id, match.player2_name, match.player2_type, match.player2_seed_val || match.player2_seed)}
+              {getPlayerDisplay(match.player2_id, match.player2_name, match.player2_type, match.player2_seed)}
             </div>
             {isCompleted && match.winner_id === match.player2_id && <Trophy className="w-4 h-4 text-emerald-600 shrink-0" />}
           </div>

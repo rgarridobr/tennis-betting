@@ -100,6 +100,10 @@ export interface PredictionWithDetails {
   created_at: string
   player1_name: string | null
   player2_name: string | null
+  player1_type: string
+  player2_type: string
+  player1_seed: number | null
+  player2_seed: number | null
   round: number
   match_date: string | null
   score: string | null
@@ -251,6 +255,7 @@ export async function getUserPredictionsWithDetails(userId: number): Promise<Pre
       p.id, p.bracket_match_id, p.predicted_winner_id, p.is_correct, p.points_earned, p.created_at,
       pw.name as predicted_winner_name,
       p1.name as player1_name, p2.name as player2_name,
+      bm.player1_type, bm.player2_type, bm.player1_seed, bm.player2_seed,
       bm.round, bm.match_date, bm.score, bm.status as match_status,
       w.name as winner_name,
       t.id as tournament_id, t.name as tournament_name, t.size as tournament_size

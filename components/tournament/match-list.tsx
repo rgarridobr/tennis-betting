@@ -150,7 +150,7 @@ function MatchCard({
       <CardContent className="p-0">
         <PlayerRow
           playerName={match.player1_name}
-          seed={match.player1_seed_val || match.player1_seed}
+          seed={match.player1_seed}
           type={match.player1_type}
           playerId={match.player1_id}
           isWinner={isCompleted && match.winner_id === match.player1_id}
@@ -167,7 +167,7 @@ function MatchCard({
         <div className="border-t border-slate-200" />
         <PlayerRow
           playerName={match.player2_name}
-          seed={match.player2_seed_val || match.player2_seed}
+          seed={match.player2_seed}
           type={match.player2_type}
           playerId={match.player2_id}
           isWinner={isCompleted && match.winner_id === match.player2_id}
@@ -254,7 +254,7 @@ function PlayerRow({
 
   const getIndicator = () => {
     if (isPlaceholder) return null;
-    if (seed) return `(${seed})`;
+    if (type === "SEED" && seed) return `(${seed})`;
     if (type === 'QUALIFIER') return '(Q)';
     if (type === 'WILDCARD') return '(WC)';
     return null;

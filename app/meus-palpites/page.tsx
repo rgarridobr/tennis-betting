@@ -187,6 +187,25 @@ function PredictionsList({ predictions }: { predictions: PredictionWithDetails[]
   );
 }
 
+function formatPlayerDisplay(name: string | null, type: string, seed: number | null) {
+  if (!name) return 'A definir';
+
+  const getIndicator = () => {
+    if (type === 'SEED' && seed) return `(${seed})`;
+    if (type === 'QUALIFIER') return '(Q)';
+    if (type === 'WILDCARD') return '(WC)';
+    return null;
+  };
+
+  const indicator = getIndicator();
+  return (
+    <>
+      {name}
+      {indicator && <span className="text-[10px] text-slate-400 ml-1 font-bold">{indicator}</span>}
+    </>
+  );
+}
+
 function PredictionCard({ prediction }: { prediction: PredictionWithDetails }) {
   const isPending = prediction.match_status === 'scheduled' || prediction.match_status === 'pending';
   const isCorrect = prediction.is_correct === true;
@@ -212,9 +231,13 @@ function PredictionCard({ prediction }: { prediction: PredictionWithDetails }) {
         </div>
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-medium text-slate-900">{prediction.player1_name || 'TBD'}</span>
+            <span className="font-medium text-slate-900">
+              {formatPlayerDisplay(prediction.player1_name, prediction.player1_type, prediction.player1_seed)}
+            </span>
             <span className="text-slate-400">vs</span>
-            <span className="font-medium text-slate-900">{prediction.player2_name || 'TBD'}</span>
+            <span className="font-medium text-slate-900">
+              {formatPlayerDisplay(prediction.player2_name, prediction.player2_type, prediction.player2_seed)}
+            </span>
           </div>
           <div className="flex items-center gap-2 text-sm text-slate-500">
             <Badge variant="outline" className="text-xs font-normal">
