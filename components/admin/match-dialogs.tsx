@@ -15,6 +15,22 @@ import {
 } from '@/components/ui/select'
 import { Pencil, Trophy, CheckCircle2, AlertCircle } from 'lucide-react'
 
+// ==================== HELPER FUNCTIONS ====================
+
+function formatPlayerName(name: string | null, seed: number | null, type?: string) {
+  if (!name) {
+    if (type === 'QUALIFIER') return 'Qualifier';
+    if (type === 'WILDCARD') return 'Wild Card';
+    if (type === 'BYE') return 'BYE';
+    return 'A definir';
+  }
+
+  if (seed) return `${name} (${seed})`;
+  if (type === 'QUALIFIER') return `${name} (Q)`;
+  if (type === 'WILDCARD') return `${name} (WC)`;
+  return name;
+}
+
 // ==================== HELPER COMPONENTS ====================
 
 function SlotConfig({
@@ -70,7 +86,9 @@ function SlotConfig({
             <SelectTrigger className="font-bold rounded-xl border-2"><SelectValue placeholder="Selecione..." /></SelectTrigger>
             <SelectContent className="rounded-xl max-h-60">
               {players.map(p => (
-                <SelectItem key={p.id} value={p.id.toString()}>{p.name}</SelectItem>
+                <SelectItem key={p.id} value={p.id.toString()}>
+                  {p.name}{p.seed ? ` (${p.seed})` : ''}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -253,7 +271,9 @@ export function ReplacePlaceholderDialog({
             <SelectTrigger className="h-12 rounded-xl border-2 font-bold"><SelectValue placeholder="Selecione o jogador" /></SelectTrigger>
             <SelectContent className="rounded-xl max-h-60">
               {players.map(p => (
-                <SelectItem key={p.id} value={p.id.toString()}>{p.name}</SelectItem>
+                <SelectItem key={p.id} value={p.id.toString()}>
+                  {p.name}{p.seed ? ` (${p.seed})` : ''}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -329,12 +349,16 @@ export function SetResultDialog({ match, tournamentId, isFinalRound }: { match: 
           <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
             <div className="text-center flex-1">
               <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Jogador A</p>
-              <p className="font-bold text-slate-700">{match.player1_name}</p>
+              <p className="font-bold text-slate-700">
+                {formatPlayerName(match.player1_name, match.player1_seed_val || match.player1_seed, match.player1_type)}
+              </p>
             </div>
             <div className="px-4 text-slate-300 font-black italic text-xl">VS</div>
             <div className="text-center flex-1">
               <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Jogador B</p>
-              <p className="font-bold text-slate-700">{match.player2_name}</p>
+              <p className="font-bold text-slate-700">
+                {formatPlayerName(match.player2_name, match.player2_seed_val || match.player2_seed, match.player2_type)}
+              </p>
             </div>
           </div>
 
@@ -362,7 +386,9 @@ export function SetResultDialog({ match, tournamentId, isFinalRound }: { match: 
                   onChange={() => setWinnerId(match.player1_id?.toString() || '')}
                   className="hidden"
                 />
-                <span className="text-sm font-black text-center">{match.player1_name}</span>
+                <span className="text-sm font-black text-center">
+                  {formatPlayerName(match.player1_name, match.player1_seed_val || match.player1_seed, match.player1_type)}
+                </span>
                 {winnerId === match.player1_id?.toString() && <Badge className="bg-emerald-500">VENCEDOR</Badge>}
               </label>
               <label className={`flex flex-col items-center gap-2 p-4 border-2 rounded-2xl cursor-pointer transition-all ${
@@ -375,7 +401,9 @@ export function SetResultDialog({ match, tournamentId, isFinalRound }: { match: 
                   onChange={() => setWinnerId(match.player2_id?.toString() || '')}
                   className="hidden"
                 />
-                <span className="text-sm font-black text-center">{match.player2_name}</span>
+                <span className="text-sm font-black text-center">
+                  {formatPlayerName(match.player2_name, match.player2_seed_val || match.player2_seed, match.player2_type)}
+                </span>
                 {winnerId === match.player2_id?.toString() && <Badge className="bg-emerald-500">VENCEDOR</Badge>}
               </label>
             </div>
