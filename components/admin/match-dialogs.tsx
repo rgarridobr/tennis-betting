@@ -25,7 +25,7 @@ function formatPlayerName(name: string | null, seed: number | null, type?: strin
     return 'A definir';
   }
 
-  if (seed) return `${name} (${seed})`;
+  if (type === 'SEED' && seed) return `${name} (${seed})`;
   if (type === 'QUALIFIER') return `${name} (Q)`;
   if (type === 'WILDCARD') return `${name} (WC)`;
   return name;
@@ -87,7 +87,7 @@ function SlotConfig({
             <SelectContent className="rounded-xl max-h-60">
               {players.map(p => (
                 <SelectItem key={p.id} value={p.id.toString()}>
-                  {p.name}{p.seed ? ` (${p.seed})` : ''}
+                  {p.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -138,15 +138,20 @@ export function SetPlayersDialog({
   function handleSubmit() {
     setError(null)
 
+    const parseSeed = (val: string) => {
+      const parsed = parseInt(val, 10)
+      return isNaN(parsed) ? null : parsed
+    }
+
     const p1 = {
       type: p1Type,
       id: p1Type !== 'BYE' && p1Type !== 'QUALIFIER' && p1Type !== 'WILDCARD' ? parseInt(p1Id) : (p1Id ? parseInt(p1Id) : undefined),
-      seed: p1Type === 'SEED' ? parseInt(p1Seed) : null
+      seed: p1Type === 'SEED' ? parseSeed(p1Seed) : null
     }
     const p2 = {
       type: p2Type,
       id: p2Type !== 'BYE' && p2Type !== 'QUALIFIER' && p2Type !== 'WILDCARD' ? parseInt(p2Id) : (p2Id ? parseInt(p2Id) : undefined),
-      seed: p2Type === 'SEED' ? parseInt(p2Seed) : null
+      seed: p2Type === 'SEED' ? parseSeed(p2Seed) : null
     }
 
     if (p1.type === 'PLAYER' && !p1.id) return setError('Selecione o Jogador 1')
@@ -272,7 +277,7 @@ export function ReplacePlaceholderDialog({
             <SelectContent className="rounded-xl max-h-60">
               {players.map(p => (
                 <SelectItem key={p.id} value={p.id.toString()}>
-                  {p.name}{p.seed ? ` (${p.seed})` : ''}
+                  {p.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -350,14 +355,14 @@ export function SetResultDialog({ match, tournamentId, isFinalRound }: { match: 
             <div className="text-center flex-1">
               <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Jogador A</p>
               <p className="font-bold text-slate-700">
-                {formatPlayerName(match.player1_name, match.player1_seed_val || match.player1_seed, match.player1_type)}
+                {formatPlayerName(match.player1_name, match.player1_seed, match.player1_type)}
               </p>
             </div>
             <div className="px-4 text-slate-300 font-black italic text-xl">VS</div>
             <div className="text-center flex-1">
               <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Jogador B</p>
               <p className="font-bold text-slate-700">
-                {formatPlayerName(match.player2_name, match.player2_seed_val || match.player2_seed, match.player2_type)}
+                {formatPlayerName(match.player2_name, match.player2_seed, match.player2_type)}
               </p>
             </div>
           </div>
@@ -387,7 +392,7 @@ export function SetResultDialog({ match, tournamentId, isFinalRound }: { match: 
                   className="hidden"
                 />
                 <span className="text-sm font-black text-center">
-                  {formatPlayerName(match.player1_name, match.player1_seed_val || match.player1_seed, match.player1_type)}
+                  {formatPlayerName(match.player1_name, match.player1_seed, match.player1_type)}
                 </span>
                 {winnerId === match.player1_id?.toString() && <Badge className="bg-emerald-500">VENCEDOR</Badge>}
               </label>
@@ -402,7 +407,7 @@ export function SetResultDialog({ match, tournamentId, isFinalRound }: { match: 
                   className="hidden"
                 />
                 <span className="text-sm font-black text-center">
-                  {formatPlayerName(match.player2_name, match.player2_seed_val || match.player2_seed, match.player2_type)}
+                  {formatPlayerName(match.player2_name, match.player2_seed, match.player2_type)}
                 </span>
                 {winnerId === match.player2_id?.toString() && <Badge className="bg-emerald-500">VENCEDOR</Badge>}
               </label>
