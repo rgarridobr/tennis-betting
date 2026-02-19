@@ -230,8 +230,9 @@ export async function createUserAction(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
   const whatsapp = formData.get('whatsapp') as string
+  const tennis_club = formData.get('tennis_club') as string
 
-  if (!name || !email || !password) {
+  if (!name || !email || !password || !tennis_club) {
     return { success: false, error: 'Todos os campos são obrigatórios' }
   }
 
@@ -240,7 +241,7 @@ export async function createUserAction(formData: FormData) {
   }
 
   try {
-    await registerUser(name, email, password, whatsapp)
+    await registerUser(name, email, password, whatsapp, tennis_club)
     revalidatePath('/admin/usuarios')
     return { success: true }
   } catch (error: any) {

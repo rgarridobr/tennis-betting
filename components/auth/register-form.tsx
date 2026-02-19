@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { formatBrazilianPhoneNumber } from '@/lib/utils'
 
 function SubmitButton() {
@@ -21,10 +22,21 @@ function SubmitButton() {
 export function RegisterForm() {
   const [error, setError] = useState<string | null>(null)
   const [whatsapp, setWhatsapp] = useState('')
+  const [tennisClub, setTennisClub] = useState('')
+  const [isNoneChecked, setIsNoneChecked] = useState(false)
 
   const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formattedValue = formatBrazilianPhoneNumber(e.target.value)
     setWhatsapp(formattedValue)
+  }
+
+  const handleNoneChange = (checked: boolean) => {
+    setIsNoneChecked(checked)
+    if (checked) {
+      setTennisClub('Nenhum')
+    } else {
+      setTennisClub('')
+    }
   }
   
   async function handleSubmit(formData: FormData) {
@@ -46,7 +58,7 @@ export function RegisterForm() {
           )}
           
           <div className="space-y-2">
-            <Label htmlFor="name">Nome</Label>
+            <Label htmlFor="name">Nome *</Label>
             <Input
               id="name"
               name="name"
@@ -57,7 +69,7 @@ export function RegisterForm() {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Email *</Label>
             <Input
               id="email"
               name="email"
@@ -68,7 +80,7 @@ export function RegisterForm() {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
+            <Label htmlFor="password">Senha *</Label>
             <Input
               id="password"
               name="password"
@@ -91,7 +103,41 @@ export function RegisterForm() {
               maxLength={15}
             />
           </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="tennis_club">Clube em que joga tênis *</Label>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="no_club" 
+                  checked={isNoneChecked}
+                  onCheckedChange={handleNoneChange}
+                />
+                <label
+                  htmlFor="no_club"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Nenhum
+                </label>
+              </div>
+            </div>
+            <Input
+              id="tennis_club"
+              name="tennis_club"
+              type="text"
+              placeholder="Nome do seu clube"
+              value={tennisClub}
+              onChange={(e) => setTennisClub(e.target.value)}
+              readOnly={isNoneChecked}
+              className={isNoneChecked ? 'bg-slate-50 cursor-not-allowed' : ''}
+              required
+            />
+          </div>
           
+          <div className="text-sm text-slate-500 py-2">
+            Campos com * são obrigatórios
+          </div>
+
           <SubmitButton />
         </form>
       </CardContent>

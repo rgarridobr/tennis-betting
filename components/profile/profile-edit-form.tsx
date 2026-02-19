@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import { updateProfile, updatePassword } from '@/lib/actions/profile'
 import { Loader2, Check, AlertCircle } from 'lucide-react'
 
@@ -13,12 +14,24 @@ interface ProfileEditFormProps {
     id: number
     name: string
     email: string
+    tennis_club?: string
   }
 }
 
 export function ProfileEditForm({ user }: ProfileEditFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [tennisClub, setTennisClub] = useState(user.tennis_club || '')
+  const [isNoneChecked, setIsNoneChecked] = useState(user.tennis_club === 'Nenhum')
+
+  const handleNoneChange = (checked: boolean) => {
+    setIsNoneChecked(checked)
+    if (checked) {
+      setTennisClub('Nenhum')
+    } else {
+      setTennisClub(user.tennis_club === 'Nenhum' ? '' : user.tennis_club || '')
+    }
+  }
   const [isPasswordLoading, setIsPasswordLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -83,7 +96,7 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
       {/* Profile Info Form */}
       <form action={handleProfileSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="name">Nome</Label>
+          <Label htmlFor="name">Nome *</Label>
           <Input
             id="name"
             name="name"
@@ -94,7 +107,7 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">Email *</Label>
           <Input
             id="email"
             name="email"
@@ -104,6 +117,36 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
             className="bg-slate-50 text-slate-500 cursor-not-allowed"
           />
           <p className="text-xs text-slate-500">O email não pode ser alterado</p>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="tennis_club">Clube em que joga tênis *</Label>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="no_club_profile" 
+                checked={isNoneChecked}
+                onCheckedChange={handleNoneChange}
+              />
+              <label
+                htmlFor="no_club_profile"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Nenhum
+              </label>
+            </div>
+          </div>
+          <Input
+            id="tennis_club"
+            name="tennis_club"
+            type="text"
+            placeholder="Nome do seu clube"
+            value={tennisClub}
+            onChange={(e) => setTennisClub(e.target.value)}
+            readOnly={isNoneChecked}
+            className={isNoneChecked ? 'bg-slate-50 cursor-not-allowed' : ''}
+            required
+          />
         </div>
 
         {message && (
