@@ -285,6 +285,27 @@ async function advancePlayer(tournamentId: number, currentRound: number, current
   const nextPosition = Math.ceil(currentPosition / 2)
   const isPlayer1Slot = currentPosition % 2 === 1
 
+  // Get current match data to preserve winner's identity (type/seed)
+  const currentMatch = await sql`
+    SELECT player1_id, player1_type, player1_seed, player2_id, player2_type, player2_seed
+    FROM bracket_matches
+    WHERE tournament_id = ${tournamentId} AND round = ${currentRound} AND position = ${currentPosition}
+  `
+
+  let winnerType = 'PLAYER'
+  let winnerSeed = null
+
+  if (winnerId && currentMatch.length > 0) {
+    const cm = currentMatch[0]
+    if (cm.player1_id === winnerId) {
+      winnerType = cm.player1_type
+      winnerSeed = cm.player1_seed
+    } else if (cm.player2_id === winnerId) {
+      winnerType = cm.player2_type
+      winnerSeed = cm.player2_seed
+    }
+  }
+
   const nextMatch = await sql`
     SELECT bm.id, bm.player1_id, bm.player2_id, bm.player1_type, bm.player2_type, bm.status, t.size
     FROM bracket_matches bm
@@ -301,9 +322,9 @@ async function advancePlayer(tournamentId: number, currentRound: number, current
     const playerChanged = isPlayer1Slot ? (nm.player1_id !== winnerId) : (nm.player2_id !== winnerId)
 
     if (isPlayer1Slot) {
-      await sql`UPDATE bracket_matches SET player1_id = ${winnerId}, player1_type = 'PLAYER', updated_at = NOW() WHERE id = ${nextMatchId}`
+      await sql`UPDATE bracket_matches SET player1_id = ${winnerId}, player1_type = ${winnerType}, player1_seed = ${winnerSeed}, updated_at = NOW() WHERE id = ${nextMatchId}`
     } else {
-      await sql`UPDATE bracket_matches SET player2_id = ${winnerId}, player2_type = 'PLAYER', updated_at = NOW() WHERE id = ${nextMatchId}`
+      await sql`UPDATE bracket_matches SET player2_id = ${winnerId}, player2_type = ${winnerType}, player2_seed = ${winnerSeed}, updated_at = NOW() WHERE id = ${nextMatchId}`
     }
 
     if (nm.status === 'completed' && playerChanged) {
