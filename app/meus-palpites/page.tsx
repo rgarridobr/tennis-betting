@@ -27,63 +27,63 @@ export default async function MeusPalpitesPage() {
       <DashboardHeader user={user} />
 
       <PageHero title="Meus Palpites" subtitle="Acompanhe todos os seus palpites e resultados">
-        <div className="flex items-center gap-4">
-          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl">
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
-                <Target className="w-6 h-6 text-emerald-400" />
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 lg:gap-4">
+          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl flex-1 min-w-[140px] sm:min-w-[160px]">
+            <CardContent className="p-2 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shrink-0">
+                <Target className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Palpites</p>
-                <p className="text-2xl font-black text-white">{stats.total_predictions}</p>
+                <p className="text-xl sm:text-2xl font-black text-white">{stats.total_predictions}</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl">
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
-                <CheckCircle2 className="w-6 h-6 text-blue-400" />
+          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl flex-1 min-w-[140px] sm:min-w-[160px]">
+            <CardContent className="p-2 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0">
+                <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Acertos</p>
-                <p className="text-2xl font-black text-white">{stats.correct_predictions}</p>
+                <p className="text-xl sm:text-2xl font-black text-white">{stats.correct_predictions}</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl">
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center border border-orange-500/30">
-                <CheckCircle2 className="w-6 h-6 text-orange-400" />
+          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl flex-1 min-w-[140px] sm:min-w-[160px]">
+            <CardContent className="p-2 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center border border-orange-500/30 shrink-0">
+                <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-orange-400" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-orange-100/70 text-xs font-bold uppercase tracking-wider">Precisão</p>
-                <p className="text-2xl font-black text-white">{stats.accuracy}%</p>
+                <p className="text-xl sm:text-2xl font-black text-white">{stats.accuracy}%</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl">
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-yellow-500/20 flex items-center justify-center border border-yellow-500/30">
-                <Medal className="w-6 h-6 text-yellow-400" />
+          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl flex-1 min-w-[140px] sm:min-w-[160px]">
+            <CardContent className="p-2 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-yellow-500/20 flex items-center justify-center border border-yellow-500/30 shrink-0">
+                <Medal className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-yellow-100/70 text-xs font-bold uppercase tracking-wider">Pontos</p>
-                <p className="text-2xl font-black text-white">{stats.total_points}</p>
+                <p className="text-xl sm:text-2xl font-black text-white">{stats.total_points}</p>
               </div>
             </CardContent>
           </Card>
         </div>
       </PageHero>
 
-      <main className="container mx-auto px-4 md:px-32 py-8">
+      <main className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-32 py-4 sm:py-6 md:py-8">
         {predictions.length === 0 ? (
           <Card className="border-0 shadow-md">
-            <CardContent className="py-16 text-center">
-              <Target className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-slate-900 mb-2">Nenhum palpite ainda</h2>
+            <CardContent className="py-8 sm:py-12 md:py-16 text-center">
+              <Target className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
+              <h2 className="text-lg sm:text-xl font-semibold text-slate-900 mb-2">Nenhum palpite ainda</h2>
               <p className="text-slate-600 mb-6">Inscreva-se em um torneio e comece a fazer seus palpites!</p>
               <Link
                 href="/torneios"
@@ -95,33 +95,33 @@ export default async function MeusPalpitesPage() {
           </Card>
         ) : (
           <Tabs defaultValue="all" className="space-y-6">
-            <TabsList className="bg-white shadow-sm w-full flex flex-wrap h-auto p-1 gap-1">
+            <TabsList className="bg-white shadow-sm w-full grid grid-cols-1 sm:flex sm:flex-wrap h-auto p-1 gap-1">
               <TabsTrigger
                 value="all"
-                className="flex-1 min-w-[70px] text-xs sm:text-sm py-2 data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700"
+                className="col-span-1 sm:flex-1 sm:min-w-[70px] text-xs py-2 data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700"
               >
-                Todos ({predictions.length})
+                <span>Todos</span>({predictions.length})
               </TabsTrigger>
               <TabsTrigger
                 value="pending"
-                className="flex-1 min-w-[70px] text-xs sm:text-sm py-2 data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700"
+                className="col-span-1 sm:flex-1 sm:min-w-[70px] text-xs py-2 data-[state=active]:bg-amber-50 data-[state=active]:text-amber-700"
               >
-                <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                Pendentes ({pendingPredictions.length})
+                <Clock className="w-3 h-3 mr-1" />
+                <span>Pendentes</span>({pendingPredictions.length})
               </TabsTrigger>
               <TabsTrigger
                 value="correct"
-                className="flex-1 min-w-[70px] text-xs sm:text-sm py-2 data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700"
+                className="col-span-1 sm:flex-1 sm:min-w-[70px] text-xs py-2 data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700"
               >
-                <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                Acertos ({correctPredictions.length})
+                <CheckCircle2 className="w-3 h-3 mr-1" />
+                <span>Acertos</span>({correctPredictions.length})
               </TabsTrigger>
               <TabsTrigger
                 value="wrong"
-                className="flex-1 min-w-[70px] text-xs sm:text-sm py-2 data-[state=active]:bg-red-50 data-[state=active]:text-red-700"
+                className="col-span-1 sm:flex-1 sm:min-w-[70px] text-xs py-2 data-[state=active]:bg-red-50 data-[state=active]:text-red-700"
               >
-                <XCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                Erros ({wrongPredictions.length})
+                <XCircle className="w-3 h-3 mr-1" />
+                <span>Erros</span>({wrongPredictions.length})
               </TabsTrigger>
             </TabsList>
 
@@ -166,10 +166,10 @@ function PredictionsList({ predictions }: { predictions: PredictionWithDetails[]
     <div className="space-y-6">
       {Object.entries(grouped).map(([tournamentName, tournamentPredictions]) => (
         <Card key={tournamentName} className="border-0 shadow-md overflow-hidden pt-0">
-          <div className="bg-slate-100 px-6 py-4 border-b">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-slate-900">{tournamentName}</h3>
-              <span className="text-sm text-slate-600">
+          <div className="bg-slate-100 px-4 sm:px-6 py-3 sm:py-4 border-b">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+              <h3 className="font-semibold text-sm sm:text-base text-slate-900">{tournamentName}</h3>
+              <span className="text-xs sm:text-sm text-slate-600">
                 {tournamentPredictions.length} palpite{tournamentPredictions.length !== 1 ? 's' : ''}
               </span>
             </div>
@@ -215,31 +215,31 @@ function PredictionCard({ prediction }: { prediction: PredictionWithDetails }) {
 
   return (
     <div
-      className={`px-6 py-4 flex items-center justify-between ${isCorrect ? 'bg-emerald-50/50' : isWrong ? 'bg-red-50/50' : ''}`}
+      className={`px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row gap-4 sm:gap-0 sm:items-center sm:justify-between ${isCorrect ? 'bg-emerald-50/50' : isWrong ? 'bg-red-50/50' : ''}`}
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1 min-w-0">
         <div
-          className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isPending ? 'bg-amber-100' : isCorrect ? 'bg-emerald-100' : 'bg-red-100'}`}
+          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 ${isPending ? 'bg-amber-100' : isCorrect ? 'bg-emerald-100' : 'bg-red-100'}`}
         >
           {isPending ? (
-            <Clock className="w-5 h-5 text-amber-600" />
+            <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
           ) : isCorrect ? (
-            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
           ) : (
-            <XCircle className="w-5 h-5 text-red-600" />
+            <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
           )}
         </div>
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-medium text-slate-900">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
+            <span className="font-medium text-xs sm:text-sm text-slate-900 truncate">
               {formatPlayerDisplay(prediction.player1_name, prediction.player1_type, prediction.player1_seed)}
             </span>
-            <span className="text-slate-400">vs</span>
-            <span className="font-medium text-slate-900">
+            <span className="text-slate-400 hidden sm:inline">vs</span>
+            <span className="font-medium text-xs sm:text-sm text-slate-900 truncate">
               {formatPlayerDisplay(prediction.player2_name, prediction.player2_type, prediction.player2_seed)}
             </span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-slate-500">
+          <div className="flex items-center gap-2 text-xs text-slate-500">
             <Badge variant="outline" className="text-xs font-normal">
               {roundName}
             </Badge>
@@ -248,10 +248,10 @@ function PredictionCard({ prediction }: { prediction: PredictionWithDetails }) {
         </div>
       </div>
 
-      <div className="text-right shrink-0">
-        <p className="text-sm text-slate-500 mb-1">Seu palpite:</p>
+      <div className="text-left sm:text-right shrink-0">
+        <p className="text-xs text-slate-500 mb-1">Seu palpite:</p>
         <p
-          className={`font-semibold ${isPending ? 'text-amber-600' : isCorrect ? 'text-emerald-600' : 'text-red-600'}`}
+          className={`font-semibold text-sm ${isPending ? 'text-amber-600' : isCorrect ? 'text-emerald-600' : 'text-red-600'}`}
         >
           {prediction.predicted_winner_name}
         </p>
