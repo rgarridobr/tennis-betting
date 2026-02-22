@@ -402,19 +402,33 @@ export async function updatePlaceholderPlayer(
 
 export async function getAllUsers() {
   const users = await sql`
-    SELECT u.id, u.name, u.email, u.whatsapp, u.is_admin, u.created_at,
+    SELECT u.id, u.name, u.email, u.whatsapp, u.tennis_club, u.is_admin, u.is_active, u.is_deleted, u.created_at,
       COUNT(p.id) as total_predictions
     FROM users u
     LEFT JOIN predictions p ON u.id = p.user_id
-    GROUP BY u.id, u.name, u.email, u.whatsapp, u.is_admin, u.created_at
+    WHERE u.is_deleted = FALSE
+    GROUP BY u.id, u.name, u.email, u.whatsapp, u.tennis_club, u.is_admin, u.is_active, u.is_deleted, u.created_at
     ORDER BY u.created_at DESC
   `
   return users
 }
 
-export async function toggleUserAdmin(userId: number, isAdmin: boolean): Promise<void> {
-  await sql`UPDATE users SET is_admin = ${isAdmin} WHERE id = ${userId}`
+export async function updateUser(id: number, data: { name: string, email: string, whatsapp: string, tennis_club: string }): Promise<void> {
+  await sql`
+    UPDATE users
+    SET name = ${data.name}, email = ${data.email}, whatsapp = ${data.whatsapp}, tennis_club = ${data.tennis_club}, updated_at = NOW()
+    WHERE id = ${id}
+  `
 }
+
+export async function toggleUserStatus(id: number, isActive: boolean): Promise<void> {
+  await sql`UPDATE users SET is_active = ${isActive}, updated_at = NOW() WHERE id = ${id}`
+}
+
+export async function softDeleteUser(id: number): Promise<void> {
+  await sql`UPDATE users SET is_deleted = TRUE, is_active = FALSE WHERE id = ${id}`
+}
+
 
 // ==================== METADATA MANAGEMENT ====================
 

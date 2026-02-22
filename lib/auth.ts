@@ -9,6 +9,7 @@ export interface User {
   whatsapp?: string
   tennis_club?: string
   is_admin: boolean
+  is_active: boolean
   created_at: string
 }
 
@@ -48,16 +49,21 @@ export async function getSession(): Promise<User | null> {
   if (!token) return null
   
   const sessions = await sql`
-    SELECT u.id, u.name, u.email, u.whatsapp, u.tennis_club, u.is_admin, u.created_at
+    SELECT u.id, u.name, u.email, u.whatsapp, u.tennis_club, u.is_admin, u.is_active, u.created_at
     FROM sessions s
     JOIN users u ON s.user_id = u.id
     WHERE s.token = ${token}
     AND s.expires_at > NOW()
+    AND (u.is_deleted IS FALSE OR u.is_deleted IS NULL)
   `
   
   if (sessions.length === 0) return null
   
-  return sessions[0] as User
+  const user = sessions[0] as User
+
+  if (!user.is_active) return null
+
+  return user
 }
 
 export async function destroySession(): Promise<void> {
@@ -84,8 +90,9 @@ export async function registerUser(name: string, email: string, password: string
 
 export async function loginUser(email: string, password: string): Promise<User | null> {
   const users = await sql`
-    SELECT id, name, email, whatsapp, tennis_club, password_hash, is_admin, created_at
+    SELECT id, name, email, whatsapp, tennis_club, password_hash, is_admin, is_active, created_at
     FROM users WHERE email = ${email}
+    AND (is_deleted IS FALSE OR is_deleted IS NULL)
   `
   
   if (users.length === 0) return null
@@ -95,6 +102,10 @@ export async function loginUser(email: string, password: string): Promise<User |
   
   if (!isValid) return null
   
+  if (!user.is_active) {
+    throw new Error('Sua conta está inativa. Entre em contato com o administrador.')
+  }
+
   return {
     id: user.id as number,
     name: user.name as string,
@@ -102,6 +113,7 @@ export async function loginUser(email: string, password: string): Promise<User |
     whatsapp: user.whatsapp as string,
     tennis_club: user.tennis_club as string,
     is_admin: user.is_admin as boolean,
+    is_active: user.is_active as boolean,
     created_at: user.created_at as string,
   }
 }
