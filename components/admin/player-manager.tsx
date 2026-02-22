@@ -17,14 +17,20 @@ import {
 import {
   Tabs, TabsContent, TabsList, TabsTrigger,
 } from '@/components/ui/tabs'
-import { UserPlus, Upload, Search, CheckCircle2, AlertCircle, Users, Trash2, Pencil } from 'lucide-react'
+import { UserPlus, Upload, Search, CheckCircle2, AlertCircle, Users, Trash2, Pencil, ChevronDown, ChevronUp } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 
 interface Props {
   players: Player[]
 }
 
 export function PlayerManager({ players }: Props) {
+  const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
   const filtered = players.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -33,56 +39,77 @@ export function PlayerManager({ players }: Props) {
 
   return (
     <Card className="border-0 shadow-sm">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
-              <Users className="w-5 h-5 text-emerald-600" />
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                <Users className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div>
+                <CardTitle className="text-base">Jogadores Cadastrados</CardTitle>
+                <p className="text-xs text-slate-500 mt-0.5">{players.length} jogadores no sistema</p>
+              </div>
             </div>
-            <div>
-              <CardTitle className="text-base">Jogadores Cadastrados</CardTitle>
-              <p className="text-xs text-slate-500 mt-0.5">{players.length} jogadores no sistema</p>
+            <div className="flex items-center gap-2">
+              <CollapsibleTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 border-slate-200 text-slate-600 hover:bg-slate-50 transition-all"
+                >
+                  {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  <span className="hidden sm:inline">
+                    {isOpen ? 'Recolher' : 'Expandir'} busca de jogadores
+                  </span>
+                  <span className="sm:hidden">
+                    {isOpen ? 'Recolher' : 'Expandir'}
+                  </span>
+                </Button>
+              </CollapsibleTrigger>
+              <AddPlayersDialog />
             </div>
           </div>
-          <AddPlayersDialog />
-        </div>
-      </CardHeader>
-      <CardContent>
-        {/* Search */}
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <Input
-            placeholder="Buscar jogador..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+        </CardHeader>
+        <CollapsibleContent className="data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down overflow-hidden">
+          <CardContent>
+            {/* Search */}
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input
+                placeholder="Buscar jogador..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
 
-        {/* Player list */}
-        <div className="max-h-80 overflow-y-auto space-y-1">
-          {filtered.length === 0 ? (
-            <p className="text-sm text-slate-400 text-center py-6">
-              {players.length === 0 ? 'Nenhum jogador cadastrado. Adicione jogadores para começar.' : 'Nenhum jogador encontrado.'}
-            </p>
-          ) : (
-            filtered.map(p => (
-              <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-slate-800">{p.name}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {p.country && (
-                    <span className="text-xs text-slate-500 mr-2">{p.country}</span>
-                  )}
-                  <EditPlayerDialog player={p} />
-                  <DeletePlayerDialog player={p} />
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </CardContent>
+            {/* Player list */}
+            <div className="max-h-80 overflow-y-auto space-y-1">
+              {filtered.length === 0 ? (
+                <p className="text-sm text-slate-400 text-center py-6">
+                  {players.length === 0 ? 'Nenhum jogador cadastrado. Adicione jogadores para começar.' : 'Nenhum jogador encontrado.'}
+                </p>
+              ) : (
+                filtered.map(p => (
+                  <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-slate-800">{p.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {p.country && (
+                        <span className="text-xs text-slate-500 mr-2">{p.country}</span>
+                      )}
+                      <EditPlayerDialog player={p} />
+                      <DeletePlayerDialog player={p} />
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
     </Card>
   )
 }
