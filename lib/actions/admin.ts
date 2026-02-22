@@ -11,7 +11,6 @@ import {
   deletePlayer,
   updatePlayer,
   importPlayers,
-  toggleUserAdmin,
   createTournamentName,
   updateTournamentName,
   deleteTournamentName,
@@ -22,6 +21,9 @@ import {
   updatePlaceholderPlayer,
   deleteTournament,
   isRound1Complete,
+  updateUser,
+  toggleUserStatus,
+  softDeleteUser,
 } from '@/lib/admin'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -253,10 +255,40 @@ export async function createUserAction(formData: FormData) {
   }
 }
 
-export async function toggleUserAdminAction(userId: number, isAdmin: boolean) {
+export async function updateUserAction(id: number, formData: FormData) {
   await requireAdmin()
-  await toggleUserAdmin(userId, isAdmin)
+
+  const name = formData.get('name') as string
+  const email = formData.get('email') as string
+  const whatsapp = formData.get('whatsapp') as string
+  const tennis_club = formData.get('tennis_club') as string
+
+  if (!name || !email || !tennis_club) {
+    return { success: false, error: 'Campos obrigatórios estão faltando' }
+  }
+
+  try {
+    await updateUser(id, { name, email, whatsapp, tennis_club })
+    revalidatePath('/admin/usuarios')
+    return { success: true }
+  } catch (error) {
+    console.error("Error updating user:", error)
+    return { success: false, error: 'Erro ao atualizar usuário' }
+  }
+}
+
+export async function toggleUserStatusAction(userId: number, isActive: boolean) {
+  await requireAdmin()
+  await toggleUserStatus(userId, isActive)
   revalidatePath('/admin/usuarios')
+  return { success: true }
+}
+
+export async function deleteUserAction(userId: number) {
+  await requireAdmin()
+  await softDeleteUser(userId)
+  revalidatePath('/admin/usuarios')
+  return { success: true }
 }
 
 // ==================== METADATA ====================
