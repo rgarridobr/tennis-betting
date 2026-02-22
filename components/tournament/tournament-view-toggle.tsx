@@ -16,7 +16,7 @@ export function TournamentViewToggle({ currentView }: TournamentViewToggleProps)
   function setView(view: string) {
     const params = new URLSearchParams(searchParams.toString())
     params.set('view', view)
-    router.push(`${pathname}?${params.toString()}`)
+    router.push(`${pathname}?${params.toString()}`, { scroll: false })
   }
 
   return (

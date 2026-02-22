@@ -41,8 +41,8 @@ export function PlayerManager({ players }: Props) {
     <Card className="border-0 shadow-sm">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
               <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
                 <Users className="w-5 h-5 text-emerald-600" />
               </div>
@@ -51,7 +51,7 @@ export function PlayerManager({ players }: Props) {
                 <p className="text-xs text-slate-500 mt-0.5">{players.length} jogadores no sistema</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mt-3 sm:mt-0">
               <CollapsibleTrigger asChild>
                 <Button
                   variant="outline"
