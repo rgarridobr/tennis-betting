@@ -101,10 +101,6 @@ export async function loginUser(email: string, password: string): Promise<User |
   const isValid = await verifyPassword(password, user.password_hash as string)
   
   if (!isValid) return null
-  
-  if (!user.is_active) {
-    throw new Error('Sua conta está inativa. Entre em contato com o administrador.')
-  }
 
   return {
     id: user.id as number,

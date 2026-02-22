@@ -30,7 +30,7 @@ export function LoginForm() {
   
   return (
     <Card>
-      <CardContent className="pt-6">
+      <CardContent className="pt-2">
         <form action={handleSubmit} className="space-y-4">
           {error && (
             <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg">
