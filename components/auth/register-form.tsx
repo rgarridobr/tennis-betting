@@ -92,7 +92,7 @@ export function RegisterForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="whatsapp">WhatsApp (Opcional)</Label>
+            <Label htmlFor="whatsapp">WhatsApp</Label>
             <Input
               id="whatsapp"
               name="whatsapp"

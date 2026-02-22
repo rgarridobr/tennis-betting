@@ -130,7 +130,7 @@ export function CreateUserDialog() {
 
             <div className="space-y-2">
               <Label htmlFor="whatsapp" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest ml-1">
-                <Phone className="w-3 h-3 text-emerald-500" /> WhatsApp (Opcional)
+                <Phone className="w-3 h-3 text-emerald-500" /> WhatsApp
               </Label>
               <Input
                 id="whatsapp"
