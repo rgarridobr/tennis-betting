@@ -40,7 +40,7 @@ export async function saveFullBracketAction(
   // Verify tournament hasn't started
   const started = await hasTournamentStarted(tournamentId)
   if (started) {
-    throw new Error('O torneio já começou e não é mais possível alterar os palpites')
+    throw new Error('O torneio já começou e não é mais possível alterar os palpites. Por favor, aperte a tecla F5 para atualizar a página.')
   }
 
   // Batch insert/update predictions

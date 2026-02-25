@@ -370,16 +370,25 @@ export async function getTournamentPlayers(tournamentId: number): Promise<Player
 }
 
 export async function hasTournamentStarted(tournamentId: number): Promise<boolean> {
-  // Check if current time is after tournament start date
   const tournament = await getTournamentById(tournamentId)
-  if (tournament && new Date(tournament.start_date) <= new Date()) {
-    return true
+
+  if (tournament) {
+    const startDate = new Date(tournament.start_date)
+
+    startDate.setHours(startDate.getHours())
+    
+    if (startDate <= new Date()) {
+      return true
+    }
   }
 
   const result = await sql`
     SELECT COUNT(*) as count
     FROM bracket_matches
-    WHERE tournament_id = ${tournamentId} AND status = 'completed' AND score != 'BYE'
+    WHERE tournament_id = ${tournamentId}
+      AND status = 'completed'
+      AND score != 'BYE'
   `
+
   return Number(result[0]?.count || 0) > 0
 }

@@ -7,6 +7,7 @@ import { Check, Trophy, X, Pencil, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SetPlayersDialog, ReplacePlaceholderDialog, SetResultDialog } from '@/components/admin/match-dialogs';
 import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 interface TournamentBracketProps {
   matches: BracketMatch[];
@@ -107,9 +108,9 @@ export function TournamentBracket({
       }));
 
       await saveFullBracketAction(userId, tournamentId, predictionArray, true);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert('Erro ao salvar palpites. Verifique se preencheu toda a chave.');
+      toast.error(error.message || 'Ocorreu um erro ao salvar seu palpite. Tente novamente.');
     } finally {
       setIsSaving(false);
     }
