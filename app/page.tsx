@@ -278,19 +278,19 @@ export default async function HomePage() {
               {[
                 {
                   name: 'Carlos Silva',
-                  role: 'Participante desde 2024',
+                  role: 'Participante desde 2026',
                   content: 'A plataforma é incrível! Interface intuitiva e acompanhar o ranking em tempo real dá um gás a mais na competição.',
                   avatar: 'CS',
                 },
                 {
                   name: 'Ana Rodrigues',
-                  role: 'Participante desde 2024',
+                  role: 'Participante desde 2026',
                   content: 'Adoro a facilidade de dar os palpites. O sistema de pontos é justo e muito divertido de competir com os amigos.',
                   avatar: 'AR',
                 },
                 {
                   name: 'Pedro Santos',
-                  role: 'Participante desde 2024',
+                  role: 'Participante desde 2026',
                   content: 'Melhor bolão de tênis que já participei. Todo Grand Slam eu tô aqui firme e forte. Recomendo demais!',
                   avatar: 'PS',
                 },
@@ -423,7 +423,7 @@ export default async function HomePage() {
           </div> */}
 
           <div className="text-center text-slate-500 text-sm">
-            <p>2025 Bolão de Tênis. Todos os direitos reservados.</p>
+            <p>© {new Date().getFullYear()} TennisPool. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>

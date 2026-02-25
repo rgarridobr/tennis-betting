@@ -21,7 +21,7 @@ export function HeroSection({ user }: HeroSectionProps) {
         <div className="relative px-6 py-12 sm:px-8 sm:py-16 md:px-10 md:py-20 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-white/90 mb-6 border border-white/10">
             <Trophy className="w-4 h-4 text-amber-400" />
-            <span className="font-semibold text-xs tracking-wide">Bolão de Tênis</span>
+            <span className="font-semibold text-xs tracking-wide">TennisPool</span>
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-6xl font-black text-white text-balance tracking-tight">
             Faça seus palpites e{' '}

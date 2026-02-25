@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://www.tennispool.com.br/sitemap.xml
