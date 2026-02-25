@@ -82,11 +82,11 @@ export function TournamentForm({ names, locations }: Props) {
                 <SelectValue placeholder="Selecione a categoria" />
               </SelectTrigger>
               <SelectContent className="rounded-2xl">
-                <SelectItem value="ATP_250" className="font-bold">ATP 250</SelectItem>
-                <SelectItem value="ATP_500" className="font-bold">ATP 500</SelectItem>
-                <SelectItem value="MASTERS_1000" className="font-bold">Masters 1000</SelectItem>
+                {/* <SelectItem value="ATP_250" className="font-bold">ATP 250</SelectItem>
+                <SelectItem value="ATP_500" className="font-bold">ATP 500</SelectItem> */}
+                <SelectItem value="MASTERS_1000" className="font-bold">ATP Masters 1000</SelectItem>
                 <SelectItem value="GRAND_SLAM" className="font-bold">Grand Slam</SelectItem>
-                <SelectItem value="CUSTOM" className="font-bold">Customizado</SelectItem>
+                {/* <SelectItem value="CUSTOM" className="font-bold">Customizado</SelectItem> */}
               </SelectContent>
             </Select>
             {category === 'CUSTOM' && (
