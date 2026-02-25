@@ -73,7 +73,7 @@ function SlotConfig({
             type="number"
             value={seed}
             onChange={(e) => setSeed(e.target.value)}
-            placeholder="Ex: 1"
+            placeholder=""
             className="rounded-xl border-2 font-bold"
           />
         </div>
@@ -419,7 +419,7 @@ export function SetResultDialog({ match, tournamentId, isFinalRound }: { match: 
             <Input
               value={score}
               onChange={(e) => setScore(e.target.value)}
-              placeholder="Ex: 6-4 6-3 7-5"
+              placeholder=""
               required
               className="h-14 rounded-2xl border-2 border-slate-100 focus:border-emerald-500 text-lg font-black tracking-widest"
             />

@@ -92,7 +92,7 @@ export function CreateUserDialog() {
               <Input
                 id="name"
                 name="name"
-                placeholder="Ex: João Silva"
+                placeholder=""
                 required
                 className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300"
               />
@@ -106,7 +106,7 @@ export function CreateUserDialog() {
                 id="email"
                 name="email"
                 type="email"
-                placeholder="joao@exemplo.com"
+                placeholder=""
                 required
                 className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300"
               />
@@ -120,7 +120,7 @@ export function CreateUserDialog() {
                 id="password"
                 name="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder=""
                 required
                 minLength={6}
                 className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300"
@@ -135,7 +135,7 @@ export function CreateUserDialog() {
               <Input
                 id="whatsapp"
                 name="whatsapp"
-                placeholder="(99) 99999-9999"
+                placeholder=""
                 value={whatsapp}
                 onChange={handleWhatsappChange}
                 maxLength={15}
@@ -166,7 +166,7 @@ export function CreateUserDialog() {
               <Input
                 id="tennis_club"
                 name="tennis_club"
-                placeholder="Ex: Club Med"
+                placeholder=""
                 value={tennisClub}
                 onChange={(e) => setTennisClub(e.target.value)}
                 readOnly={isNoneChecked}

@@ -101,7 +101,7 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
             id="name"
             name="name"
             defaultValue={user.name}
-            placeholder="Seu nome"
+            placeholder=""
             required
           />
         </div>
@@ -140,7 +140,7 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
             id="tennis_club"
             name="tennis_club"
             type="text"
-            placeholder="Nome do seu clube"
+            placeholder=""
             value={tennisClub}
             onChange={(e) => setTennisClub(e.target.value)}
             readOnly={isNoneChecked}
@@ -191,7 +191,7 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
               id="currentPassword"
               name="currentPassword"
               type="password"
-              placeholder="Digite sua senha atual"
+              placeholder=""
               required
             />
           </div>
@@ -202,7 +202,7 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
               id="newPassword"
               name="newPassword"
               type="password"
-              placeholder="Digite a nova senha"
+              placeholder=""
               required
               minLength={6}
             />
@@ -214,7 +214,7 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
               id="confirmPassword"
               name="confirmPassword"
               type="password"
-              placeholder="Confirme a nova senha"
+              placeholder=""
               required
               minLength={6}
             />

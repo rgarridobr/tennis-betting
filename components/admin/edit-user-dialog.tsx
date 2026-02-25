@@ -103,7 +103,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
                 id="edit-name"
                 name="name"
                 defaultValue={user.name}
-                placeholder="Ex: João Silva"
+                placeholder=""
                 required
                 className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300"
               />
@@ -118,7 +118,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
                 name="email"
                 type="email"
                 defaultValue={user.email}
-                placeholder="joao@exemplo.com"
+                placeholder=""
                 required
                 className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300"
               />
@@ -131,7 +131,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
               <Input
                 id="edit-whatsapp"
                 name="whatsapp"
-                placeholder="(99) 99999-9999"
+                placeholder=""
                 value={whatsapp}
                 onChange={handleWhatsappChange}
                 maxLength={15}
@@ -162,7 +162,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
               <Input
                 id="edit-tennis_club"
                 name="tennis_club"
-                placeholder="Ex: Club Med"
+                placeholder=""
                 value={tennisClub}
                 onChange={(e) => setTennisClub(e.target.value)}
                 readOnly={isNoneChecked}

@@ -44,7 +44,7 @@ export function LoginForm() {
               id="email"
               name="email"
               type="email"
-              placeholder="seu@email.com"
+              placeholder=""
               required
             />
           </div>
@@ -55,7 +55,7 @@ export function LoginForm() {
               id="password"
               name="password"
               type="password"
-              placeholder="••••••••"
+              placeholder=""
               required
             />
           </div>

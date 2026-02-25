@@ -63,7 +63,7 @@ export function RegisterForm() {
               id="name"
               name="name"
               type="text"
-              placeholder="Seu nome"
+              placeholder=""
               required
             />
           </div>
@@ -74,7 +74,7 @@ export function RegisterForm() {
               id="email"
               name="email"
               type="email"
-              placeholder="seu@email.com"
+              placeholder=""
               required
             />
           </div>
@@ -85,7 +85,7 @@ export function RegisterForm() {
               id="password"
               name="password"
               type="password"
-              placeholder="••••••••"
+              placeholder=""
               minLength={6}
               required
             />
@@ -97,7 +97,7 @@ export function RegisterForm() {
               id="whatsapp"
               name="whatsapp"
               type="text"
-              placeholder="(99) 99999-9999"
+              placeholder=""
               value={whatsapp}
               onChange={handleWhatsappChange}
               maxLength={15}
@@ -125,7 +125,7 @@ export function RegisterForm() {
               id="tennis_club"
               name="tennis_club"
               type="text"
-              placeholder="Nome do seu clube"
+              placeholder=""
               value={tennisClub}
               onChange={(e) => setTennisClub(e.target.value)}
               readOnly={isNoneChecked}
