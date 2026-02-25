@@ -1,41 +1,49 @@
-'use client'
+'use client';
 
-import React from "react"
+import React from 'react';
 
-import { useState, useTransition } from 'react'
-import { createPlayerAction, importPlayersAction, deletePlayerAction, updatePlayerAction } from '@/lib/actions/admin'
-import type { Player } from '@/lib/data'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
+import { useState, useTransition } from 'react';
+import { createPlayerAction, importPlayersAction, deletePlayerAction, updatePlayerAction } from '@/lib/actions/admin';
+import type { Player } from '@/lib/data';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription
-} from '@/components/ui/dialog'
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Tabs, TabsContent, TabsList, TabsTrigger,
-} from '@/components/ui/tabs'
-import { UserPlus, Upload, Search, CheckCircle2, AlertCircle, Users, Trash2, Pencil, ChevronDown, ChevronUp } from 'lucide-react'
-import { toast } from 'sonner'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
+  UserPlus,
+  Upload,
+  Search,
+  CheckCircle2,
+  AlertCircle,
+  Users,
+  Trash2,
+  Pencil,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface Props {
-  players: Player[]
+  players: Player[];
 }
 
 export function PlayerManager({ players }: Props) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [search, setSearch] = useState('')
-  const filtered = players.filter(p =>
-    p.name.toLowerCase().includes(search.toLowerCase()) ||
-    (p.country && p.country.toLowerCase().includes(search.toLowerCase()))
-  )
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const filtered = players.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <Card className="border-0 shadow-sm">
@@ -59,12 +67,8 @@ export function PlayerManager({ players }: Props) {
                   className="gap-2 border-slate-200 text-slate-600 hover:bg-slate-50 transition-all"
                 >
                   {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  <span className="hidden sm:inline">
-                    {isOpen ? 'Recolher' : 'Expandir'} busca de jogadores
-                  </span>
-                  <span className="sm:hidden">
-                    {isOpen ? 'Recolher' : 'Expandir'}
-                  </span>
+                  <span className="hidden sm:inline">{isOpen ? 'Recolher' : 'Expandir'} busca de jogadores</span>
+                  <span className="sm:hidden">{isOpen ? 'Recolher' : 'Expandir'}</span>
                 </Button>
               </CollapsibleTrigger>
               <AddPlayersDialog />
@@ -79,7 +83,7 @@ export function PlayerManager({ players }: Props) {
               <Input
                 placeholder="Buscar jogador..."
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
               />
             </div>
@@ -88,18 +92,18 @@ export function PlayerManager({ players }: Props) {
             <div className="max-h-80 overflow-y-auto space-y-1">
               {filtered.length === 0 ? (
                 <p className="text-sm text-slate-400 text-center py-6">
-                  {players.length === 0 ? 'Nenhum jogador cadastrado. Adicione jogadores para começar.' : 'Nenhum jogador encontrado.'}
+                  {players.length === 0
+                    ? 'Nenhum jogador cadastrado. Adicione jogadores para começar.'
+                    : 'Nenhum jogador encontrado.'}
                 </p>
               ) : (
-                filtered.map(p => (
+                filtered.map((p) => (
                   <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-slate-800">{p.name}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      {p.country && (
-                        <span className="text-xs text-slate-500 mr-2">{p.country}</span>
-                      )}
+                      {p.country && <span className="text-xs text-slate-500 mr-2">{p.country}</span>}
                       <EditPlayerDialog player={p} />
                       <DeletePlayerDialog player={p} />
                     </div>
@@ -111,11 +115,11 @@ export function PlayerManager({ players }: Props) {
         </CollapsibleContent>
       </Collapsible>
     </Card>
-  )
+  );
 }
 
 function AddPlayersDialog() {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -148,42 +152,44 @@ function AddPlayersDialog() {
         </Tabs>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 function AddSinglePlayer({ onSuccess }: { onSuccess: () => void }) {
-  const [isPending, startTransition] = useTransition()
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setError(null)
-    setSuccess(false)
-    const formData = new FormData(e.currentTarget)
+    e.preventDefault();
+    setError(null);
+    setSuccess(false);
+    const formData = new FormData(e.currentTarget);
 
     startTransition(async () => {
-      const result = await createPlayerAction(formData)
+      const result = await createPlayerAction(formData);
       if (result.success) {
-        setSuccess(true)
-        ;(e.target as HTMLFormElement).reset()
-        setTimeout(() => setSuccess(false), 2000)
+        setSuccess(true);
+        (e.target as HTMLFormElement).reset();
+        setTimeout(() => setSuccess(false), 2000);
       } else {
-        setError(result.error || 'Erro ao cadastrar')
+        setError(result.error || 'Erro ao cadastrar');
       }
-    })
+    });
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 pt-2">
       {error && (
         <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
-          <AlertCircle className="w-4 h-4 shrink-0" />{error}
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          {error}
         </div>
       )}
       {success && (
         <div className="flex items-center gap-2 p-3 bg-emerald-50 text-emerald-700 rounded-lg text-sm">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />Jogador cadastrado!
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          Jogador cadastrado!
         </div>
       )}
 
@@ -201,28 +207,28 @@ function AddSinglePlayer({ onSuccess }: { onSuccess: () => void }) {
         {isPending ? 'Salvando...' : 'Cadastrar Jogador'}
       </Button>
     </form>
-  )
+  );
 }
 
 function EditPlayerDialog({ player }: { player: Player }) {
-  const [open, setOpen] = useState(false)
-  const [isPending, startTransition] = useTransition()
-  const [error, setError] = useState<string | null>(null)
+  const [open, setOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setError(null)
-    const formData = new FormData(e.currentTarget)
+    e.preventDefault();
+    setError(null);
+    const formData = new FormData(e.currentTarget);
 
     startTransition(async () => {
-      const result = await updatePlayerAction(player.id, formData)
+      const result = await updatePlayerAction(player.id, formData);
       if (result.success) {
-        toast.success('Jogador atualizado com sucesso')
-        setOpen(false)
+        toast.success('Jogador atualizado com sucesso');
+        setOpen(false);
       } else {
-        setError(result.error || 'Erro ao atualizar')
+        setError(result.error || 'Erro ao atualizar');
       }
-    })
+    });
   }
 
   return (
@@ -235,14 +241,13 @@ function EditPlayerDialog({ player }: { player: Player }) {
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Editar Jogador</DialogTitle>
-          <DialogDescription>
-            Altere as informações do jogador conforme necessário.
-          </DialogDescription>
+          <DialogDescription>Altere as informações do jogador conforme necessário.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           {error && (
             <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
-              <AlertCircle className="w-4 h-4 shrink-0" />{error}
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              {error}
             </div>
           )}
 
@@ -267,23 +272,23 @@ function EditPlayerDialog({ player }: { player: Player }) {
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 function DeletePlayerDialog({ player }: { player: Player }) {
-  const [open, setOpen] = useState(false)
-  const [isPending, startTransition] = useTransition()
+  const [open, setOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   function handleDelete() {
     startTransition(async () => {
-      const result = await deletePlayerAction(player.id)
+      const result = await deletePlayerAction(player.id);
       if (result.success) {
-        toast.success('Jogador excluido com sucesso')
-        setOpen(false)
+        toast.success('Jogador excluido com sucesso');
+        setOpen(false);
       } else {
-        toast.error(result.error || 'Erro ao excluir jogador')
+        toast.error(result.error || 'Erro ao excluir jogador');
       }
-    })
+    });
   }
 
   return (
@@ -310,47 +315,49 @@ function DeletePlayerDialog({ player }: { player: Player }) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 function ImportPlayersForm({ onSuccess }: { onSuccess: () => void }) {
-  const [isPending, startTransition] = useTransition()
-  const [error, setError] = useState<string | null>(null)
-  const [result, setResult] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<string | null>(null);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setError(null)
-    setResult(null)
-    const formData = new FormData(e.currentTarget)
-    const text = formData.get('players') as string
+    e.preventDefault();
+    setError(null);
+    setResult(null);
+    const formData = new FormData(e.currentTarget);
+    const text = formData.get('players') as string;
 
     if (!text.trim()) {
-      setError('Cole a lista de jogadores')
-      return
+      setError('Cole a lista de jogadores');
+      return;
     }
 
     startTransition(async () => {
-      const res = await importPlayersAction(text)
+      const res = await importPlayersAction(text);
       if (res.success) {
-        setResult(`${res.count} jogadores importados com sucesso!`)
-        ;(e.target as HTMLFormElement).reset()
+        setResult(`${res.count} jogadores importados com sucesso!`);
+        (e.target as HTMLFormElement).reset();
       } else {
-        setError(res.error || 'Erro ao importar')
+        setError(res.error || 'Erro ao importar');
       }
-    })
+    });
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 pt-2">
       {error && (
         <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
-          <AlertCircle className="w-4 h-4 shrink-0" />{error}
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          {error}
         </div>
       )}
       {result && (
         <div className="flex items-center gap-2 p-3 bg-emerald-50 text-emerald-700 rounded-lg text-sm">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />{result}
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          {result}
         </div>
       )}
 
@@ -364,7 +371,8 @@ function ImportPlayersForm({ onSuccess }: { onSuccess: () => void }) {
           required
         />
         <p className="text-xs text-slate-400">
-          Formatos aceitos: "Nome (Pais)" ou apenas "Nome". Um jogador por linha. O sistema ignora numeracao caso exista.
+          Formatos aceitos: "Nome (Pais)" ou apenas "Nome". Um jogador por linha. O sistema ignora numeracao caso
+          exista.
         </p>
       </div>
 
@@ -372,5 +380,5 @@ function ImportPlayersForm({ onSuccess }: { onSuccess: () => void }) {
         {isPending ? 'Importando...' : 'Importar Jogadores'}
       </Button>
     </form>
-  )
+  );
 }
