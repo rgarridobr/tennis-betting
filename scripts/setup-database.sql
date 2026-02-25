@@ -19,8 +19,19 @@ CREATE TABLE IF NOT EXISTS tournaments (
   slug VARCHAR(255) UNIQUE NOT NULL,
   surface VARCHAR(50) NOT NULL, -- Saibro, Grama, Quadra dura
   location VARCHAR(255) NOT NULL,
-  start_date DATE NOT NULL,
+  start_date TIMESTAMP NOT NULL,
   end_date DATE NOT NULL,
+  category VARCHAR(100) DEFAULT 'GRAND_SLAM',
+  category_custom VARCHAR(255),
+  format VARCHAR(50) DEFAULT 'SIMPLES',
+  sets_format INTEGER DEFAULT 3,
+  size INTEGER DEFAULT 128,
+  has_seeds BOOLEAN DEFAULT TRUE,
+  has_qualifiers BOOLEAN DEFAULT TRUE,
+  has_wildcards BOOLEAN DEFAULT TRUE,
+  has_byes BOOLEAN DEFAULT TRUE,
+  champion_id INTEGER,
+  runner_up_id INTEGER,
   image_url VARCHAR(500),
   status VARCHAR(50) DEFAULT 'upcoming', -- upcoming, live, completed
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -28,32 +39,38 @@ CREATE TABLE IF NOT EXISTS tournaments (
 );
 
 -- Matches table
-CREATE TABLE IF NOT EXISTS matches (
+-- Bracket matches: each row = 1 match in the bracket
+CREATE TABLE IF NOT EXISTS bracket_matches (
   id SERIAL PRIMARY KEY,
   tournament_id INTEGER REFERENCES tournaments(id) ON DELETE CASCADE,
-  round VARCHAR(100) NOT NULL, -- Final, Semifinal, Quartas, Oitavas, etc.
-  player1_name VARCHAR(255) NOT NULL,
-  player1_country VARCHAR(100),
-  player2_name VARCHAR(255) NOT NULL,
-  player2_country VARCHAR(100),
-  match_date TIMESTAMP NOT NULL,
-  winner VARCHAR(255), -- player1_name or player2_name after match completes
-  score VARCHAR(100), -- e.g., "6-4, 7-5, 6-3"
-  status VARCHAR(50) DEFAULT 'scheduled', -- scheduled, live, completed
+  round INTEGER NOT NULL,
+  position INTEGER NOT NULL,
+  player1_id INTEGER REFERENCES players(id),
+  player2_id INTEGER REFERENCES players(id),
+  player1_type VARCHAR(50) DEFAULT 'PLAYER',
+  player2_type VARCHAR(50) DEFAULT 'PLAYER',
+  player1_seed INTEGER,
+  player2_seed INTEGER,
+  winner_id INTEGER REFERENCES players(id),
+  score VARCHAR(200),
+  match_date TIMESTAMP,
+  status VARCHAR(50) DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(tournament_id, round, position)
 );
 
 -- User predictions (palpites)
 CREATE TABLE IF NOT EXISTS predictions (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-  match_id INTEGER REFERENCES matches(id) ON DELETE CASCADE,
-  predicted_winner VARCHAR(255) NOT NULL,
+  bracket_match_id INTEGER REFERENCES bracket_matches(id) ON DELETE CASCADE,
+  predicted_winner_id INTEGER REFERENCES players(id) NOT NULL,
+  predicted_score VARCHAR(20),
   is_correct BOOLEAN, -- null until match completes
   points_earned INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(user_id, match_id)
+  UNIQUE(user_id, bracket_match_id)
 );
 
 -- User tournament participation
@@ -61,6 +78,8 @@ CREATE TABLE IF NOT EXISTS user_tournaments (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   tournament_id INTEGER REFERENCES tournaments(id) ON DELETE CASCADE,
+  payment_status VARCHAR(50) DEFAULT 'paid',
+  bracket_submitted BOOLEAN DEFAULT FALSE,
   total_points INTEGER DEFAULT 0,
   correct_predictions INTEGER DEFAULT 0,
   total_predictions INTEGER DEFAULT 0,
