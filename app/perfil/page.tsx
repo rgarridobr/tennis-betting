@@ -16,6 +16,7 @@ import {
   Shield
 } from 'lucide-react'
 import { ProfileEditForm } from '@/components/profile/profile-edit-form'
+import { ProfilePasswordForm } from '@/components/profile/profile-password-form'
 
 export default async function PerfilPage() {
   const user = await getSession()
@@ -198,6 +199,18 @@ export default async function PerfilPage() {
               </CardContent>
             </Card>
 
+            {/* Change Password */}
+            <Card className="border-0 shadow-md">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Shield className="w-5 h-5 text-emerald-600" />
+                  Alterar Senha
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ProfilePasswordForm />
+              </CardContent>
+            </Card>
           </div>
         </div>
       </main>
