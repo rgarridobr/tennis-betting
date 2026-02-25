@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import type { BracketMatch } from '@/lib/data'
 import { makePredictionAction } from '@/lib/actions/predictions'
+import { ROUND_POINTS } from '@/lib/data'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Trophy, Check, ChevronDown, ChevronUp, Loader2, X } from 'lucide-react'
@@ -11,13 +12,9 @@ interface MatchListProps {
   matches: BracketMatch[]
   userId: number
   tournamentId: number
-  predictions: Record<number, number>
+  predictions: Record<number, { winnerId: number; score?: string }>
   canMakePredictions: boolean
   roundNames: Record<number, string>
-}
-
-const ROUND_POINTS: Record<number, number> = {
-  1: 5, 2: 10, 3: 15, 4: 20, 5: 30, 6: 40, 7: 50
 }
 
 export function MatchList({ matches, userId, tournamentId, predictions, canMakePredictions, roundNames }: MatchListProps) {
@@ -61,13 +58,13 @@ function RoundSection({
   matches: BracketMatch[]
   userId: number
   tournamentId: number
-  predictions: Record<number, number>
+  predictions: Record<number, { winnerId: number; score?: string }>
   canMakePredictions: boolean
 }) {
   const visibleMatches = matches.filter(m => m.player1_id || m.player2_id)
   const [expanded, setExpanded] = useState(visibleMatches.some(m => m.status !== 'completed'))
   const completedCount = visibleMatches.filter(m => m.status === 'completed').length
-  const points = ROUND_POINTS[round] || 5
+  const points = ROUND_POINTS[round] || 10
 
   if (visibleMatches.length === 0) return null
 
@@ -114,11 +111,11 @@ function MatchCard({
   match: BracketMatch
   userId: number
   tournamentId: number
-  currentPrediction: number | null
+  currentPrediction: { winnerId: number; score?: string } | null
   canMakePredictions: boolean
   points: number
 }) {
-  const [selected, setSelected] = useState<number | null>(currentPrediction)
+  const [selected, setSelected] = useState<number | null>(currentPrediction?.winnerId || null)
   const [isPending, startTransition] = useTransition()
 
   const isCompleted = match.status === 'completed'
@@ -131,7 +128,7 @@ function MatchCard({
       try {
         await makePredictionAction(userId, match.id, playerId, tournamentId)
       } catch {
-        setSelected(currentPrediction)
+        setSelected(currentPrediction?.winnerId || null)
       }
     })
   }
@@ -155,7 +152,7 @@ function MatchCard({
           playerId={match.player1_id}
           isWinner={isCompleted && match.winner_id === match.player1_id}
           isSelected={selected === match.player1_id}
-          isPredicted={currentPrediction === match.player1_id}
+          isPredicted={currentPrediction?.winnerId === match.player1_id}
           isCompleted={isCompleted}
           winnerId={match.winner_id}
           canPredict={!!canPredict}
@@ -172,7 +169,7 @@ function MatchCard({
           playerId={match.player2_id}
           isWinner={isCompleted && match.winner_id === match.player2_id}
           isSelected={selected === match.player2_id}
-          isPredicted={currentPrediction === match.player2_id}
+          isPredicted={currentPrediction?.winnerId === match.player2_id}
           isCompleted={isCompleted}
           winnerId={match.winner_id}
           canPredict={!!canPredict}

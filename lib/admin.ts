@@ -240,7 +240,7 @@ export async function setMatchResult(
       }
     }
 
-    const points = ROUND_POINTS[round] || 5
+    const points = ROUND_POINTS[round] || 10
 
     // Update match result
     await sql`
@@ -249,16 +249,15 @@ export async function setMatchResult(
       WHERE id = ${matchId}
     `
 
-    // Update predictions
-    await sql`
-      UPDATE predictions
-      SET is_correct = (predicted_winner_id = ${winnerId}),
-          points_earned = CASE WHEN predicted_winner_id = ${winnerId} THEN ${points} ELSE 0 END
-      WHERE bracket_match_id = ${matchId}
-    `
-
-    // Advance winner to next round
     if (round < totalRounds) {
+      // Regular rounds: Update predictions
+      await sql`
+        UPDATE predictions
+        SET is_correct = (predicted_winner_id = ${winnerId}),
+            points_earned = CASE WHEN predicted_winner_id = ${winnerId} THEN ${points} ELSE 0 END
+        WHERE bracket_match_id = ${matchId}
+      `
+      // Advance winner to next round
       await advancePlayer(tournamentId, round, position, winnerId)
     } else {
       // Final round completed
@@ -268,10 +267,57 @@ export async function setMatchResult(
         SET status = 'finished', champion_id = ${winnerId}, runner_up_id = ${runnerUpId}, updated_at = NOW()
         WHERE id = ${tournamentId}
       `
-    }
 
-    // Always recalculate bonus points when a result is set
-    await recalculateBonusPoints(tournamentId)
+      // Special scoring for final: 2000 for champion, 1200 for runner-up
+      // To calculate runner-up points, we need to know who each user predicted would reach the final
+      // The predicted runner-up is the winner of the OTHER semifinal in their bracket.
+
+      const semiMatches = await sql`
+        SELECT id, round, position FROM bracket_matches
+        WHERE tournament_id = ${tournamentId} AND round = ${totalRounds - 1}
+      `
+
+      const userPredictions = await sql`
+        SELECT p.user_id, p.bracket_match_id, p.predicted_winner_id
+        FROM predictions p
+        JOIN bracket_matches bm ON p.bracket_match_id = bm.id
+        WHERE bm.tournament_id = ${tournamentId} AND bm.round IN (${totalRounds}, ${totalRounds - 1})
+      `
+
+      // Group by user
+      const byUser: Record<number, any> = {}
+      for (const p of userPredictions) {
+        if (!byUser[p.user_id]) byUser[p.user_id] = {}
+        byUser[p.user_id][p.bracket_match_id] = p.predicted_winner_id
+      }
+
+      for (const userId of Object.keys(byUser)) {
+        const uId = parseInt(userId)
+        const preds = byUser[uId]
+        const finalPred = preds[matchId]
+
+        // Find the two semi match IDs
+        const semi1Id = semiMatches.find(s => s.position === 1)?.id
+        const semi2Id = semiMatches.find(s => s.position === 2)?.id
+
+        const semi1Winner = preds[semi1Id!]
+        const semi2Winner = preds[semi2Id!]
+
+        const predictedChampion = finalPred
+        const predictedRunnerUp = predictedChampion === semi1Winner ? semi2Winner : semi1Winner
+
+        let finalPoints = 0
+        if (predictedChampion === winnerId) finalPoints += 2000
+        if (predictedRunnerUp === runnerUpId) finalPoints += 1200
+
+        await sql`
+          UPDATE predictions
+          SET is_correct = (predicted_winner_id = ${winnerId}),
+              points_earned = ${finalPoints}
+          WHERE bracket_match_id = ${matchId} AND user_id = ${uId}
+        `
+      }
+    }
 
     return { success: true }
   } catch (error) {
@@ -479,58 +525,3 @@ export async function isRound1Complete(tournamentId: number): Promise<boolean> {
   })
 }
 
-// ==================== BONUS POINTS CALCULATION ====================
-
-export async function recalculateBonusPoints(tournamentId: number): Promise<void> {
-  const tournament = await sql`SELECT size FROM tournaments WHERE id = ${tournamentId}`
-  if (tournament.length === 0) return
-  const maxRound = Math.log2(Number(tournament[0].size))
-
-  // 1. Get Actual Semifinalists (players in Round max-1 matches)
-  const semiMatches = await sql`
-    SELECT player1_id, player2_id FROM bracket_matches
-    WHERE tournament_id = ${tournamentId} AND round = ${maxRound - 1}
-  `
-  const actualSemis = new Set<number>()
-  for (const m of semiMatches) {
-    if (m.player1_id) actualSemis.add(m.player1_id)
-    if (m.player2_id) actualSemis.add(m.player2_id)
-  }
-
-  // 2. Get Actual Finalists (players in Round max match)
-  const finalMatch = await sql`
-    SELECT player1_id, player2_id, winner_id, status FROM bracket_matches
-    WHERE tournament_id = ${tournamentId} AND round = ${maxRound}
-  `
-  let actualChampion: number | null = null
-  let actualRunnerUp: number | null = null
-
-  if (finalMatch.length > 0) {
-    const fm = finalMatch[0]
-    if (fm.status === 'completed' && fm.winner_id) {
-      actualChampion = fm.winner_id
-      actualRunnerUp = fm.winner_id === fm.player1_id ? fm.player2_id : fm.player1_id
-    }
-  }
-
-  // 3. Update all bonus predictions for this tournament
-  const predictions = await sql`SELECT * FROM bonus_predictions WHERE tournament_id = ${tournamentId}`
-
-  for (const p of predictions) {
-    let points = 0
-
-    // Semis points (10 each)
-    if (p.semi1_id && actualSemis.has(p.semi1_id)) points += 10
-    if (p.semi2_id && actualSemis.has(p.semi2_id)) points += 10
-    if (p.semi3_id && actualSemis.has(p.semi3_id)) points += 10
-    if (p.semi4_id && actualSemis.has(p.semi4_id)) points += 10
-
-    // Champion points (30)
-    if (p.champion_id && actualChampion && p.champion_id === actualChampion) points += 30
-
-    // Runner-up points (20)
-    if (p.runner_up_id && actualRunnerUp && p.runner_up_id === actualRunnerUp) points += 20
-
-    await sql`UPDATE bonus_predictions SET points_earned = ${points} WHERE id = ${p.id}`
-  }
-}

@@ -122,7 +122,7 @@ export default async function AdminUsersPage() {
                             <>
                               <UserStatusToggle userId={user.id} isActive={user.is_active} />
                               <div className="flex items-center gap-1 ml-2">
-                                <EditUserDialog user={user} />
+                                <EditUserDialog user={user as any} />
                                 <DeleteUserButton userId={user.id} userName={user.name} />
                               </div>
                             </>

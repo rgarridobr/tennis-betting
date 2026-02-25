@@ -6,17 +6,20 @@ import { makePredictionAction } from '@/lib/actions/predictions';
 import { Check, Trophy, X, Pencil, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SetPlayersDialog, ReplacePlaceholderDialog, SetResultDialog } from '@/components/admin/match-dialogs';
+import { Label } from '@/components/ui/label';
 
 interface TournamentBracketProps {
   matches: BracketMatch[];
   userId: number;
   tournamentId: number;
-  predictions: Record<number, number>;
+  predictions: Record<number, { winnerId: number; score?: string }>;
   canMakePredictions: boolean;
   roundNames: Record<number, string>;
   isAdmin?: boolean;
   players?: Player[];
   tournamentStatus?: string;
+  bracketSubmitted?: boolean;
+  hasStarted?: boolean;
 }
 
 export function TournamentBracket({
@@ -29,12 +32,19 @@ export function TournamentBracket({
   isAdmin = false,
   players = [],
   tournamentStatus = 'published',
+  bracketSubmitted = false,
+  hasStarted = false,
 }: TournamentBracketProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [localPredictions, setLocalPredictions] = useState<Record<number, { winnerId: number; score?: string }>>(predictions);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isTransitioning, startTransition] = useTransition();
 
-  // Group matches by round
+  // Group matches by round and position for easy lookup
+  const matchesMap: Record<string, BracketMatch> = {};
   const matchesByRound: Record<number, BracketMatch[]> = {};
   for (const m of matches) {
+    matchesMap[`${m.round}-${m.position}`] = m;
     if (!matchesByRound[m.round]) matchesByRound[m.round] = [];
     matchesByRound[m.round].push(m);
   }
@@ -42,95 +52,214 @@ export function TournamentBracket({
   const rounds = Object.keys(matchesByRound)
     .map(Number)
     .sort((a, b) => a - b);
+  const maxRound = rounds.length > 0 ? Math.max(...rounds) : 0;
 
-  // Height of a match card (approximate including gaps)
-  const CARD_HEIGHT = 110; // Reduced height since we removed photos and buttons
-  const BASE_GAP = 32; // Gap between matches in round 1
+  // Map of player ID to player details for display in predicted rounds
+  const playersById: Record<number, { name: string; seed: number | null; type: string }> = {};
+  for (const m of matches) {
+    if (m.player1_id) playersById[m.player1_id] = { name: m.player1_name!, seed: m.player1_seed, type: m.player1_type };
+    if (m.player2_id) playersById[m.player2_id] = { name: m.player2_name!, seed: m.player2_seed, type: m.player2_type };
+  }
+
+  function handlePrediction(matchId: number, winnerId: number, score?: string) {
+    if (!canMakePredictions) return;
+
+    setLocalPredictions(prev => {
+      const next = { ...prev };
+      next[matchId] = { winnerId, score: score ?? prev[matchId]?.score };
+
+      // Cascade: If we change a winner, we must clear any predictions in subsequent rounds
+      // that depended on the old winner of this match.
+      const match = matches.find(m => m.id === matchId);
+      if (match && match.round < maxRound) {
+        let currentRound = match.round;
+        let currentPos = match.position;
+
+        while (currentRound < maxRound) {
+          const nextRound = currentRound + 1;
+          const nextPos = Math.ceil(currentPos / 2);
+          const nextMatch = matchesMap[`${nextRound}-${nextPos}`];
+          if (!nextMatch) break;
+
+          const currentPred = next[nextMatch.id];
+          if (currentPred) {
+            delete next[nextMatch.id];
+          }
+
+          currentRound = nextRound;
+          currentPos = nextPos;
+        }
+      }
+
+      return next;
+    });
+  }
+
+  async function handleFinish() {
+    if (!canMakePredictions || isSaving) return;
+    setIsSaving(true);
+    try {
+      const { saveFullBracketAction } = await import('@/lib/actions/predictions');
+      const predictionArray = Object.entries(localPredictions).map(([matchId, data]) => ({
+        matchId: parseInt(matchId),
+        winnerId: data.winnerId,
+        score: data.score
+      }));
+
+      await saveFullBracketAction(userId, tournamentId, predictionArray, true);
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao salvar palpites. Verifique se preencheu toda a chave.');
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  const isBracketComplete = () => {
+    return matches.every(m => localPredictions[m.id]?.winnerId) &&
+           localPredictions[matches.find(m => m.round === maxRound)?.id || 0]?.score;
+  };
+
+  const CARD_HEIGHT = 110;
+  const BASE_GAP = 32;
 
   return (
-    <div className="w-full bg-[#f8fafc] rounded-[2.5rem] border border-slate-200 shadow-xl relative overflow-hidden">
-      {/* Background Pattern */}
-      <div
-        className="absolute inset-0 opacity-[0.03] pointer-events-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }}
-      />
+    <div className="flex flex-col gap-6">
+      {canMakePredictions && (
+        <div className="flex items-center justify-between p-6 bg-emerald-50 rounded-[2rem] border border-emerald-100 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white">
+              <Trophy className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-black text-emerald-900 leading-tight">Modo de Palpite Ativo</p>
+              <p className="text-xs font-bold text-emerald-700">Preencha todo o chaveamento e clique em concluir.</p>
+            </div>
+          </div>
+          <button
+            onClick={handleFinish}
+            disabled={!isBracketComplete() || isSaving}
+            className={cn(
+              "px-8 py-3 rounded-2xl font-black text-sm uppercase tracking-wider transition-all shadow-lg",
+              isBracketComplete()
+                ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-200"
+                : "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
+            )}
+          >
+            {isSaving ? "Salvando..." : "Concluir Palpite"}
+          </button>
+        </div>
+      )}
 
-      <div
-        ref={scrollContainerRef}
-        className="overflow-x-auto overflow-y-auto p-12 min-h-[700px] relative scrollbar-hide"
-      >
-        <div className="flex gap-24 min-w-max relative pb-20">
-          {rounds.map((round, roundIdx) => {
-            const roundMatches = matchesByRound[round];
-            const multiplier = Math.pow(2, roundIdx);
-            const verticalGap = multiplier === 1 ? BASE_GAP : multiplier * (CARD_HEIGHT + BASE_GAP) - CARD_HEIGHT;
-            const paddingTop = multiplier === 1 ? 0 : ((multiplier - 1) * (CARD_HEIGHT + BASE_GAP)) / 2;
+      {bracketSubmitted && !hasStarted && (
+        <div className="flex items-center gap-3 p-6 bg-blue-50 rounded-[2rem] border border-blue-100 shadow-sm">
+          <Check className="w-6 h-6 text-blue-500" />
+          <p className="font-bold text-blue-900">Seu palpite foi registrado com sucesso! Você poderá alterá-lo até o início do torneio.</p>
+        </div>
+      )}
 
-            const isFinalRound = roundIdx === rounds.length - 1;
+      <div className="w-full bg-[#f8fafc] rounded-[2.5rem] border border-slate-200 shadow-xl relative overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}
+        />
 
-            return (
-              <div key={round} className="flex flex-col w-[300px] relative z-10">
-                <div className="sticky top-0 z-20 bg-[#f8fafc]/80 backdrop-blur-sm py-3 mb-8 rounded-xl border border-slate-100 shadow-sm text-center">
-                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">
-                    {roundNames[round] || `Rodada ${round}`}
-                  </h3>
-                </div>
+        <div
+          ref={scrollContainerRef}
+          className="overflow-x-auto overflow-y-auto p-12 min-h-[700px] relative scrollbar-hide"
+        >
+          <div className="flex gap-24 min-w-max relative pb-20">
+            {rounds.map((round, roundIdx) => {
+              const roundMatches = matchesByRound[round];
+              const multiplier = Math.pow(2, roundIdx);
+              const verticalGap = multiplier === 1 ? BASE_GAP : multiplier * (CARD_HEIGHT + BASE_GAP) - CARD_HEIGHT;
+              const paddingTop = multiplier === 1 ? 0 : ((multiplier - 1) * (CARD_HEIGHT + BASE_GAP)) / 2;
 
-                <div
-                  className="flex flex-col flex-1"
-                  style={{
-                    gap: `${verticalGap}px`,
-                    paddingTop: `${paddingTop}px`,
-                  }}
-                >
-                  {roundMatches.map((match, matchIdx) => (
-                    <div key={match.id} className="relative">
-                      <BracketMatchCard
-                        match={match}
-                        userId={userId}
-                        tournamentId={tournamentId}
-                        currentPrediction={predictions[match.id] || null}
-                        canMakePredictions={canMakePredictions}
-                        isAdmin={isAdmin}
-                        players={players}
-                        tournamentStatus={tournamentStatus}
-                        isFinalRound={isFinalRound}
-                      />
+              const isFinalRound = roundIdx === rounds.length - 1;
 
-                      {/* Connectors to next round */}
-                      {roundIdx < rounds.length - 1 && (
-                        <div
-                          className="absolute -right-24 top-1/2 w-24 pointer-events-none"
-                          style={{
-                            height:
-                              matchIdx % 2 === 0
-                                ? `${verticalGap / 2 + CARD_HEIGHT / 2 + 2}px`
-                                : `${verticalGap / 2 + CARD_HEIGHT / 2 + 2}px`,
-                            top: matchIdx % 2 === 0 ? '50%' : 'auto',
-                            bottom: matchIdx % 2 === 0 ? 'auto' : '50%',
-                            borderRight: '2px solid rgb(226, 232, 240)',
-                            borderTop: matchIdx % 2 === 0 ? '2px solid rgb(226, 232, 240)' : 'none',
-                            borderBottom: matchIdx % 2 !== 0 ? '2px solid rgb(226, 232, 240)' : 'none',
-                            borderRadius: matchIdx % 2 === 0 ? '0 12px 0 0' : '0 0 12px 0',
-                          }}
-                        >
-                          {/* Horizontal segment out of the match */}
-                          <div
-                            className={cn(
-                              'absolute w-1/2 h-[2px] bg-slate-200',
-                              matchIdx % 2 === 0 ? 'top-0 left-0' : 'bottom-0 left-0',
-                            )}
+              return (
+                <div key={round} className="flex flex-col w-[300px] relative z-10">
+                  <div className="sticky top-0 z-20 bg-[#f8fafc]/80 backdrop-blur-sm py-3 mb-8 rounded-xl border border-slate-100 shadow-sm text-center">
+                    <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">
+                      {roundNames[round] || `Rodada ${round}`}
+                    </h3>
+                  </div>
+
+                  <div
+                    className="flex flex-col flex-1"
+                    style={{
+                      gap: `${verticalGap}px`,
+                      paddingTop: `${paddingTop}px`,
+                    }}
+                  >
+                    {roundMatches.map((match, matchIdx) => {
+                      let p1 = null;
+                      let p2 = null;
+
+                      if (match.round === 1 || isAdmin) {
+                        p1 = { id: match.player1_id, name: match.player1_name, seed: match.player1_seed, type: match.player1_type };
+                        p2 = { id: match.player2_id, name: match.player2_name, seed: match.player2_seed, type: match.player2_type };
+                      } else {
+                        const prevRound = match.round - 1;
+                        const m1 = matchesMap[`${prevRound}-${match.position * 2 - 1}`];
+                        const m2 = matchesMap[`${prevRound}-${match.position * 2}`];
+
+                        const pred1 = localPredictions[m1?.id]?.winnerId;
+                        const pred2 = localPredictions[m2?.id]?.winnerId;
+
+                        if (pred1) p1 = { id: pred1, ...playersById[pred1] };
+                        if (pred2) p2 = { id: pred2, ...playersById[pred2] };
+                      }
+
+                      return (
+                        <div key={match.id} className="relative">
+                          <BracketMatchCard
+                            match={match}
+                            p1={p1}
+                            p2={p2}
+                            userId={userId}
+                            tournamentId={tournamentId}
+                            currentPrediction={localPredictions[match.id]}
+                            actualPrediction={predictions[match.id]}
+                            canMakePredictions={canMakePredictions}
+                            isAdmin={isAdmin}
+                            players={players}
+                            tournamentStatus={tournamentStatus}
+                            isFinalRound={isFinalRound}
+                            onPredict={(winnerId, score) => handlePrediction(match.id, winnerId, score)}
                           />
+
+                          {roundIdx < rounds.length - 1 && (
+                            <div
+                              className="absolute -right-24 top-1/2 w-24 pointer-events-none"
+                              style={{
+                                height: `${verticalGap / 2 + CARD_HEIGHT / 2 + 2}px`,
+                                top: matchIdx % 2 === 0 ? '50%' : 'auto',
+                                bottom: matchIdx % 2 === 0 ? 'auto' : '50%',
+                                borderRight: '2px solid rgb(226, 232, 240)',
+                                borderTop: matchIdx % 2 === 0 ? '2px solid rgb(226, 232, 240)' : 'none',
+                                borderBottom: matchIdx % 2 !== 0 ? '2px solid rgb(226, 232, 240)' : 'none',
+                                borderRadius: matchIdx % 2 === 0 ? '0 12px 0 0' : '0 0 12px 0',
+                              }}
+                            >
+                              <div
+                                className={cn(
+                                  'absolute w-1/2 h-[2px] bg-slate-200',
+                                  matchIdx % 2 === 0 ? 'top-0 left-0' : 'bottom-0 left-0',
+                                )}
+                              />
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  ))}
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
@@ -139,53 +268,43 @@ export function TournamentBracket({
 
 function BracketMatchCard({
   match,
+  p1,
+  p2,
   userId,
   tournamentId,
   currentPrediction,
+  actualPrediction,
   canMakePredictions,
   isAdmin,
   players,
   tournamentStatus,
   isFinalRound,
+  onPredict,
 }: {
   match: BracketMatch;
+  p1: any;
+  p2: any;
   userId: number;
   tournamentId: number;
-  currentPrediction: number | null;
+  currentPrediction: { winnerId: number; score?: string } | undefined;
+  actualPrediction: { winnerId: number; score?: string } | undefined;
   canMakePredictions: boolean;
   isAdmin?: boolean;
   players?: Player[];
   tournamentStatus?: string;
   isFinalRound?: boolean;
+  onPredict: (winnerId: number, score?: string) => void;
 }) {
-  const [selected, setSelected] = useState<number | null>(currentPrediction);
-  const [isPending, startTransition] = useTransition();
-
   const isCompleted = match.status === 'completed';
   const isDraft = tournamentStatus === 'draft';
   const isPublished = tournamentStatus === 'active' || tournamentStatus === 'published';
   const isLocked = tournamentStatus === 'finished' || tournamentStatus === 'completed';
-  const canPredict = canMakePredictions && !isCompleted && match.player1_id && match.player2_id;
+  const canPredict = canMakePredictions && !isCompleted && p1?.id && p2?.id;
 
-  function handlePrediction(playerId: number) {
-    if (!canPredict || isPending) return;
-    const newSelection = selected === playerId ? null : playerId;
-    setSelected(newSelection);
-
-    startTransition(async () => {
-      try {
-        if (newSelection) {
-          await makePredictionAction(userId, match.id, newSelection, tournamentId);
-        }
-      } catch {
-        setSelected(currentPrediction);
-      }
-    });
-  }
+  const selectedWinnerId = currentPrediction?.winnerId;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden w-full transition-all hover:shadow-md hover:-translate-y-0.5 group">
-      {/* Player 1 */}
       {isAdmin && isDraft && match.round === 1 ? (
         <SetPlayersDialog
           match={match}
@@ -194,69 +313,42 @@ function BracketMatchCard({
           trigger={
             <div className="cursor-pointer">
               <PlayerRow
-                name={match.player1_name}
-                seed={match.player1_seed}
-                type={match.player1_type}
-                isWinner={match.winner_id === match.player1_id && isCompleted}
-                isSelected={selected === match.player1_id}
-                isPredicted={currentPrediction === match.player1_id}
+                name={p1?.name || null}
+                seed={p1?.seed || null}
+                type={p1?.type}
+                isWinner={match.winner_id === p1?.id && isCompleted}
+                isSelected={selectedWinnerId === p1?.id}
+                isPredicted={actualPrediction?.winnerId === p1?.id}
                 isCompleted={isCompleted}
                 onSelect={() => {}}
                 canPredict={false}
                 score={match.score}
                 isP1={true}
                 isAdmin={true}
-                isPlaceholder={!match.player1_id && match.player1_type !== 'PLAYER' && match.player1_type !== 'BYE'}
-              />
-            </div>
-          }
-        />
-      ) : isAdmin && !isDraft && (match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD') && !match.player1_id ? (
-        <ReplacePlaceholderDialog
-          match={match}
-          slot={1}
-          players={players || []}
-          tournamentId={tournamentId}
-          trigger={
-            <div className="cursor-pointer">
-              <PlayerRow
-                name={match.player1_name}
-                seed={match.player1_seed}
-                type={match.player1_type}
-                isWinner={match.winner_id === match.player1_id && isCompleted}
-                isSelected={selected === match.player1_id}
-                isPredicted={currentPrediction === match.player1_id}
-                isCompleted={isCompleted}
-                onSelect={() => {}}
-                canPredict={false}
-                score={match.score}
-                isP1={true}
-                isAdmin={true}
-                isPlaceholder={!match.player1_id}
+                isPlaceholder={!p1?.id && p1?.type !== 'PLAYER' && p1?.type !== 'BYE'}
               />
             </div>
           }
         />
       ) : (
         <PlayerRow
-          name={match.player1_name}
-          seed={match.player1_seed}
-          type={match.player1_type}
-          isWinner={match.winner_id === match.player1_id && isCompleted}
-          isSelected={selected === match.player1_id}
-          isPredicted={currentPrediction === match.player1_id}
+          name={p1?.name || null}
+          seed={p1?.seed || null}
+          type={p1?.type}
+          isWinner={match.winner_id === p1?.id && isCompleted}
+          isSelected={selectedWinnerId === p1?.id}
+          isPredicted={actualPrediction?.winnerId === p1?.id}
           isCompleted={isCompleted}
-          onSelect={() => match.player1_id && handlePrediction(match.player1_id)}
+          onSelect={() => p1?.id && onPredict(p1.id)}
           canPredict={!!canPredict}
           score={match.score}
           isP1={true}
-          isPlaceholder={!match.player1_id && match.player1_type !== 'BYE' && match.player1_type !== 'PLAYER'}
+          isPlaceholder={!p1?.id && p1?.type !== 'BYE' && p1?.type !== 'PLAYER'}
         />
       )}
 
       <div className="h-[1px] bg-slate-50 mx-4" />
 
-      {/* Player 2 */}
       {isAdmin && isDraft && match.round === 1 ? (
         <SetPlayersDialog
           match={match}
@@ -265,64 +357,51 @@ function BracketMatchCard({
           trigger={
             <div className="cursor-pointer">
               <PlayerRow
-                name={match.player2_name}
-                seed={match.player2_seed}
-                type={match.player2_type}
-                isWinner={match.winner_id === match.player2_id && isCompleted}
-                isSelected={selected === match.player2_id}
-                isPredicted={currentPrediction === match.player2_id}
+                name={p2?.name || null}
+                seed={p2?.seed || null}
+                type={p2?.type}
+                isWinner={match.winner_id === p2?.id && isCompleted}
+                isSelected={selectedWinnerId === p2?.id}
+                isPredicted={actualPrediction?.winnerId === p2?.id}
                 isCompleted={isCompleted}
                 onSelect={() => {}}
                 canPredict={false}
                 score={match.score}
                 isP1={false}
                 isAdmin={true}
-                isPlaceholder={!match.player2_id && match.player2_type !== 'PLAYER' && match.player2_type !== 'BYE'}
-              />
-            </div>
-          }
-        />
-      ) : isAdmin && !isDraft && (match.player2_type === 'QUALIFIER' || match.player2_type === 'WILDCARD') && !match.player2_id ? (
-        <ReplacePlaceholderDialog
-          match={match}
-          slot={2}
-          players={players || []}
-          tournamentId={tournamentId}
-          trigger={
-            <div className="cursor-pointer">
-              <PlayerRow
-              name={match.player2_name}
-                seed={match.player2_seed}
-              type={match.player2_type}
-                isWinner={match.winner_id === match.player2_id && isCompleted}
-                isSelected={selected === match.player2_id}
-                isPredicted={currentPrediction === match.player2_id}
-                isCompleted={isCompleted}
-                onSelect={() => {}}
-                canPredict={false}
-                score={match.score}
-                isP1={false}
-                isAdmin={true}
-                isPlaceholder={!match.player2_id}
+                isPlaceholder={!p2?.id && p2?.type !== 'PLAYER' && p2?.type !== 'BYE'}
               />
             </div>
           }
         />
       ) : (
         <PlayerRow
-          name={match.player2_name}
-          seed={match.player2_seed}
-          type={match.player2_type}
-          isWinner={match.winner_id === match.player2_id && isCompleted}
-          isSelected={selected === match.player2_id}
-          isPredicted={currentPrediction === match.player2_id}
+          name={p2?.name || null}
+          seed={p2?.seed || null}
+          type={p2?.type}
+          isWinner={match.winner_id === p2?.id && isCompleted}
+          isSelected={selectedWinnerId === p2?.id}
+          isPredicted={actualPrediction?.winnerId === p2?.id}
           isCompleted={isCompleted}
-          onSelect={() => match.player2_id && handlePrediction(match.player2_id)}
+          onSelect={() => p2?.id && onPredict(p2.id)}
           canPredict={!!canPredict}
           score={match.score}
           isP1={false}
-          isPlaceholder={!match.player2_id && match.player2_type !== 'BYE' && match.player2_type !== 'PLAYER'}
+          isPlaceholder={!p2?.id && p2?.type !== 'BYE' && p2?.type !== 'PLAYER'}
         />
+      )}
+
+      {isFinalRound && canMakePredictions && selectedWinnerId && (
+        <div className="px-4 py-3 bg-emerald-50/30 border-t border-slate-50 flex flex-col gap-2">
+           <Label className="text-[9px] font-black uppercase text-emerald-600 tracking-widest">Placar da Final (Tie-break)</Label>
+           <input
+              type="text"
+              placeholder="Ex: 3-1"
+              value={currentPrediction?.score || ''}
+              onChange={(e) => onPredict(selectedWinnerId, e.target.value)}
+              className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-black focus:outline-none focus:ring-2 focus:ring-emerald-500"
+           />
+        </div>
       )}
 
       {isAdmin && !isLocked && !isCompleted && match.player1_id && match.player2_id && (
@@ -394,7 +473,6 @@ function PlayerRow({
   }
 
   const sets = score ? score.split(' ') : [];
-
   const showPredictionResult = isCompleted && isPredicted;
   const predictionCorrect = showPredictionResult && isWinner;
 
@@ -447,7 +525,6 @@ function PlayerRow({
         )}
       </div>
 
-      {/* Scores */}
       {sets.length > 0 && (
         <div className="flex items-center gap-1.5 ml-3">
           {sets.map((set, i) => {
@@ -473,7 +550,6 @@ function PlayerRow({
         </div>
       )}
 
-      {/* Indicators (Selection, Winner, Prediction Result) */}
       <div className="flex items-center justify-center w-6 ml-2 shrink-0">
         {isSelected && !isCompleted ? (
           <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-200 animate-in zoom-in duration-200">
