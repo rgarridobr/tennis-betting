@@ -111,11 +111,7 @@ export default async function AdminUsersPage() {
                                   <Phone className="w-3 h-3 text-emerald-500" /> {user.whatsapp}
                                 </p>
                               )}
-                              {user.tennis_club && (
-                                <p className="text-xs font-bold text-slate-500 flex items-center gap-1">
-                                  <Home className="w-3 h-3 text-blue-500" /> {user.tennis_club}
-                                </p>
-                              )}
+    
                             </div>
                             <p className="text-xs font-bold text-emerald-600 mt-1 uppercase tracking-wider">{user.total_predictions} palpites</p>
                           </div>
