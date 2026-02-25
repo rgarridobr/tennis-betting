@@ -14,6 +14,7 @@ interface ProfileEditFormProps {
     id: number
     name: string
     email: string
+    nickname?: string
     tennis_club?: string
   }
 }
@@ -66,6 +67,19 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
             placeholder=""
             required
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="nickname">Apelido (Nickname)</Label>
+          <Input
+            id="nickname"
+            name="nickname"
+            defaultValue={user.nickname}
+            placeholder=""
+          />
+          <p className="text-xs text-slate-500">
+            Seu nome real ficará privado, apenas este apelido será exibido publicamente
+          </p>
         </div>
 
         <div className="space-y-2">

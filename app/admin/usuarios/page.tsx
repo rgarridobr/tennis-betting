@@ -91,7 +91,10 @@ export default async function AdminUsersPage() {
                           </div>
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-lg font-black text-slate-900 truncate max-w-[200px] sm:max-w-none">{user.name}</span>
+                              <span className="text-lg font-black text-slate-900 truncate max-w-[200px] sm:max-w-none">
+                                {user.name}
+                                {user.nickname && <span className="text-slate-400 font-medium text-sm ml-2">({user.nickname})</span>}
+                              </span>
                               {user.is_admin && (
                                 <Badge className="bg-emerald-500 hover:bg-emerald-600 text-[10px] font-black uppercase tracking-wider rounded-lg h-5">
                                   Admin

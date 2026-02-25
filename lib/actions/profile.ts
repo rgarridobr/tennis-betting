@@ -13,6 +13,7 @@ export async function updateProfile(formData: FormData) {
     }
 
     const name = formData.get('name') as string
+    const nickname = formData.get('nickname') as string
     const tennis_club = formData.get('tennis_club') as string
 
     if (!name || name.trim().length === 0) {
@@ -30,7 +31,7 @@ export async function updateProfile(formData: FormData) {
     // Update user (email cannot be changed)
     await sql`
       UPDATE users 
-      SET name = ${name.trim()}, tennis_club = ${tennis_club.trim()}, updated_at = NOW()
+      SET name = ${name.trim()}, nickname = ${nickname?.trim() || null}, tennis_club = ${tennis_club.trim()}, updated_at = NOW()
       WHERE id = ${user.id}
     `
 

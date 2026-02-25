@@ -85,6 +85,7 @@ export interface UserStats {
 export interface RankingEntry {
   user_id: number
   user_name: string
+  user_nickname?: string
   correct_predictions: number
   total_predictions: number
   total_points: number
@@ -296,7 +297,7 @@ export async function getUserStats(userId: number): Promise<UserStats> {
 export async function getGlobalRanking(limit: number = 50): Promise<RankingEntry[]> {
   const ranking = await sql`
     SELECT 
-      u.id as user_id, u.name as user_name,
+      u.id as user_id, u.name as user_name, u.nickname as user_nickname,
       (SELECT COUNT(*) FROM predictions WHERE user_id = u.id AND is_correct = true) as correct_predictions,
       (SELECT COUNT(*) FROM predictions WHERE user_id = u.id) as total_predictions,
       COALESCE((SELECT SUM(points_earned) FROM predictions WHERE user_id = u.id), 0) as total_points
@@ -308,6 +309,7 @@ export async function getGlobalRanking(limit: number = 50): Promise<RankingEntry
   return ranking.map((r, i) => ({
     user_id: r.user_id as number,
     user_name: r.user_name as string,
+    user_nickname: r.user_nickname as string,
     correct_predictions: Number(r.correct_predictions || 0),
     total_predictions: Number(r.total_predictions || 0),
     total_points: Number(r.total_points || 0),

@@ -37,7 +37,7 @@ export default async function RankingPage() {
             </div>
             <div>
               <p className="text-emerald-100 text-sm">Sua posição</p>
-              <p className="text-white font-semibold">{user.name}</p>
+              <p className="text-white font-semibold">{user.nickname || user.name}</p>
               <p className="text-amber-300 font-bold">{userStats.total_points} pontos</p>
             </div>
           </CardContent>
@@ -134,7 +134,7 @@ export default async function RankingPage() {
                           {/* User Info */}
                           <div>
                             <p className={`font-medium ${isCurrentUser ? 'text-emerald-700' : 'text-slate-900'}`}>
-                              {entry.user_name}
+                              {entry.user_nickname || entry.user_name}
                               {isCurrentUser && (
                                 <Badge className="ml-2 bg-emerald-100 text-emerald-700 text-xs">
                                   Você
@@ -178,6 +178,7 @@ interface PodiumCardProps {
   entry: {
     user_id: number
     user_name: string
+    user_nickname?: string
     correct_predictions: number
     total_predictions: number
     total_points: number
@@ -234,7 +235,7 @@ function PodiumCard({ entry, position, isCurrentUser }: PodiumCardProps) {
         </Badge>
         
         <h3 className="font-bold text-lg text-slate-900 mb-1">
-          {entry.user_name}
+          {entry.user_nickname || entry.user_name}
           {isCurrentUser && <span className="text-emerald-600 text-sm ml-1">(você)</span>}
         </h3>
         

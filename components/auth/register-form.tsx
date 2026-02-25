@@ -67,6 +67,19 @@ export function RegisterForm() {
               required
             />
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="nickname">Apelido (Nickname)</Label>
+            <Input
+              id="nickname"
+              name="nickname"
+              type="text"
+              placeholder=""
+            />
+            <p className="text-xs text-slate-500">
+              Seu nome real ficará privado, apenas este apelido será exibido publicamente
+            </p>
+          </div>
           
           <div className="space-y-2">
             <Label htmlFor="email">Email *</Label>
