@@ -15,7 +15,7 @@ CREATE TABLE tournaments (
   name VARCHAR(255) NOT NULL,
   surface VARCHAR(50) NOT NULL,
   location VARCHAR(255) NOT NULL,
-  start_date DATE NOT NULL,
+  start_date TIMESTAMP NOT NULL,
   end_date DATE NOT NULL,
   image_url VARCHAR(500),
   status VARCHAR(50) DEFAULT 'upcoming',
@@ -85,6 +85,7 @@ CREATE TABLE user_tournaments (
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   tournament_id INTEGER REFERENCES tournaments(id) ON DELETE CASCADE,
   payment_status VARCHAR(50) DEFAULT 'paid',
+  bracket_submitted BOOLEAN DEFAULT FALSE,
   joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(user_id, tournament_id)
 );
@@ -95,6 +96,7 @@ CREATE TABLE predictions (
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   bracket_match_id INTEGER REFERENCES bracket_matches(id) ON DELETE CASCADE,
   predicted_winner_id INTEGER REFERENCES players(id) NOT NULL,
+  predicted_score VARCHAR(20),
   is_correct BOOLEAN,
   points_earned INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -6,14 +6,13 @@ import {
   getUserPredictions,
   isUserEnrolled,
   getTournamentParticipantCount,
-  getBonusPredictions,
   getTournamentPlayers,
   hasTournamentStarted,
+  getEnrollment,
 } from '@/lib/data'
 import { getDynamicRoundNames } from '@/lib/utils'
 import { DashboardHeader } from '@/components/dashboard/dashboard-header'
 import { TournamentHeader } from '@/components/tournament/tournament-header'
-import { BonusPredictions } from '@/components/tournament/bonus-predictions'
 import { MatchList } from '@/components/tournament/match-list'
 import { TournamentBracket } from '@/components/tournament/tournament-bracket'
 import { EnrollmentBanner } from '@/components/tournament/enrollment-banner'
@@ -36,20 +35,24 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
   const tournament = await getTournamentById(tournamentId)
   if (!tournament) notFound()
 
-  const [matches, userPredictions, enrolled, participants, bonusPrediction, tournamentPlayers, started] = await Promise.all([
+  const [matches, userPredictions, enrollment, participants, tournamentPlayers, started] = await Promise.all([
     getBracketMatches(tournamentId),
     getUserPredictions(user.id, tournamentId),
-    isUserEnrolled(user.id, tournamentId),
+    getEnrollment(user.id, tournamentId),
     getTournamentParticipantCount(tournamentId),
-    getBonusPredictions(user.id, tournamentId),
     getTournamentPlayers(tournamentId),
     hasTournamentStarted(tournamentId),
   ])
 
-  // Map: bracketMatchId -> predicted_winner_id
-  const predictionsRecord: Record<number, number> = {}
+  const enrolled = !!enrollment
+
+  // Map: bracketMatchId -> prediction object
+  const predictionsRecord: Record<number, { winnerId: number, score?: string }> = {}
   for (const p of userPredictions) {
-    predictionsRecord[p.bracket_match_id] = p.predicted_winner_id
+    predictionsRecord[p.bracket_match_id] = {
+      winnerId: p.predicted_winner_id,
+      score: p.predicted_score || undefined
+    }
   }
 
   const maxRound = matches.length > 0 ? Math.max(...matches.map(m => m.round)) : 0
@@ -66,15 +69,6 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
           <EnrollmentBanner tournament={tournament} />
         )}
 
-        {enrolled && tournamentPlayers.length > 0 && (
-          <BonusPredictions
-            tournamentId={tournamentId}
-            userId={user.id}
-            players={tournamentPlayers}
-            currentBonus={bonusPrediction}
-            hasStarted={started}
-          />
-        )}
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
@@ -100,7 +94,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
             userId={user.id}
             tournamentId={tournamentId}
             predictions={predictionsRecord}
-            canMakePredictions={enrolled}
+            canMakePredictions={enrolled && !started}
             roundNames={dynamicRoundNames}
           />
         ) : (
@@ -109,8 +103,10 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
             userId={user.id}
             tournamentId={tournamentId}
             predictions={predictionsRecord}
-            canMakePredictions={enrolled}
+            canMakePredictions={enrolled && !started}
             roundNames={dynamicRoundNames}
+            bracketSubmitted={enrollment?.bracket_submitted}
+            hasStarted={started}
           />
         )}
       </main>

@@ -140,12 +140,12 @@ export function TournamentForm({ names, locations }: Props) {
 
         <div className="space-y-4">
           <Label htmlFor="start_date" className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
-            <Calendar className="w-4 h-4 text-emerald-500" /> Data Início
+            <Calendar className="w-4 h-4 text-emerald-500" /> Data e Hora Início
           </Label>
           <Input
             id="start_date"
             name="start_date"
-            type="date"
+            type="datetime-local"
             required
             className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700"
           />
