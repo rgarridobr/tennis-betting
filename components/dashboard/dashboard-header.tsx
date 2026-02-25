@@ -22,7 +22,9 @@ interface DashboardHeaderProps {
 export function DashboardHeader({ user }: DashboardHeaderProps) {
   const pathname = usePathname();
 
-  const initials = user.name
+  const displayName = user.nickname || user.name;
+
+  const initials = displayName
     .split(' ')
     .map((n) => n[0])
     .slice(0, 2)
@@ -71,7 +73,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         {/* User Avatar - Right */}
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex flex-col items-end mr-1">
-            <p className="text-sm font-black text-slate-900 leading-none">{user.name}</p>
+            <p className="text-sm font-black text-slate-900 leading-none">{displayName}</p>
             <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mt-1">Participante</p>
           </div>
           <DropdownMenu>
@@ -90,7 +92,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
             <DropdownMenuContent align="end" className="w-56">
               <div className="flex items-center justify-start gap-2 p-2">
                 <div className="flex flex-col space-y-1 leading-none">
-                  <p className="font-medium">{user.name}</p>
+                  <p className="font-medium">{displayName}</p>
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                 </div>
               </div>

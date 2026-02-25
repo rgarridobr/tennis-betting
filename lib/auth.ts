@@ -6,6 +6,7 @@ export interface User {
   id: number
   name: string
   email: string
+  nickname?: string
   whatsapp?: string
   tennis_club?: string
   is_admin: boolean
@@ -49,7 +50,7 @@ export async function getSession(): Promise<User | null> {
   if (!token) return null
   
   const sessions = await sql`
-    SELECT u.id, u.name, u.email, u.whatsapp, u.tennis_club, u.is_admin, u.is_active, u.created_at
+    SELECT u.id, u.name, u.email, u.nickname, u.whatsapp, u.tennis_club, u.is_admin, u.is_active, u.created_at
     FROM sessions s
     JOIN users u ON s.user_id = u.id
     WHERE s.token = ${token}
@@ -76,13 +77,13 @@ export async function destroySession(): Promise<void> {
   }
 }
 
-export async function registerUser(name: string, email: string, password: string, whatsapp?: string, tennis_club?: string): Promise<User> {
+export async function registerUser(name: string, email: string, password: string, whatsapp?: string, tennis_club?: string, nickname?: string): Promise<User> {
   const hashedPassword = await hashPassword(password)
   
   const users = await sql`
-    INSERT INTO users (name, email, whatsapp, tennis_club, password_hash)
-    VALUES (${name}, ${email}, ${whatsapp}, ${tennis_club}, ${hashedPassword})
-    RETURNING id, name, email, whatsapp, tennis_club, is_admin, created_at
+    INSERT INTO users (name, email, whatsapp, tennis_club, nickname, password_hash)
+    VALUES (${name}, ${email}, ${whatsapp}, ${tennis_club}, ${nickname || null}, ${hashedPassword})
+    RETURNING id, name, email, nickname, whatsapp, tennis_club, is_admin, created_at
   `
   
   return users[0] as User
@@ -90,7 +91,7 @@ export async function registerUser(name: string, email: string, password: string
 
 export async function loginUser(email: string, password: string): Promise<User | null> {
   const users = await sql`
-    SELECT id, name, email, whatsapp, tennis_club, password_hash, is_admin, is_active, created_at
+    SELECT id, name, email, nickname, whatsapp, tennis_club, password_hash, is_admin, is_active, created_at
     FROM users WHERE email = ${email}
     AND (is_deleted IS FALSE OR is_deleted IS NULL)
   `
@@ -106,6 +107,7 @@ export async function loginUser(email: string, password: string): Promise<User |
     id: user.id as number,
     name: user.name as string,
     email: user.email as string,
+    nickname: user.nickname as string,
     whatsapp: user.whatsapp as string,
     tennis_club: user.tennis_club as string,
     is_admin: user.is_admin as boolean,

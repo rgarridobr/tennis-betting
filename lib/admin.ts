@@ -448,21 +448,21 @@ export async function updatePlaceholderPlayer(
 
 export async function getAllUsers() {
   const users = await sql`
-    SELECT u.id, u.name, u.email, u.whatsapp, u.tennis_club, u.is_admin, u.is_active, u.is_deleted, u.created_at,
+    SELECT u.id, u.name, u.email, u.nickname, u.whatsapp, u.tennis_club, u.is_admin, u.is_active, u.is_deleted, u.created_at,
       COUNT(p.id) as total_predictions
     FROM users u
     LEFT JOIN predictions p ON u.id = p.user_id
     WHERE u.is_deleted = FALSE
-    GROUP BY u.id, u.name, u.email, u.whatsapp, u.tennis_club, u.is_admin, u.is_active, u.is_deleted, u.created_at
+    GROUP BY u.id, u.name, u.email, u.nickname, u.whatsapp, u.tennis_club, u.is_admin, u.is_active, u.is_deleted, u.created_at
     ORDER BY u.created_at DESC
   `
   return users
 }
 
-export async function updateUser(id: number, data: { name: string, email: string, whatsapp: string, tennis_club: string }): Promise<void> {
+export async function updateUser(id: number, data: { name: string, email: string, nickname?: string, whatsapp: string, tennis_club: string }): Promise<void> {
   await sql`
     UPDATE users
-    SET name = ${data.name}, email = ${data.email}, whatsapp = ${data.whatsapp}, tennis_club = ${data.tennis_club}, updated_at = NOW()
+    SET name = ${data.name}, email = ${data.email}, nickname = ${data.nickname || null}, whatsapp = ${data.whatsapp}, tennis_club = ${data.tennis_club}, updated_at = NOW()
     WHERE id = ${id}
   `
 }

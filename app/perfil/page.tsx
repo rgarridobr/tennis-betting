@@ -35,6 +35,9 @@ export default async function PerfilPage() {
   const createdAt = new Date(user.created_at)
   const accountAge = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24))
 
+  const displayName = user.nickname || user.name
+  const initials = displayName.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+
   return (
     <div className="min-h-screen bg-slate-50">
       <DashboardHeader user={user} />
@@ -44,11 +47,11 @@ export default async function PerfilPage() {
           <CardContent className="p-4 flex items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
               <span className="text-2xl font-bold text-white">
-                {user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                {initials}
               </span>
             </div>
             <div>
-              <p className="text-white font-semibold text-lg">{user.name}</p>
+              <p className="text-white font-semibold text-lg">{displayName}</p>
               <p className="text-emerald-100 text-sm">{user.email}</p>
               {user.is_admin && (
                 <Badge className="mt-1 bg-amber-500/80 text-white text-xs">
@@ -161,6 +164,18 @@ export default async function PerfilPage() {
                     <p className="font-medium text-slate-900">{user.name}</p>
                   </div>
                 </div>
+
+                {user.nickname && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
+                      <User className="w-5 h-5 text-slate-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500">Apelido (Público)</p>
+                      <p className="font-medium text-slate-900">{user.nickname}</p>
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">

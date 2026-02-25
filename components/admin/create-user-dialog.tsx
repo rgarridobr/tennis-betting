@@ -99,6 +99,18 @@ export function CreateUserDialog() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="nickname" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest ml-1">
+                <User className="w-3 h-3 text-emerald-500" /> Apelido (Nickname)
+              </Label>
+              <Input
+                id="nickname"
+                name="nickname"
+                placeholder=""
+                className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300"
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="email" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest ml-1">
                 <Mail className="w-3 h-3 text-emerald-500" /> E-mail *
               </Label>

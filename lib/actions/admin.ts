@@ -230,6 +230,7 @@ export async function createUserAction(formData: FormData) {
 
   const name = formData.get('name') as string
   const email = formData.get('email') as string
+  const nickname = formData.get('nickname') as string
   const password = formData.get('password') as string
   const whatsapp = formData.get('whatsapp') as string
   const tennis_club = formData.get('tennis_club') as string
@@ -243,7 +244,7 @@ export async function createUserAction(formData: FormData) {
   }
 
   try {
-    await registerUser(name, email, password, whatsapp, tennis_club)
+    await registerUser(name, email, password, whatsapp, tennis_club, nickname)
     revalidatePath('/admin/usuarios')
     return { success: true }
   } catch (error: any) {
@@ -260,6 +261,7 @@ export async function updateUserAction(id: number, formData: FormData) {
 
   const name = formData.get('name') as string
   const email = formData.get('email') as string
+  const nickname = formData.get('nickname') as string
   const whatsapp = formData.get('whatsapp') as string
   const tennis_club = formData.get('tennis_club') as string
 
@@ -268,7 +270,7 @@ export async function updateUserAction(id: number, formData: FormData) {
   }
 
   try {
-    await updateUser(id, { name, email, whatsapp, tennis_club })
+    await updateUser(id, { name, email, nickname, whatsapp, tennis_club })
     revalidatePath('/admin/usuarios')
     return { success: true }
   } catch (error) {

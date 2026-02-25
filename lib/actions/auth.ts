@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 export async function registerAction(formData: FormData) {
   const name = formData.get('name') as string;
   const email = formData.get('email') as string;
+  const nickname = formData.get('nickname') as string;
   const password = formData.get('password') as string;
   const whatsapp = formData.get('whatsapp') as string;
   const tennis_club = formData.get('tennis_club') as string;
@@ -19,7 +20,7 @@ export async function registerAction(formData: FormData) {
   }
 
   try {
-    const user = await registerUser(name, email, password, whatsapp, tennis_club);
+    const user = await registerUser(name, email, password, whatsapp, tennis_club, nickname);
     await createSession(user.id);
   } catch (error: unknown) {
     if (error instanceof Error && error.message.includes('unique')) {
