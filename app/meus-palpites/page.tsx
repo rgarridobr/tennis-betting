@@ -254,6 +254,9 @@ function PredictionCard({ prediction }: { prediction: PredictionWithDetails }) {
           className={`font-semibold text-sm ${isPending ? 'text-amber-600' : isCorrect ? 'text-emerald-600' : 'text-red-600'}`}
         >
           {prediction.predicted_winner_name}
+          {prediction.predicted_score && (
+            <span className="text-xs ml-1 opacity-80">({prediction.predicted_score})</span>
+          )}
         </p>
         {!isPending && prediction.winner_name && (
           <p className="text-xs text-slate-500 mt-1">

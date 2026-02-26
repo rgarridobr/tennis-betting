@@ -1,5 +1,5 @@
 import { sql } from './db'
-import { ROUND_POINTS } from './data'
+import { ROUND_POINTS, getMatchPoints, POINTS_CONFIG } from './data'
 
 // ==================== TOURNAMENT MANAGEMENT ====================
 
@@ -159,6 +159,22 @@ export async function setMatchPlayers(
   `
 }
 
+export function calculateSetScore(score: string): string {
+  if (!score || score.toUpperCase() === 'W/O' || score.toUpperCase() === 'BYE') return '';
+  const sets = score.trim().split(/\s+/);
+  let p1 = 0;
+  let p2 = 0;
+  for (const set of sets) {
+    const games = set.split('-').map(Number);
+    if (games.length === 2 && !isNaN(games[0]) && !isNaN(games[1])) {
+      if (games[0] > games[1]) p1++;
+      else if (games[1] > games[0]) p2++;
+    }
+  }
+  // Standardize to Winner-Loser format for comparison
+  return p1 >= p2 ? `${p1}-${p2}` : `${p2}-${p1}`;
+}
+
 export function validateTennisScore(score: string, setsToWin: number): { valid: boolean; winner?: 1 | 2; error?: string } {
   if (score.toUpperCase() === 'W/O' || score.toUpperCase() === 'WALKOVER') {
     return { valid: true }
@@ -215,6 +231,7 @@ export async function setMatchResult(
     const round = m.round as number
     const position = m.position as number
     const tournamentId = m.tournament_id as number
+    const category = m.category || 'GRAND_SLAM'
     const setsToWin = m.sets_format === 5 ? 3 : 2
     const totalRounds = Math.log2(m.size as number)
 
@@ -240,7 +257,7 @@ export async function setMatchResult(
       }
     }
 
-    const points = ROUND_POINTS[round] || 10
+    const points = getMatchPoints(category, round, totalRounds);
 
     // Update match result
     await sql`
@@ -254,7 +271,8 @@ export async function setMatchResult(
       await sql`
         UPDATE predictions
         SET is_correct = (predicted_winner_id = ${winnerId}),
-            points_earned = CASE WHEN predicted_winner_id = ${winnerId} THEN ${points} ELSE 0 END
+            points_earned = CASE WHEN predicted_winner_id = ${winnerId} THEN ${points} ELSE 0 END,
+            is_score_correct = FALSE
         WHERE bracket_match_id = ${matchId}
       `
       // Advance winner to next round
@@ -268,7 +286,12 @@ export async function setMatchResult(
         WHERE id = ${tournamentId}
       `
 
-      // Special scoring for final: 2000 for champion, 1200 for runner-up
+      // Special scoring for final
+      const catConfig = POINTS_CONFIG[category] || POINTS_CONFIG.GRAND_SLAM;
+      const championPoints = catConfig.rounds[catConfig.rounds.length - 1];
+      const runnerUpPoints = catConfig.runnerUp;
+      const actualSetScore = calculateSetScore(score);
+
       // To calculate runner-up points, we need to know who each user predicted would reach the final
       // The predicted runner-up is the winner of the OTHER semifinal in their bracket.
 
@@ -278,7 +301,7 @@ export async function setMatchResult(
       `
 
       const userPredictions = await sql`
-        SELECT p.user_id, p.bracket_match_id, p.predicted_winner_id
+        SELECT p.user_id, p.bracket_match_id, p.predicted_winner_id, p.predicted_score
         FROM predictions p
         JOIN bracket_matches bm ON p.bracket_match_id = bm.id
         WHERE bm.tournament_id = ${tournamentId} AND bm.round IN (${totalRounds}, ${totalRounds - 1})
@@ -288,7 +311,10 @@ export async function setMatchResult(
       const byUser: Record<number, any> = {}
       for (const p of userPredictions) {
         if (!byUser[p.user_id]) byUser[p.user_id] = {}
-        byUser[p.user_id][p.bracket_match_id] = p.predicted_winner_id
+        byUser[p.user_id][p.bracket_match_id] = {
+          winner_id: p.predicted_winner_id,
+          score: p.predicted_score
+        }
       }
 
       for (const userId of Object.keys(byUser)) {
@@ -300,20 +326,35 @@ export async function setMatchResult(
         const semi1Id = semiMatches.find(s => s.position === 1)?.id
         const semi2Id = semiMatches.find(s => s.position === 2)?.id
 
-        const semi1Winner = preds[semi1Id!]
-        const semi2Winner = preds[semi2Id!]
+        const semi1Winner = preds[semi1Id!]?.winner_id
+        const semi2Winner = preds[semi2Id!]?.winner_id
 
-        const predictedChampion = finalPred
+        const predictedChampion = finalPred?.winner_id
         const predictedRunnerUp = predictedChampion === semi1Winner ? semi2Winner : semi1Winner
 
         let finalPoints = 0
-        if (predictedChampion === winnerId) finalPoints += 2000
-        if (predictedRunnerUp === runnerUpId) finalPoints += 1200
+        let isScoreCorrect = false
+
+        if (predictedChampion === winnerId) {
+          finalPoints += championPoints
+          // Check score tie-breaker
+          if (finalPred?.score) {
+            const predSetScore = calculateSetScore(finalPred.score)
+            if (predSetScore === actualSetScore) {
+              isScoreCorrect = true
+            }
+          }
+        }
+
+        if (predictedRunnerUp === runnerUpId) {
+          finalPoints += runnerUpPoints
+        }
 
         await sql`
           UPDATE predictions
           SET is_correct = (predicted_winner_id = ${winnerId}),
-              points_earned = ${finalPoints}
+              points_earned = ${finalPoints},
+              is_score_correct = ${isScoreCorrect}
           WHERE bracket_match_id = ${matchId} AND user_id = ${uId}
         `
       }

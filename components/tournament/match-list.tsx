@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import type { BracketMatch } from '@/lib/data'
 import { makePredictionAction } from '@/lib/actions/predictions'
-import { ROUND_POINTS } from '@/lib/data'
+import { ROUND_POINTS, getMatchPoints } from '@/lib/data'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Trophy, Check, ChevronDown, ChevronUp, Loader2, X } from 'lucide-react'
@@ -15,9 +15,14 @@ interface MatchListProps {
   predictions: Record<number, { winnerId: number; score?: string }>
   canMakePredictions: boolean
   roundNames: Record<number, string>
+  tournamentCategory?: string
+  tournamentSize?: number
 }
 
-export function MatchList({ matches, userId, tournamentId, predictions, canMakePredictions, roundNames }: MatchListProps) {
+export function MatchList({
+  matches, userId, tournamentId, predictions, canMakePredictions, roundNames,
+  tournamentCategory = 'GRAND_SLAM', tournamentSize = 128
+}: MatchListProps) {
   const matchesByRound: Record<number, BracketMatch[]> = {}
   for (const m of matches) {
     if (!matchesByRound[m.round]) matchesByRound[m.round] = []
@@ -37,12 +42,14 @@ export function MatchList({ matches, userId, tournamentId, predictions, canMakeP
           <RoundSection
             key={round}
             round={round}
+            totalRounds={rounds.length}
             roundName={roundNames[round] || `Rodada ${round}`}
             matches={roundMatches}
             userId={userId}
             tournamentId={tournamentId}
             predictions={predictions}
             canMakePredictions={canMakePredictions}
+            category={tournamentCategory}
           />
         )
       })}
@@ -51,20 +58,22 @@ export function MatchList({ matches, userId, tournamentId, predictions, canMakeP
 }
 
 function RoundSection({
-  round, roundName, matches, userId, tournamentId, predictions, canMakePredictions
+  round, totalRounds, roundName, matches, userId, tournamentId, predictions, canMakePredictions, category
 }: {
   round: number
+  totalRounds: number
   roundName: string
   matches: BracketMatch[]
   userId: number
   tournamentId: number
   predictions: Record<number, { winnerId: number; score?: string }>
   canMakePredictions: boolean
+  category: string
 }) {
   const visibleMatches = matches.filter(m => m.player1_id || m.player2_id)
   const [expanded, setExpanded] = useState(visibleMatches.some(m => m.status !== 'completed'))
   const completedCount = visibleMatches.filter(m => m.status === 'completed').length
-  const points = ROUND_POINTS[round] || 10
+  const points = getMatchPoints(category, round, totalRounds)
 
   if (visibleMatches.length === 0) return null
 
