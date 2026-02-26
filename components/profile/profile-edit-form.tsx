@@ -22,8 +22,28 @@ interface ProfileEditFormProps {
 export function ProfileEditForm({ user }: ProfileEditFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [name, setName] = useState(user.name)
+  const [nickname, setNickname] = useState(user.nickname || '')
   const [tennisClub, setTennisClub] = useState(user.tennis_club || '')
   const [isNoneChecked, setIsNoneChecked] = useState(user.tennis_club === 'Nenhum')
+  const [isFirstNameOnlyChecked, setIsFirstNameOnlyChecked] = useState(false)
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setName(value)
+    if (isFirstNameOnlyChecked) {
+      const firstName = value.trim().split(' ')[0]
+      setNickname(firstName)
+    }
+  }
+
+  const handleFirstNameOnlyChange = (checked: boolean) => {
+    setIsFirstNameOnlyChecked(checked)
+    if (checked) {
+      const firstName = name.trim().split(' ')[0]
+      setNickname(firstName)
+    }
+  }
 
   const handleNoneChange = (checked: boolean) => {
     setIsNoneChecked(checked)
@@ -59,22 +79,41 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
       {/* Profile Info Form */}
       <form action={handleProfileSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="name">Nome *</Label>
+          <Label htmlFor="name">Nome Completo (privado) *</Label>
           <Input
             id="name"
             name="name"
-            defaultValue={user.name}
+            value={name}
+            onChange={handleNameChange}
             placeholder=""
             required
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="nickname">Apelido (Nickname)</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="nickname">Apelido (visível no site)</Label>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="first_name_only_profile"
+                checked={isFirstNameOnlyChecked}
+                onCheckedChange={handleFirstNameOnlyChange}
+              />
+              <label
+                htmlFor="first_name_only_profile"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Apenas o primeiro nome
+              </label>
+            </div>
+          </div>
           <Input
             id="nickname"
             name="nickname"
-            defaultValue={user.nickname}
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            readOnly={isFirstNameOnlyChecked}
+            className={isFirstNameOnlyChecked ? 'bg-slate-50 cursor-not-allowed' : ''}
             placeholder=""
           />
           <p className="text-xs text-slate-500">

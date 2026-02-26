@@ -34,9 +34,29 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
   const [isPending, startTransition] = useTransition()
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [name, setName] = useState(user.name)
+  const [nickname, setNickname] = useState(user.nickname || '')
   const [whatsapp, setWhatsapp] = useState(user.whatsapp || '')
   const [tennisClub, setTennisClub] = useState(user.tennis_club || '')
   const [isNoneChecked, setIsNoneChecked] = useState(user.tennis_club?.toLowerCase() === 'nenhum')
+  const [isFirstNameOnlyChecked, setIsFirstNameOnlyChecked] = useState(false)
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setName(value)
+    if (isFirstNameOnlyChecked) {
+      const firstName = value.trim().split(' ')[0]
+      setNickname(firstName)
+    }
+  }
+
+  const handleFirstNameOnlyChange = (checked: boolean) => {
+    setIsFirstNameOnlyChecked(checked)
+    if (checked) {
+      const firstName = name.trim().split(' ')[0]
+      setNickname(firstName)
+    }
+  }
 
   const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formattedValue = formatBrazilianPhoneNumber(e.target.value)
@@ -98,12 +118,13 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="edit-name" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest ml-1">
-                <User className="w-3 h-3 text-emerald-500" /> Nome Completo *
+                <User className="w-3 h-3 text-emerald-500" /> Nome Completo (privado) *
               </Label>
               <Input
                 id="edit-name"
                 name="name"
-                defaultValue={user.name}
+                value={name}
+                onChange={handleNameChange}
                 placeholder=""
                 required
                 className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300"
@@ -111,15 +132,33 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit-nickname" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest ml-1">
-                <User className="w-3 h-3 text-emerald-500" /> Apelido (Nickname)
-              </Label>
+              <div className="flex items-center justify-between ml-1">
+                <Label htmlFor="edit-nickname" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest">
+                  <User className="w-3 h-3 text-emerald-500" /> Apelido (visível no site)
+                </Label>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="edit-first_name_only"
+                    checked={isFirstNameOnlyChecked}
+                    onCheckedChange={handleFirstNameOnlyChange}
+                    className="w-3 h-3 border-slate-300 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
+                  />
+                  <label
+                    htmlFor="edit-first_name_only"
+                    className="text-[10px] font-black uppercase tracking-widest text-slate-400 cursor-pointer"
+                  >
+                    Apenas o primeiro nome
+                  </label>
+                </div>
+              </div>
               <Input
                 id="edit-nickname"
                 name="nickname"
-                defaultValue={user.nickname}
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                readOnly={isFirstNameOnlyChecked}
                 placeholder=""
-                className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300"
+                className={`h-12 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300 ${isFirstNameOnlyChecked ? 'bg-slate-100 cursor-not-allowed' : 'bg-slate-50'}`}
               />
             </div>
 
