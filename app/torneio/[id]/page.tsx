@@ -9,6 +9,7 @@ import {
   getTournamentPlayers,
   hasTournamentStarted,
   getEnrollment,
+  getTournamentRanking,
 } from '@/lib/data'
 import { getDynamicRoundNames } from '@/lib/utils'
 import { DashboardHeader } from '@/components/dashboard/dashboard-header'
@@ -17,6 +18,7 @@ import { MatchList } from '@/components/tournament/match-list'
 import { TournamentBracket } from '@/components/tournament/tournament-bracket'
 import { EnrollmentBanner } from '@/components/tournament/enrollment-banner'
 import { TournamentViewToggle } from '@/components/tournament/tournament-view-toggle'
+import { TournamentRanking } from '@/components/tournament/tournament-ranking'
 
 interface TournamentPageProps {
   params: Promise<{ id: string }>
@@ -35,13 +37,14 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
   const tournament = await getTournamentById(tournamentId)
   if (!tournament) notFound()
 
-  const [matches, userPredictions, enrollment, participants, tournamentPlayers, started] = await Promise.all([
+  const [matches, userPredictions, enrollment, participants, tournamentPlayers, started, ranking] = await Promise.all([
     getBracketMatches(tournamentId),
     getUserPredictions(user.id, tournamentId),
     getEnrollment(user.id, tournamentId),
     getTournamentParticipantCount(tournamentId),
     getTournamentPlayers(tournamentId),
     hasTournamentStarted(tournamentId),
+    getTournamentRanking(tournamentId),
   ])
 
   const enrolled = !!enrollment
@@ -88,6 +91,11 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
             <p className="text-lg font-bold text-slate-900">O chaveamento ainda não foi gerado.</p>
             <p className="text-slate-500 mt-2">Volte mais tarde para fazer seus palpites.</p>
           </div>
+        ) : view === 'ranking' ? (
+          <TournamentRanking
+            ranking={ranking}
+            currentUserId={user.id}
+          />
         ) : view === 'list' ? (
           <MatchList
             matches={matches}
@@ -96,6 +104,8 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
             predictions={predictionsRecord}
             canMakePredictions={enrolled && !started}
             roundNames={dynamicRoundNames}
+            tournamentCategory={tournament.category}
+            tournamentSize={tournament.size}
           />
         ) : (
           <TournamentBracket

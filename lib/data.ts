@@ -90,6 +90,7 @@ export interface RankingEntry {
   total_predictions: number
   total_points: number
   rank: number
+  final_score_correct?: boolean
 }
 
 export interface PredictionWithDetails {
@@ -97,6 +98,7 @@ export interface PredictionWithDetails {
   bracket_match_id: number
   predicted_winner_id: number
   predicted_winner_name: string
+  predicted_score: string | null
   is_correct: boolean | null
   points_earned: number
   created_at: string
@@ -136,6 +138,26 @@ export const ROUND_POINTS: Record<number, number> = {
   5: 360,
   6: 720,
   7: 2000
+}
+
+export const POINTS_CONFIG: Record<string, { rounds: number[], runnerUp: number }> = {
+  GRAND_SLAM: {
+    rounds: [10, 45, 90, 180, 360, 720, 2000],
+    runnerUp: 1200
+  },
+  MASTERS_1000: {
+    rounds: [10, 30, 50, 100, 200, 400, 1000],
+    runnerUp: 650
+  }
+}
+
+export function getMatchPoints(category: string, round: number, totalRounds: number): number {
+  const config = POINTS_CONFIG[category] || POINTS_CONFIG.GRAND_SLAM;
+  // Distance from final: 0 for final, 1 for semi, etc.
+  const distance = totalRounds - round;
+  // Index in rounds array (from end)
+  const index = config.rounds.length - 1 - distance;
+  return config.rounds[index] || config.rounds[0] || 10;
 }
 
 // ==================== TOURNAMENTS ====================
@@ -240,7 +262,7 @@ export async function getUserPredictions(userId: number, tournamentId: number): 
 export async function getUserPredictionsWithDetails(userId: number): Promise<PredictionWithDetails[]> {
   const rows = await sql`
     SELECT 
-      p.id, p.bracket_match_id, p.predicted_winner_id, p.is_correct, p.points_earned, p.created_at,
+      p.id, p.bracket_match_id, p.predicted_winner_id, p.predicted_score, p.is_correct, p.points_earned, p.created_at,
       pw.name as predicted_winner_name,
       p1.name as player1_name, p2.name as player2_name,
       bm.player1_type, bm.player2_type, bm.player1_seed, bm.player2_seed,
@@ -302,7 +324,7 @@ export async function getGlobalRanking(limit: number = 50): Promise<RankingEntry
       (SELECT COUNT(*) FROM predictions WHERE user_id = u.id) as total_predictions,
       COALESCE((SELECT SUM(points_earned) FROM predictions WHERE user_id = u.id), 0) as total_points
     FROM users u
-    WHERE u.is_admin = false
+    WHERE u.is_admin = false AND u.is_deleted = false
     ORDER BY total_points DESC, correct_predictions DESC
     LIMIT ${limit}
   `
@@ -313,6 +335,43 @@ export async function getGlobalRanking(limit: number = 50): Promise<RankingEntry
     correct_predictions: Number(r.correct_predictions || 0),
     total_predictions: Number(r.total_predictions || 0),
     total_points: Number(r.total_points || 0),
+    final_score_correct: Boolean(r.final_score_correct),
+    rank: i + 1,
+  }))
+}
+
+export async function getTournamentRanking(tournamentId: number, limit: number = 100): Promise<RankingEntry[]> {
+  const ranking = await sql`
+    WITH tournament_stats AS (
+      SELECT
+        u.id as user_id,
+        u.name as user_name,
+        u.nickname as user_nickname,
+        COUNT(CASE WHEN p.is_correct = true THEN 1 END) as correct_predictions,
+        COUNT(p.id) as total_predictions,
+        SUM(p.points_earned) as total_points,
+        -- Check final score tie-breaker
+        MAX(CASE WHEN p.is_score_correct = true THEN 1 ELSE 0 END) as final_score_correct
+      FROM users u
+      JOIN user_tournaments ut ON u.id = ut.user_id
+      LEFT JOIN predictions p ON u.id = p.user_id
+      LEFT JOIN bracket_matches bm ON p.bracket_match_id = bm.id AND bm.tournament_id = ${tournamentId}
+      WHERE ut.tournament_id = ${tournamentId} AND u.is_admin = false AND u.is_deleted = false
+      GROUP BY u.id, u.name, u.nickname
+    )
+    SELECT * FROM tournament_stats
+    ORDER BY total_points DESC, correct_predictions DESC, final_score_correct DESC, user_name ASC
+    LIMIT ${limit}
+  `
+
+  return ranking.map((r, i) => ({
+    user_id: r.user_id as number,
+    user_name: r.user_name as string,
+    user_nickname: r.user_nickname as string,
+    correct_predictions: Number(r.correct_predictions || 0),
+    total_predictions: Number(r.total_predictions || 0),
+    total_points: Number(r.total_points || 0),
+    final_score_correct: Boolean(r.final_score_correct),
     rank: i + 1,
   }))
 }
