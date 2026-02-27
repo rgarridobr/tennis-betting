@@ -28,17 +28,30 @@ export function TournamentForm({ names, locations }: Props) {
   const [isPending, setIsPending] = useState(false)
   const [category, setCategory] = useState<string>('GRAND_SLAM')
   const [size, setSize] = useState<string>('128')
-  const [setsFormat, setSetsFormat] = useState<string>('3')
+  const [setsFormat, setSetsFormat] = useState<string>('5')
+  const [name, setName] = useState<string>('')
   const router = useRouter()
 
   const isATP = category === 'ATP_500' || category === 'ATP_250'
+  const isMasters = category === 'MASTERS_1000'
+  const isGrandSlam = category === 'GRAND_SLAM'
 
   useEffect(() => {
     if (isATP) {
       setSize('32')
       setSetsFormat('3')
+    } else if (isMasters) {
+      if (name.toLowerCase().includes('monte carlo')) {
+        setSize('64')
+      } else {
+        setSize('128')
+      }
+      setSetsFormat('3')
+    } else if (isGrandSlam) {
+      setSize('128')
+      setSetsFormat('5')
     }
-  }, [category, isATP])
+  }, [category, name, isATP, isMasters, isGrandSlam])
 
   async function handleSubmit(formData: FormData) {
     setIsPending(true)
@@ -68,7 +81,7 @@ export function TournamentForm({ names, locations }: Props) {
           </Label>
           <div className="flex gap-3">
             <div className="flex-1">
-              <Select name="name" required>
+              <Select name="name" required onValueChange={setName}>
                 <SelectTrigger className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700">
                   <SelectValue placeholder="Selecione o torneio" />
                 </SelectTrigger>
@@ -104,6 +117,21 @@ export function TournamentForm({ names, locations }: Props) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="space-y-4">
+          <Label htmlFor="status" className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
+            <Layers className="w-4 h-4 text-emerald-500" /> Status Inicial
+          </Label>
+          <Select name="status" required defaultValue="upcoming">
+            <SelectTrigger className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700">
+              <SelectValue placeholder="Selecione o status" />
+            </SelectTrigger>
+            <SelectContent className="rounded-2xl">
+              <SelectItem value="upcoming" className="font-bold text-amber-600">Standby (Em breve)</SelectItem>
+              <SelectItem value="draft" className="font-bold text-rose-600">Rascunho (Em definição)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="space-y-4">
           <Label htmlFor="surface" className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
             <Layers className="w-4 h-4 text-emerald-500" /> Superfície
@@ -188,7 +216,7 @@ export function TournamentForm({ names, locations }: Props) {
           <Label htmlFor="sets_format" className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
             <Hash className="w-4 h-4 text-emerald-500" /> Sets
           </Label>
-          <Select name="sets_format" required value={setsFormat} onValueChange={setSetsFormat} disabled={isATP}>
+          <Select name="sets_format" required value={setsFormat} onValueChange={setSetsFormat} disabled={isATP || isMasters || isGrandSlam}>
             <SelectTrigger className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700">
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
@@ -197,14 +225,14 @@ export function TournamentForm({ names, locations }: Props) {
               <SelectItem value="5" className="font-bold">Melhor de 5</SelectItem>
             </SelectContent>
           </Select>
-          {isATP && <input type="hidden" name="sets_format" value="3" />}
+          {(isATP || isMasters || isGrandSlam) && <input type="hidden" name="sets_format" value={setsFormat} />}
         </div>
 
         <div className="space-y-4">
           <Label htmlFor="size" className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
             <Layers className="w-4 h-4 text-emerald-500" /> Tamanho da Chave
           </Label>
-          <Select name="size" required value={size} onValueChange={setSize} disabled={isATP}>
+          <Select name="size" required value={size} onValueChange={setSize} disabled={isATP || isMasters || isGrandSlam}>
             <SelectTrigger className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700">
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
@@ -216,7 +244,7 @@ export function TournamentForm({ names, locations }: Props) {
               <SelectItem value="128" className="font-bold">128 jogadores (7 rodadas)</SelectItem>
             </SelectContent>
           </Select>
-          {isATP && <input type="hidden" name="size" value="32" />}
+          {(isATP || isMasters || isGrandSlam) && <input type="hidden" name="size" value={size} />}
         </div>
       </div>
 
