@@ -83,13 +83,19 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
             )}
           </div>
 
-          <TournamentViewToggle currentView={view} />
+          {tournament.status !== 'upcoming' && tournament.status !== 'draft' && (
+            <TournamentViewToggle currentView={view} />
+          )}
         </div>
 
-        {matches.length === 0 ? (
-          <div className="text-center py-24 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm">
-            <p className="text-lg font-bold text-slate-900">O chaveamento ainda não foi gerado.</p>
-            <p className="text-slate-500 mt-2">Volte mais tarde para fazer seus palpites.</p>
+        {tournament.status === 'upcoming' || tournament.status === 'draft' || matches.length === 0 ? (
+          <div className="text-center py-24 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm px-6">
+            <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">
+              Chaveamento indisponível para este torneio
+            </h3>
+            <p className="text-slate-500 text-lg font-medium max-w-2xl mx-auto">
+              O chaveamento para este torneio ainda não está disponível. Por favor, volte mais tarde para visualizar o chaveamento assim que for liberado.
+            </p>
           </div>
         ) : view === 'ranking' ? (
           <TournamentRanking

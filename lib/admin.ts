@@ -18,6 +18,7 @@ export async function createTournament(data: {
   has_qualifiers: boolean
   has_wildcards: boolean
   has_byes: boolean
+  status?: string
 }): Promise<number> {
   const result = await sql`
     INSERT INTO tournaments (
@@ -26,7 +27,7 @@ export async function createTournament(data: {
       has_seeds, has_qualifiers, has_wildcards, has_byes
     )
     VALUES (
-      ${data.name}, ${data.surface}, ${data.location}, ${data.start_date}, ${data.end_date}, 'draft',
+      ${data.name}, ${data.surface}, ${data.location}, ${data.start_date}, ${data.end_date}, ${data.status || 'draft'},
       ${data.category}, ${data.category_custom || null}, ${data.format}, ${data.sets_format}, ${data.size},
       ${data.has_seeds}, ${data.has_qualifiers}, ${data.has_wildcards}, ${data.has_byes}
     )

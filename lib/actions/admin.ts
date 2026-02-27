@@ -42,6 +42,7 @@ export async function createTournamentAction(formData: FormData) {
   await requireAdmin()
 
   const name = formData.get('name') as string
+  const status = formData.get('status') as string
   const surface = formData.get('surface') as string
   const location = formData.get('location') as string
   const start_date = formData.get('start_date') as string
@@ -65,7 +66,8 @@ export async function createTournamentAction(formData: FormData) {
     const tournamentId = await createTournament({
       name, surface, location, start_date, end_date,
       category, category_custom, format, sets_format, size,
-      has_seeds, has_qualifiers, has_wildcards, has_byes
+      has_seeds, has_qualifiers, has_wildcards, has_byes,
+      status
     })
     await generateBracket(tournamentId)
 

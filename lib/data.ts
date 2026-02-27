@@ -171,7 +171,7 @@ export function getMatchPoints(category: string, round: number, totalRounds: num
 // ==================== TOURNAMENTS ====================
 
 export async function getTournamentsActive(): Promise<Tournament[]> {
-  const rows = await sql`SELECT * FROM tournaments WHERE status = 'active' ORDER BY start_date DESC`
+  const rows = await sql`SELECT * FROM tournaments WHERE status IN ('active', 'published', 'upcoming') ORDER BY start_date DESC`
   return rows as Tournament[]
 }
 

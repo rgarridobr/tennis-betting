@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { BracketRoundManager } from '@/components/admin/bracket-round-manager'
 import { PlayerManager } from '@/components/admin/player-manager'
 import { PublishBracketButton } from '@/components/admin/publish-bracket-button'
+import { TournamentStatusTransition } from '@/components/admin/tournament-status-transition'
 import { TournamentViewToggle } from '@/components/tournament/tournament-view-toggle'
 import { TournamentBracket } from '@/components/tournament/tournament-bracket'
 import { Trophy, Clock, Hash, Users, ArrowLeft, AlertTriangle } from 'lucide-react'
@@ -131,7 +132,8 @@ export default async function ManageTournamentPage({ params, searchParams }: Pro
               Voltar
             </Link>
           </Button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
+            <TournamentStatusTransition tournamentId={tournamentId} status={tournament.status} />
             <Badge className={
               tournament.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
               tournament.status === 'upcoming' ? 'bg-amber-100 text-amber-700' :
@@ -179,21 +181,30 @@ export default async function ManageTournamentPage({ params, searchParams }: Pro
           <PlayerManager players={players} />
         </div>
 
-        {/* Alerta de Rascunho */}
-        {tournament.status === 'draft' && (
-          <div className="mb-8 p-6 bg-amber-50 border-2 border-amber-200 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4 text-amber-800">
-              <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                <AlertTriangle className="w-6 h-6" />
+        {/* Alerta de Rascunho ou Standby */}
+        {(tournament.status === 'draft' || tournament.status === 'upcoming') && (
+          <div className={`mb-8 p-6 border-2 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6 ${
+            tournament.status === 'draft' ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-200'
+          }`}>
+            <div className={`flex items-center gap-4 ${tournament.status === 'draft' ? 'text-amber-800' : 'text-slate-700'}`}>
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${
+                tournament.status === 'draft' ? 'bg-amber-100' : 'bg-slate-200'
+              }`}>
+                {tournament.status === 'draft' ? <AlertTriangle className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
               </div>
               <div>
-                <h3 className="font-black text-lg">Modo Rascunho</h3>
+                <h3 className="font-black text-lg">
+                  {tournament.status === 'draft' ? 'Modo Rascunho' : 'Modo Standby'}
+                </h3>
                 <p className="text-sm font-bold opacity-80">
-                  O chaveamento está sendo definido. Publique para permitir resultados e palpites.
+                  {tournament.status === 'draft'
+                    ? 'O chaveamento está sendo definido. Publique para permitir resultados e palpites.'
+                    : 'O torneio está visível para os usuários como "Em breve", mas o chaveamento está oculto.'
+                  }
                 </p>
               </div>
             </div>
-            <PublishBracketButton tournamentId={tournamentId} isReady={round1Complete} />
+            {tournament.status === 'draft' && <PublishBracketButton tournamentId={tournamentId} isReady={round1Complete} />}
           </div>
         )}
 
