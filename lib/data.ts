@@ -148,6 +148,14 @@ export const POINTS_CONFIG: Record<string, { rounds: number[], runnerUp: number 
   MASTERS_1000: {
     rounds: [10, 30, 50, 100, 200, 400, 1000],
     runnerUp: 650
+  },
+  ATP_500: {
+    rounds: [25, 50, 100, 200, 500],
+    runnerUp: 330
+  },
+  ATP_250: {
+    rounds: [10, 20, 45, 90, 250],
+    runnerUp: 150
   }
 }
 

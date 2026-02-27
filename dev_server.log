@@ -1,17 +1,16 @@
- ⚠ Port 3000 is in use by an unknown process, using available port 3001 instead.
    ▲ Next.js 16.0.10 (Turbopack)
-   - Local:         http://localhost:3001
-   - Network:       http://192.168.0.2:3001
+   - Local:         http://localhost:3000
+   - Network:       http://192.168.0.2:3000
 
  ✓ Starting...
 [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
- ✓ Ready in 777ms
- ○ Compiling /cadastro ...
+ ✓ Ready in 705ms
+ ○ Compiling /admin/torneios/novo ...
  ⨯ Error: No database connection string was provided to `neon()`. Perhaps an environment variable has not been set?
     at module evaluation (lib/db.ts:4:24)
     at module evaluation (lib/auth.ts:1:1)
-    at module evaluation (app/cadastro/page.tsx:2:1)
-    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__ab8b2bc9._.js:261:47)
+    at module evaluation (app/admin/layout.tsx:2:1)
+    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__afc6b8a2._.js:14:47)
   2 |
   3 | const connectionString = process.env.DATABASE_URL!
 > 4 | export const sql = neon(connectionString)
@@ -20,38 +19,38 @@
  ⨯ Error: No database connection string was provided to `neon()`. Perhaps an environment variable has not been set?
     at module evaluation (lib/db.ts:4:24)
     at module evaluation (lib/auth.ts:1:1)
-    at module evaluation (app/cadastro/page.tsx:2:1)
-    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__ab8b2bc9._.js:261:47)
+    at module evaluation (app/admin/layout.tsx:2:1)
+    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__afc6b8a2._.js:14:47)
   2 |
   3 | const connectionString = process.env.DATABASE_URL!
 > 4 | export const sql = neon(connectionString)
     |                        ^
   5 | {
-  page: '/cadastro'
+  page: '/admin/torneios/novo'
 }
- GET /cadastro 500 in 6.8s (compile: 6.6s, render: 164ms)
+ GET /admin/torneios/novo 500 in 7.9s (compile: 7.6s, render: 271ms)
  ⨯ Error: No database connection string was provided to `neon()`. Perhaps an environment variable has not been set?
     at module evaluation (lib/db.ts:4:24)
     at module evaluation (lib/auth.ts:1:1)
-    at module evaluation (app/cadastro/page.tsx:2:1)
-    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__ab8b2bc9._.js:261:47)
+    at module evaluation (app/admin/layout.tsx:2:1)
+    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__afc6b8a2._.js:14:47)
   2 |
   3 | const connectionString = process.env.DATABASE_URL!
 > 4 | export const sql = neon(connectionString)
     |                        ^
   5 | {
-  page: '/cadastro'
+  page: '/admin/torneios/novo'
 }
  ⨯ Error: No database connection string was provided to `neon()`. Perhaps an environment variable has not been set?
     at module evaluation (lib/db.ts:4:24)
     at module evaluation (lib/auth.ts:1:1)
-    at module evaluation (app/cadastro/page.tsx:2:1)
-    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__ab8b2bc9._.js:261:47)
+    at module evaluation (app/admin/layout.tsx:2:1)
+    at module evaluation (.next/dev/server/chunks/ssr/[root-of-the-server]__afc6b8a2._.js:14:47)
   2 |
   3 | const connectionString = process.env.DATABASE_URL!
 > 4 | export const sql = neon(connectionString)
     |                        ^
   5 | {
-  page: '/cadastro'
+  page: '/admin/torneios/novo'
 }
- GET /cadastro 500 in 1043ms (compile: 1028ms, render: 15ms)
+ GET /admin/torneios/novo 500 in 1051ms (compile: 1030ms, render: 21ms)

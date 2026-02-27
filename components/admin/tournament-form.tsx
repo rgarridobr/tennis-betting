@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useFormStatus } from 'react-dom'
 import { createTournamentAction } from '@/lib/actions/admin'
@@ -27,7 +27,18 @@ export function TournamentForm({ names, locations }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
   const [category, setCategory] = useState<string>('GRAND_SLAM')
+  const [size, setSize] = useState<string>('128')
+  const [setsFormat, setSetsFormat] = useState<string>('3')
   const router = useRouter()
+
+  const isATP = category === 'ATP_500' || category === 'ATP_250'
+
+  useEffect(() => {
+    if (isATP) {
+      setSize('32')
+      setSetsFormat('3')
+    }
+  }, [category, isATP])
 
   async function handleSubmit(formData: FormData) {
     setIsPending(true)
@@ -82,20 +93,12 @@ export function TournamentForm({ names, locations }: Props) {
                 <SelectValue placeholder="Selecione a categoria" />
               </SelectTrigger>
               <SelectContent className="rounded-2xl">
-                {/* <SelectItem value="ATP_250" className="font-bold">ATP 250</SelectItem>
-                <SelectItem value="ATP_500" className="font-bold">ATP 500</SelectItem> */}
+                <SelectItem value="ATP_250" className="font-bold">ATP 250</SelectItem>
+                <SelectItem value="ATP_500" className="font-bold">ATP 500</SelectItem>
                 <SelectItem value="MASTERS_1000" className="font-bold">ATP Masters 1000</SelectItem>
                 <SelectItem value="GRAND_SLAM" className="font-bold">Grand Slam</SelectItem>
-                {/* <SelectItem value="CUSTOM" className="font-bold">Customizado</SelectItem> */}
               </SelectContent>
             </Select>
-            {category === 'CUSTOM' && (
-              <Input
-                name="category_custom"
-                placeholder="Ex: Torneio Regional"
-                className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700"
-              />
-            )}
           </div>
         </div>
       </div>
@@ -185,7 +188,7 @@ export function TournamentForm({ names, locations }: Props) {
           <Label htmlFor="sets_format" className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
             <Hash className="w-4 h-4 text-emerald-500" /> Sets
           </Label>
-          <Select name="sets_format" required defaultValue="3">
+          <Select name="sets_format" required value={setsFormat} onValueChange={setSetsFormat} disabled={isATP}>
             <SelectTrigger className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700">
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
@@ -194,13 +197,14 @@ export function TournamentForm({ names, locations }: Props) {
               <SelectItem value="5" className="font-bold">Melhor de 5</SelectItem>
             </SelectContent>
           </Select>
+          {isATP && <input type="hidden" name="sets_format" value="3" />}
         </div>
 
         <div className="space-y-4">
           <Label htmlFor="size" className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
             <Layers className="w-4 h-4 text-emerald-500" /> Tamanho da Chave
           </Label>
-          <Select name="size" required defaultValue="128">
+          <Select name="size" required value={size} onValueChange={setSize} disabled={isATP}>
             <SelectTrigger className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700">
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
@@ -212,6 +216,7 @@ export function TournamentForm({ names, locations }: Props) {
               <SelectItem value="128" className="font-bold">128 jogadores (7 rodadas)</SelectItem>
             </SelectContent>
           </Select>
+          {isATP && <input type="hidden" name="size" value="32" />}
         </div>
       </div>
 
