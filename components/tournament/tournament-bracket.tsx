@@ -121,7 +121,7 @@ export function TournamentBracket({
            localPredictions[matches.find(m => m.round === maxRound)?.id || 0]?.score;
   };
 
-  const CARD_HEIGHT = 110;
+  const CARD_HEIGHT = 160;
   const BASE_GAP = 32;
 
   return (
@@ -215,7 +215,7 @@ export function TournamentBracket({
                       }
 
                       return (
-                        <div key={match.id} className="relative">
+                        <div key={match.id} className="relative flex items-center" style={{ height: `${CARD_HEIGHT}px` }}>
                           <BracketMatchCard
                             match={match}
                             p1={p1}
@@ -393,14 +393,14 @@ function BracketMatchCard({
       )}
 
       {isFinalRound && canMakePredictions && selectedWinnerId && (
-        <div className="px-4 py-3 bg-emerald-50/30 border-t border-slate-50 flex flex-col gap-2">
-           <Label className="text-[9px] font-black uppercase text-emerald-600 tracking-widest">Placar da Final (Tie-break)</Label>
+        <div className="px-4 py-3 bg-blue-50/30 border-t border-slate-50 flex flex-col gap-2">
+           <Label className="text-[9px] font-black uppercase text-blue-600 tracking-widest">Placar da Final (Tie-break)</Label>
            <input
               type="text"
               placeholder="Ex: 3-1"
               value={currentPrediction?.score || ''}
               onChange={(e) => onPredict(selectedWinnerId, e.target.value)}
-              className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-black focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-black focus:outline-none focus:ring-2 focus:ring-blue-500"
            />
         </div>
       )}
@@ -493,7 +493,7 @@ function PlayerRow({
       className={cn(
         'flex items-center px-4 py-3 cursor-default transition-all relative min-h-[48px]',
         canPredict && 'cursor-pointer hover:bg-emerald-50/40',
-        isSelected && !isCompleted && 'bg-emerald-50/60',
+        isSelected && !isCompleted && 'bg-blue-50/60',
         showPredictionResult && (predictionCorrect ? 'bg-emerald-50/80' : 'bg-red-50/80'),
         isAdmin && !isCompleted && 'hover:bg-slate-50',
         isPlaceholder && 'text-amber-600 italic font-bold'
@@ -503,7 +503,7 @@ function PlayerRow({
         <div
           className={cn(
             'absolute left-0 top-0 bottom-0 w-1 rounded-r-full shadow-[0_0_8px_rgba(0,0,0,0.1)]',
-            predictionCorrect ? 'bg-emerald-500' : showPredictionResult ? 'bg-red-500' : 'bg-emerald-500',
+            predictionCorrect ? 'bg-emerald-500' : showPredictionResult ? 'bg-red-500' : 'bg-blue-500',
           )}
         />
       )}
@@ -513,7 +513,7 @@ function PlayerRow({
           className={cn(
             'text-xs font-black truncate tracking-tight',
             isWinner ? 'text-slate-900' : 'text-slate-600',
-            isSelected && !isCompleted && 'text-emerald-900',
+            isSelected && !isCompleted && 'text-blue-900',
             showPredictionResult && (predictionCorrect ? 'text-emerald-900' : 'text-red-900'),
             isPlaceholder && 'text-amber-600'
           )}
@@ -553,7 +553,7 @@ function PlayerRow({
 
       <div className="flex items-center justify-center w-6 ml-2 shrink-0">
         {isSelected && !isCompleted ? (
-          <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-200 animate-in zoom-in duration-200">
+          <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-200 animate-in zoom-in duration-200">
             <Check className="w-3 h-3 text-white" />
           </div>
         ) : isWinner ? (
