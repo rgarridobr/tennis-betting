@@ -31,17 +31,24 @@ function formatDate(dateString: string): string {
 }
 
 export function TournamentHeader({ tournament, participants = 0 }: TournamentHeaderProps) {
-  const statusLabel = tournament.status === 'active'
-    ? 'Ativo'
-    : tournament.status === 'finished'
-      ? 'Finalizado'
-      : 'Em breve'
+  const isLockedByDate = new Date(tournament.start_date) <= new Date()
+  const isFinished = (tournament.status === 'finished' || tournament.status === 'FINISHED' || tournament.status === 'completed')
 
-  const statusColor = tournament.status === 'active'
-    ? 'bg-emerald-500 text-white'
-    : tournament.status === 'finished'
-      ? 'bg-slate-500 text-white'
-      : 'bg-amber-400 text-amber-900'
+  const statusLabel = isFinished
+    ? 'Finalizado'
+    : isLockedByDate
+      ? 'Em Andamento'
+      : (tournament.status === 'active' || tournament.status === 'OPEN')
+        ? 'Apostas Abertas'
+        : 'Em breve'
+
+  const statusColor = isFinished
+    ? 'bg-slate-500 text-white'
+    : isLockedByDate
+      ? 'bg-blue-500 text-white'
+      : (tournament.status === 'active' || tournament.status === 'OPEN')
+        ? 'bg-emerald-500 text-white'
+        : 'bg-amber-400 text-amber-900'
 
   const bgImage = surfaceImages[tournament.surface] || surfaceImages.Hard
 

@@ -18,6 +18,7 @@ import {
   updateTournamentLocation,
   deleteTournamentLocation,
   publishTournament,
+  prepareTournament,
   updatePlaceholderPlayer,
   deleteTournament,
   isRound1Complete,
@@ -57,6 +58,7 @@ export async function createTournamentAction(formData: FormData) {
   const has_qualifiers = formData.get('has_qualifiers') === 'true'
   const has_wildcards = formData.get('has_wildcards') === 'true'
   const has_byes = formData.get('has_byes') === 'true'
+  const image_url = formData.get('image_url') as string
 
   if (!name || !surface || !location || !start_date || !end_date || !category || !format || isNaN(sets_format) || isNaN(size)) {
     return { success: false, error: 'Todos os campos são obrigatórios' }
@@ -67,9 +69,9 @@ export async function createTournamentAction(formData: FormData) {
       name, surface, location, start_date, end_date,
       category, category_custom, format, sets_format, size,
       has_seeds, has_qualifiers, has_wildcards, has_byes,
-      status
+      status: status || 'STANDBY',
+      image_url
     })
-    await generateBracket(tournamentId)
 
     revalidatePath('/admin/torneios')
     revalidatePath('/dashboard')
@@ -177,6 +179,21 @@ export async function setMatchPlayersAction(
   revalidatePath(`/admin/torneios/${tournamentId}`)
   revalidatePath(`/torneio/${tournamentId}`)
   return { success: true }
+}
+
+export async function prepareTournamentAction(tournamentId: number) {
+  await requireAdmin()
+  try {
+    await prepareTournament(tournamentId)
+    revalidatePath(`/admin/torneios/${tournamentId}`)
+    revalidatePath(`/torneio/${tournamentId}`)
+    revalidatePath('/admin/torneios')
+    revalidatePath('/dashboard')
+    return { success: true }
+  } catch (error) {
+    console.error("Error preparing tournament:", error)
+    return { success: false, error: 'Erro ao preparar torneio' }
+  }
 }
 
 export async function publishTournamentAction(tournamentId: number) {

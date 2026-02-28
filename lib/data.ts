@@ -171,7 +171,7 @@ export function getMatchPoints(category: string, round: number, totalRounds: num
 // ==================== TOURNAMENTS ====================
 
 export async function getTournamentsActive(): Promise<Tournament[]> {
-  const rows = await sql`SELECT * FROM tournaments WHERE status IN ('active', 'published', 'upcoming') ORDER BY start_date DESC`
+  const rows = await sql`SELECT * FROM tournaments WHERE status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS') ORDER BY start_date DESC`
   return rows as Tournament[]
 }
 
@@ -306,7 +306,7 @@ export async function getUserStats(userId: number): Promise<UserStats> {
     SELECT COUNT(DISTINCT ut.tournament_id) as count
     FROM user_tournaments ut
     JOIN tournaments t ON ut.tournament_id = t.id
-    WHERE ut.user_id = ${userId} AND t.status IN ('upcoming', 'active', 'published')
+    WHERE ut.user_id = ${userId} AND t.status IN ('upcoming', 'active', 'published', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS')
   `
   const totalPoints = Number(stats[0]?.total_points || 0)
   const correct = Number(stats[0]?.correct_predictions || 0)

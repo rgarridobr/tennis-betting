@@ -2,8 +2,8 @@
 
 import { useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { updateTournamentStatusAction } from '@/lib/actions/admin'
-import { Edit3, Clock, Loader2 } from 'lucide-react'
+import { updateTournamentStatusAction, prepareTournamentAction } from '@/lib/actions/admin'
+import { Edit3, Clock, Loader2, PlayCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Props {
@@ -18,37 +18,52 @@ export function TournamentStatusTransition({ tournamentId, status }: Props) {
     startTransition(async () => {
       try {
         await updateTournamentStatusAction(tournamentId, newStatus)
-        toast.success(`Torneio movido para ${newStatus === 'draft' ? 'Rascunho' : 'Standby'}`)
+        toast.success(`Torneio movido para ${newStatus}`)
       } catch (error) {
         toast.error('Erro ao atualizar status do torneio')
       }
     })
   }
 
-  if (status === 'upcoming') {
+  function handlePrepare() {
+    startTransition(async () => {
+      try {
+        const result = await prepareTournamentAction(tournamentId)
+        if (result.success) {
+          toast.success('Chaveamento gerado e torneio visível!')
+        } else {
+          toast.error(result.error || 'Erro ao preparar torneio')
+        }
+      } catch (error) {
+        toast.error('Erro ao preparar torneio')
+      }
+    })
+  }
+
+  if (status === 'STANDBY' || status === 'upcoming') {
     return (
       <Button
-        onClick={() => handleTransition('draft')}
+        onClick={handlePrepare}
         disabled={isPending}
-        variant="outline"
-        className="rounded-2xl font-black border-2 border-rose-200 text-rose-600 hover:bg-rose-50 h-12 px-6 gap-2"
+        variant="default"
+        className="rounded-2xl font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg h-12 px-6 gap-2"
       >
-        {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Edit3 className="w-4 h-4" />}
-        Iniciar Definição (Mover para Rascunho)
+        {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlayCircle className="w-4 h-4" />}
+        Preparar Chaveamento (Tornar Visível)
       </Button>
     )
   }
 
-  if (status === 'draft') {
+  if (status === 'UPCOMING') {
     return (
       <Button
-        onClick={() => handleTransition('upcoming')}
+        onClick={() => handleTransition('STANDBY')}
         disabled={isPending}
         variant="outline"
-        className="rounded-2xl font-black border-2 border-amber-200 text-amber-600 hover:bg-amber-50 h-12 px-6 gap-2"
+        className="rounded-2xl font-black border-2 border-slate-200 text-slate-600 hover:bg-slate-50 h-12 px-6 gap-2"
       >
         {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Clock className="w-4 h-4" />}
-        Colocar em Standby
+        Ocultar (Mover para Standby)
       </Button>
     )
   }

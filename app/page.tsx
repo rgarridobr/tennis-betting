@@ -32,7 +32,7 @@ export default async function HomePage() {
   }
 
   const allTournaments = await getTournaments();
-  const featuredTournaments = allTournaments.filter(t => t.status === 'active' || t.status === 'upcoming').slice(0, 3);
+  const featuredTournaments = allTournaments.filter(t => t.status === 'active' || t.status === 'upcoming' || t.status === 'OPEN' || t.status === 'UPCOMING' || t.status === 'IN_PROGRESS').slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background">
@@ -162,10 +162,16 @@ export default async function HomePage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent group-hover:scale-110 duration-500" />
                     <Badge
                       className={`absolute top-4 right-4 px-3 py-1 text-[10px] uppercase tracking-wider font-bold shadow-lg border-none ${
-                        tournament.status === 'active' ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'
+                        (tournament.status === 'active' || tournament.status === 'OPEN') && new Date(tournament.start_date) > new Date() ? 'bg-emerald-500 text-white' :
+                        new Date(tournament.start_date) <= new Date() && tournament.status !== 'finished' && tournament.status !== 'FINISHED' && tournament.status !== 'completed' ? 'bg-blue-500 text-white' :
+                        tournament.status === 'finished' || tournament.status === 'FINISHED' || tournament.status === 'completed' ? 'bg-slate-500 text-white' :
+                        'bg-amber-500 text-white'
                       }`}
                     >
-                      {tournament.status === 'active' ? 'Ativo' : 'Em breve'}
+                      {(tournament.status === 'active' || tournament.status === 'OPEN') && new Date(tournament.start_date) > new Date() ? 'Apostas Abertas' :
+                       new Date(tournament.start_date) <= new Date() && tournament.status !== 'finished' && tournament.status !== 'FINISHED' && tournament.status !== 'completed' ? 'Em Andamento' :
+                       tournament.status === 'finished' || tournament.status === 'FINISHED' || tournament.status === 'completed' ? 'Finalizado' :
+                       'Em breve'}
                     </Badge>
                     <div className="absolute bottom-5 left-6 right-6">
                       <h3 className="text-2xl font-black text-white leading-tight drop-shadow-md">{tournament.name}</h3>

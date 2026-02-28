@@ -19,17 +19,20 @@ export async function createTournament(data: {
   has_wildcards: boolean
   has_byes: boolean
   status?: string
+  image_url?: string
 }): Promise<number> {
   const result = await sql`
     INSERT INTO tournaments (
       name, surface, location, start_date, end_date, status,
       category, category_custom, format, sets_format, size,
-      has_seeds, has_qualifiers, has_wildcards, has_byes
+      has_seeds, has_qualifiers, has_wildcards, has_byes,
+      image_url
     )
     VALUES (
       ${data.name}, ${data.surface}, ${data.location}, ${data.start_date}, ${data.end_date}, ${data.status || 'draft'},
       ${data.category}, ${data.category_custom || null}, ${data.format}, ${data.sets_format}, ${data.size},
-      ${data.has_seeds}, ${data.has_qualifiers}, ${data.has_wildcards}, ${data.has_byes}
+      ${data.has_seeds}, ${data.has_qualifiers}, ${data.has_wildcards}, ${data.has_byes},
+      ${data.image_url || null}
     )
     RETURNING id
   `
@@ -58,6 +61,21 @@ export async function deleteTournament(tournamentId: number): Promise<{ success:
     console.error("Error deleting tournament:", error)
     return { success: false, error: 'Erro ao excluir torneio. Verifique se existem dependências.' }
   }
+}
+
+export async function prepareTournament(tournamentId: number): Promise<void> {
+  const tournament = await sql`SELECT status, size FROM tournaments WHERE id = ${tournamentId}`
+  if (tournament.length === 0) throw new Error('Torneio não encontrado')
+
+  if (tournament[0].status !== 'STANDBY' && tournament[0].status !== 'upcoming') {
+    throw new Error('Torneio já está preparado ou em outro status')
+  }
+
+  // Generate bracket structure
+  await generateBracket(tournamentId)
+
+  // Move to UPCOMING (visible to users)
+  await sql`UPDATE tournaments SET status = 'UPCOMING', updated_at = NOW() WHERE id = ${tournamentId}`
 }
 
 // ==================== BRACKET GENERATION ====================
@@ -240,7 +258,7 @@ export async function setMatchResult(
       return { success: false, error: 'O torneio já foi finalizado e os resultados não podem ser alterados.' }
     }
 
-    if (m.tournament_status === 'draft' || m.tournament_status === 'upcoming') {
+    if (m.tournament_status === 'draft' || m.tournament_status === 'upcoming' || m.tournament_status === 'STANDBY' || m.tournament_status === 'UPCOMING') {
       return { success: false, error: 'O torneio ainda não foi publicado. Publique-o antes de lançar resultados.' }
     }
 
@@ -448,7 +466,7 @@ export async function publishTournament(tournamentId: number): Promise<void> {
   if (tournament.length === 0) throw new Error('Torneio não encontrado')
 
   // 1. Mark tournament as active
-  await sql`UPDATE tournaments SET status = 'active', updated_at = NOW() WHERE id = ${tournamentId}`
+  await sql`UPDATE tournaments SET status = 'OPEN', updated_at = NOW() WHERE id = ${tournamentId}`
 
   // 2. Resolve BYEs in the first round
   const firstRoundMatches = await sql`

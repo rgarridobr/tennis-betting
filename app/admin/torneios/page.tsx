@@ -10,25 +10,38 @@ import { DeleteTournamentButton } from '@/components/admin/delete-tournament-but
 export default async function AdminTournamentsPage() {
   const tournaments = await getTournaments();
 
-  const draftTournaments = tournaments.filter((t) => t.status === 'draft');
-  const activeTournaments = tournaments.filter((t) => t.status === 'active' || t.status === 'published');
-  const upcomingTournaments = tournaments.filter((t) => t.status === 'upcoming');
-  const completedTournaments = tournaments.filter((t) => t.status === 'finished' || t.status === 'completed');
+  const standbyTournaments = tournaments.filter((t) => t.status === 'STANDBY' || t.status === 'draft');
+  const upcomingTournaments = tournaments.filter((t) => t.status === 'UPCOMING' || t.status === 'upcoming');
+  const openTournaments = tournaments.filter((t) => t.status === 'OPEN' || t.status === 'active' || t.status === 'published');
+  const inProgressTournaments = tournaments.filter((t) => t.status === 'LOCKED' || t.status === 'IN_PROGRESS');
+  const completedTournaments = tournaments.filter((t) => t.status === 'FINISHED' || t.status === 'finished' || t.status === 'completed');
 
   const statusLabels: Record<string, string> = {
+    STANDBY: 'Standby (Interno)',
     draft: 'Rascunho',
+    UPCOMING: 'Em breve (Visível)',
     upcoming: 'Em breve',
+    OPEN: 'Apostas Abertas',
     active: 'Ativo',
     published: 'Ativo',
+    LOCKED: 'Apostas Fechadas',
+    IN_PROGRESS: 'Em Andamento',
+    FINISHED: 'Finalizado',
     finished: 'Finalizado',
     completed: 'Finalizado',
   };
 
   const statusColors: Record<string, string> = {
+    STANDBY: 'bg-slate-100 text-slate-700',
     draft: 'bg-rose-100 text-rose-700',
+    UPCOMING: 'bg-amber-100 text-amber-700',
     upcoming: 'bg-amber-100 text-amber-700',
+    OPEN: 'bg-emerald-100 text-emerald-700',
     active: 'bg-emerald-100 text-emerald-700',
     published: 'bg-emerald-100 text-emerald-700',
+    LOCKED: 'bg-orange-100 text-orange-700',
+    IN_PROGRESS: 'bg-blue-100 text-blue-700',
+    FINISHED: 'bg-slate-100 text-slate-600',
     finished: 'bg-slate-100 text-slate-600',
     completed: 'bg-slate-100 text-slate-600',
   };
@@ -45,12 +58,12 @@ export default async function AdminTournamentsPage() {
         <div className="flex flex-wrap items-center gap-4 md:grid md:grid-cols-2 lg:flex">
           <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl shrink-0">
             <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-rose-500/20 flex items-center justify-center border border-rose-500/30">
-                <ClipboardList className="w-6 h-6 text-rose-400" />
+              <div className="w-12 h-12 rounded-2xl bg-slate-500/20 flex items-center justify-center border border-slate-500/30">
+                <ClipboardList className="w-6 h-6 text-slate-400" />
               </div>
               <div>
-                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Rascunhos</p>
-                <p className="text-2xl font-black text-white">{draftTournaments.length}</p>
+                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Standby</p>
+                <p className="text-2xl font-black text-white">{standbyTournaments.length}</p>
               </div>
             </CardContent>
           </Card>
@@ -60,8 +73,8 @@ export default async function AdminTournamentsPage() {
                 <Zap className="w-6 h-6 text-emerald-400" />
               </div>
               <div>
-                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Ativos</p>
-                <p className="text-2xl font-black text-white">{activeTournaments.length}</p>
+                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Abertos</p>
+                <p className="text-2xl font-black text-white">{openTournaments.length}</p>
               </div>
             </CardContent>
           </Card>
@@ -71,7 +84,7 @@ export default async function AdminTournamentsPage() {
                 <Calendar className="w-6 h-6 text-amber-400" />
               </div>
               <div>
-                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Próximos</p>
+                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Em breve</p>
                 <p className="text-2xl font-black text-white">{upcomingTournaments.length}</p>
               </div>
             </CardContent>
@@ -115,13 +128,14 @@ export default async function AdminTournamentsPage() {
           <div className="space-y-12">
             {[
               {
-                title: 'Rascunhos para finalizar',
-                list: draftTournaments,
+                title: 'Calendário (Standby)',
+                list: standbyTournaments,
                 icon: ClipboardList,
-                color: 'text-rose-500',
+                color: 'text-slate-500',
               },
-              { title: 'Torneios Ativos', list: activeTournaments, icon: Zap, color: 'text-emerald-500' },
-              { title: 'Próximos Torneios', list: upcomingTournaments, icon: Calendar, color: 'text-amber-500' },
+              { title: 'Próximos (Visíveis)', list: upcomingTournaments, icon: Calendar, color: 'text-amber-500' },
+              { title: 'Abertos para Apostas', list: openTournaments, icon: Zap, color: 'text-emerald-500' },
+              { title: 'Em Andamento / Bloqueados', list: inProgressTournaments, icon: Zap, color: 'text-blue-500' },
               { title: 'Finalizados', list: completedTournaments, icon: Trophy, color: 'text-slate-400' },
             ]
               .filter((group) => group.list.length > 0)
@@ -142,13 +156,15 @@ export default async function AdminTournamentsPage() {
                       >
                         <div
                           className={`h-3 ${
-                            tournament.status === 'draft'
-                              ? 'bg-rose-500'
-                              : tournament.status === 'active' || tournament.status === 'published'
+                            tournament.status === 'STANDBY' || tournament.status === 'draft'
+                              ? 'bg-slate-400'
+                              : tournament.status === 'OPEN' || tournament.status === 'active' || tournament.status === 'published'
                                 ? 'bg-emerald-500'
-                                : tournament.status === 'upcoming'
+                                : tournament.status === 'UPCOMING' || tournament.status === 'upcoming'
                                   ? 'bg-amber-400'
-                                  : 'bg-slate-300'
+                                  : tournament.status === 'LOCKED' || tournament.status === 'IN_PROGRESS'
+                                    ? 'bg-blue-500'
+                                    : 'bg-slate-300'
                           }`}
                         />
                         <CardContent className="p-8">
@@ -166,7 +182,7 @@ export default async function AdminTournamentsPage() {
                               <Badge className={`${statusColors[tournament.status] || 'bg-slate-100 text-slate-600'} border-none font-black uppercase text-[10px] tracking-wider px-3 py-1 rounded-full`}>
                                 {statusLabels[tournament.status] || tournament.status}
                               </Badge>
-                              {(tournament.status === 'draft' || tournament.status === 'upcoming') && (
+                              {(tournament.status === 'STANDBY' || tournament.status === 'draft' || tournament.status === 'UPCOMING' || tournament.status === 'upcoming') && (
                                 <DeleteTournamentButton tournamentId={tournament.id} tournamentName={tournament.name} />
                               )}
                             </div>

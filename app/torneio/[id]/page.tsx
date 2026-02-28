@@ -83,12 +83,12 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
             )}
           </div>
 
-          {tournament.status !== 'upcoming' && tournament.status !== 'draft' && (
+          {tournament.status !== 'upcoming' && tournament.status !== 'draft' && tournament.status !== 'STANDBY' && (
             <TournamentViewToggle currentView={view} />
           )}
         </div>
 
-        {tournament.status === 'upcoming' || tournament.status === 'draft' || matches.length === 0 ? (
+        {(tournament.status === 'upcoming' || tournament.status === 'draft' || tournament.status === 'STANDBY' || tournament.status === 'UPCOMING' || matches.length === 0) ? (
           <div className="text-center py-24 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm px-6">
             <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">
               Chaveamento indisponível para este torneio
