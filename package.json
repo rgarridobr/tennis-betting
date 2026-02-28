@@ -6,7 +6,8 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "eslint .",
-    "start": "next start"
+    "start": "next start",
+    "sync-atp": "tsx scripts/sync-atp-calendar.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
