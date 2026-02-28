@@ -82,9 +82,9 @@ function MatchCard({
   const hasPlayers = (match.player1_id || match.player1_type !== 'PLAYER') &&
                     (match.player2_id || match.player2_type !== 'PLAYER')
   const isCompleted = match.status === 'completed'
-  const isPublished = tournamentStatus === 'active' || tournamentStatus === 'published'
-  const isDraft = tournamentStatus === 'draft'
-  const isLocked = tournamentStatus === 'finished' || tournamentStatus === 'completed'
+  const isPublished = tournamentStatus === 'active' || tournamentStatus === 'published' || tournamentStatus === 'OPEN'
+  const isDraft = tournamentStatus === 'draft' || tournamentStatus === 'STANDBY' || tournamentStatus === 'UPCOMING' || tournamentStatus === 'upcoming'
+  const isLocked = tournamentStatus === 'finished' || tournamentStatus === 'completed' || tournamentStatus === 'FINISHED'
 
   const getPlayerDisplay = (playerId: number | null, name: string | null, type: string, seedNum: number | null) => {
     const isPlaceholder = !playerId && type !== 'PLAYER' && type !== 'BYE';
