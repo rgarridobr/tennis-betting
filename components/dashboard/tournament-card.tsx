@@ -32,25 +32,32 @@ function formatDate(dateString: string): string {
 }
 
 export function TournamentCard({ tournament }: TournamentCardProps) {
-  const statusLabel = tournament.status === 'active'
-    ? 'Ativo'
-    : tournament.status === 'finished'
-      ? 'Finalizado'
-      : 'Em breve'
+  const isLockedByDate = new Date(tournament.start_date) <= new Date()
+  const isFinished = (tournament.status === 'finished' || tournament.status === 'FINISHED' || tournament.status === 'completed')
 
-  const statusColor = tournament.status === 'active'
-    ? 'bg-emerald-500 text-white border-none'
-    : tournament.status === 'finished'
-      ? 'bg-slate-500 text-white border-none'
-      : 'bg-amber-500 text-white border-none'
+  const statusLabel = isFinished
+    ? 'Finalizado'
+    : isLockedByDate
+      ? 'Em Andamento'
+      : (tournament.status === 'active' || tournament.status === 'OPEN')
+        ? 'Apostas Abertas'
+        : 'Em breve'
 
-  const imageUrl = surfaceImages[tournament.surface] || surfaceImages.Hard
+  const statusColor = isFinished
+    ? 'bg-slate-500 text-white border-none'
+    : isLockedByDate
+      ? 'bg-blue-500 text-white border-none'
+      : (tournament.status === 'active' || tournament.status === 'OPEN')
+        ? 'bg-emerald-500 text-white border-none'
+        : 'bg-amber-500 text-white border-none'
+
+  const imageUrl = tournament.image_url || surfaceImages[tournament.surface] || surfaceImages.Hard
 
   return (
     <Link href={`/torneio/${tournament.id}`}>
       <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1 pt-0 rounded-[2rem]">
         <div className="relative h-60">
-          <img src={imageUrl || "/placeholder.svg"} alt={tournament.name} className="w-full h-full object-cover" crossOrigin="anonymous" />
+          <img src={imageUrl || "/placeholder.svg"} alt={tournament.name} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
           <Badge className={`absolute top-4 right-4 ${statusColor} px-3 py-1 text-[10px] uppercase tracking-wider font-bold shadow-lg`}>
             {statusLabel}

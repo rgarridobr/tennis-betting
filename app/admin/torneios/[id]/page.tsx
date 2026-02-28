@@ -53,7 +53,13 @@ export default async function ManageTournamentPage({ params, searchParams }: Pro
   const dynamicRoundNames = getDynamicRoundNames(maxRound)
 
   const statusLabels: Record<string, string> = {
+    STANDBY: 'Standby (Interno)',
     draft: 'Rascunho',
+    UPCOMING: 'Em breve (Visível)',
+    OPEN: 'Apostas Abertas',
+    LOCKED: 'Apostas Fechadas',
+    IN_PROGRESS: 'Em Andamento',
+    FINISHED: 'Finalizado',
     published: 'Publicado',
     finished: 'Finalizado',
     upcoming: 'Em breve',
@@ -135,8 +141,9 @@ export default async function ManageTournamentPage({ params, searchParams }: Pro
           <div className="flex items-center gap-4">
             <TournamentStatusTransition tournamentId={tournamentId} status={tournament.status} />
             <Badge className={
-              tournament.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
-              tournament.status === 'upcoming' ? 'bg-amber-100 text-amber-700' :
+              (tournament.status === 'active' || tournament.status === 'OPEN') ? 'bg-emerald-100 text-emerald-700' :
+              (tournament.status === 'upcoming' || tournament.status === 'UPCOMING') ? 'bg-amber-100 text-amber-700' :
+              (tournament.status === 'IN_PROGRESS' || tournament.status === 'LOCKED') ? 'bg-blue-100 text-blue-700' :
               'bg-slate-100 text-slate-600'
             }>
               {statusLabels[tournament.status] || tournament.status}
@@ -182,29 +189,29 @@ export default async function ManageTournamentPage({ params, searchParams }: Pro
         </div>
 
         {/* Alerta de Rascunho ou Standby */}
-        {(tournament.status === 'draft' || tournament.status === 'upcoming') && (
+        {(tournament.status === 'STANDBY' || tournament.status === 'UPCOMING' || tournament.status === 'draft' || tournament.status === 'upcoming') && (
           <div className={`mb-8 p-6 border-2 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6 ${
-            tournament.status === 'draft' ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-200'
+            (tournament.status === 'UPCOMING' || tournament.status === 'upcoming') ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-200'
           }`}>
-            <div className={`flex items-center gap-4 ${tournament.status === 'draft' ? 'text-amber-800' : 'text-slate-700'}`}>
+            <div className={`flex items-center gap-4 ${(tournament.status === 'UPCOMING' || tournament.status === 'upcoming') ? 'text-amber-800' : 'text-slate-700'}`}>
               <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${
-                tournament.status === 'draft' ? 'bg-amber-100' : 'bg-slate-200'
+                (tournament.status === 'UPCOMING' || tournament.status === 'upcoming') ? 'bg-amber-100' : 'bg-slate-200'
               }`}>
-                {tournament.status === 'draft' ? <AlertTriangle className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
+                {(tournament.status === 'UPCOMING' || tournament.status === 'upcoming') ? <AlertTriangle className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
               </div>
               <div>
                 <h3 className="font-black text-lg">
-                  {tournament.status === 'draft' ? 'Modo Rascunho' : 'Modo Standby'}
+                  {tournament.status === 'UPCOMING' || tournament.status === 'upcoming' ? 'Modo Em Breve' : 'Modo Standby'}
                 </h3>
                 <p className="text-sm font-bold opacity-80">
-                  {tournament.status === 'draft'
+                  {tournament.status === 'UPCOMING' || tournament.status === 'upcoming'
                     ? 'O chaveamento está sendo definido. Publique para permitir resultados e palpites.'
-                    : 'O torneio está visível para os usuários como "Em breve", mas o chaveamento está oculto.'
+                    : 'O torneio está interno (apenas admin vê). Clique em "Preparar Chaveamento" para gerar a chave e torná-lo visível.'
                   }
                 </p>
               </div>
             </div>
-            {tournament.status === 'draft' && <PublishBracketButton tournamentId={tournamentId} isReady={round1Complete} />}
+            {(tournament.status === 'UPCOMING' || tournament.status === 'upcoming') && <PublishBracketButton tournamentId={tournamentId} isReady={round1Complete} />}
           </div>
         )}
 

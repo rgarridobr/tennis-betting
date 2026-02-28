@@ -30,6 +30,7 @@ export function TournamentForm({ names, locations }: Props) {
   const [size, setSize] = useState<string>('128')
   const [setsFormat, setSetsFormat] = useState<string>('5')
   const [name, setName] = useState<string>('')
+  const [imageUrl, setImageUrl] = useState<string>('/images/categories/grandslam.png')
   const router = useRouter()
 
   const isATP = category === 'ATP_500' || category === 'ATP_250'
@@ -51,6 +52,14 @@ export function TournamentForm({ names, locations }: Props) {
       setSize('128')
       setSetsFormat('5')
     }
+
+    const categoryImages: Record<string, string> = {
+      ATP_250: '/images/categories/atp250.png',
+      ATP_500: '/images/categories/atp500.png',
+      MASTERS_1000: '/images/categories/atpmasters1000.png',
+      GRAND_SLAM: '/images/categories/grandslam.png',
+    }
+    setImageUrl(categoryImages[category] || '/images/categories/grandslam.png')
   }, [category, name, isATP, isMasters, isGrandSlam])
 
   async function handleSubmit(formData: FormData) {
@@ -116,22 +125,10 @@ export function TournamentForm({ names, locations }: Props) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        <div className="space-y-4">
-          <Label htmlFor="status" className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
-            <Layers className="w-4 h-4 text-emerald-500" /> Status Inicial
-          </Label>
-          <Select name="status" required defaultValue="upcoming">
-            <SelectTrigger className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700">
-              <SelectValue placeholder="Selecione o status" />
-            </SelectTrigger>
-            <SelectContent className="rounded-2xl">
-              <SelectItem value="upcoming" className="font-bold text-amber-600">Standby (Em breve)</SelectItem>
-              <SelectItem value="draft" className="font-bold text-rose-600">Rascunho (Em definição)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      <input type="hidden" name="image_url" value={imageUrl} />
+      <input type="hidden" name="status" value="STANDBY" />
 
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         <div className="space-y-4">
           <Label htmlFor="surface" className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
             <Layers className="w-4 h-4 text-emerald-500" /> Superfície
