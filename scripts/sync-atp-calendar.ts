@@ -149,35 +149,60 @@ async function sync() {
         }
 
         const code = bestMatch ? bestMatch.code : normalizeString(atp.Name);
-        const slug = `${code}-${year}`;
+        const slug = matchedConceptId ? `${code}-${year}-${atp.Id}` : `UNLINKED-${code}-${year}-${atp.Id}`;
 
         const needsReview = !matchedConceptId;
 
         // Upsert Tournament Edition
-        const existing = await sql`SELECT id FROM tournaments WHERE slug = ${slug}`;
+        // Try matching by api_id first, then by slug
+        const existingResult = await sql`
+          SELECT * FROM tournaments
+          WHERE api_id = ${atp.Id} OR (slug = ${slug} AND api_id IS NULL)
+        `;
+        const existing = existingResult[0];
 
-        if (existing.length > 0) {
-          // Update only if source is ATP_API or MANUAL (to avoid overwriting legacy or protected data if rules changed)
-          await sql`
-            UPDATE tournaments SET
-              tournament_concept_id = ${matchedConceptId},
-              name = ${atp.Name},
-              surface = ${atp.Surface},
-              location = ${atp.Location},
-              start_date = ${start.toISOString()},
-              end_date = ${end.toISOString()},
-              category = ${category},
-              size = ${atp.SglDrawSize || (bestMatch?.draw_size) || 32},
-              source = 'ATP_API',
-              api_id = ${atp.Id},
-              location_text = ${atp.Location},
-              needs_review = ${needsReview},
-              year = ${year},
-              updated_at = CURRENT_TIMESTAMP
-            WHERE id = ${existing[0].id}
-          `;
-          updatedCount++;
+        if (existing) {
+          const newSize = atp.SglDrawSize || (bestMatch?.draw_size) || 32;
+          const newStartDate = start.toISOString();
+          const newEndDate = end.toISOString();
+
+          const changes: string[] = [];
+          if (existing.tournament_concept_id !== matchedConceptId) changes.push(`concept_id: ${existing.tournament_concept_id} -> ${matchedConceptId}`);
+          if (existing.name !== atp.Name) changes.push(`name: ${existing.name} -> ${atp.Name}`);
+          if (existing.surface !== atp.Surface) changes.push(`surface: ${existing.surface} -> ${atp.Surface}`);
+          if (existing.location !== atp.Location) changes.push(`location: ${existing.location} -> ${atp.Location}`);
+          if (new Date(existing.start_date).toISOString() !== newStartDate) changes.push(`start_date: ${existing.start_date} -> ${newStartDate}`);
+          if (new Date(existing.end_date).toISOString() !== newEndDate) changes.push(`end_date: ${existing.end_date} -> ${newEndDate}`);
+          if (existing.category !== category) changes.push(`category: ${existing.category} -> ${category}`);
+          if (existing.size !== newSize) changes.push(`size: ${existing.size} -> ${newSize}`);
+          if (existing.api_id !== atp.Id) changes.push(`api_id: ${existing.api_id} -> ${atp.Id}`);
+
+          if (changes.length > 0) {
+            console.log(`Updating ${atp.Name}:`);
+            changes.forEach(c => console.log(`  - ${c}`));
+
+            await sql`
+              UPDATE tournaments SET
+                tournament_concept_id = ${matchedConceptId},
+                name = ${atp.Name},
+                surface = ${atp.Surface},
+                location = ${atp.Location},
+                start_date = ${newStartDate},
+                end_date = ${newEndDate},
+                category = ${category},
+                size = ${newSize},
+                source = 'ATP_API',
+                api_id = ${atp.Id},
+                location_text = ${atp.Location},
+                needs_review = ${needsReview},
+                year = ${year},
+                updated_at = CURRENT_TIMESTAMP
+              WHERE id = ${existing.id}
+            `;
+            updatedCount++;
+          }
         } else {
+          console.log(`Creating ${atp.Name} (${slug})`);
           await sql`
             INSERT INTO tournaments (
               tournament_concept_id, name, slug, surface, location,
