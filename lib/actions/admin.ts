@@ -19,6 +19,8 @@ import {
   deleteTournamentLocation,
   publishTournament,
   prepareTournament,
+  resetTournamentToStandby,
+  randomizeFirstRound,
   updatePlaceholderPlayer,
   deleteTournament,
   isRound1Complete,
@@ -193,6 +195,34 @@ export async function prepareTournamentAction(tournamentId: number) {
   } catch (error) {
     console.error("Error preparing tournament:", error)
     return { success: false, error: 'Erro ao preparar torneio' }
+  }
+}
+
+export async function resetTournamentToStandbyAction(tournamentId: number) {
+  await requireAdmin()
+  try {
+    await resetTournamentToStandby(tournamentId)
+    revalidatePath(`/admin/torneios/${tournamentId}`)
+    revalidatePath(`/torneio/${tournamentId}`)
+    revalidatePath('/admin/torneios')
+    revalidatePath('/dashboard')
+    return { success: true }
+  } catch (error) {
+    console.error("Error resetting tournament:", error)
+    return { success: false, error: 'Erro ao resetar torneio' }
+  }
+}
+
+export async function randomizeFirstRoundAction(tournamentId: number) {
+  await requireAdmin()
+  try {
+    await randomizeFirstRound(tournamentId)
+    revalidatePath(`/admin/torneios/${tournamentId}`)
+    revalidatePath(`/torneio/${tournamentId}`)
+    return { success: true }
+  } catch (error: any) {
+    console.error("Error randomizing first round:", error)
+    return { success: false, error: error.message || 'Erro ao gerar chaves aleatórias' }
   }
 }
 

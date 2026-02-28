@@ -78,6 +78,68 @@ export async function prepareTournament(tournamentId: number): Promise<void> {
   await sql`UPDATE tournaments SET status = 'UPCOMING', updated_at = NOW() WHERE id = ${tournamentId}`
 }
 
+export async function resetTournamentToStandby(tournamentId: number): Promise<void> {
+  const tournament = await sql`SELECT status FROM tournaments WHERE id = ${tournamentId}`
+  if (tournament.length === 0) throw new Error('Torneio não encontrado')
+
+  // We should only allow reset if it's in UPCOMING or STANDBY (though STANDBY shouldn't have matches yet usually, unless it was just prepared)
+  // Actually, the user wants to go back from UPCOMING to STANDBY.
+
+  // 1. Delete predictions
+  await sql`
+    DELETE FROM predictions
+    WHERE bracket_match_id IN (
+      SELECT id FROM bracket_matches WHERE tournament_id = ${tournamentId}
+    )
+  `
+
+  // 2. Delete matches
+  await sql`DELETE FROM bracket_matches WHERE tournament_id = ${tournamentId}`
+
+  // 3. Reset status and other fields if necessary
+  await sql`
+    UPDATE tournaments
+    SET status = 'STANDBY', champion_id = NULL, runner_up_id = NULL, updated_at = NOW()
+    WHERE id = ${tournamentId}
+  `
+}
+
+export async function randomizeFirstRound(tournamentId: number): Promise<void> {
+  const tournament = await sql`SELECT status, size FROM tournaments WHERE id = ${tournamentId}`
+  if (tournament.length === 0) throw new Error('Torneio não encontrado')
+
+  const matches = await sql`
+    SELECT id FROM bracket_matches
+    WHERE tournament_id = ${tournamentId} AND round = 1
+    ORDER BY position ASC
+  `
+
+  if (matches.length === 0) throw new Error('Chaveamento não gerado')
+
+  const players = await sql`SELECT id FROM players`
+  if (players.length === 0) throw new Error('Nenhum jogador cadastrado')
+
+  // Shuffle players
+  const shuffledPlayers = [...players].sort(() => Math.random() - 0.5)
+
+  let playerIdx = 0
+  for (const match of matches) {
+    const p1 = shuffledPlayers[playerIdx % shuffledPlayers.length]
+    playerIdx++
+    const p2 = shuffledPlayers[playerIdx % shuffledPlayers.length]
+    playerIdx++
+
+    await sql`
+      UPDATE bracket_matches
+      SET
+        player1_id = ${p1.id}, player1_type = 'PLAYER', player1_seed = NULL,
+        player2_id = ${p2.id}, player2_type = 'PLAYER', player2_seed = NULL,
+        status = 'pending'
+      WHERE id = ${match.id}
+    `
+  }
+}
+
 // ==================== BRACKET GENERATION ====================
 
 export async function generateBracket(tournamentId: number): Promise<void> {
