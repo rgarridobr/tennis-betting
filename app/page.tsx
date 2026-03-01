@@ -20,6 +20,7 @@ import {
   MapPin,
 } from 'lucide-react';
 import { getTournaments } from '@/lib/data';
+import { TournamentCard } from '@/components/dashboard/tournament-card';
 
 export default async function HomePage() {
   const user = await getSession();
@@ -144,7 +145,7 @@ export default async function HomePage() {
                 className="text-emerald-600 hover:bg-emerald-50 font-bold rounded-xl px-6"
                 asChild
               >
-                <Link href="/cadastro" className="flex items-center gap-2">
+                <Link href="/login" className="flex items-center gap-2">
                   Ver todos
                   <ChevronRight className="w-4 h-4" />
                 </Link>
@@ -153,62 +154,7 @@ export default async function HomePage() {
 
             <div className="grid md:grid-cols-3 gap-8">
               {featuredTournaments.map((tournament) => (
-                <Card
-                  key={tournament.id}
-                  className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group hover:-translate-y-2 pt-0 rounded-[2rem]"
-                >
-                  <div className="relative h-64">
-                    <img
-                      src={tournament.image_url || 'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=600&q=80'}
-                      alt={tournament.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent group-hover:scale-110 duration-500" />
-                    <Badge
-                      className={`absolute top-4 right-4 px-3 py-1 text-[10px] uppercase tracking-wider font-bold shadow-lg border-none ${
-                        (tournament.status === 'active' || tournament.status === 'OPEN') && new Date(tournament.start_date) > new Date() ? 'bg-emerald-500 text-white' :
-                        new Date(tournament.start_date) <= new Date() && tournament.status !== 'finished' && tournament.status !== 'FINISHED' && tournament.status !== 'completed' ? 'bg-blue-500 text-white' :
-                        tournament.status === 'finished' || tournament.status === 'FINISHED' || tournament.status === 'completed' ? 'bg-slate-500 text-white' :
-                        'bg-amber-500 text-white'
-                      }`}
-                    >
-                      {(tournament.status === 'active' || tournament.status === 'OPEN') && new Date(tournament.start_date) > new Date() ? 'Apostas Abertas' :
-                       new Date(tournament.start_date) <= new Date() && tournament.status !== 'finished' && tournament.status !== 'FINISHED' && tournament.status !== 'completed' ? 'Em Andamento' :
-                       tournament.status === 'finished' || tournament.status === 'FINISHED' || tournament.status === 'completed' ? 'Finalizado' :
-                       'Em breve'}
-                    </Badge>
-                    <div className="absolute bottom-5 left-6 right-6">
-                      <h3 className="text-2xl font-black text-white leading-tight drop-shadow-md">{tournament.name}</h3>
-                      <div className="flex items-center gap-3 mt-3">
-                        <Badge className="bg-emerald-500 text-white border-0 font-bold px-3 py-0.5">
-                          {tournament.surface === 'Clay' ? 'Saibro' : tournament.surface === 'Grass' ? 'Grama' : 'Hard'}
-                        </Badge>
-                        <span className="text-white/90 text-sm font-bold flex items-center gap-1.5">
-                          <MapPin className="w-3.5 h-3.5 text-emerald-400" />
-                          {tournament.location}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <CardContent className="p-6 bg-white">
-                    <div className="flex items-center justify-between font-bold">
-                      <div className="flex items-center gap-2 text-slate-500 text-sm">
-                        <Calendar className="w-4 h-4 text-emerald-500" />
-                        <span>
-                          {new Date(tournament.start_date).toLocaleDateString('pt-BR', {
-                            day: 'numeric',
-                            month: 'short',
-                          })} - {new Date(tournament.end_date).toLocaleDateString('pt-BR', {
-                            day: 'numeric',
-                            month: 'short',
-                          })}
-                        </span>
-                      </div>
-                      <p className="text-emerald-600">Grand Slam</p>
-                    </div>
-                  </CardContent>
-                </Card>
+                <TournamentCard key={tournament.id} tournament={tournament} />
               ))}
             </div>
           </div>
