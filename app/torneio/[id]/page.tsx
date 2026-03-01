@@ -15,6 +15,8 @@ import { getDynamicRoundNames } from '@/lib/utils'
 import { DashboardHeader } from '@/components/dashboard/dashboard-header'
 import { TournamentHeader } from '@/components/tournament/tournament-header'
 import { MatchList } from '@/components/tournament/match-list'
+import { FileText } from 'lucide-react'
+import Link from 'next/link'
 import { TournamentBracket } from '@/components/tournament/tournament-bracket'
 import { EnrollmentBanner } from '@/components/tournament/enrollment-banner'
 import { TournamentViewToggle } from '@/components/tournament/tournament-view-toggle'
@@ -74,13 +76,23 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
 
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div>
-            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Chaveamento</h2>
-            {enrolled && (
-              <span className="text-sm text-emerald-600 font-bold">
-                Inscrito - Faça seus palpites!
-              </span>
-            )}
+          <div className="flex flex-col md:flex-row md:items-end gap-4">
+            <div>
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Chaveamento</h2>
+              {enrolled && (
+                <span className="text-sm text-emerald-600 font-bold">
+                  Inscrito - Faça seus palpites!
+                </span>
+              )}
+            </div>
+
+            <Link
+              href="/regras"
+              className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-emerald-600 transition-colors pb-1"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              Regras do Torneio
+            </Link>
           </div>
 
           {tournament.status !== 'upcoming' && tournament.status !== 'draft' && tournament.status !== 'STANDBY' && (
