@@ -1,28 +1,30 @@
-import { getSession } from '@/lib/auth'
-import { DashboardHeader } from '@/components/dashboard/dashboard-header'
-import { PageHero } from '@/components/shared/page-hero'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { POINTS_CONFIG } from '@/lib/data'
-import { Info, HelpCircle, Trophy, Clock, Edit3, Target } from 'lucide-react'
+import { getSession } from '@/lib/auth';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { PageHero } from '@/components/shared/page-hero';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { POINTS_CONFIG } from '@/lib/data';
+import { Info, HelpCircle, Trophy, Clock, Edit3, Target } from 'lucide-react';
+import { redirect } from 'next/navigation';
 
 export default async function RulesPage() {
-  const user = await getSession()
+  const user = await getSession();
+
+  if (!user) {
+    redirect('/login');
+  }
 
   const categories = [
     { id: 'GRAND_SLAM', name: 'Grand Slam', description: 'Australian Open, Roland Garros, Wimbledon, US Open' },
     { id: 'MASTERS_1000', name: 'Masters 1000', description: 'Indian Wells, Miami, Madrid, Rome, etc.' },
     { id: 'ATP_500', name: 'ATP 500', description: 'Rio Open, Barcelona, Tokyo, etc.' },
     { id: 'ATP_250', name: 'ATP 250', description: 'Buenos Aires, Bastad, Doha, etc.' },
-  ]
+  ];
 
   return (
     <div className="min-h-screen bg-slate-50">
       <DashboardHeader user={user} />
 
-      <PageHero
-        title="Regras do Bolão"
-        subtitle="Entenda como funciona a pontuação e as participações"
-      />
+      <PageHero title="Regras do Bolão" subtitle="Entenda como funciona a pontuação e as participações" />
 
       <main className="container mx-auto px-4 md:px-32 py-8 space-y-8">
         {/* General Rules */}
@@ -36,8 +38,8 @@ export default async function RulesPage() {
             </CardHeader>
             <CardContent>
               <p className="text-slate-600 text-sm leading-relaxed">
-                As inscrições e palpites abrem assim que a chave do torneio é sorteada e publicada.
-                Você pode realizar seus palpites até o horário de início da primeira partida do torneio.
+                As inscrições e palpites abrem assim que a chave do torneio é sorteada e publicada. Você pode realizar
+                seus palpites até o horário de início da primeira partida do torneio.
               </p>
             </CardContent>
           </Card>
@@ -51,8 +53,8 @@ export default async function RulesPage() {
             </CardHeader>
             <CardContent>
               <p className="text-slate-600 text-sm leading-relaxed">
-                Você pode alterar seus palpites quantas vezes quiser até o momento do bloqueio (início do torneio).
-                Após o início das partidas, os palpites são congelados e não podem mais ser modificados.
+                Você pode alterar seus palpites quantas vezes quiser até o momento do bloqueio (início do torneio). Após
+                o início das partidas, os palpites são congelados e não podem mais ser modificados.
               </p>
             </CardContent>
           </Card>
@@ -66,8 +68,8 @@ export default async function RulesPage() {
             </CardHeader>
             <CardContent>
               <p className="text-slate-600 text-sm leading-relaxed">
-                Você ganha pontos a cada acerto de vencedor de partida. A pontuação é progressiva:
-                rodadas finais valem mais pontos que rodadas iniciais.
+                Você ganha pontos a cada acerto de vencedor de partida. A pontuação é progressiva: rodadas finais valem
+                mais pontos que rodadas iniciais.
               </p>
             </CardContent>
           </Card>
@@ -82,8 +84,8 @@ export default async function RulesPage() {
 
           <div className="grid gap-6">
             {categories.map((cat) => {
-              const config = POINTS_CONFIG[cat.id]
-              if (!config) return null
+              const config = POINTS_CONFIG[cat.id];
+              if (!config) return null;
 
               return (
                 <Card key={cat.id} className="border-0 shadow-md overflow-hidden">
@@ -105,7 +107,7 @@ export default async function RulesPage() {
                     </div>
                   </CardContent>
                 </Card>
-              )
+              );
             })}
           </div>
         </section>
@@ -117,7 +119,8 @@ export default async function RulesPage() {
             <h2 className="text-xl font-bold text-slate-900">Critérios de Desempate</h2>
           </div>
           <p className="text-slate-600 mb-4">
-            Caso dois ou mais participantes terminem com a mesma pontuação total, os seguintes critérios serão aplicados nesta ordem:
+            Caso dois ou mais participantes terminem com a mesma pontuação total, os seguintes critérios serão aplicados
+            nesta ordem:
           </p>
           <ol className="list-decimal list-inside space-y-2 text-slate-700 font-medium">
             <li>Maior número total de acertos (vencedores de partidas).</li>
@@ -126,5 +129,5 @@ export default async function RulesPage() {
         </section>
       </main>
     </div>
-  )
+  );
 }

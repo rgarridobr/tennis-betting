@@ -46,11 +46,6 @@ export default async function HomePage() {
             </div>
             <span className="hidden sm:inline font-black text-xl tracking-tight text-slate-900">Bolão de Tênis</span>
           </Link>
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/regras" className="text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors">
-              Regras
-            </Link>
-          </nav>
           <div className="flex items-center gap-3">
             <Button variant="ghost" asChild className="font-bold text-slate-600 hover:text-emerald-600 rounded-xl">
               <Link href="/login">Entrar</Link>
