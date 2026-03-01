@@ -11,7 +11,8 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { Check, Trophy, Loader2 } from 'lucide-react'
+import { Check, Trophy, Loader2, FileText } from 'lucide-react'
+import Link from 'next/link'
 
 interface EnrollmentModalProps {
   isOpen: boolean
@@ -78,19 +79,33 @@ export function EnrollmentModal({ isOpen, onClose, tournament }: EnrollmentModal
 
             <div className="space-y-4 py-4">
               <Separator />
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2 text-slate-600">
-                  <Check className="w-4 h-4 text-emerald-500" />
-                  <span>Faça palpites em todas as 127 partidas do Grand Slam</span>
+              <div className="space-y-4 text-sm">
+                <div className="flex items-start gap-3 text-slate-600">
+                  <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-[10px] font-bold text-emerald-600">1</span>
+                  </div>
+                  <p>Confirme sua inscrição no botão abaixo para entrar na disputa deste torneio.</p>
                 </div>
-                <div className="flex items-center gap-2 text-slate-600">
-                  <Check className="w-4 h-4 text-emerald-500" />
-                  <span>Ganhe pontos progressivos por rodada (5 a 50 pts)</span>
+                <div className="flex items-start gap-3 text-slate-600">
+                  <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-[10px] font-bold text-emerald-600">2</span>
+                  </div>
+                  <p>Após inscrito, você poderá preencher todos os seus palpites de uma vez só ou por partes.</p>
                 </div>
-                <div className="flex items-center gap-2 text-slate-600">
-                  <Check className="w-4 h-4 text-emerald-500" />
-                  <span>Dispute o ranking com outros participantes</span>
+                <div className="flex items-start gap-3 text-slate-600">
+                  <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-[10px] font-bold text-emerald-600">3</span>
+                  </div>
+                  <p>Acompanhe o ranking em tempo real conforme os jogos oficiais forem acontecendo.</p>
                 </div>
+
+                <Link
+                  href="/regras"
+                  className="flex items-center gap-2 text-emerald-600 font-bold hover:underline mt-4"
+                >
+                  <FileText className="w-4 h-4" />
+                  Ver regras completas de pontuação
+                </Link>
               </div>
             </div>
 

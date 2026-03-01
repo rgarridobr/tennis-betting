@@ -10,19 +10,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Medal, Target, Trophy } from 'lucide-react';
+import { Medal, Target, Trophy, FileText } from 'lucide-react';
 import { logoutAction } from '@/lib/actions/auth';
 import type { User } from '@/lib/auth';
 import { usePathname } from 'next/navigation';
 
 interface DashboardHeaderProps {
-  user: User;
+  user: User | null;
 }
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
   const pathname = usePathname();
 
-  const displayName = user.nickname || user.name;
+  const displayName = user?.nickname || user?.name || 'Visitante';
 
   const initials = displayName
     .split(' ')
@@ -33,9 +33,10 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
 
   const navItems = [
     { href: '/torneios', label: 'Torneios', icon: Trophy },
-    { href: '/meus-palpites', label: 'Meus Palpites', icon: Target },
+    { href: '/meus-palpites', label: 'Meus Palpites', icon: Target, authRequired: true },
     { href: '/ranking', label: 'Ranking', icon: Medal },
-  ];
+    { href: '/regras', label: 'Regras', icon: FileText },
+  ].filter(item => !item.authRequired || user);
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60">
@@ -72,43 +73,56 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
 
         {/* User Avatar - Right */}
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex flex-col items-end mr-1">
-            <p className="text-sm font-black text-slate-900 leading-none">{displayName}</p>
-            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mt-1">Participante</p>
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="relative h-11 w-11 rounded-2xl p-0 overflow-hidden hover:bg-transparent"
-              >
-                <Avatar className="h-11 w-11 rounded-2xl">
-                  <AvatarFallback className="bg-slate-100 text-emerald-600 font-black rounded-2xl border-2 border-emerald-100">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <div className="flex items-center justify-start gap-2 p-2">
-                <div className="flex flex-col space-y-1 leading-none">
-                  <p className="font-medium">{displayName}</p>
-                  <p className="text-sm text-muted-foreground">{user.email}</p>
-                </div>
+          {user ? (
+            <>
+              <div className="hidden sm:flex flex-col items-end mr-1">
+                <p className="text-sm font-black text-slate-900 leading-none">{displayName}</p>
+                <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mt-1">Participante</p>
               </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/meus-palpites">Meus Palpites</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/perfil">Meu Perfil</Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => logoutAction()} className="cursor-pointer" variant="destructive">
-                Sair
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-11 w-11 rounded-2xl p-0 overflow-hidden hover:bg-transparent"
+                  >
+                    <Avatar className="h-11 w-11 rounded-2xl">
+                      <AvatarFallback className="bg-slate-100 text-emerald-600 font-black rounded-2xl border-2 border-emerald-100">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-1 leading-none">
+                      <p className="font-medium">{displayName}</p>
+                      <p className="text-sm text-muted-foreground">{user.email}</p>
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/meus-palpites">Meus Palpites</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/perfil">Meu Perfil</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onSelect={() => logoutAction()} className="cursor-pointer" variant="destructive">
+                    Sair
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" asChild className="font-bold text-slate-600 hover:text-emerald-600 rounded-xl hidden sm:flex">
+                <Link href="/login">Entrar</Link>
+              </Button>
+              <Button className="bg-emerald-500 text-white hover:bg-emerald-600 font-bold px-6 rounded-xl shadow-lg shadow-emerald-100" asChild>
+                <Link href="/cadastro">Cadastrar</Link>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </header>
