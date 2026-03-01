@@ -1,6 +1,6 @@
 import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { getTournaments, getUserStats, getGlobalRanking, getTournamentsActive } from '@/lib/data'
+import { getTournaments, getUserStats, getGlobalRanking, getTournamentsActiveThisMonth } from '@/lib/data'
 import { HeroSection } from '@/components/dashboard/hero-section'
 import { StatsCards } from '@/components/dashboard/stats-cards'
 import { TournamentCard } from '@/components/dashboard/tournament-card'
@@ -12,7 +12,7 @@ export default async function DashboardPage() {
   if (!user) redirect('/login')
 
   const [tournaments, stats, ranking] = await Promise.all([
-    getTournamentsActive(),
+    getTournamentsActiveThisMonth(),
     getUserStats(user.id),
     getGlobalRanking(10),
   ])
@@ -31,7 +31,7 @@ export default async function DashboardPage() {
               <section>
                 <div className="flex items-center gap-2 mb-6">
                   <div className="w-2 h-8 bg-emerald-500 rounded-full" />
-                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">Torneios Ativos</h2>
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">Torneios deste mês</h2>
                 </div>
                 <div className="grid md:grid-cols-2 gap-8">
                   {tournaments.map(t => <TournamentCard key={t.id} tournament={t} />)}

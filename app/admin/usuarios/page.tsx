@@ -1,14 +1,15 @@
-import { getAllUsers } from '@/lib/admin'
-import { PageHero } from '@/components/shared/page-hero'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { CreateUserDialog } from '@/components/admin/create-user-dialog'
-import { EditUserDialog } from '@/components/admin/edit-user-dialog'
-import { UserStatusToggle } from '@/components/admin/user-status-toggle'
-import { DeleteUserButton } from '@/components/admin/delete-user-button'
-import { Users, ShieldCheck, UserCheck, Phone, Home } from 'lucide-react'
-import { getSession } from '@/lib/auth'
-import { redirect } from 'next/navigation'
+import { getAllUsers } from '@/lib/admin';
+import { PageHero } from '@/components/shared/page-hero';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { CreateUserDialog } from '@/components/admin/create-user-dialog';
+import { EditUserDialog } from '@/components/admin/edit-user-dialog';
+import { UserStatusToggle } from '@/components/admin/user-status-toggle';
+import { DeleteUserButton } from '@/components/admin/delete-user-button';
+import { Users, ShieldCheck, UserCheck, Phone, Home, Icon } from 'lucide-react';
+import { getSession } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import { tennisBall } from '@lucide/lab';
 
 export default async function AdminUsersPage() {
   const myUser = await getSession();
@@ -16,14 +17,12 @@ export default async function AdminUsersPage() {
 
   const users = await getAllUsers();
 
-  const adminCount = users.filter(u => u.is_admin).length
+  console.log(users);
+  const adminCount = users.filter((u) => u.is_admin).length;
 
   return (
     <>
-      <PageHero
-        title="Gerenciar Usuários"
-        subtitle="Administre os participantes do bolão"
-      >
+      <PageHero title="Gerenciar Usuários" subtitle="Administre os participantes do bolão">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-center gap-4">
           <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl flex-1 min-w-[200px]">
             <CardContent className="p-4 flex items-center gap-4">
@@ -86,14 +85,18 @@ export default async function AdminUsersPage() {
                         className={`flex flex-col sm:flex-row sm:items-center justify-between px-6 py-6 sm:px-8 hover:bg-slate-50 transition-all group gap-6 ${!user.is_active ? 'bg-slate-50/50 grayscale-[0.5]' : ''}`}
                       >
                         <div className="flex items-center gap-4 sm:gap-6">
-                          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black shadow-sm group-hover:scale-110 transition-transform shrink-0 ${user.is_admin ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+                          <div
+                            className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black shadow-sm group-hover:scale-110 transition-transform shrink-0 ${user.is_admin ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}
+                          >
                             {user.name.charAt(0).toUpperCase()}
                           </div>
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-lg font-black text-slate-900 truncate max-w-[200px] sm:max-w-none">
                                 {user.name}
-                                {user.nickname && <span className="text-slate-400 font-medium text-sm ml-2">({user.nickname})</span>}
+                                {user.nickname && (
+                                  <span className="text-slate-400 font-medium text-sm ml-2">({user.nickname})</span>
+                                )}
                               </span>
                               {user.is_admin && (
                                 <Badge className="bg-emerald-500 hover:bg-emerald-600 text-[10px] font-black uppercase tracking-wider rounded-lg h-5">
@@ -101,7 +104,10 @@ export default async function AdminUsersPage() {
                                 </Badge>
                               )}
                               {!user.is_active && (
-                                <Badge variant="secondary" className="bg-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-wider rounded-lg h-5">
+                                <Badge
+                                  variant="secondary"
+                                  className="bg-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-wider rounded-lg h-5"
+                                >
                                   Inativo
                                 </Badge>
                               )}
@@ -114,13 +120,23 @@ export default async function AdminUsersPage() {
                                   <Phone className="w-3 h-3 text-emerald-500" /> {user.whatsapp}
                                 </p>
                               )}
-    
                             </div>
-                            <p className="text-xs font-bold text-emerald-600 mt-1 uppercase tracking-wider">{user.total_predictions} palpites</p>
+
+                            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                              {user.tennis_club && (
+                                <p className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                                  <Icon iconNode={tennisBall} className="w-3 h-3 text-emerald-500" />
+                                  {user.tennis_club}
+                                </p>
+                              )}
+                            </div>
+                            <p className="text-xs font-bold text-emerald-600 mt-1 uppercase tracking-wider">
+                              {user.total_predictions} palpites
+                            </p>
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4 border-t sm:border-t-0 pt-4 sm:pt-0">
+                        <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4 pt-4 sm:pt-0">
                           {user.id !== myUser?.id && (
                             <>
                               <UserStatusToggle userId={user.id} isActive={user.is_active} />
@@ -131,7 +147,10 @@ export default async function AdminUsersPage() {
                             </>
                           )}
                           {user.id === myUser?.id && (
-                            <Badge variant="outline" className="text-[10px] font-black uppercase tracking-wider text-slate-400 border-slate-200">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] font-black uppercase tracking-wider text-slate-400 border-slate-200"
+                            >
                               Você
                             </Badge>
                           )}
@@ -146,5 +165,5 @@ export default async function AdminUsersPage() {
         )}
       </main>
     </>
-  )
+  );
 }

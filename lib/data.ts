@@ -175,6 +175,17 @@ export async function getTournamentsActive(): Promise<Tournament[]> {
   return rows as Tournament[]
 }
 
+export async function getTournamentsActiveThisMonth(): Promise<Tournament[]> {
+  const rows = await sql`
+    SELECT * FROM tournaments
+    WHERE status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS')
+      AND start_date >= DATE_TRUNC('month', CURRENT_DATE)
+      AND start_date < (DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month')
+    ORDER BY start_date ASC
+  `
+  return rows as Tournament[]
+}
+
 export async function getTournaments(): Promise<Tournament[]> {
   const rows = await sql`SELECT * FROM tournaments ORDER BY start_date ASC`
   return rows as Tournament[]
