@@ -3,8 +3,10 @@ import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { PageHero } from '@/components/shared/page-hero';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { POINTS_CONFIG } from '@/lib/data';
+import { getRoundName, cn } from '@/lib/utils';
 import { Info, HelpCircle, Trophy, Clock, Edit3, Target } from 'lucide-react';
 import { redirect } from 'next/navigation';
+import React from 'react';
 
 export default async function RulesPage() {
   const user = await getSession();
@@ -94,16 +96,33 @@ export default async function RulesPage() {
                     <p className="text-slate-400 text-xs">{cat.description}</p>
                   </div>
                   <CardContent className="p-0">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 divide-x divide-y divide-slate-100">
-                      {config.rounds.map((points, idx) => (
-                        <div key={idx} className="p-4 text-center">
-                          <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">
-                            {idx === config.rounds.length - 1 ? 'Campeão' : `Rodada ${idx + 1}`}
-                          </p>
-                          <p className="text-xl font-black text-emerald-600">{points}</p>
-                          <p className="text-[10px] text-slate-500">pontos</p>
-                        </div>
-                      ))}
+                    <div
+                      className={cn(
+                        'grid grid-cols-2 sm:grid-cols-4 divide-x divide-y divide-slate-100',
+                        config.rounds.length > 5 ? 'md:grid-cols-8' : 'md:grid-cols-6'
+                      )}
+                    >
+                      {config.rounds.map((points, idx) => {
+                        const isLast = idx === config.rounds.length - 1;
+                        const roundName = getRoundName(idx + 1, config.rounds.length);
+
+                        return (
+                          <React.Fragment key={idx}>
+                            {isLast && (
+                              <div className="p-4 text-center">
+                                <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Vice-campeão</p>
+                                <p className="text-xl font-black text-emerald-600">{config.runnerUp}</p>
+                                <p className="text-[10px] text-slate-500">pontos</p>
+                              </div>
+                            )}
+                            <div className="p-4 text-center">
+                              <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">{roundName}</p>
+                              <p className="text-xl font-black text-emerald-600">{points}</p>
+                              <p className="text-[10px] text-slate-500">pontos</p>
+                            </div>
+                          </React.Fragment>
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>
