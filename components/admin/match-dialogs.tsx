@@ -17,7 +17,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Pencil, Trophy, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Pencil, Trophy, CheckCircle2, AlertCircle, X } from 'lucide-react';
 
 // ==================== HELPER FUNCTIONS ====================
 
@@ -61,9 +61,20 @@ function SlotConfig({
       {' '}
       {(type === 'PLAYER' || type === 'SEED' || type === 'QUALIFIER' || type === 'WILDCARD') && (
         <div className="space-y-2">
-          <Label className="text-[10px] font-bold">
-            {type === 'QUALIFIER' || type === 'WILDCARD' ? 'Jogador (Opcional)' : 'Selecionar Jogador'}
-          </Label>
+          <div className="flex items-center justify-between">
+            <Label className="text-[10px] font-bold">
+              {type === 'QUALIFIER' || type === 'WILDCARD' ? 'Jogador (Opcional)' : 'Selecionar Jogador'}
+            </Label>
+            {playerId && (
+              <button
+                type="button"
+                onClick={() => setPlayerId('')}
+                className="text-[10px] font-bold text-red-500 hover:text-red-700 flex items-center gap-0.5 transition-colors"
+              >
+                <X className="w-3 h-3" /> Remover
+              </button>
+            )}
+          </div>
           <Select value={playerId} onValueChange={setPlayerId}>
             <SelectTrigger className="font-bold rounded-xl border-2">
               <SelectValue placeholder="Selecione..." />
@@ -166,31 +177,24 @@ export function SetPlayersDialog({
       return isNaN(parsed) ? null : parsed;
     };
 
+    const parseId = (val: string) => {
+      const parsed = parseInt(val, 10);
+      return isNaN(parsed) ? undefined : parsed;
+    };
+
     const p1 = {
       type: p1Type,
-      id:
-        p1Type !== 'BYE' && p1Type !== 'QUALIFIER' && p1Type !== 'WILDCARD'
-          ? parseInt(p1Id)
-          : p1Id
-            ? parseInt(p1Id)
-            : undefined,
+      id: parseId(p1Id),
       seed: p1Type === 'SEED' ? parseSeed(p1Seed) : null,
     };
     const p2 = {
       type: p2Type,
-      id:
-        p2Type !== 'BYE' && p2Type !== 'QUALIFIER' && p2Type !== 'WILDCARD'
-          ? parseInt(p2Id)
-          : p2Id
-            ? parseInt(p2Id)
-            : undefined,
+      id: parseId(p2Id),
       seed: p2Type === 'SEED' ? parseSeed(p2Seed) : null,
     };
 
-    if (p1.type === 'PLAYER' && !p1.id) return setError('Selecione o Jogador 1');
-    if (p2.type === 'PLAYER' && !p2.id) return setError('Selecione o Jogador 2');
-    if (p1.type === 'SEED' && (!p1.id || !p1.seed)) return setError('Defina o Seed e Jogador 1');
-    if (p2.type === 'SEED' && (!p2.id || !p2.seed)) return setError('Defina o Seed e Jogador 2');
+    if (p1.type === 'SEED' && !p1.seed) return setError('Defina o Seed do Jogador 1');
+    if (p2.type === 'SEED' && !p2.seed) return setError('Defina o Seed do Jogador 2');
     if (p1.type === 'BYE' && p2.type === 'BYE') return setError('Bye não pode enfrentar Bye');
 
     startTransition(async () => {
