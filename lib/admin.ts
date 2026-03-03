@@ -147,7 +147,7 @@ export async function generateBracket(tournamentId: number): Promise<void> {
   if (tournament.length === 0) throw new Error('Torneio não encontrado')
 
   const size = tournament[0].size as number
-  const totalRounds = Math.log2(size)
+  const totalRounds = Math.ceil(Math.log2(size))
 
   const existing = await sql`SELECT COUNT(*) as count FROM bracket_matches WHERE tournament_id = ${tournamentId}`
   if (Number(existing[0].count) > 0) {
@@ -314,7 +314,7 @@ export async function setMatchResult(
     const tournamentId = m.tournament_id as number
     const category = m.category || 'GRAND_SLAM'
     const setsToWin = m.sets_format === 5 ? 3 : 2
-    const totalRounds = Math.log2(m.size as number)
+    const totalRounds = Math.ceil(Math.log2(m.size as number))
 
     if (m.tournament_status === 'finished' || m.tournament_status === 'completed') {
       return { success: false, error: 'O torneio já foi finalizado e os resultados não podem ser alterados.' }
@@ -501,7 +501,7 @@ async function advancePlayer(tournamentId: number, currentRound: number, current
       await sql`UPDATE predictions SET is_correct = NULL, points_earned = 0 WHERE bracket_match_id = ${nextMatchId}`
 
       // Cascade reset to next rounds
-      const totalRounds = Math.log2(nm.size)
+      const totalRounds = Math.ceil(Math.log2(nm.size))
       if (nextRound < totalRounds) {
         await advancePlayer(tournamentId, nextRound, nextPosition, null)
       }
