@@ -83,7 +83,7 @@ function PodiumCard({ entry, position, isCurrentUser }: { entry: RankingEntry, p
           {config.label}
         </Badge>
         <h4 className="text-xl font-black text-slate-900 truncate mb-1">
-          {entry.user_nickname || entry.user_name}
+          {entry.user_name}
         </h4>
         <div className="text-3xl font-black text-slate-900 mb-4 flex items-center justify-center gap-1">
           {entry.total_points}
@@ -127,7 +127,7 @@ function RankingRow({ entry, isCurrentUser }: { entry: RankingEntry, isCurrentUs
         </div>
         <div>
           <p className="font-black text-slate-900 flex items-center gap-2 leading-none mb-1.5">
-            {entry.user_nickname || entry.user_name}
+            {entry.user_name}
             {isCurrentUser && <Badge className="bg-emerald-500 text-white border-none font-bold text-[9px] h-4">VOCÊ</Badge>}
             {entry.final_score_correct && (
               <div title="Acertou o placar da final">
