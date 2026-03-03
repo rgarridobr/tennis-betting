@@ -297,8 +297,8 @@ function BracketMatchCard({
   onPredict: (winnerId: number, score?: string) => void;
 }) {
   const isCompleted = match.status === 'completed';
-  const isDraft = tournamentStatus === 'draft';
-  const isPublished = tournamentStatus === 'active' || tournamentStatus === 'published';
+  const isDraft = tournamentStatus === 'draft' || tournamentStatus === 'STANDBY' || tournamentStatus === 'UPCOMING' || tournamentStatus === 'upcoming';
+  const isPublished = tournamentStatus === 'active' || tournamentStatus === 'published' || tournamentStatus === 'OPEN';
   const isLocked = tournamentStatus === 'finished' || tournamentStatus === 'completed';
   const canPredict = canMakePredictions && !isCompleted && p1?.id && p2?.id;
 
@@ -306,13 +306,13 @@ function BracketMatchCard({
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden w-full transition-all hover:shadow-md hover:-translate-y-0.5 group">
-      {isAdmin && isDraft && match.round === 1 ? (
+      {isAdmin && isDraft ? (
         <SetPlayersDialog
           match={match}
           players={players || []}
           tournamentId={tournamentId}
           trigger={
-            <div className="cursor-pointer">
+            <div className="cursor-pointer group">
               <PlayerRow
                 name={p1?.name || null}
                 seed={p1?.seed || null}
@@ -350,13 +350,13 @@ function BracketMatchCard({
 
       <div className="h-[1px] bg-slate-50 mx-4" />
 
-      {isAdmin && isDraft && match.round === 1 ? (
+      {isAdmin && isDraft ? (
         <SetPlayersDialog
           match={match}
           players={players || []}
           tournamentId={tournamentId}
           trigger={
-            <div className="cursor-pointer">
+            <div className="cursor-pointer group">
               <PlayerRow
                 name={p2?.name || null}
                 seed={p2?.seed || null}

@@ -134,7 +134,7 @@ function MatchCard({
 
       <div className="space-y-2">
         {/* Player 1 */}
-        {isDraft && match.round === 1 ? (
+        {isDraft ? (
           <SetPlayersDialog
             match={match}
             players={players}
@@ -185,7 +185,7 @@ function MatchCard({
         )}
 
         {/* Player 2 */}
-        {isDraft && match.round === 1 ? (
+        {isDraft ? (
           <SetPlayersDialog
             match={match}
             players={players}
@@ -246,7 +246,7 @@ function MatchCard({
       {/* Actions */}
       {!isLocked && (
         <div className="mt-4 flex gap-2">
-          {isDraft && match.round === 1 && (
+          {isDraft && (
             <SetPlayersDialog match={match} players={players} tournamentId={tournamentId} />
           )}
           {isPublished && (
