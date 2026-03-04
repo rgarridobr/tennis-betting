@@ -86,7 +86,7 @@ function MatchCard({
   const hasPlayers = (match.player1_id || match.player1_type !== 'PLAYER') &&
                     (match.player2_id || match.player2_type !== 'PLAYER')
   const isCompleted = match.status === 'completed'
-  const isPublished = tournamentStatus === 'active' || tournamentStatus === 'published' || tournamentStatus === 'OPEN'
+  const isPublished = tournamentStatus === 'active' || tournamentStatus === 'published' || tournamentStatus === 'OPEN' || tournamentStatus === 'LOCKED' || tournamentStatus === 'IN_PROGRESS'
   const isDraft = tournamentStatus === 'draft' || tournamentStatus === 'STANDBY' || tournamentStatus === 'UPCOMING' || tournamentStatus === 'upcoming'
   const isLocked = tournamentStatus === 'finished' || tournamentStatus === 'completed' || tournamentStatus === 'FINISHED'
   const canEditPlayers = isDraft && match.round === 1;
@@ -260,10 +260,10 @@ function MatchCard({
           )}
           {isPublished && (
             <>
-              {(match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD') && !match.player1_id && (
+              {!isCompleted && (match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD') && !match.player1_id && (
                 <ReplacePlaceholderDialog match={match} slot={1} players={players} tournamentId={tournamentId} assignedPlayerIds={assignedPlayerIds} />
               )}
-              {(match.player2_type === 'QUALIFIER' || match.player2_type === 'WILDCARD') && !match.player2_id && (
+              {!isCompleted && (match.player2_type === 'QUALIFIER' || match.player2_type === 'WILDCARD') && !match.player2_id && (
                 <ReplacePlaceholderDialog match={match} slot={2} players={players} tournamentId={tournamentId} assignedPlayerIds={assignedPlayerIds} />
               )}
               {match.player1_id && match.player2_id && (

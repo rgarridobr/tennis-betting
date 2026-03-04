@@ -339,8 +339,8 @@ function BracketMatchCard({
 }) {
   const isCompleted = match.status === 'completed';
   const isDraft = tournamentStatus === 'draft' || tournamentStatus === 'STANDBY' || tournamentStatus === 'UPCOMING' || tournamentStatus === 'upcoming';
-  const isPublished = tournamentStatus === 'active' || tournamentStatus === 'published' || tournamentStatus === 'OPEN';
-  const isLocked = tournamentStatus === 'finished' || tournamentStatus === 'completed';
+  const isPublished = tournamentStatus === 'active' || tournamentStatus === 'published' || tournamentStatus === 'OPEN' || tournamentStatus === 'LOCKED' || tournamentStatus === 'IN_PROGRESS';
+  const isLocked = tournamentStatus === 'finished' || tournamentStatus === 'completed' || tournamentStatus === 'FINISHED';
   const canPredict = canMakePredictions && !isCompleted && p1?.id && p2?.id;
   const canEditPlayers = isAdmin && isDraft && match.round === 1;
 
@@ -449,10 +449,10 @@ function BracketMatchCard({
         </div>
       )}
 
-      {isAdmin && !isLocked && !isCompleted && (
-        <div className="">
-          {isPublished && (
-            <div className="flex gap-2">
+      {isAdmin && !isLocked && (
+        <div className="px-2 pb-2">
+          {isPublished && !isCompleted && (
+            <div className="flex gap-2 mb-2">
               {(match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD') && !match.player1_id && (
                 <ReplacePlaceholderDialog match={match} slot={1} players={players || []} tournamentId={tournamentId} assignedPlayerIds={assignedPlayerIds} />
               )}
@@ -463,7 +463,7 @@ function BracketMatchCard({
           )}
 
           {match.player1_id && match.player2_id && (
-            <div className="flex justify-center">
+            <div className="flex">
               {isPublished && (
                 <SetResultDialog
                   match={match}
