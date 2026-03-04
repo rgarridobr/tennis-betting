@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/ui/combobox';
-import { Pencil, Trophy, CheckCircle2, AlertCircle, X } from 'lucide-react';
+import { Pencil, Trophy, CheckCircle2, AlertCircle, X, Trash2 } from 'lucide-react';
 
 // ==================== HELPER FUNCTIONS ====================
 
@@ -373,6 +373,7 @@ export function SetResultDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [showConfirmFinish, setShowConfirmFinish] = useState(false);
+  const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -386,6 +387,7 @@ export function SetResultDialog({
       setError(null);
       setSuccess(false);
       setShowConfirmFinish(false);
+      setShowConfirmClear(false);
     }
   }, [open, match]);
 
@@ -393,20 +395,18 @@ export function SetResultDialog({
     setError(null);
     setSuccess(false);
 
-    if (!confirm('Tem certeza que deseja limpar o resultado desta partida? Isso removerá o vencedor das rodadas seguintes.')) {
-      return;
-    }
-
     startTransition(async () => {
       const result = await clearMatchResultAction(match.id, tournamentId);
       if (result.success) {
         setSuccess(true);
+        setShowConfirmClear(false);
         setTimeout(() => {
           setOpen(false);
           setSuccess(false);
         }, 1000);
       } else {
         setError(result.error || 'Erro ao limpar resultado');
+        setShowConfirmClear(false);
       }
     });
   }
@@ -572,7 +572,7 @@ export function SetResultDialog({
               <Button
                 type="button"
                 variant="outline"
-                onClick={handleClearResult}
+                onClick={() => setShowConfirmClear(true)}
                 disabled={isPending || success}
                 className="w-full h-12 rounded-2xl font-bold border-2 text-red-600 border-red-100 hover:bg-red-50 hover:border-red-200"
               >
@@ -581,6 +581,36 @@ export function SetResultDialog({
             )}
           </div>
         </form>
+
+        <Dialog open={showConfirmClear} onOpenChange={setShowConfirmClear}>
+          <DialogContent className="rounded-[2rem] border-none shadow-2xl max-w-md">
+            <DialogHeader className="pt-4">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
+                <Trash2 className="w-8 h-8 text-red-600" />
+              </div>
+              <DialogTitle className="text-2xl font-black text-center text-slate-900">Limpar Resultado?</DialogTitle>
+              <DialogDescription className="text-center text-slate-500 font-medium px-4">
+                Tem certeza que deseja limpar o resultado desta partida? Isso removerá o vencedor das rodadas
+                seguintes.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex flex-col sm:flex-row gap-3 p-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowConfirmClear(false)}
+                className="flex-1 rounded-xl font-bold h-12 border-2"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => handleClearResult()}
+                className="flex-1 rounded-xl font-black h-12 bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-100"
+              >
+                Sim
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <Dialog open={showConfirmFinish} onOpenChange={setShowConfirmFinish}>
           <DialogContent className="rounded-[2rem] border-none shadow-2xl max-w-md">
