@@ -248,8 +248,19 @@ export function TournamentBracket({
                         const pred1 = localPredictions[m1?.id]?.winnerId;
                         const pred2 = localPredictions[m2?.id]?.winnerId;
 
-                        if (pred1) p1 = { id: pred1, ...playersById[pred1] };
-                        if (pred2) p2 = { id: pred2, ...playersById[pred2] };
+                        // Prioritize real players (especially for BYEs or completed matches)
+                        // Fallback to user's predictions for next rounds
+                        if (match.player1_id) {
+                          p1 = { id: match.player1_id, name: match.player1_name, seed: match.player1_seed, type: match.player1_type };
+                        } else if (pred1) {
+                          p1 = { id: pred1, ...playersById[pred1] };
+                        }
+
+                        if (match.player2_id) {
+                          p2 = { id: match.player2_id, name: match.player2_name, seed: match.player2_seed, type: match.player2_type };
+                        } else if (pred2) {
+                          p2 = { id: pred2, ...playersById[pred2] };
+                        }
                       }
 
                       return (
