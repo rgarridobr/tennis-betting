@@ -154,15 +154,21 @@ export async function generateBracket(tournamentId: number): Promise<void> {
     throw new Error('Chaveamento já foi gerado para este torneio')
   }
 
+  const allMatches = []
   for (let round = 1; round <= totalRounds; round++) {
     const matchCount = Math.pow(2, totalRounds - round)
-    const values = Array.from({ length: matchCount }, (_, i) => i + 1)
-    
-    await Promise.all(
-      values.map(pos => 
-        sql`INSERT INTO bracket_matches (tournament_id, round, position, status) VALUES (${tournamentId}, ${round}, ${pos}, 'pending')`
-      )
-    )
+    for (let pos = 1; pos <= matchCount; pos++) {
+      allMatches.push({ round, pos })
+    }
+  }
+
+  // Bulk insert for better performance
+  for (const match of allMatches) {
+    await sql`
+      INSERT INTO bracket_matches (tournament_id, round, position, status)
+      VALUES (${tournamentId}, ${match.round}, ${match.pos}, 'pending')
+      ON CONFLICT (tournament_id, round, position) DO NOTHING
+    `
   }
 }
 

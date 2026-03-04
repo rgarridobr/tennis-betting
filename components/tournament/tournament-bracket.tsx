@@ -197,7 +197,43 @@ export function TournamentBracket({
                       paddingTop: `${paddingTop}px`,
                     }}
                   >
-                    {roundMatches.map((match, matchIdx) => {
+                    {Array.from({ length: Math.pow(2, maxRound - round) }).map((_, matchIdx) => {
+                      const position = matchIdx + 1;
+                      const match = matchesMap[`${round}-${position}`];
+
+                      if (!match) {
+                        return (
+                          <div key={`missing-${round}-${position}`} className="relative flex items-center" style={{ height: `${CARD_HEIGHT}px` }}>
+                            <div className="bg-rose-50 border-2 border-rose-200 rounded-2xl w-full p-4 flex flex-col items-center justify-center text-rose-600 gap-1 shadow-sm">
+                              <AlertCircle className="w-5 h-5" />
+                              <p className="text-[10px] font-black uppercase tracking-widest text-center">Confronto ausente</p>
+                              <p className="text-[8px] font-bold text-center opacity-70">ERRO DE CHAVEAMENTO</p>
+                            </div>
+                            {roundIdx < rounds.length - 1 && (
+                              <div
+                                className="absolute -right-24 top-1/2 w-24 pointer-events-none"
+                                style={{
+                                  height: `${verticalGap / 2 + CARD_HEIGHT / 2 + 2}px`,
+                                  top: matchIdx % 2 === 0 ? '50%' : 'auto',
+                                  bottom: matchIdx % 2 === 0 ? 'auto' : '50%',
+                                  borderRight: '2px solid rgb(226, 232, 240)',
+                                  borderTop: matchIdx % 2 === 0 ? '2px solid rgb(226, 232, 240)' : 'none',
+                                  borderBottom: matchIdx % 2 !== 0 ? '2px solid rgb(226, 232, 240)' : 'none',
+                                  borderRadius: matchIdx % 2 === 0 ? '0 12px 0 0' : '0 0 12px 0',
+                                }}
+                              >
+                                <div
+                                  className={cn(
+                                    'absolute w-1/2 h-[2px] bg-slate-200',
+                                    matchIdx % 2 === 0 ? 'top-0 left-0' : 'bottom-0 left-0',
+                                  )}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+
                       let p1 = null;
                       let p2 = null;
 
