@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import type { BracketMatch } from '@/lib/data'
+import type { BracketMatch, Player } from '@/lib/data'
 import { makePredictionAction } from '@/lib/actions/predictions'
-import { ROUND_POINTS, getMatchPoints } from '@/lib/data'
+import { getMatchPoints } from '@/lib/data'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Trophy, Check, ChevronDown, ChevronUp, Loader2, X } from 'lucide-react'
@@ -20,23 +20,79 @@ interface MatchListProps {
 }
 
 export function MatchList({
-  matches, userId, tournamentId, predictions, canMakePredictions, roundNames,
+  matches, userId, tournamentId, predictions: initialPredictions, canMakePredictions, roundNames,
   tournamentCategory = 'GRAND_SLAM', tournamentSize = 128
 }: MatchListProps) {
+  const [predictions, setPredictions] = useState<Record<number, { winnerId: number; score?: string }>>(initialPredictions)
+
+  // Group matches by round and position for easy lookup
+  const matchesMap: Record<string, BracketMatch> = {}
   const matchesByRound: Record<number, BracketMatch[]> = {}
   for (const m of matches) {
+    matchesMap[`${m.round}-${m.position}`] = m
     if (!matchesByRound[m.round]) matchesByRound[m.round] = []
     matchesByRound[m.round].push(m)
   }
 
   const rounds = Object.keys(matchesByRound).map(Number).sort((a, b) => a - b)
+  const maxRound = rounds.length > 0 ? Math.max(...rounds) : 0
+
+  // Map of player ID to player details
+  const playersById: Record<number, { name: string; seed: number | null; type: string }> = {}
+  for (const m of matches) {
+    if (m.player1_id) playersById[m.player1_id] = { name: m.player1_name!, seed: m.player1_seed_val, type: m.player1_type }
+    if (m.player2_id) playersById[m.player2_id] = { name: m.player2_name!, seed: m.player2_seed_val, type: m.player2_type }
+  }
+
+  const handlePredictionUpdate = (matchId: number, winnerId: number) => {
+    setPredictions(prev => {
+      const next = { ...prev }
+      next[matchId] = { winnerId }
+
+      // Cascade clearing similar to bracket view
+      const match = matches.find(m => m.id === matchId)
+      if (match && match.round < maxRound) {
+        let currentRound = match.round
+        let currentPos = match.position
+
+        while (currentRound < maxRound) {
+          const nextRound = currentRound + 1
+          const nextPos = Math.ceil(currentPos / 2)
+          const nextMatch = matchesMap[`${nextRound}-${nextPos}`]
+          if (!nextMatch) break
+
+          if (next[nextMatch.id]) {
+            delete next[nextMatch.id]
+          }
+          currentRound = nextRound
+          currentPos = nextPos
+        }
+      }
+      return next
+    })
+  }
 
   return (
     <div className="space-y-6">
       {rounds.map(round => {
         const roundMatches = matchesByRound[round]
-        const hasAnyPlayers = roundMatches.some(m => m.player1_id || m.player2_id)
-        if (!hasAnyPlayers) return null
+
+        // A match is visible if it has players in DB OR if previous round matches have predictions
+        const visibleMatches = roundMatches.filter(m => {
+          if (m.player1_id || m.player2_id) return true
+          if (round === 1) return false
+
+          const prevRound = round - 1
+          const m1 = matchesMap[`${prevRound}-${m.position * 2 - 1}`]
+          const m2 = matchesMap[`${prevRound}-${m.position * 2}`]
+
+          const p1_exists = m.player1_id || predictions[m1?.id]?.winnerId
+          const p2_exists = m.player2_id || predictions[m2?.id]?.winnerId
+
+          return p1_exists || p2_exists
+        })
+
+        if (visibleMatches.length === 0) return null
 
         return (
           <RoundSection
@@ -44,12 +100,15 @@ export function MatchList({
             round={round}
             totalRounds={rounds.length}
             roundName={roundNames[round] || `Rodada ${round}`}
-            matches={roundMatches}
+            matches={visibleMatches}
+            matchesMap={matchesMap}
+            playersById={playersById}
             userId={userId}
             tournamentId={tournamentId}
             predictions={predictions}
             canMakePredictions={canMakePredictions}
             category={tournamentCategory}
+            onPredictionUpdate={handlePredictionUpdate}
           />
         )
       })}
@@ -58,19 +117,22 @@ export function MatchList({
 }
 
 function RoundSection({
-  round, totalRounds, roundName, matches, userId, tournamentId, predictions, canMakePredictions, category
+  round, totalRounds, roundName, matches, matchesMap, playersById, userId, tournamentId, predictions, canMakePredictions, category, onPredictionUpdate
 }: {
   round: number
   totalRounds: number
   roundName: string
   matches: BracketMatch[]
+  matchesMap: Record<string, BracketMatch>
+  playersById: Record<number, any>
   userId: number
   tournamentId: number
   predictions: Record<number, { winnerId: number; score?: string }>
   canMakePredictions: boolean
   category: string
+  onPredictionUpdate: (matchId: number, winnerId: number) => void
 }) {
-  const visibleMatches = matches.filter(m => m.player1_id || m.player2_id)
+  const visibleMatches = matches
   const [expanded, setExpanded] = useState(visibleMatches.some(m => m.status !== 'completed'))
   const completedCount = visibleMatches.filter(m => m.status === 'completed').length
   const points = getMatchPoints(category, round, totalRounds)
@@ -101,11 +163,14 @@ function RoundSection({
             <MatchCard
               key={match.id}
               match={match}
+              matchesMap={matchesMap}
+              playersById={playersById}
               userId={userId}
               tournamentId={tournamentId}
-              currentPrediction={predictions[match.id] || null}
+              predictions={predictions}
               canMakePredictions={canMakePredictions}
               points={points}
+              onPredictionUpdate={onPredictionUpdate}
             />
           ))}
         </div>
@@ -115,29 +180,60 @@ function RoundSection({
 }
 
 function MatchCard({
-  match, userId, tournamentId, currentPrediction, canMakePredictions, points
+  match, matchesMap, playersById, userId, tournamentId, predictions, canMakePredictions, points, onPredictionUpdate
 }: {
   match: BracketMatch
+  matchesMap: Record<string, BracketMatch>
+  playersById: Record<number, any>
   userId: number
   tournamentId: number
-  currentPrediction: { winnerId: number; score?: string } | null
+  predictions: Record<number, { winnerId: number; score?: string }>
   canMakePredictions: boolean
   points: number
+  onPredictionUpdate: (matchId: number, winnerId: number) => void
 }) {
-  const [selected, setSelected] = useState<number | null>(currentPrediction?.winnerId || null)
   const [isPending, startTransition] = useTransition()
+  const currentPrediction = predictions[match.id] || null
 
   const isCompleted = match.status === 'completed'
-  const canPredict = canMakePredictions && !isCompleted && match.player1_id && match.player2_id
+
+  let p1: any = null
+  let p2: any = null
+
+  if (match.round === 1) {
+    p1 = { id: match.player1_id, name: match.player1_name, seed: match.player1_seed_val, type: match.player1_type }
+    p2 = { id: match.player2_id, name: match.player2_name, seed: match.player2_seed_val, type: match.player2_type }
+  } else {
+    const prevRound = match.round - 1
+    const m1 = matchesMap[`${prevRound}-${match.position * 2 - 1}`]
+    const m2 = matchesMap[`${prevRound}-${match.position * 2}`]
+
+    const pred1 = predictions[m1?.id]?.winnerId
+    const pred2 = predictions[m2?.id]?.winnerId
+
+    if (match.player1_id) {
+      p1 = { id: match.player1_id, name: match.player1_name, seed: match.player1_seed_val, type: match.player1_type }
+    } else if (pred1) {
+      p1 = { id: pred1, ...playersById[pred1] }
+    }
+
+    if (match.player2_id) {
+      p2 = { id: match.player2_id, name: match.player2_name, seed: match.player2_seed_val, type: match.player2_type }
+    } else if (pred2) {
+      p2 = { id: pred2, ...playersById[pred2] }
+    }
+  }
+
+  const canPredict = canMakePredictions && !isCompleted && p1?.id && p2?.id
 
   function handlePrediction(playerId: number) {
     if (!canPredict || isPending) return
-    setSelected(playerId)
+    onPredictionUpdate(match.id, playerId)
     startTransition(async () => {
       try {
         await makePredictionAction(userId, match.id, playerId, tournamentId)
       } catch {
-        setSelected(currentPrediction?.winnerId || null)
+        // We could revert on failure, but for now we trust the server action
       }
     })
   }
@@ -155,40 +251,40 @@ function MatchCard({
 
       <CardContent className="p-0">
         <PlayerRow
-          playerName={match.player1_name}
-          seed={match.player1_seed}
-          type={match.player1_type}
-          playerId={match.player1_id}
-          isWinner={isCompleted && match.winner_id === match.player1_id}
-          isSelected={selected === match.player1_id}
-          isPredicted={currentPrediction?.winnerId === match.player1_id}
+          playerName={p1?.name || null}
+          seed={p1?.seed || null}
+          type={p1?.type}
+          playerId={p1?.id || null}
+          isWinner={isCompleted && match.winner_id === p1?.id}
+          isSelected={currentPrediction?.winnerId === p1?.id}
+          isPredicted={currentPrediction?.winnerId === p1?.id}
           isCompleted={isCompleted}
           winnerId={match.winner_id}
           canPredict={!!canPredict}
           isPending={isPending}
           points={points}
-          onSelect={() => match.player1_id && handlePrediction(match.player1_id)}
-          isPlaceholder={!match.player1_id && match.player1_type !== 'BYE' && match.player1_type !== 'PLAYER'}
+          onSelect={() => p1?.id && handlePrediction(p1.id)}
+          isPlaceholder={!p1?.id && p1?.type !== 'BYE' && p1?.type !== 'PLAYER'}
         />
         <div className="border-t border-slate-200" />
         <PlayerRow
-          playerName={match.player2_name}
-          seed={match.player2_seed}
-          type={match.player2_type}
-          playerId={match.player2_id}
-          isWinner={isCompleted && match.winner_id === match.player2_id}
-          isSelected={selected === match.player2_id}
-          isPredicted={currentPrediction?.winnerId === match.player2_id}
+          playerName={p2?.name || null}
+          seed={p2?.seed || null}
+          type={p2?.type}
+          playerId={p2?.id || null}
+          isWinner={isCompleted && match.winner_id === p2?.id}
+          isSelected={currentPrediction?.winnerId === p2?.id}
+          isPredicted={currentPrediction?.winnerId === p2?.id}
           isCompleted={isCompleted}
           winnerId={match.winner_id}
           canPredict={!!canPredict}
           isPending={isPending}
           points={points}
-          onSelect={() => match.player2_id && handlePrediction(match.player2_id)}
-          isPlaceholder={!match.player2_id && match.player2_type !== 'BYE' && match.player2_type !== 'PLAYER'}
+          onSelect={() => p2?.id && handlePrediction(p2.id)}
+          isPlaceholder={!p2?.id && p2?.type !== 'BYE' && p2?.type !== 'PLAYER'}
         />
 
-        {!!canPredict && !selected && (
+        {!!canPredict && !currentPrediction?.winnerId && (
           <div className="px-4 py-2 bg-emerald-50 border-t border-emerald-100">
             <p className="text-xs text-emerald-700 text-center">
               Clique no jogador que você acha que vai vencer
@@ -196,7 +292,7 @@ function MatchCard({
           </div>
         )}
 
-        {!!canPredict && selected && !isPending && (
+        {!!canPredict && currentPrediction?.winnerId && !isPending && (
           <div className="px-4 py-2 bg-emerald-50 border-t border-emerald-100">
             <p className="text-xs text-emerald-700 text-center flex items-center justify-center gap-1">
               <Check className="w-3 h-3" />
