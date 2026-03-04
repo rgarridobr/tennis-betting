@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useTransition } from 'react';
 import type { BracketMatch, Player } from '@/lib/data';
-import { setMatchPlayersAction, setMatchResultAction, updatePlaceholderPlayerAction } from '@/lib/actions/admin';
+import { setMatchPlayersAction, setMatchResultAction, updatePlaceholderPlayerAction, clearMatchResultAction } from '@/lib/actions/admin';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -389,6 +389,28 @@ export function SetResultDialog({
     }
   }, [open, match]);
 
+  function handleClearResult() {
+    setError(null);
+    setSuccess(false);
+
+    if (!confirm('Tem certeza que deseja limpar o resultado desta partida? Isso removerá o vencedor das rodadas seguintes.')) {
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await clearMatchResultAction(match.id, tournamentId);
+      if (result.success) {
+        setSuccess(true);
+        setTimeout(() => {
+          setOpen(false);
+          setSuccess(false);
+        }, 1000);
+      } else {
+        setError(result.error || 'Erro ao limpar resultado');
+      }
+    });
+  }
+
   function handleSubmit(e?: React.FormEvent<HTMLFormElement>) {
     if (e) e.preventDefault();
     setError(null);
@@ -537,13 +559,27 @@ export function SetResultDialog({
             </div>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full h-14 rounded-2xl font-black text-lg bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-100"
-            disabled={isPending || success}
-          >
-            {isPending ? 'Salvando...' : success ? 'Sucesso!' : 'Confirmar Resultado'}
-          </Button>
+          <div className="flex flex-col gap-3">
+            <Button
+              type="submit"
+              className="w-full h-14 rounded-2xl font-black text-lg bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-100"
+              disabled={isPending || success}
+            >
+              {isPending ? 'Salvando...' : success ? 'Sucesso!' : 'Confirmar Resultado'}
+            </Button>
+
+            {match.status === 'completed' && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClearResult}
+                disabled={isPending || success}
+                className="w-full h-12 rounded-2xl font-bold border-2 text-red-600 border-red-100 hover:bg-red-50 hover:border-red-200"
+              >
+                Limpar Resultado
+              </Button>
+            )}
+          </div>
         </form>
 
         <Dialog open={showConfirmFinish} onOpenChange={setShowConfirmFinish}>

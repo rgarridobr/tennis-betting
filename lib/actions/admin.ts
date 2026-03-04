@@ -7,6 +7,7 @@ import {
   generateBracket,
   setMatchPlayers,
   setMatchResult,
+  clearMatchResult,
   createPlayer,
   deletePlayer,
   updatePlayer,
@@ -177,7 +178,7 @@ export async function setMatchPlayersAction(
   tournamentId: number
 ) {
   await requireAdmin()
-  await setMatchPlayers(matchId, player1, player2)
+  await setMatchPlayers(matchId, player1, player2, tournamentId)
   revalidatePath(`/admin/torneios/${tournamentId}`)
   revalidatePath(`/torneio/${tournamentId}`)
   return { success: true }
@@ -247,7 +248,7 @@ export async function updatePlaceholderPlayerAction(
   tournamentId: number
 ) {
   await requireAdmin()
-  await updatePlaceholderPlayer(matchId, slot, playerId)
+  await updatePlaceholderPlayer(matchId, slot, playerId, tournamentId)
   revalidatePath(`/admin/torneios/${tournamentId}`)
   revalidatePath(`/torneio/${tournamentId}`)
   return { success: true }
@@ -261,6 +262,23 @@ export async function setMatchResultAction(
 ) {
   await requireAdmin()
   const result = await setMatchResult(matchId, winnerId, score)
+
+  if (result.success) {
+    revalidatePath(`/admin/torneios/${tournamentId}`)
+    revalidatePath(`/torneio/${tournamentId}`)
+    revalidatePath('/ranking')
+    revalidatePath('/dashboard')
+  }
+
+  return result
+}
+
+export async function clearMatchResultAction(
+  matchId: number,
+  tournamentId: number
+) {
+  await requireAdmin()
+  const result = await clearMatchResult(matchId)
 
   if (result.success) {
     revalidatePath(`/admin/torneios/${tournamentId}`)
