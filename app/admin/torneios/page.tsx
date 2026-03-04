@@ -25,15 +25,17 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
   const allTournaments = await getTournaments();
 
   const currentYear = new Date().getFullYear();
+  const currentMonthIndex = new Date().getMonth();
+  const monthToFilter = selectedMonth !== undefined ? parseInt(selectedMonth) : currentMonthIndex;
 
   // Filter out tournaments from previous years if that's what's intended
   // "5 - apenas do ano atual, os dos anos anteriores nao precisam ser listados"
-  const tournaments = allTournaments.filter(t => parseDate(t.start_date).getFullYear() === currentYear);
+  const tournaments = allTournaments.filter((t) => parseDate(t.start_date).getFullYear() === currentYear);
 
   // Group tournaments by month for the sidebar
   const monthsWithEvents = Array.from({ length: 12 }, (_, i) => {
     const monthIndex = i;
-    const count = tournaments.filter(t => {
+    const count = tournaments.filter((t) => {
       const date = parseDate(t.start_date);
       return date.getFullYear() === currentYear && date.getMonth() === monthIndex;
     }).length;
@@ -41,22 +43,24 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
     return {
       index: monthIndex,
       name: format(new Date(currentYear, monthIndex), 'MMMM', { locale: ptBR }),
-      count
+      count,
     };
-  }).filter(m => m.count > 0);
+  }).filter((m) => m.count > 0);
 
-  const filteredTournaments = selectedMonth !== undefined
-    ? tournaments.filter(t => {
-        const date = parseDate(t.start_date);
-        return date.getFullYear() === currentYear && date.getMonth() === parseInt(selectedMonth);
-      })
-    : tournaments;
+  const filteredTournaments = tournaments.filter((t) => {
+    const date = parseDate(t.start_date);
+    return date.getFullYear() === currentYear && date.getMonth() === monthToFilter;
+  });
 
   const standbyTournaments = filteredTournaments.filter((t) => t.status === 'STANDBY' || t.status === 'draft');
   const upcomingTournaments = filteredTournaments.filter((t) => t.status === 'UPCOMING' || t.status === 'upcoming');
-  const openTournaments = filteredTournaments.filter((t) => t.status === 'OPEN' || t.status === 'active' || t.status === 'published');
+  const openTournaments = filteredTournaments.filter(
+    (t) => t.status === 'OPEN' || t.status === 'active' || t.status === 'published',
+  );
   const inProgressTournaments = filteredTournaments.filter((t) => t.status === 'LOCKED' || t.status === 'IN_PROGRESS');
-  const completedTournaments = filteredTournaments.filter((t) => t.status === 'FINISHED' || t.status === 'finished' || t.status === 'completed');
+  const completedTournaments = filteredTournaments.filter(
+    (t) => t.status === 'FINISHED' || t.status === 'finished' || t.status === 'completed',
+  );
 
   const statusLabels: Record<string, string> = {
     STANDBY: 'Standby (Interno)',
@@ -96,44 +100,9 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
 
   return (
     <>
-      <PageHero title="Gerenciar Torneios" subtitle="Crie, edite e acompanhe seus campeonatos para o bolão de tênis">
-        <div className="flex flex-wrap items-center gap-4 md:grid md:grid-cols-2 lg:flex">
-          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl shrink-0">
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-slate-500/20 flex items-center justify-center border border-slate-500/30">
-                <ClipboardList className="w-6 h-6 text-slate-400" />
-              </div>
-              <div>
-                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Standby</p>
-                <p className="text-2xl font-black text-white">{standbyTournaments.length}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl shrink-0">
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
-                <Zap className="w-6 h-6 text-emerald-400" />
-              </div>
-              <div>
-                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Abertos</p>
-                <p className="text-2xl font-black text-white">{openTournaments.length}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl shrink-0">
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
-                <Calendar className="w-6 h-6 text-amber-400" />
-              </div>
-              <div>
-                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Em breve</p>
-                <p className="text-2xl font-black text-white">{upcomingTournaments.length}</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </PageHero>
-
+      <PageHero title="Gerenciar Torneios" subtitle="Crie, edite e acompanhe seus campeonatos para o bolão de tênis"/>
+ 
+ 
       <main className="container mx-auto px-4 md:px-32 py-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
@@ -166,42 +135,48 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
                 ) : (
                   <>
                     {monthsWithEvents.map((m) => {
-                      const isSelected = selectedMonth === m.index.toString();
+                      const isSelected = monthToFilter === m.index;
                       return (
                         <Link
                           key={m.index}
                           href={isSelected ? '/admin/torneios' : `/admin/torneios?month=${m.index}`}
                           scroll={false}
                           className={cn(
-                            "flex items-center justify-between p-4 rounded-2xl transition-all group border-2",
+                            'flex items-center justify-between p-4 rounded-2xl transition-all group border-2',
                             isSelected
-                              ? "bg-emerald-50 border-emerald-200 text-emerald-900 shadow-md"
-                              : "bg-white border-transparent hover:border-slate-100 hover:bg-slate-50 text-slate-600"
+                              ? 'bg-emerald-50 border-emerald-200 text-emerald-900 shadow-md'
+                              : 'bg-white border-transparent hover:border-slate-100 hover:bg-slate-50 text-slate-600',
                           )}
                         >
                           <div className="flex items-center gap-3">
-                            <div className={cn(
-                              "w-2 h-2 rounded-full transition-all",
-                              isSelected ? "bg-emerald-500" : "bg-slate-300 group-hover:bg-slate-400"
-                            )} />
-                            <span className={cn(
-                              "font-bold capitalize",
-                              isSelected ? "text-emerald-900" : "text-slate-600"
-                            )}>
+                            <div
+                              className={cn(
+                                'w-2 h-2 rounded-full transition-all',
+                                isSelected ? 'bg-emerald-500' : 'bg-slate-300 group-hover:bg-slate-400',
+                              )}
+                            />
+                            <span
+                              className={cn('font-bold capitalize', isSelected ? 'text-emerald-900' : 'text-slate-600')}
+                            >
                               {m.name}, {currentYear}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Badge variant={isSelected ? "default" : "secondary"} className={cn(
-                              "rounded-lg font-black",
-                              isSelected ? "bg-emerald-500" : "bg-slate-100 text-slate-500"
-                            )}>
+                            <Badge
+                              variant={isSelected ? 'default' : 'secondary'}
+                              className={cn(
+                                'rounded-lg font-black',
+                                isSelected ? 'bg-emerald-500' : 'bg-slate-100 text-slate-500',
+                              )}
+                            >
                               {m.count} {m.count === 1 ? 'evento' : 'eventos'}
                             </Badge>
-                            <ChevronRight className={cn(
-                              "w-4 h-4 transition-transform",
-                              isSelected ? "rotate-90 text-emerald-500" : "text-slate-300 group-hover:translate-x-1"
-                            )} />
+                            <ChevronRight
+                              className={cn(
+                                'w-4 h-4 transition-transform',
+                                isSelected ? 'rotate-90 text-emerald-500' : 'text-slate-300 group-hover:translate-x-1',
+                              )}
+                            />
                           </div>
                         </Link>
                       );
@@ -218,20 +193,12 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
               <Card className="border-0 shadow-md rounded-[2.5rem] bg-slate-50/50 border-2 border-dashed border-slate-200">
                 <CardContent className="py-20 text-center">
                   <Trophy className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                  <h2 className="text-xl font-semibold text-slate-900 mb-2">
-                    {selectedMonth !== undefined ? 'Nenhum torneio neste mês' : `Nenhum torneio em ${currentYear}`}
-                  </h2>
-                  <p className="text-slate-500 mb-8">
-                    {selectedMonth !== undefined
-                      ? 'Tente outro mês ou limpe o filtro para ver todos.'
-                      : 'Crie seu primeiro Grand Slam para começar!'}
-                  </p>
+                  <h2 className="text-xl font-semibold text-slate-900 mb-2">Nenhum torneio neste mês</h2>
+                  <p className="text-slate-500 mb-8">Tente outro mês ou crie um novo torneio para começar!</p>
                   <div className="flex justify-center gap-4">
-                    {selectedMonth !== undefined && (
-                      <Button variant="outline" asChild size="lg" className="rounded-2xl font-black">
-                        <Link href="/admin/torneios">Ver Todos</Link>
-                      </Button>
-                    )}
+                    <Button variant="outline" asChild size="lg" className="rounded-2xl font-black">
+                      <Link href="/admin/torneios">Ver Todos</Link>
+                    </Button>
                     <Button
                       asChild
                       size="lg"
@@ -248,6 +215,8 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
             ) : (
               <div className="space-y-12">
                 {[
+                  { title: 'Abertos para Apostas', list: openTournaments, icon: Zap, color: 'text-emerald-500' },
+
                   {
                     title: 'Calendário (Standby)',
                     list: standbyTournaments,
@@ -255,8 +224,12 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
                     color: 'text-slate-500',
                   },
                   { title: 'Próximos (Visíveis)', list: upcomingTournaments, icon: Calendar, color: 'text-amber-500' },
-                  { title: 'Abertos para Apostas', list: openTournaments, icon: Zap, color: 'text-emerald-500' },
-                  { title: 'Em Andamento / Bloqueados', list: inProgressTournaments, icon: Zap, color: 'text-blue-500' },
+                  {
+                    title: 'Em Andamento / Bloqueados',
+                    list: inProgressTournaments,
+                    icon: Zap,
+                    color: 'text-blue-500',
+                  },
                   { title: 'Finalizados', list: completedTournaments, icon: Trophy, color: 'text-slate-400' },
                 ]
                   .filter((group) => group.list.length > 0)
@@ -279,7 +252,9 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
                               className={`h-3 ${
                                 tournament.status === 'STANDBY' || tournament.status === 'draft'
                                   ? 'bg-slate-400'
-                                  : tournament.status === 'OPEN' || tournament.status === 'active' || tournament.status === 'published'
+                                  : tournament.status === 'OPEN' ||
+                                      tournament.status === 'active' ||
+                                      tournament.status === 'published'
                                     ? 'bg-emerald-500'
                                     : tournament.status === 'UPCOMING' || tournament.status === 'upcoming'
                                       ? 'bg-amber-400'
@@ -300,11 +275,19 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
                                   </p>
                                 </div>
                                 <div className="flex flex-col items-end gap-2 shrink-0">
-                                  <Badge className={`${statusColors[tournament.status] || 'bg-slate-100 text-slate-600'} border-none font-black uppercase text-[10px] tracking-wider px-3 py-1 rounded-full whitespace-nowrap`}>
+                                  <Badge
+                                    className={`${statusColors[tournament.status] || 'bg-slate-100 text-slate-600'} border-none font-black uppercase text-[10px] tracking-wider px-3 py-1 rounded-full whitespace-nowrap`}
+                                  >
                                     {statusLabels[tournament.status] || tournament.status}
                                   </Badge>
-                                  {(tournament.status === 'STANDBY' || tournament.status === 'draft' || tournament.status === 'UPCOMING' || tournament.status === 'upcoming') && (
-                                    <DeleteTournamentButton tournamentId={tournament.id} tournamentName={tournament.name} />
+                                  {(tournament.status === 'STANDBY' ||
+                                    tournament.status === 'draft' ||
+                                    tournament.status === 'UPCOMING' ||
+                                    tournament.status === 'upcoming') && (
+                                    <DeleteTournamentButton
+                                      tournamentId={tournament.id}
+                                      tournamentName={tournament.name}
+                                    />
                                   )}
                                 </div>
                               </div>
@@ -313,7 +296,9 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
                                 <span className="px-4 py-1.5 bg-slate-100 rounded-full">
                                   {surfaceEmojis[tournament.surface] || tournament.surface}
                                 </span>
-                                <span className="px-4 py-1.5 bg-slate-100 rounded-full">{tournament.size} jogadores</span>
+                                <span className="px-4 py-1.5 bg-slate-100 rounded-full">
+                                  {tournament.size} jogadores
+                                </span>
                                 <span className="px-4 py-1.5 bg-emerald-50 text-emerald-700 rounded-full flex items-center gap-1.5">
                                   <Calendar className="w-3.5 h-3.5" />
                                   {format(parseDate(tournament.start_date), "dd 'de' MMM", { locale: ptBR })}

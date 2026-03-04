@@ -80,9 +80,10 @@ export async function createTournamentAction(formData: FormData) {
     revalidatePath('/dashboard')
     
     return { success: true, tournamentId }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating tournament:", error)
-    return { success: false, error: 'Erro ao criar torneio. Tente novamente.' }
+    const message = error.message || 'Erro ao criar torneio. Tente novamente.'
+    return { success: false, error: message }
   }
 }
 

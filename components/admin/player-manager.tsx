@@ -46,7 +46,7 @@ export function PlayerManager({ players }: Props) {
   const filtered = players.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <Card className="border-0 shadow-sm">
+    <Card className="border-0 shadow-sm w-full">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -59,7 +59,7 @@ export function PlayerManager({ players }: Props) {
                 <p className="text-xs text-slate-500 mt-0.5">{players.length} jogadores no sistema</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 mt-3 sm:mt-0">
+            <div className="flex flex-wrap items-center gap-2 mt-3 sm:mt-0">
               <CollapsibleTrigger asChild>
                 <Button
                   variant="outline"
@@ -84,7 +84,7 @@ export function PlayerManager({ players }: Props) {
                 placeholder="Buscar jogador..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
+                className="w-full pl-9"
               />
             </div>
 
@@ -124,11 +124,11 @@ function AddPlayersDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="gap-1.5">
+        <Button size="sm" className="gap-1.5 w-full sm:w-auto">
           <UserPlus className="w-4 h-4" /> Adicionar
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-full sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Adicionar Jogadores</DialogTitle>
         </DialogHeader>
@@ -238,7 +238,7 @@ function EditPlayerDialog({ player }: { player: Player }) {
           <Pencil className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-full sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Editar Jogador</DialogTitle>
           <DialogDescription>Altere as informações do jogador conforme necessário.</DialogDescription>
@@ -298,7 +298,7 @@ function DeletePlayerDialog({ player }: { player: Player }) {
           <Trash2 className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-full sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Excluir Jogador</DialogTitle>
           <DialogDescription>
@@ -367,7 +367,7 @@ function ImportPlayersForm({ onSuccess }: { onSuccess: () => void }) {
           name="players"
           rows={10}
           placeholder={`Cole a lista no formato:\nCarlos Alcaraz (ESP)\nJannik Sinner (ITA)\nNovak Djokovic (SRB)\n...\n\nOu apenas nomes:\nCarlos Alcaraz\nJannik Sinner\nNovak Djokovic`}
-          className="font-mono text-xs max-h-50"
+          className="font-mono text-xs max-h-50 w-full"
           required
         />
         <p className="text-xs text-slate-400">

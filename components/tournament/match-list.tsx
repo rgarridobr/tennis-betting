@@ -148,7 +148,7 @@ function RoundSection({
       >
         <div className="flex items-center gap-3">
           <h3 className="text-lg font-semibold text-slate-900">{roundName}</h3>
-          <Badge variant="outline" className="text-xs">{visibleMatches.length} partidas</Badge>
+          <Badge variant="outline" className="text-xs">{visibleMatches.length} partida {visibleMatches.length === 1 ? 's' : ''}</Badge>
           <Badge className="bg-emerald-100 text-emerald-700 text-xs">{points} pts cada</Badge>
           {completedCount > 0 && (
             <span className="text-xs text-emerald-600">{completedCount} finalizadas</span>

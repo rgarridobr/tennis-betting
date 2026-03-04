@@ -21,9 +21,6 @@ interface Props {
 
 export function BracketRoundManager({ round, roundName, matches, players, tournamentId, tournamentStatus, isFinalRound, assignedPlayerIds }: Props) {
   const [expanded, setExpanded] = useState(round === 1)
-  const completed = matches.filter(m => m.status === 'completed').length
-  const scheduled = matches.filter(m => m.status === 'scheduled').length
-  const pending = matches.filter(m => m.status === 'pending').length
 
   return (
     <Card className="border-0 shadow-sm">
@@ -34,14 +31,9 @@ export function BracketRoundManager({ round, roundName, matches, players, tourna
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <CardTitle className="text-base">{roundName}</CardTitle>
-            <Badge variant="outline" className="text-xs">{matches.length} partidas</Badge>
+            <Badge variant="outline" className="text-xs">{matches.length} partida {matches.length === 1 ? '' : 's'}</Badge>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-xs">
-              {completed > 0 && <span className="text-emerald-600 font-medium">{completed} finalizadas</span>}
-              {scheduled > 0 && <span className="text-blue-600 font-medium">{scheduled} agendadas</span>}
-              {pending > 0 && <span className="text-slate-400 font-medium">{pending} pendentes</span>}
-            </div>
             {expanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
           </div>
         </div>

@@ -119,12 +119,17 @@ export function TournamentBracket({
   }
 
   const isBracketComplete = () => {
-    return matches.every(m => localPredictions[m.id]?.winnerId) &&
-           localPredictions[matches.find(m => m.round === maxRound)?.id || 0]?.score;
+    return matches.every(m => {
+      // Only require predictions for matches that have both players determined
+      const p1 = playersById[m.player1_id!];
+      const p2 = playersById[m.player2_id!];
+      if (!p1 || !p2) return true; // Skip matches without both players set
+      return !!localPredictions[m.id]?.winnerId;
+    });
   };
 
-  const CARD_HEIGHT = 160;
-  const BASE_GAP = 32;
+  const CARD_HEIGHT = 130;
+  const BASE_GAP = isAdmin ? 30 : 1;
 
   return (
     <div className="flex flex-col gap-6">

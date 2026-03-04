@@ -452,9 +452,11 @@ export async function hasTournamentStarted(tournamentId: number): Promise<boolea
   if (tournament) {
     const startDate = new Date(tournament.start_date)
 
-    startDate.setHours(startDate.getHours())
+    // Ajustar para horário de Brasília (UTC-3)
+    const now = new Date()
+    const brasiliaNow = new Date(now.getTime() - 3 * 60 * 60 * 1000)
     
-    if (startDate <= new Date()) {
+    if (startDate <= brasiliaNow) {
       return true
     }
   }

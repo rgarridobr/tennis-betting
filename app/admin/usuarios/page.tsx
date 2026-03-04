@@ -22,32 +22,7 @@ export default async function AdminUsersPage() {
 
   return (
     <>
-      <PageHero title="Gerenciar Usuários" subtitle="Administre os participantes do bolão">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-center gap-4">
-          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl flex-1 min-w-[200px]">
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
-                <Users className="w-6 h-6 text-emerald-400" />
-              </div>
-              <div>
-                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Total</p>
-                <p className="text-2xl font-black text-white">{users.length}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl flex-1 min-w-[200px]">
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
-                <ShieldCheck className="w-6 h-6 text-amber-400" />
-              </div>
-              <div>
-                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Admins</p>
-                <p className="text-2xl font-black text-white">{adminCount}</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </PageHero>
+      <PageHero title="Gerenciar Usuários" subtitle="Administre os participantes do bolão"/> 
 
       <main className="container mx-auto px-4 lg:px-32 py-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
