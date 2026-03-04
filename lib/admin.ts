@@ -1,6 +1,15 @@
 import { sql } from './db'
 import { ROUND_POINTS, getMatchPoints, POINTS_CONFIG } from './data'
 
+function normalizeString(str: string): string {
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .replace(/[^\w\s]/g, '')
+    .replace(/\s+/g, '_')
+}
+
 // ==================== TOURNAMENT MANAGEMENT ====================
 
 export async function createTournament(data: {
@@ -21,18 +30,40 @@ export async function createTournament(data: {
   status?: string
   image_url?: string
 }): Promise<number> {
+  const start = new Date(data.start_date)
+  const year = start.getFullYear()
+
+  // Find matching concept
+  const concepts = await sql`SELECT * FROM tournament_concepts`
+
+  const bestMatch = concepts.find(
+    (c: any) =>
+      normalizeString(c.name) === normalizeString(data.name) ||
+      data.name.toUpperCase().includes(c.code.replace(/_/g, ' ')),
+  )
+
+  const code = bestMatch ? bestMatch.code : normalizeString(data.name)
+  const slug = `${code}-${year}`
+  const conceptId = bestMatch ? bestMatch.id : null
+
+  // Check for duplicate slug
+  const existing = await sql`SELECT id FROM tournaments WHERE slug = ${slug}`
+  if (existing.length > 0) {
+    throw new Error(`Um torneio com este nome para o ano de ${year} já existe (slug: ${slug}).`)
+  }
+
   const result = await sql`
     INSERT INTO tournaments (
-      name, surface, location, start_date, end_date, status,
+      name, slug, surface, location, start_date, end_date, status,
       category, category_custom, format, sets_format, size,
       has_seeds, has_qualifiers, has_wildcards, has_byes,
-      image_url
+      image_url, source, year, tournament_concept_id, needs_review
     )
     VALUES (
-      ${data.name}, ${data.surface}, ${data.location}, ${data.start_date}, ${data.end_date}, ${data.status || 'draft'},
+      ${data.name}, ${slug}, ${data.surface}, ${data.location}, ${data.start_date}, ${data.end_date}, ${data.status || 'draft'},
       ${data.category}, ${data.category_custom || null}, ${data.format}, ${data.sets_format}, ${data.size},
       ${data.has_seeds}, ${data.has_qualifiers}, ${data.has_wildcards}, ${data.has_byes},
-      ${data.image_url || null}
+      ${data.image_url || null}, 'MANUAL', ${year}, ${conceptId}, ${!conceptId}
     )
     RETURNING id
   `
