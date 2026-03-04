@@ -38,6 +38,12 @@ export default async function ManageTournamentPage({ params, searchParams }: Pro
     isRound1Complete(tournamentId)
   ])
 
+  const assignedPlayerIds = new Set<number>();
+  matches.forEach(m => {
+    if (m.player1_id) assignedPlayerIds.add(m.player1_id);
+    if (m.player2_id) assignedPlayerIds.add(m.player2_id);
+  });
+
   const completedMatches = matches.filter(m => m.status === 'completed').length
   const scheduledMatches = matches.filter(m => m.status === 'scheduled').length
   const pendingMatches = matches.filter(m => m.status === 'pending').length
@@ -246,6 +252,7 @@ export default async function ManageTournamentPage({ params, searchParams }: Pro
               isAdmin={true}
               players={players}
               tournamentStatus={tournament.status}
+              assignedPlayerIds={Array.from(assignedPlayerIds)}
             />
           ) : (
             <div className="space-y-6">
@@ -261,6 +268,7 @@ export default async function ManageTournamentPage({ params, searchParams }: Pro
                     tournamentId={tournamentId}
                     tournamentStatus={tournament.status}
                     isFinalRound={round === maxRound}
+                    assignedPlayerIds={Array.from(assignedPlayerIds)}
                   />
                 )
               })}

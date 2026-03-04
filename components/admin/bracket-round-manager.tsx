@@ -16,9 +16,10 @@ interface Props {
   tournamentId: number
   tournamentStatus: string
   isFinalRound?: boolean
+  assignedPlayerIds?: number[]
 }
 
-export function BracketRoundManager({ round, roundName, matches, players, tournamentId, tournamentStatus, isFinalRound }: Props) {
+export function BracketRoundManager({ round, roundName, matches, players, tournamentId, tournamentStatus, isFinalRound, assignedPlayerIds }: Props) {
   const [expanded, setExpanded] = useState(round === 1)
   const completed = matches.filter(m => m.status === 'completed').length
   const scheduled = matches.filter(m => m.status === 'scheduled').length
@@ -57,6 +58,7 @@ export function BracketRoundManager({ round, roundName, matches, players, tourna
                 tournamentId={tournamentId}
                 tournamentStatus={tournamentStatus}
                 isFinalRound={isFinalRound}
+                assignedPlayerIds={assignedPlayerIds}
               />
             ))}
           </div>
@@ -78,6 +80,7 @@ function MatchCard({
   tournamentId: number;
   tournamentStatus: string;
   isFinalRound?: boolean;
+  assignedPlayerIds?: number[];
 }) {
   const hasPlayers = (match.player1_id || match.player1_type !== 'PLAYER') &&
                     (match.player2_id || match.player2_type !== 'PLAYER')
@@ -139,6 +142,7 @@ function MatchCard({
             match={match}
             players={players}
             tournamentId={tournamentId}
+            assignedPlayerIds={assignedPlayerIds}
             trigger={
               <div
                 role="button"
@@ -162,6 +166,7 @@ function MatchCard({
             slot={1}
             players={players}
             tournamentId={tournamentId}
+            assignedPlayerIds={assignedPlayerIds}
             trigger={
               <div className="flex items-center justify-between p-2 rounded-xl cursor-pointer hover:bg-amber-100/50 transition-colors border border-dashed border-amber-300">
                 <div className="flex items-center gap-2 text-sm truncate font-bold text-amber-700">
@@ -190,6 +195,7 @@ function MatchCard({
             match={match}
             players={players}
             tournamentId={tournamentId}
+            assignedPlayerIds={assignedPlayerIds}
             trigger={
               <div
                 role="button"
@@ -213,6 +219,7 @@ function MatchCard({
             slot={2}
             players={players}
             tournamentId={tournamentId}
+            assignedPlayerIds={assignedPlayerIds}
             trigger={
               <div className="flex items-center justify-between p-2 rounded-xl cursor-pointer hover:bg-amber-100/50 transition-colors border border-dashed border-amber-300">
                 <div className="flex items-center gap-2 text-sm truncate font-bold text-amber-700">
@@ -247,15 +254,15 @@ function MatchCard({
       {!isLocked && (
         <div className="mt-4 flex gap-2">
           {isDraft && (
-            <SetPlayersDialog match={match} players={players} tournamentId={tournamentId} />
+            <SetPlayersDialog match={match} players={players} tournamentId={tournamentId} assignedPlayerIds={assignedPlayerIds} />
           )}
           {isPublished && (
             <>
               {(match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD') && !match.player1_id && (
-                <ReplacePlaceholderDialog match={match} slot={1} players={players} tournamentId={tournamentId} />
+                <ReplacePlaceholderDialog match={match} slot={1} players={players} tournamentId={tournamentId} assignedPlayerIds={assignedPlayerIds} />
               )}
               {(match.player2_type === 'QUALIFIER' || match.player2_type === 'WILDCARD') && !match.player2_id && (
-                <ReplacePlaceholderDialog match={match} slot={2} players={players} tournamentId={tournamentId} />
+                <ReplacePlaceholderDialog match={match} slot={2} players={players} tournamentId={tournamentId} assignedPlayerIds={assignedPlayerIds} />
               )}
               {match.player1_id && match.player2_id && (
                 <SetResultDialog match={match} tournamentId={tournamentId} isFinalRound={isFinalRound} />

@@ -17,6 +17,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Combobox } from '@/components/ui/combobox';
 import { Pencil, Trophy, CheckCircle2, AlertCircle, X } from 'lucide-react';
 
 // ==================== HELPER FUNCTIONS ====================
@@ -46,6 +47,7 @@ function SlotConfig({
   seed,
   setSeed,
   players,
+  assignedPlayerIds = [],
 }: {
   label: string;
   type: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE';
@@ -55,7 +57,17 @@ function SlotConfig({
   seed: string;
   setSeed: (value: string) => void;
   players: Player[];
+  assignedPlayerIds?: number[];
 }) {
+  const filteredPlayers = players
+    .filter((p) => !assignedPlayerIds.includes(p.id) || p.id.toString() === playerId)
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const options = filteredPlayers.map((p) => ({
+    value: p.id.toString(),
+    label: p.name,
+  }));
+
   return (
     <div className="space-y-4 bg-slate-50 rounded-2xl border border-slate-100">
       {' '}
@@ -75,18 +87,12 @@ function SlotConfig({
               </button>
             )}
           </div>
-          <Select value={playerId} onValueChange={setPlayerId}>
-            <SelectTrigger className="font-bold rounded-xl border-2">
-              <SelectValue placeholder="Selecione..." />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl max-h-60">
-              {players.map((p) => (
-                <SelectItem key={p.id} value={p.id.toString()}>
-                  {p.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Combobox
+            options={options}
+            value={playerId}
+            onValueChange={setPlayerId}
+            placeholder="Selecione o jogador..."
+          />
         </div>
       )}{' '}
       {type === 'SEED' && (
@@ -135,11 +141,13 @@ export function SetPlayersDialog({
   players,
   tournamentId,
   trigger,
+  assignedPlayerIds,
 }: {
   match: BracketMatch;
   players: Player[];
   tournamentId: number;
   trigger?: React.ReactNode;
+  assignedPlayerIds?: number[];
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -243,6 +251,7 @@ export function SetPlayersDialog({
             seed={p1Seed}
             setSeed={setP1Seed}
             players={players}
+            assignedPlayerIds={assignedPlayerIds}
           />
           <SlotConfig
             label="Lado B"
@@ -253,6 +262,7 @@ export function SetPlayersDialog({
             seed={p2Seed}
             setSeed={setP2Seed}
             players={players}
+            assignedPlayerIds={assignedPlayerIds}
           />
         </div>
         <Button
@@ -273,12 +283,14 @@ export function ReplacePlaceholderDialog({
   players,
   tournamentId,
   trigger,
+  assignedPlayerIds,
 }: {
   match: BracketMatch;
   slot: 1 | 2;
   players: Player[];
   tournamentId: number;
   trigger?: React.ReactNode;
+  assignedPlayerIds?: number[];
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -290,6 +302,15 @@ export function ReplacePlaceholderDialog({
       setPlayerId(slot === 1 ? match.player1_id?.toString() || '' : match.player2_id?.toString() || '');
     }
   }, [open, match, slot]);
+
+  const filteredPlayers = players
+    .filter((p) => !assignedPlayerIds?.includes(p.id) || p.id.toString() === playerId)
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const options = filteredPlayers.map((p) => ({
+    value: p.id.toString(),
+    label: p.name,
+  }));
 
   function handleSubmit() {
     if (!playerId) return;
@@ -321,18 +342,13 @@ export function ReplacePlaceholderDialog({
           <p className="text-sm font-bold text-slate-500">
             Associe um jogador real ao slot de {type === 'QUALIFIER' ? 'Qualifier' : 'Wild Card'}.
           </p>
-          <Select value={playerId} onValueChange={setPlayerId}>
-            <SelectTrigger className="h-12 rounded-xl border-2 font-bold">
-              <SelectValue placeholder="Selecione o jogador" />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl max-h-60">
-              {players.map((p) => (
-                <SelectItem key={p.id} value={p.id.toString()}>
-                  {p.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Combobox
+            options={options}
+            value={playerId}
+            onValueChange={setPlayerId}
+            placeholder="Selecione o jogador..."
+            className="h-12"
+          />
         </div>
         <Button
           onClick={handleSubmit}
