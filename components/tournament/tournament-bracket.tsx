@@ -414,7 +414,7 @@ function BracketMatchCard({
       )}
 
       {isAdmin && !isLocked && !isCompleted && (
-        <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 flex flex-col gap-2">
+        <div className="">
           {isPublished && (
             <div className="flex gap-2">
               {(match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD') && !match.player1_id && (
@@ -428,18 +428,13 @@ function BracketMatchCard({
 
           {match.player1_id && match.player2_id && (
             <div className="flex justify-center">
-              {isPublished ? (
+              {isPublished && (
                 <SetResultDialog
                   match={match}
                   tournamentId={tournamentId}
                   isFinalRound={isFinalRound}
                 />
-              ) : (
-                <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-100 shadow-sm">
-                  <AlertCircle className="w-3 h-3" />
-                  Publique para lançar resultados
-                </div>
-              )}
+              )  }
             </div>
           )}
         </div>

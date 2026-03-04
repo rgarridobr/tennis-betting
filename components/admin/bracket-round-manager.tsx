@@ -73,7 +73,8 @@ function MatchCard({
   players,
   tournamentId,
   tournamentStatus,
-  isFinalRound
+  isFinalRound,
+  assignedPlayerIds
 }: {
   match: BracketMatch;
   players: Player[];
