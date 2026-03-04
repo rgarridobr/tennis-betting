@@ -88,6 +88,7 @@ function MatchCard({
   const isPublished = tournamentStatus === 'active' || tournamentStatus === 'published' || tournamentStatus === 'OPEN'
   const isDraft = tournamentStatus === 'draft' || tournamentStatus === 'STANDBY' || tournamentStatus === 'UPCOMING' || tournamentStatus === 'upcoming'
   const isLocked = tournamentStatus === 'finished' || tournamentStatus === 'completed' || tournamentStatus === 'FINISHED'
+  const canEditPlayers = isDraft && match.round === 1;
 
   const getPlayerDisplay = (playerId: number | null, name: string | null, type: string, seedNum: number | null) => {
     const isPlaceholder = !playerId && type !== 'PLAYER' && type !== 'BYE';
@@ -137,7 +138,7 @@ function MatchCard({
 
       <div className="space-y-2">
         {/* Player 1 */}
-        {isDraft ? (
+        {canEditPlayers ? (
           <SetPlayersDialog
             match={match}
             players={players}
@@ -190,7 +191,7 @@ function MatchCard({
         )}
 
         {/* Player 2 */}
-        {isDraft ? (
+        {canEditPlayers ? (
           <SetPlayersDialog
             match={match}
             players={players}
@@ -253,7 +254,7 @@ function MatchCard({
       {/* Actions */}
       {!isLocked && (
         <div className="mt-4 flex gap-2">
-          {isDraft && (
+          {canEditPlayers && (
             <SetPlayersDialog match={match} players={players} tournamentId={tournamentId} assignedPlayerIds={assignedPlayerIds} />
           )}
           {isPublished && (
