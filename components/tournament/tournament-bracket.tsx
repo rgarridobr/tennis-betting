@@ -413,9 +413,9 @@ function BracketMatchCard({
         </div>
       )}
 
-      {isAdmin && !isLocked && !isCompleted && (
+      {isAdmin && !isLocked && (
         <div className="">
-          {isPublished && (
+          {isPublished && !isCompleted && (
             <div className="flex gap-2">
               {(match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD') && !match.player1_id && (
                 <ReplacePlaceholderDialog match={match} slot={1} players={players || []} tournamentId={tournamentId} assignedPlayerIds={assignedPlayerIds} />
