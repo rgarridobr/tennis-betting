@@ -21,6 +21,7 @@ interface TournamentBracketProps {
   tournamentStatus?: string;
   bracketSubmitted?: boolean;
   hasStarted?: boolean;
+  assignedPlayerIds?: number[];
 }
 
 export function TournamentBracket({
@@ -35,6 +36,7 @@ export function TournamentBracket({
   tournamentStatus = 'published',
   bracketSubmitted = false,
   hasStarted = false,
+  assignedPlayerIds,
 }: TournamentBracketProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [localPredictions, setLocalPredictions] = useState<Record<number, { winnerId: number; score?: string }>>(predictions);
@@ -230,6 +232,7 @@ export function TournamentBracket({
                             tournamentStatus={tournamentStatus}
                             isFinalRound={isFinalRound}
                             onPredict={(winnerId, score) => handlePrediction(match.id, winnerId, score)}
+                            assignedPlayerIds={assignedPlayerIds}
                           />
 
                           {roundIdx < rounds.length - 1 && (
@@ -295,6 +298,7 @@ function BracketMatchCard({
   tournamentStatus?: string;
   isFinalRound?: boolean;
   onPredict: (winnerId: number, score?: string) => void;
+  assignedPlayerIds?: number[];
 }) {
   const isCompleted = match.status === 'completed';
   const isDraft = tournamentStatus === 'draft' || tournamentStatus === 'STANDBY' || tournamentStatus === 'UPCOMING' || tournamentStatus === 'upcoming';
@@ -311,6 +315,7 @@ function BracketMatchCard({
           match={match}
           players={players || []}
           tournamentId={tournamentId}
+          assignedPlayerIds={assignedPlayerIds}
           trigger={
             <div className="cursor-pointer group">
               <PlayerRow
@@ -355,6 +360,7 @@ function BracketMatchCard({
           match={match}
           players={players || []}
           tournamentId={tournamentId}
+          assignedPlayerIds={assignedPlayerIds}
           trigger={
             <div className="cursor-pointer group">
               <PlayerRow
