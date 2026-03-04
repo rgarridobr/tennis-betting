@@ -284,6 +284,7 @@ function BracketMatchCard({
   tournamentStatus,
   isFinalRound,
   onPredict,
+  assignedPlayerIds,
 }: {
   match: BracketMatch;
   p1: any;
@@ -305,12 +306,13 @@ function BracketMatchCard({
   const isPublished = tournamentStatus === 'active' || tournamentStatus === 'published' || tournamentStatus === 'OPEN';
   const isLocked = tournamentStatus === 'finished' || tournamentStatus === 'completed';
   const canPredict = canMakePredictions && !isCompleted && p1?.id && p2?.id;
+  const canEditPlayers = isAdmin && isDraft && match.round === 1;
 
   const selectedWinnerId = currentPrediction?.winnerId;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden w-full transition-all hover:shadow-md hover:-translate-y-0.5 group">
-      {isAdmin && isDraft ? (
+      {canEditPlayers ? (
         <SetPlayersDialog
           match={match}
           players={players || []}
@@ -355,7 +357,7 @@ function BracketMatchCard({
 
       <div className="h-[1px] bg-slate-50 mx-4" />
 
-      {isAdmin && isDraft ? (
+      {canEditPlayers ? (
         <SetPlayersDialog
           match={match}
           players={players || []}
@@ -411,18 +413,33 @@ function BracketMatchCard({
         </div>
       )}
 
-      {isAdmin && !isLocked && !isCompleted && match.player1_id && match.player2_id && (
-        <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 flex justify-center">
-          {isPublished ? (
-            <SetResultDialog
-              match={match}
-              tournamentId={tournamentId}
-              isFinalRound={isFinalRound}
-            />
-          ) : (
-            <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-100 shadow-sm">
-              <AlertCircle className="w-3 h-3" />
-              Publique para lançar resultados
+      {isAdmin && !isLocked && !isCompleted && (
+        <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 flex flex-col gap-2">
+          {isPublished && (
+            <div className="flex gap-2">
+              {(match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD') && !match.player1_id && (
+                <ReplacePlaceholderDialog match={match} slot={1} players={players || []} tournamentId={tournamentId} assignedPlayerIds={assignedPlayerIds} />
+              )}
+              {(match.player2_type === 'QUALIFIER' || match.player2_type === 'WILDCARD') && !match.player2_id && (
+                <ReplacePlaceholderDialog match={match} slot={2} players={players || []} tournamentId={tournamentId} assignedPlayerIds={assignedPlayerIds} />
+              )}
+            </div>
+          )}
+
+          {match.player1_id && match.player2_id && (
+            <div className="flex justify-center">
+              {isPublished ? (
+                <SetResultDialog
+                  match={match}
+                  tournamentId={tournamentId}
+                  isFinalRound={isFinalRound}
+                />
+              ) : (
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-100 shadow-sm">
+                  <AlertCircle className="w-3 h-3" />
+                  Publique para lançar resultados
+                </div>
+              )}
             </div>
           )}
         </div>
