@@ -376,7 +376,7 @@ export async function setMatchResult(
     const position = m.position as number
     const tournamentId = m.tournament_id as number
     const category = m.category || 'GRAND_SLAM'
-    const setsToWin = m.sets_format === 5 ? 3 : 2
+    // const setsToWin = m.sets_format === 5 ? 3 : 2
     const totalRounds = Math.ceil(Math.log2(m.size as number))
 
     if (m.tournament_status === 'finished' || m.tournament_status === 'completed') {
@@ -392,18 +392,18 @@ export async function setMatchResult(
       return { success: false, error: 'O vencedor selecionado não faz parte deste confronto.' }
     }
 
-    if (!options?.isWalkover) {
-      const validation = validateTennisScore(score, setsToWin)
-      if (!validation.valid) return { success: false, error: validation.error }
+    // if (!options?.isWalkover) {
+    //   const validation = validateTennisScore(score, setsToWin)
+    //   if (!validation.valid) return { success: false, error: validation.error }
 
-      // If validation returned a winner based on score, ensure it matches winnerId
-      if (validation.winner) {
-        const expectedWinnerId = validation.winner === 1 ? m.player1_id : m.player2_id
-        if (winnerId !== expectedWinnerId) {
-          return { success: false, error: 'O vencedor selecionado não coincide com o placar dos sets' }
-        }
-      }
-    }
+    //   // If validation returned a winner based on score, ensure it matches winnerId
+    //   if (validation.winner) {
+    //     const expectedWinnerId = validation.winner === 1 ? m.player1_id : m.player2_id
+    //     if (winnerId !== expectedWinnerId) {
+    //       return { success: false, error: 'O vencedor selecionado não coincide com o placar dos sets' }
+    //     }
+    //   }
+    // }
 
     const points = getMatchPoints(category, round, totalRounds);
 

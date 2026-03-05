@@ -2,7 +2,12 @@
 
 import React, { useEffect, useState, useTransition } from 'react';
 import type { BracketMatch, Player } from '@/lib/data';
-import { setMatchPlayersAction, setMatchResultAction, updatePlaceholderPlayerAction, clearMatchResultAction } from '@/lib/actions/admin';
+import {
+  setMatchPlayersAction,
+  setMatchResultAction,
+  updatePlaceholderPlayerAction,
+  clearMatchResultAction,
+} from '@/lib/actions/admin';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -564,6 +569,7 @@ export function SetResultDialog({
               type="submit"
               className="w-full h-14 rounded-2xl font-black text-lg bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-100"
               disabled={isPending || success}
+              autoFocus={true}
             >
               {isPending ? 'Salvando...' : success ? 'Sucesso!' : 'Confirmar Resultado'}
             </Button>
@@ -590,8 +596,7 @@ export function SetResultDialog({
               </div>
               <DialogTitle className="text-2xl font-black text-center text-slate-900">Limpar Resultado?</DialogTitle>
               <DialogDescription className="text-center text-slate-500 font-medium px-4">
-                Tem certeza que deseja limpar o resultado desta partida? Isso removerá o vencedor das rodadas
-                seguintes.
+                Tem certeza que deseja limpar o resultado desta partida? Isso removerá o vencedor das rodadas seguintes.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="flex flex-col sm:flex-row gap-3 p-2">
