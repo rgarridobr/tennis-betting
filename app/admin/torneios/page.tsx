@@ -100,9 +100,8 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
 
   return (
     <>
-      <PageHero title="Gerenciar Torneios" subtitle="Crie, edite e acompanhe seus campeonatos para o bolão de tênis"/>
- 
- 
+      <PageHero title="Gerenciar Torneios" subtitle="Crie, edite e acompanhe seus campeonatos para o bolão de tênis" />
+
       <main className="container mx-auto px-4 md:px-32 py-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
@@ -123,12 +122,53 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
           {/* Sidebar Filters */}
-          <aside className="lg:col-span-1 space-y-8">
+          {/* MOBILE FILTER */}
+          <div className="lg:hidden mb-6">
+            <h3 className="text-lg font-black text-slate-900 mb-3 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-emerald-600" />
+              Filtrar por mês
+            </h3>
+
+            {monthsWithEvents.length === 0 ? (
+              <p className="text-sm text-slate-400 font-medium italic">Nenhum torneio este ano.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <div className="flex gap-2 w-max pb-2">
+                  {monthsWithEvents.map((m) => {
+                    const isSelected = monthToFilter === m.index;
+
+                    return (
+                      <Link
+                        key={m.index}
+                        href={isSelected ? '/admin/torneios' : `/admin/torneios?month=${m.index}`}
+                        scroll={false}
+                        className={cn(
+                          'flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap border transition-all capitalize',
+                            isSelected
+                              ? 'bg-emerald-50 border-emerald-200 text-emerald-900 shadow-md'
+                              : 'bg-white border-transparent hover:border-slate-100 hover:bg-slate-50 text-slate-600',
+                        )}
+                      >
+                        {m.name}
+                        <Badge variant="secondary" className="rounded-md text-xs font-black bg-white/30">
+                          {m.count}
+                        </Badge>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* DESKTOP FILTER */}
+          <aside className="hidden lg:block lg:col-span-1 space-y-8">
             <div>
               <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-emerald-600" />
                 Filtrar por Mês
               </h3>
+
               <div className="flex flex-col gap-2">
                 {monthsWithEvents.length === 0 ? (
                   <p className="text-sm text-slate-400 font-medium italic">Nenhum torneio este ano.</p>
@@ -136,6 +176,7 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
                   <>
                     {monthsWithEvents.map((m) => {
                       const isSelected = monthToFilter === m.index;
+
                       return (
                         <Link
                           key={m.index}
@@ -161,16 +202,18 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
                               {m.name}, {currentYear}
                             </span>
                           </div>
+
                           <div className="flex items-center gap-2">
                             <Badge
                               variant={isSelected ? 'default' : 'secondary'}
                               className={cn(
                                 'rounded-lg font-black',
-                                isSelected ? 'bg-emerald-500' : 'bg-slate-100 text-slate-500',
+                                isSelected ? 'bg-emerald-500' : 'bg-slate-100 text-white',
                               )}
                             >
                               {m.count} {m.count === 1 ? 'evento' : 'eventos'}
                             </Badge>
+
                             <ChevronRight
                               className={cn(
                                 'w-4 h-4 transition-transform',

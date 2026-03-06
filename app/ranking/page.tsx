@@ -17,10 +17,6 @@ export default async function RankingPage() {
   const userRankEntry = ranking.find((r) => r.user_id === user.id);
   const userPosition = userRankEntry?.rank || '-';
 
-  // Top 3 for podium
-  const top3 = ranking.slice(0, 3);
-  const restRanking = ranking.slice(3);
-
   return (
     <div className="min-h-screen bg-slate-50">
       <DashboardHeader user={user} />
@@ -59,26 +55,6 @@ export default async function RankingPage() {
           </Card>
         ) : (
           <div className="space-y-8">
-            {/* Podium - Top 3 */}
-            {top3.length >= 3 && (
-              <div className="grid md:grid-cols-3 gap-4 mb-8">
-                {/* 2nd Place */}
-                <div className="order-2 md:order-1">
-                  <PodiumCard entry={top3[1]} position={2} isCurrentUser={top3[1].user_id === user.id} />
-                </div>
-
-                {/* 1st Place */}
-                <div className="order-1 md:order-2">
-                  <PodiumCard entry={top3[0]} position={1} isCurrentUser={top3[0].user_id === user.id} />
-                </div>
-
-                {/* 3rd Place */}
-                <div className="order-3">
-                  <PodiumCard entry={top3[2]} position={3} isCurrentUser={top3[2].user_id === user.id} />
-                </div>
-              </div>
-            )}
-
             {/* Rest of Rankings */}
             <Card className="border-0 shadow-md overflow-hidden pt-0">
               <div className="bg-slate-100 px-6 py-4 border-b">

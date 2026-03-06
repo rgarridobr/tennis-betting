@@ -310,7 +310,7 @@ export async function getUserStats(userId: number): Promise<UserStats> {
       COUNT(CASE WHEN p.is_correct = false THEN 1 END) as wrong_predictions,
       COUNT(p.id) as total_predictions
     FROM predictions p
-    WHERE p.user_id = ${userId}
+    WHERE p.user_id = ${userId} AND p.is_correct IS NOT NULL
   `
   const activeTournaments = await sql`
     SELECT COUNT(DISTINCT ut.tournament_id) as count
@@ -340,7 +340,7 @@ export async function getGlobalRanking(limit: number = 50): Promise<RankingEntry
       u.id as user_id,
       COALESCE(NULLIF(u.nickname, ''), u.name) as user_name,
       (SELECT COUNT(*) FROM predictions WHERE user_id = u.id AND is_correct = true) as correct_predictions,
-      (SELECT COUNT(*) FROM predictions WHERE user_id = u.id) as total_predictions,
+      (SELECT COUNT(*) FROM predictions WHERE user_id = u.id AND is_correct IS NOT NULL) as total_predictions,
       COALESCE((SELECT SUM(points_earned) FROM predictions WHERE user_id = u.id), 0) as total_points
     FROM users u
     WHERE u.is_admin = false AND u.is_deleted = false

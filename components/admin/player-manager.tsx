@@ -46,7 +46,7 @@ export function PlayerManager({ players }: Props) {
   const filtered = players.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <Card className="border-0 shadow-sm w-full">
+    <Card className="border-0 shadow-sm">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -100,7 +100,7 @@ export function PlayerManager({ players }: Props) {
                 filtered.map((p) => (
                   <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-slate-800">{p.name}</span>
+                      <span className="text-sm font-medium text-slate-800 truncate max-w-[60%]">{p.name}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       {p.country && <span className="text-xs text-slate-500 mr-2">{p.country}</span>}
@@ -124,7 +124,7 @@ function AddPlayersDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="gap-1.5 w-full sm:w-auto">
+        <Button size="sm" className="gap-1.5">
           <UserPlus className="w-4 h-4" /> Adicionar
         </Button>
       </DialogTrigger>
@@ -367,7 +367,7 @@ function ImportPlayersForm({ onSuccess }: { onSuccess: () => void }) {
           name="players"
           rows={10}
           placeholder={`Cole a lista no formato:\nCarlos Alcaraz (ESP)\nJannik Sinner (ITA)\nNovak Djokovic (SRB)\n...\n\nOu apenas nomes:\nCarlos Alcaraz\nJannik Sinner\nNovak Djokovic`}
-          className="font-mono text-xs max-h-50 w-full"
+          className="font-mono text-xs max-h-50"
           required
         />
         <p className="text-xs text-slate-400">
