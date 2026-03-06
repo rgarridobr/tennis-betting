@@ -1,234 +1,105 @@
-import { getSession } from '@/lib/auth'
-import { redirect } from 'next/navigation'
-import { getUserStats, getGlobalRanking } from '@/lib/data'
-import { DashboardHeader } from '@/components/dashboard/dashboard-header'
-import { PageHero } from '@/components/shared/page-hero'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { 
-  User, 
-  Mail, 
-  Calendar, 
-  Trophy, 
-  Target, 
-  TrendingUp,
-  Medal,
-  Shield
-} from 'lucide-react'
-import { ProfileEditForm } from '@/components/profile/profile-edit-form'
-import { ProfilePasswordForm } from '@/components/profile/profile-password-form'
+import { getSession } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import { getUserStats, getGlobalRanking } from '@/lib/data';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { PageHero } from '@/components/shared/page-hero';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { User, Mail, Calendar, Trophy, Target, TrendingUp, Medal, Shield } from 'lucide-react';
+import { ProfileEditForm } from '@/components/profile/profile-edit-form';
+import { ProfilePasswordForm } from '@/components/profile/profile-password-form';
 
 export default async function PerfilPage() {
-  const user = await getSession()
-  if (!user) redirect('/login')
+  const user = await getSession();
+  if (!user) redirect('/login');
 
-  const [stats, ranking] = await Promise.all([
-    getUserStats(user.id),
-    getGlobalRanking(100),
-  ])
+  const [stats, ranking] = await Promise.all([getUserStats(user.id), getGlobalRanking(100)]);
 
   // Find user position in ranking
-  const userRankEntry = ranking.find(r => r.user_id === user.id)
-  const userPosition = userRankEntry?.rank || '-'
+  const userRankEntry = ranking.find((r) => r.user_id === user.id);
+  const userPosition = userRankEntry?.rank || '-';
 
   // Calculate account age
-  const createdAt = new Date(user.created_at)
-  const accountAge = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24))
+  const createdAt = new Date(user.created_at);
+  const accountAge = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
 
-  const displayName = user.nickname || user.name
-  const initials = displayName.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+  const displayName = user.nickname || user.name;
+  const initials = displayName
+    .split(' ')
+    .map((n: string) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <div className="min-h-screen bg-slate-50">
       <DashboardHeader user={user} />
-      
-      <PageHero title="Meu Perfil" subtitle="Gerencie suas informações e veja suas estatísticas">
-        <Card className="bg-white/10 border-0 backdrop-blur-sm">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
-              <span className="text-2xl font-bold text-white">
-                {initials}
-              </span>
+
+      <PageHero title="Meu Perfil" subtitle="Gerencie suas informações e veja suas estatísticas" />
+
+      <main className="container mx-auto px-4 md:px-32 py-8">
+        {/* PROFILE CARD */}
+        <Card className="border-0 shadow-lg bg-white">
+          <CardContent className="p-6 flex flex-col md:flex-row md:items-center gap-6">
+            <div className="w-20 h-20 rounded-full bg-emerald-500 flex items-center justify-center text-white text-2xl font-bold">
+              {initials}
             </div>
-            <div>
-              <p className="text-white font-semibold text-lg">{displayName}</p>
-              <p className="text-emerald-100 text-sm">{user.email}</p>
-              {user.is_admin && (
-                <Badge className="mt-1 bg-amber-500/80 text-white text-xs">
-                  <Shield className="w-3 h-3 mr-1" />
-                  Administrador
+
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-slate-900">{displayName}</h2>
+              <p className="text-slate-500">{user.email}</p>
+
+              <div className="flex flex-wrap gap-2 mt-2">
+                {user.is_admin && (
+                  <Badge className="bg-amber-500 text-white">
+                    <Shield className="w-3 h-3 mr-1" />
+                    Administrador
+                  </Badge>
+                )}
+
+                <Badge variant="secondary">
+                  <Calendar className="w-3 h-3 mr-1" />
+                  {accountAge} dias de conta
                 </Badge>
-              )}
+              </div>
+            </div>
+
+            <div className="text-right">
+              <p className="text-sm text-slate-500">Posição no Ranking</p>
+              <p className="text-3xl font-black text-emerald-600">#{userPosition}</p>
             </div>
           </CardContent>
         </Card>
-      </PageHero>
 
-      <main className="container mx-auto px-4 md:px-32 py-8">
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* Stats Cards */}
-          <div className="md:col-span-2 space-y-6">
-            {/* Statistics */}
-            <Card className="border-0 shadow-md">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <TrendingUp className="w-5 h-5 text-emerald-600" />
-                  Estatísticas
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div className="bg-slate-50 rounded-xl p-4 text-center">
-                    <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-2">
-                      <Trophy className="w-5 h-5 text-emerald-600" />
-                    </div>
-                    <p className="text-2xl font-bold text-slate-900">{stats.total_points}</p>
-                    <p className="text-xs text-slate-500">Pontos Totais</p>
-                  </div>
-                  
-                  <div className="bg-slate-50 rounded-xl p-4 text-center">
-                    <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-2">
-                      <Medal className="w-5 h-5 text-amber-600" />
-                    </div>
-                    <p className="text-2xl font-bold text-slate-900">{userPosition}º</p>
-                    <p className="text-xs text-slate-500">Posição Ranking</p>
-                  </div>
-                  
-                  <div className="bg-slate-50 rounded-xl p-4 text-center">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-2">
-                      <Target className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <p className="text-2xl font-bold text-slate-900">{stats.total_predictions}</p>
-                    <p className="text-xs text-slate-500">Palpites</p>
-                  </div>
-                  
-                  <div className="bg-slate-50 rounded-xl p-4 text-center">
-                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-2">
-                      <TrendingUp className="w-5 h-5 text-purple-600" />
-                    </div>
-                    <p className="text-2xl font-bold text-slate-900">{stats.accuracy}%</p>
-                    <p className="text-xs text-slate-500">Precisão</p>
-                  </div>
-                </div>
+        {/* SETTINGS */}
+        <div className="grid md:grid-cols-2 gap-6 mt-4">
+          <Card className="border-0 shadow-md">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <User className="w-5 h-5 text-emerald-600" />
+                Editar Perfil
+              </CardTitle>
+            </CardHeader>
 
-                <div className="mt-6 grid grid-cols-3 gap-4">
-                  <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg">
-                    <span className="text-sm text-emerald-700">Acertos</span>
-                    <span className="font-bold text-emerald-700">{stats.correct_predictions}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                    <span className="text-sm text-red-700">Erros</span>
-                    <span className="font-bold text-red-700">{stats.wrong_predictions}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
-                    <span className="text-sm text-amber-700">Pendentes</span>
-                    <span className="font-bold text-amber-700">
-                      {stats.total_predictions - stats.correct_predictions - stats.wrong_predictions}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <CardContent>
+              <ProfileEditForm user={user} />
+            </CardContent>
+          </Card>
 
-            {/* Edit Profile */}
-            <Card className="border-0 shadow-md">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <User className="w-5 h-5 text-emerald-600" />
-                  Editar Perfil
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ProfileEditForm user={user} />
-              </CardContent>
-            </Card>
-          </div>
+          <Card className="border-0 shadow-md">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Shield className="w-5 h-5 text-emerald-600" />
+                Alterar Senha
+              </CardTitle>
+            </CardHeader>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Account Info */}
-            <Card className="border-0 shadow-md">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <User className="w-5 h-5 text-emerald-600" />
-                  Informações da Conta
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
-                    <User className="w-5 h-5 text-slate-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">Nome</p>
-                    <p className="font-medium text-slate-900">{user.name}</p>
-                  </div>
-                </div>
-
-                {user.nickname && (
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
-                      <User className="w-5 h-5 text-slate-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500">Apelido (Público)</p>
-                      <p className="font-medium text-slate-900">{user.nickname}</p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
-                    <Mail className="w-5 h-5 text-slate-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">Email</p>
-                    <p className="font-medium text-slate-900">{user.email}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-slate-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">Membro desde</p>
-                    <p className="font-medium text-slate-900">
-                      {createdAt.toLocaleDateString('pt-BR', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-500">Tempo de conta</span>
-                    <Badge variant="secondary">
-                      {accountAge} {accountAge === 1 ? 'dia' : 'dias'}
-                    </Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Change Password */}
-            <Card className="border-0 shadow-md">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Shield className="w-5 h-5 text-emerald-600" />
-                  Alterar Senha
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ProfilePasswordForm />
-              </CardContent>
-            </Card>
-          </div>
+            <CardContent>
+              <ProfilePasswordForm />
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>
-  )
+  );
 }

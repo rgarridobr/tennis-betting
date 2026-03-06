@@ -92,7 +92,7 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="nickname">Apelido (visível no site)</Label>
+            <Label htmlFor="nickname">Apelido <span className="md:block hidden">(visível no site)</span></Label>
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="first_name_only_profile"
