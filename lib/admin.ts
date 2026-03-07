@@ -694,6 +694,62 @@ export async function getAllUsers() {
   return users
 }
 
+export async function getAdminStats() {
+  const [
+    needsReview,
+    newUsers,
+    topTournaments,
+    pendingResults,
+    totalPredictions
+  ] = await Promise.all([
+    // Tournaments needing review
+    sql`SELECT COUNT(*) as count FROM tournaments WHERE needs_review = TRUE`,
+
+    // New users in last 7 days
+    sql`SELECT COUNT(*) as count FROM users WHERE created_at >= NOW() - INTERVAL '7 days' AND is_deleted = FALSE`,
+
+    // Top tournaments by engagement
+    sql`
+      SELECT t.id, t.name, t.status, COUNT(ut.user_id) as participants
+      FROM tournaments t
+      LEFT JOIN user_tournaments ut ON t.id = ut.tournament_id
+      WHERE t.status IN ('OPEN', 'active', 'published', 'UPCOMING', 'upcoming', 'LOCKED', 'IN_PROGRESS')
+      GROUP BY t.id, t.name, t.status
+      ORDER BY participants DESC
+      LIMIT 5
+    `,
+
+    // Matches with pending results that should have been completed
+    // (A match is considered "overdue" if it has players and is in a round that should have started)
+    // For simplicity, we'll just count pending matches in non-draft tournaments
+    sql`
+      SELECT COUNT(*) as count
+      FROM bracket_matches bm
+      JOIN tournaments t ON bm.tournament_id = t.id
+      WHERE bm.status != 'completed'
+        AND bm.player1_id IS NOT NULL
+        AND bm.player2_id IS NOT NULL
+        AND t.status IN ('LOCKED', 'IN_PROGRESS')
+    `,
+
+    // Total predictions count
+    sql`SELECT COUNT(*) as count FROM predictions`
+  ])
+
+  return {
+    needsReview: Number(needsReview[0]?.count || 0),
+    newUsers7d: Number(newUsers[0]?.count || 0),
+    topTournaments: topTournaments.map(t => ({
+      id: t.id as number,
+      name: t.name as string,
+      status: t.status as string,
+      participants: Number(t.participants || 0)
+    })),
+    pendingResults: Number(pendingResults[0]?.count || 0),
+    totalPredictions: Number(totalPredictions[0]?.count || 0)
+  }
+}
+
 export async function updateUser(id: number, data: { name: string, email: string, nickname?: string, whatsapp: string, tennis_club: string }): Promise<void> {
   await sql`
     UPDATE users
