@@ -2,15 +2,18 @@
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Trophy, Medal, Target, TrendingUp, Crown, Award, CheckCircle2 } from 'lucide-react'
+import { Trophy, Medal, Target, TrendingUp, Crown, Award, CheckCircle2, ChevronRight } from 'lucide-react'
 import type { RankingEntry } from '@/lib/data'
+import Link from 'next/link'
 
 interface TournamentRankingProps {
   ranking: RankingEntry[]
   currentUserId: number
+  tournamentId: number
+  hasStarted: boolean
 }
 
-export function TournamentRanking({ ranking, currentUserId }: TournamentRankingProps) {
+export function TournamentRanking({ ranking, currentUserId, tournamentId, hasStarted }: TournamentRankingProps) {
   if (ranking.length === 0) {
     return (
       <Card className="border-0 shadow-sm bg-white rounded-[2.5rem]">
@@ -41,6 +44,8 @@ export function TournamentRanking({ ranking, currentUserId }: TournamentRankingP
                 key={entry.user_id}
                 entry={entry}
                 isCurrentUser={entry.user_id === currentUserId}
+                tournamentId={tournamentId}
+                hasStarted={hasStarted}
               />
             ))}
           </div>
@@ -50,13 +55,15 @@ export function TournamentRanking({ ranking, currentUserId }: TournamentRankingP
   )
 }
 
-function RankingRow({ entry, isCurrentUser }: { entry: RankingEntry, isCurrentUser: boolean }) {
+function RankingRow({ entry, isCurrentUser, tournamentId, hasStarted }: { entry: RankingEntry, isCurrentUser: boolean, tournamentId: number, hasStarted: boolean }) {
   const accuracy = entry.total_predictions > 0
     ? Math.round((entry.correct_predictions / entry.total_predictions) * 100)
     : 0
 
-  return (
-    <div className={`flex items-center justify-between px-8 py-6 transition-colors ${isCurrentUser ? 'bg-emerald-50/50' : 'hover:bg-slate-50/50'}`}>
+  const canViewBracket = hasStarted && !isCurrentUser
+
+  const Content = (
+    <div className={`flex items-center justify-between px-8 py-6 transition-colors ${isCurrentUser ? 'bg-emerald-50/50' : 'hover:bg-slate-50/50'} ${canViewBracket ? 'cursor-pointer group' : ''}`}>
       <div className="flex items-center gap-6">
         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-black ${
           entry.rank === 1 ? 'bg-amber-400 text-white' :
@@ -87,12 +94,27 @@ function RankingRow({ entry, isCurrentUser }: { entry: RankingEntry, isCurrentUs
         </div>
       </div>
 
-      <div className="text-right">
-        <p className="text-2xl font-black text-slate-900 leading-none">
-          {entry.total_points}
-        </p>
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Pontos</p>
+      <div className="flex items-center gap-6">
+        <div className="text-right">
+          <p className="text-2xl font-black text-slate-900 leading-none">
+            {entry.total_points}
+          </p>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Pontos</p>
+        </div>
+        {canViewBracket && (
+          <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-500 transition-colors" />
+        )}
       </div>
     </div>
   )
+
+  if (canViewBracket) {
+    return (
+      <Link href={`/torneio/${tournamentId}?view=bracket&viewUser=${entry.user_id}`}>
+        {Content}
+      </Link>
+    )
+  }
+
+  return Content
 }

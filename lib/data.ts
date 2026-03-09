@@ -207,6 +207,15 @@ export async function getPlayerById(id: number): Promise<Player | null> {
   return rows.length > 0 ? (rows[0] as Player) : null
 }
 
+export async function getUserPublicInfo(userId: number): Promise<{ id: number, name: string } | null> {
+  const rows = await sql`
+    SELECT id, COALESCE(NULLIF(nickname, ''), name) as name
+    FROM users
+    WHERE id = ${userId} AND (is_deleted IS FALSE OR is_deleted IS NULL)
+  `
+  return rows.length > 0 ? (rows[0] as { id: number, name: string }) : null
+}
+
 export async function getTournamentNames(): Promise<TournamentMetadata[]> {
   const rows = await sql`SELECT * FROM tournament_names ORDER BY name ASC`
   return rows as TournamentMetadata[]
