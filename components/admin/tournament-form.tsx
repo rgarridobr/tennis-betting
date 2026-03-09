@@ -278,7 +278,7 @@ export function TournamentForm({ names, locations }: Props) {
           type="submit"
           disabled={isPending}
           size="lg"
-          className="w-full md:w-auto md:px-16 h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white gap-3 text-lg font-black shadow-xl shadow-emerald-200 transition-all hover:scale-105 active:scale-95"
+          className="w-full md:w-auto md:px-16 h-14 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-2xl shadow-xl shadow-emerald-500/20 h-14"
         >
           {isPending ? 'Gerando chaveamento...' : 'Criar Torneio'}
           {!isPending && <ArrowRight className="w-5 h-5" />}

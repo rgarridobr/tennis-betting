@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Plus, Settings, Trophy, Zap, Calendar, ClipboardList, MapPin, ChevronRight } from 'lucide-react';
 import { DeleteTournamentButton } from '@/components/admin/delete-tournament-button';
-import { cn } from '@/lib/utils';
+import { cn, getStatusLabels } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -62,20 +62,7 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
     (t) => t.status === 'FINISHED' || t.status === 'finished' || t.status === 'completed',
   );
 
-  const statusLabels: Record<string, string> = {
-    STANDBY: 'Standby (Interno)',
-    draft: 'Rascunho',
-    UPCOMING: 'Em breve (Visível)',
-    upcoming: 'Em breve',
-    OPEN: 'Apostas Abertas',
-    active: 'Ativo',
-    published: 'Ativo',
-    LOCKED: 'Apostas Fechadas',
-    IN_PROGRESS: 'Em Andamento',
-    FINISHED: 'Finalizado',
-    finished: 'Finalizado',
-    completed: 'Finalizado',
-  };
+
 
   const statusColors: Record<string, string> = {
     STANDBY: 'bg-slate-100 text-slate-700',
@@ -111,7 +98,7 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
           <Button
             asChild
             size="lg"
-            className="bg-emerald-600 text-white hover:bg-emerald-700 font-black rounded-2xl px-8 shadow-lg shadow-emerald-200"
+            className="bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-2xl shadow-xl shadow-emerald-500/20 h-14"
           >
             <Link href="/admin/torneios/novo">
               <Plus className="w-5 h-5 mr-2" />
@@ -259,6 +246,7 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
               <div className="space-y-12">
                 {[
                   { title: 'Abertos para Apostas', list: openTournaments, icon: Zap, color: 'text-emerald-500' },
+                  { title: 'Próximos (Visíveis)', list: upcomingTournaments, icon: Calendar, color: 'text-amber-500' },
 
                   {
                     title: 'Calendário (Standby)',
@@ -266,7 +254,6 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
                     icon: ClipboardList,
                     color: 'text-slate-500',
                   },
-                  { title: 'Próximos (Visíveis)', list: upcomingTournaments, icon: Calendar, color: 'text-amber-500' },
                   {
                     title: 'Em Andamento / Bloqueados',
                     list: inProgressTournaments,
@@ -321,7 +308,7 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
                                   <Badge
                                     className={`${statusColors[tournament.status] || 'bg-slate-100 text-slate-600'} border-none font-black uppercase text-[10px] tracking-wider px-3 py-1 rounded-full whitespace-nowrap`}
                                   >
-                                    {statusLabels[tournament.status] || tournament.status}
+                                    {getStatusLabels[tournament.status] || tournament.status}
                                   </Badge>
                                   {(tournament.status === 'STANDBY' ||
                                     tournament.status === 'draft' ||

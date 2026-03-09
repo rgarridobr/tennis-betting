@@ -28,6 +28,7 @@ import {
   updateUser,
   toggleUserStatus,
   softDeleteUser,
+  updateTournament,
 } from '@/lib/admin'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -86,6 +87,21 @@ export async function createTournamentAction(formData: FormData) {
     return { success: false, error: message }
   }
 }
+
+export async function updateStartDateTournamentAction(tournamentId: number, newDate: string) {
+  await requireAdmin()
+  try {
+    await updateTournament(tournamentId, { start_date: newDate })
+    revalidatePath(`/admin/torneios/${tournamentId}`)
+    revalidatePath(`/torneio/${tournamentId}`)
+    return { success: true }
+  } catch (error) {
+    console.error("Error updating tournament date:", error)
+    return { success: false, error: 'Erro ao atualizar a data do torneio' }
+  }
+}
+
+
 
 export async function updateTournamentStatusAction(tournamentId: number, status: string) {
   await requireAdmin()

@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Icon, MapPin } from 'lucide-react';
+import { Calendar, Clock, Icon, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import type { Tournament } from '@/lib/data';
 import { tennisBall } from '@lucide/lab';
@@ -95,6 +95,12 @@ export function TournamentCard({ tournament }: TournamentCardProps) {
             <div className="flex items-center gap-2">
               <Icon iconNode={tennisBall} className="w-4 h-4 text-emerald-500" />
               <span className="truncate">{getCategory(tournament.category)}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-emerald-500" />
+              <span>
+                {new Date(tournament.start_date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-emerald-500" />

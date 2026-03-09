@@ -23,19 +23,8 @@ export function TournamentRanking({ ranking, currentUserId }: TournamentRankingP
     )
   }
 
-  const top3 = ranking.slice(0, 3)
-  const rest = ranking.slice(3)
-
   return (
     <div className="space-y-8">
-      {/* Podium for Top 3 */}
-      {top3.length > 0 && (
-        <div className="grid md:grid-cols-3 gap-6">
-          {top3[1] && <PodiumCard entry={top3[1]} position={2} isCurrentUser={top3[1].user_id === currentUserId} />}
-          <PodiumCard entry={top3[0]} position={1} isCurrentUser={top3[0].user_id === currentUserId} />
-          {top3[2] && <PodiumCard entry={top3[2]} position={3} isCurrentUser={top3[2].user_id === currentUserId} />}
-        </div>
-      )}
 
       {/* Full List */}
       <Card className="border-0 shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
@@ -58,54 +47,6 @@ export function TournamentRanking({ ranking, currentUserId }: TournamentRankingP
         </CardContent>
       </Card>
     </div>
-  )
-}
-
-function PodiumCard({ entry, position, isCurrentUser }: { entry: RankingEntry, position: number, isCurrentUser: boolean }) {
-  const config = {
-    1: { bg: 'bg-amber-400', icon: Crown, label: '1º Lugar', ring: 'ring-amber-200' },
-    2: { bg: 'bg-slate-400', icon: Medal, label: '2º Lugar', ring: 'ring-slate-200' },
-    3: { bg: 'bg-orange-400', icon: Award, label: '3º Lugar', ring: 'ring-orange-200' },
-  }[position as 1|2|3]
-
-  const accuracy = entry.total_predictions > 0
-    ? Math.round((entry.correct_predictions / entry.total_predictions) * 100)
-    : 0
-
-  return (
-    <Card className={`border-0 shadow-xl overflow-hidden rounded-[2.5rem] relative ${isCurrentUser ? 'ring-4 ring-emerald-500 ring-offset-4' : ''} ${position === 1 ? 'md:-translate-y-4' : 'md:mt-4'}`}>
-      <div className={`h-2 ${config.bg}`} />
-      <CardContent className="p-8 text-center">
-        <div className={`w-16 h-16 rounded-full ${config.bg} flex items-center justify-center mx-auto mb-4 shadow-lg`}>
-          <config.icon className="w-8 h-8 text-white" />
-        </div>
-        <Badge className={`${config.bg} text-white border-none font-black uppercase tracking-widest text-[10px] px-3 py-1 mb-4`}>
-          {config.label}
-        </Badge>
-        <h4 className="text-xl font-black text-slate-900 truncate mb-1">
-          {entry.user_name}
-        </h4>
-        <div className="text-3xl font-black text-slate-900 mb-4 flex items-center justify-center gap-1">
-          {entry.total_points}
-          <span className="text-xs text-slate-400 uppercase tracking-widest">pts</span>
-        </div>
-        <div className="flex items-center justify-center gap-4 text-xs font-bold text-slate-500 bg-slate-50 rounded-2xl py-3 px-4">
-          <div className="flex items-center gap-1.5">
-            <Target className="w-3.5 h-3.5 text-emerald-500" />
-            {entry.correct_predictions} acertos
-          </div>
-          <div className="flex items-center gap-1.5">
-            <TrendingUp className="w-3.5 h-3.5 text-blue-500" />
-            {accuracy}%
-          </div>
-        </div>
-        {entry.final_score_correct && (
-           <Badge className="mt-4 bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none font-bold gap-1">
-             <CheckCircle2 className="w-3 h-3" /> Placar Final
-           </Badge>
-        )}
-      </CardContent>
-    </Card>
   )
 }
 
@@ -137,7 +78,7 @@ function RankingRow({ entry, isCurrentUser }: { entry: RankingEntry, isCurrentUs
           </p>
           <div className="flex items-center gap-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
             <span className="flex items-center gap-1">
-              <Target className="w-3 h-3" /> {entry.correct_predictions} ACERTOS
+              <Target className="w-3 h-3" /> {entry.correct_predictions}/{entry.total_predictions} ACERTOS
             </span>
             <span className="flex items-center gap-1">
               <TrendingUp className="w-3 h-3" /> {accuracy}% PRECISÃO

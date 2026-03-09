@@ -373,7 +373,7 @@ export async function getTournamentRanking(tournamentId: number, limit: number =
       JOIN user_tournaments ut ON u.id = ut.user_id
       LEFT JOIN predictions p ON u.id = p.user_id
       LEFT JOIN bracket_matches bm ON p.bracket_match_id = bm.id AND bm.tournament_id = ${tournamentId}
-      WHERE ut.tournament_id = ${tournamentId} AND u.is_admin = false AND u.is_deleted = false
+      WHERE ut.tournament_id = ${tournamentId} AND u.is_admin = false AND u.is_deleted = false AND p.is_correct IS NOT NULL
       GROUP BY u.id, u.name, u.nickname
     )
     SELECT * FROM tournament_stats

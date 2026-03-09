@@ -39,21 +39,6 @@ export function TournamentStatusTransition({ tournamentId, status }: Props) {
     })
   }
 
-  function handleRandomize() {
-    startTransition(async () => {
-      try {
-        const result = await randomizeFirstRoundAction(tournamentId)
-        if (result.success) {
-          toast.success('Primeira rodada preenchida aleatoriamente!')
-        } else {
-          toast.error(result.error || 'Erro ao gerar chaves aleatórias')
-        }
-      } catch (error) {
-        toast.error('Erro ao gerar chaves aleatórias')
-      }
-    })
-  }
-
   function handlePrepare() {
     startTransition(async () => {
       try {
@@ -87,16 +72,6 @@ export function TournamentStatusTransition({ tournamentId, status }: Props) {
     return (
       <>
         <div className="flex items-center gap-3">
-          <Button
-            onClick={handleRandomize}
-            disabled={isPending}
-            variant="outline"
-            className="rounded-2xl font-black border-2 border-amber-200 text-amber-600 hover:bg-amber-50 h-12 px-6 gap-2"
-          >
-            {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Shuffle className="w-4 h-4" />}
-            Gerar Chaves Aleatórias
-          </Button>
-
           <Button
             onClick={() => setShowResetConfirm(true)}
             disabled={isPending}

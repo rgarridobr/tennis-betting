@@ -11,11 +11,12 @@ import { PublishBracketButton } from '@/components/admin/publish-bracket-button'
 import { TournamentStatusTransition } from '@/components/admin/tournament-status-transition';
 import { TournamentViewToggle } from '@/components/tournament/tournament-view-toggle';
 import { TournamentBracket } from '@/components/tournament/tournament-bracket';
-import { Trophy, Clock, Hash, Users, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { Trophy, Clock, Hash, Users, ArrowLeft, AlertTriangle, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ptBR } from 'date-fns/locale';
 import { format } from 'date-fns';
+import { EditTournamentDateModal } from '@/components/admin/edit-tournament-date-modal';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -24,7 +25,7 @@ interface Props {
 
 export default async function ManageTournamentPage({ params, searchParams }: Props) {
   const { id } = await params;
-  const { view = 'list' } = await searchParams;
+  const { view = 'bracket' } = await searchParams;
 
   if (id === 'novo') return null;
 
@@ -87,7 +88,11 @@ export default async function ManageTournamentPage({ params, searchParams }: Pro
       <PageHero
         title={tournament.name}
         subtitle={`${tournament.location} \u2022 ${format(parseDate(tournament.start_date), 'dd/MM/yyyy - HH:mm', { locale: ptBR })} \u2022 ${surfaceLabels[tournament.surface] || tournament.surface}`}
-      />
+      >
+        <div className="grid grid-cols-1 gap-4">
+          <EditTournamentDateModal tournamentId={tournamentId} currentDate={new Date(tournament.start_date)} />
+        </div>
+      </PageHero>
 
       <main className="container mx-auto px-4 md:px-32 py-8">
         {/* Status e Voltar */}
