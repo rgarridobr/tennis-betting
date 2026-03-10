@@ -7,6 +7,7 @@ import {
   setMatchResultAction,
   updatePlaceholderPlayerAction,
   clearMatchResultAction,
+  cancelMatchPointsAction,
 } from '@/lib/actions/admin';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +32,7 @@ function formatPlayerName(name: string | null, seed: number | null, type?: strin
   if (!name) {
     if (type === 'QUALIFIER') return 'Qualifier';
     if (type === 'WILDCARD') return 'Wild Card';
+    if (type === 'LUCKY_LOSER') return 'Lucky Loser';
     if (type === 'BYE') return 'BYE';
     return 'A definir';
   }
@@ -38,6 +40,7 @@ function formatPlayerName(name: string | null, seed: number | null, type?: strin
   if (type === 'SEED' && seed) return `${name} (${seed})`;
   if (type === 'QUALIFIER') return `${name} (Q)`;
   if (type === 'WILDCARD') return `${name} (WC)`;
+  if (type === 'LUCKY_LOSER') return `${name} (LL)`;
   return name;
 }
 
@@ -55,8 +58,8 @@ function SlotConfig({
   assignedPlayerIds = [],
 }: {
   label: string;
-  type: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE';
-  setType: (value: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE') => void;
+  type: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER';
+  setType: (value: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER') => void;
   playerId: string;
   setPlayerId: (value: string) => void;
   seed: string;
@@ -76,7 +79,7 @@ function SlotConfig({
   return (
     <div className="space-y-4 bg-slate-50 rounded-2xl border border-slate-100">
       {' '}
-      {(type === 'PLAYER' || type === 'SEED' || type === 'QUALIFIER' || type === 'WILDCARD') && (
+      {(type === 'PLAYER' || type === 'SEED' || type === 'QUALIFIER' || type === 'WILDCARD' || type === 'LUCKY_LOSER') && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label className="text-[10px] font-bold">
@@ -130,6 +133,9 @@ function SlotConfig({
           <SelectItem value="WILDCARD" className="font-bold">
             Wild Card (WC)
           </SelectItem>
+          <SelectItem value="LUCKY_LOSER" className="font-bold">
+            Lucky Loser (LL)
+          </SelectItem>
           <SelectItem value="BYE" className="font-bold">
             BYE
           </SelectItem>
@@ -158,13 +164,13 @@ export function SetPlayersDialog({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const [p1Type, setP1Type] = useState<'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE'>(
+  const [p1Type, setP1Type] = useState<'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER'>(
     (match.player1_type as any) || 'PLAYER',
   );
   const [p1Id, setP1Id] = useState(match.player1_id?.toString() || '');
   const [p1Seed, setP1Seed] = useState(match.player1_seed?.toString() || '');
 
-  const [p2Type, setP2Type] = useState<'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE'>(
+  const [p2Type, setP2Type] = useState<'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER'>(
     (match.player2_type as any) || 'PLAYER',
   );
   const [p2Id, setP2Id] = useState(match.player2_id?.toString() || '');
@@ -301,12 +307,14 @@ export function ReplacePlaceholderDialog({
   const [isPending, startTransition] = useTransition();
   const [playerId, setPlayerId] = useState<string>('');
   const type = slot === 1 ? match.player1_type : match.player2_type;
+  const [isLL, setIsLL] = useState(type === 'LUCKY_LOSER');
 
   useEffect(() => {
     if (open) {
       setPlayerId(slot === 1 ? match.player1_id?.toString() || '' : match.player2_id?.toString() || '');
+      setIsLL(type === 'LUCKY_LOSER');
     }
-  }, [open, match, slot]);
+  }, [open, match, slot, type]);
 
   const filteredPlayers = players
     .filter((p) => !assignedPlayerIds?.includes(p.id) || p.id.toString() === playerId)
@@ -321,10 +329,12 @@ export function ReplacePlaceholderDialog({
     if (!playerId) return;
 
     startTransition(async () => {
-      await updatePlaceholderPlayerAction(match.id, slot, parseInt(playerId), tournamentId);
+      await updatePlaceholderPlayerAction(match.id, slot, parseInt(playerId), tournamentId, isLL);
       setOpen(false);
     });
   }
+
+  const typeLabel = type === 'QUALIFIER' ? 'Q' : type === 'WILDCARD' ? 'WC' : 'LL';
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -335,7 +345,7 @@ export function ReplacePlaceholderDialog({
             size="sm"
             className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider border-2 border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100"
           >
-            Definir {type === 'QUALIFIER' ? 'Q' : 'WC'}
+            Definir {typeLabel}
           </Button>
         )}
       </DialogTrigger>
@@ -345,8 +355,9 @@ export function ReplacePlaceholderDialog({
         </DialogHeader>
         <div className="py-4 space-y-4">
           <p className="text-sm font-bold text-slate-500">
-            Associe um jogador real ao slot de {type === 'QUALIFIER' ? 'Qualifier' : 'Wild Card'}.
+            Associe um jogador real ao slot de {type}.
           </p>
+
           <Combobox
             options={options}
             value={playerId}
@@ -354,6 +365,25 @@ export function ReplacePlaceholderDialog({
             placeholder="Selecione o jogador..."
             className="h-12"
           />
+
+          <div className="flex items-center space-x-2 p-4 bg-slate-50 rounded-2xl border-2 border-slate-100">
+            <input
+              type="checkbox"
+              id="isLL"
+              checked={isLL}
+              onChange={(e) => setIsLL(e.target.checked)}
+              className="w-5 h-5 rounded-lg border-2 border-slate-300 text-emerald-600 focus:ring-emerald-500"
+            />
+            <label htmlFor="isLL" className="text-sm font-black text-slate-700 cursor-pointer">
+              Este jogador está entrando como Lucky Loser (LL)
+            </label>
+          </div>
+          {isLL && (
+            <p className="text-[10px] text-amber-600 font-bold bg-amber-50 p-3 rounded-xl border border-amber-100">
+              <AlertCircle className="w-3 h-3 inline mr-1" />
+              Ao marcar como LL, a pontuação desta partida será automaticamente anulada para todos os usuários.
+            </p>
+          )}
         </div>
         <Button
           onClick={handleSubmit}
@@ -379,6 +409,7 @@ export function SetResultDialog({
   const [open, setOpen] = useState(false);
   const [showConfirmFinish, setShowConfirmFinish] = useState(false);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
+  const [showConfirmCancelPoints, setShowConfirmCancelPoints] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -393,6 +424,7 @@ export function SetResultDialog({
       setSuccess(false);
       setShowConfirmFinish(false);
       setShowConfirmClear(false);
+      setShowConfirmCancelPoints(false);
     }
   }, [open, match]);
 
@@ -412,6 +444,26 @@ export function SetResultDialog({
       } else {
         setError(result.error || 'Erro ao limpar resultado');
         setShowConfirmClear(false);
+      }
+    });
+  }
+
+  function handleCancelPoints(cancelled: boolean) {
+    setError(null);
+    setSuccess(false);
+
+    startTransition(async () => {
+      const result = await cancelMatchPointsAction(match.id, cancelled, tournamentId);
+      if (result.success) {
+        setSuccess(true);
+        setShowConfirmCancelPoints(false);
+        setTimeout(() => {
+          setOpen(false);
+          setSuccess(false);
+        }, 1000);
+      } else {
+        setError(result.error || 'Erro ao alterar pontuação');
+        setShowConfirmCancelPoints(false);
       }
     });
   }
@@ -574,19 +626,76 @@ export function SetResultDialog({
               {isPending ? 'Salvando...' : success ? 'Sucesso!' : 'Confirmar Resultado'}
             </Button>
 
-            {match.status === 'completed' && (
+            <div className="grid grid-cols-2 gap-3">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setShowConfirmClear(true)}
+                onClick={() => setShowConfirmCancelPoints(true)}
                 disabled={isPending || success}
-                className="w-full h-12 rounded-2xl font-bold border-2 text-red-600 border-red-100 hover:bg-red-50 hover:border-red-200"
+                className={`h-12 rounded-2xl font-bold border-2 ${
+                  match.points_cancelled
+                    ? 'text-emerald-600 border-emerald-100 hover:bg-emerald-50'
+                    : 'text-amber-600 border-amber-100 hover:bg-amber-50'
+                }`}
               >
-                Limpar Resultado
+                {match.points_cancelled ? 'Reativar Pontos' : 'Anular Pontos'}
               </Button>
-            )}
+
+              {match.status === 'completed' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowConfirmClear(true)}
+                  disabled={isPending || success}
+                  className="h-12 rounded-2xl font-bold border-2 text-red-600 border-red-100 hover:bg-red-50 hover:border-red-200"
+                >
+                  Limpar
+                </Button>
+              )}
+            </div>
           </div>
         </form>
+
+        <Dialog open={showConfirmCancelPoints} onOpenChange={setShowConfirmCancelPoints}>
+          <DialogContent className="rounded-[2rem] border-none shadow-2xl max-w-md">
+            <DialogHeader className="pt-4">
+              <div
+                className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm ${
+                  match.points_cancelled ? 'bg-emerald-100' : 'bg-amber-100'
+                }`}
+              >
+                <AlertCircle className={`w-8 h-8 ${match.points_cancelled ? 'text-emerald-600' : 'text-amber-600'}`} />
+              </div>
+              <DialogTitle className="text-2xl font-black text-center text-slate-900">
+                {match.points_cancelled ? 'Reativar Pontuação?' : 'Anular Pontuação?'}
+              </DialogTitle>
+              <DialogDescription className="text-center text-slate-500 font-medium px-4">
+                {match.points_cancelled
+                  ? 'Deseja reativar a pontuação para esta partida? Os pontos serão recalculados ao salvar o resultado novamente.'
+                  : 'Tem certeza que deseja anular a pontuação desta partida? Nenhum usuário ganhará pontos por este confronto.'}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex flex-col sm:flex-row gap-3 p-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowConfirmCancelPoints(false)}
+                className="flex-1 rounded-xl font-bold h-12 border-2"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => handleCancelPoints(!match.points_cancelled)}
+                className={`flex-1 rounded-xl font-black h-12 text-white shadow-lg ${
+                  match.points_cancelled
+                    ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100'
+                    : 'bg-amber-600 hover:bg-amber-700 shadow-amber-100'
+                }`}
+              >
+                Sim
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <Dialog open={showConfirmClear} onOpenChange={setShowConfirmClear}>
           <DialogContent className="rounded-[2rem] border-none shadow-2xl max-w-md">

@@ -29,6 +29,7 @@ import {
   toggleUserStatus,
   softDeleteUser,
   updateTournament,
+  cancelMatchPoints,
 } from '@/lib/admin'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -262,12 +263,15 @@ export async function updatePlaceholderPlayerAction(
   matchId: number,
   slot: 1 | 2,
   playerId: number,
-  tournamentId: number
+  tournamentId: number,
+  isLL?: boolean
 ) {
   await requireAdmin()
-  await updatePlaceholderPlayer(matchId, slot, playerId, tournamentId)
+  await updatePlaceholderPlayer(matchId, slot, playerId, tournamentId, isLL)
   revalidatePath(`/admin/torneios/${tournamentId}`)
   revalidatePath(`/torneio/${tournamentId}`)
+  revalidatePath('/ranking')
+  revalidatePath('/dashboard')
   return { success: true }
 }
 
@@ -288,6 +292,25 @@ export async function setMatchResultAction(
   }
 
   return result
+}
+
+export async function cancelMatchPointsAction(
+  matchId: number,
+  cancelled: boolean,
+  tournamentId: number
+) {
+  await requireAdmin()
+  try {
+    await cancelMatchPoints(matchId, cancelled)
+    revalidatePath(`/admin/torneios/${tournamentId}`)
+    revalidatePath(`/torneio/${tournamentId}`)
+    revalidatePath('/ranking')
+    revalidatePath('/dashboard')
+    return { success: true }
+  } catch (error) {
+    console.error("Error cancelling match points:", error)
+    return { success: false, error: 'Erro ao cancelar pontuação' }
+  }
 }
 
 export async function clearMatchResultAction(

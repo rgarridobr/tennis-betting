@@ -48,10 +48,11 @@ export interface BracketMatch {
   score: string | null
   match_date: string | null
   status: string
-  player1_type: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE'
-  player2_type: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE'
+  player1_type: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER'
+  player2_type: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER'
   player1_seed: number | null
   player2_seed: number | null
+  points_cancelled: boolean
   // Joined player names
   player1_name: string | null
   player1_country: string | null

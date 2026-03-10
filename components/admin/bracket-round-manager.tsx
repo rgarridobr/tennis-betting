@@ -88,6 +88,7 @@ function MatchCard({
     const displayName = name || (
       type === 'QUALIFIER' ? 'Qualifier' :
       type === 'WILDCARD' ? 'Wild Card' :
+      type === 'LUCKY_LOSER' ? 'Lucky Loser' :
       type === 'BYE' ? 'BYE' :
       'A definir'
     );
@@ -97,6 +98,7 @@ function MatchCard({
       if (type === 'SEED' && seedNum) return `(${seedNum})`;
       if (type === 'QUALIFIER') return '(Q)';
       if (type === 'WILDCARD') return '(WC)';
+      if (type === 'LUCKY_LOSER') return '(LL)';
       return null;
     };
 
@@ -120,6 +122,9 @@ function MatchCard({
     }`}>
       <div className="flex items-center justify-between mb-3">
         <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider">Jogo {match.position}</span>
+        {match.points_cancelled && (
+          <Badge className="bg-red-500 text-white text-[10px] font-black px-2 py-0 rounded-full mr-2">PONTOS ANULADOS</Badge>
+        )}
         {isCompleted ? (
           <Badge className="bg-emerald-500 text-white text-[10px] font-black px-2 py-0 rounded-full">FINALIZADO</Badge>
         ) : match.status === 'scheduled' ? (
@@ -252,10 +257,10 @@ function MatchCard({
           )}
           {isPublished && (
             <>
-              {!isCompleted && (match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD') && !match.player1_id && (
+              {!isCompleted && (match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD' || match.player1_type === 'LUCKY_LOSER') && !match.player1_id && (
                 <ReplacePlaceholderDialog match={match} slot={1} players={players} tournamentId={tournamentId} assignedPlayerIds={assignedPlayerIds} />
               )}
-              {!isCompleted && (match.player2_type === 'QUALIFIER' || match.player2_type === 'WILDCARD') && !match.player2_id && (
+              {!isCompleted && (match.player2_type === 'QUALIFIER' || match.player2_type === 'WILDCARD' || match.player2_type === 'LUCKY_LOSER') && !match.player2_id && (
                 <ReplacePlaceholderDialog match={match} slot={2} players={players} tournamentId={tournamentId} assignedPlayerIds={assignedPlayerIds} />
               )}
               {match.player1_id && match.player2_id && (

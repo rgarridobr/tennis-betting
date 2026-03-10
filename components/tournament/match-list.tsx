@@ -265,6 +265,7 @@ function MatchCard({
           points={points}
           onSelect={() => p1?.id && handlePrediction(p1.id)}
           isPlaceholder={!p1?.id && p1?.type !== 'BYE' && p1?.type !== 'PLAYER'}
+          pointsCancelled={match.points_cancelled}
         />
         <div className="border-t border-slate-200" />
         <PlayerRow
@@ -282,6 +283,7 @@ function MatchCard({
           points={points}
           onSelect={() => p2?.id && handlePrediction(p2.id)}
           isPlaceholder={!p2?.id && p2?.type !== 'BYE' && p2?.type !== 'PLAYER'}
+          pointsCancelled={match.points_cancelled}
         />
 
         {!!canPredict && !currentPrediction?.winnerId && (
@@ -307,7 +309,7 @@ function MatchCard({
 
 function PlayerRow({
   playerName, seed, type, playerId, isWinner, isSelected, isPredicted, isCompleted,
-  winnerId, canPredict, isPending, points, onSelect, isPlaceholder
+  winnerId, canPredict, isPending, points, onSelect, isPlaceholder, pointsCancelled
 }: {
   playerName: string | null
   seed: number | null
@@ -323,10 +325,12 @@ function PlayerRow({
   points: number
   onSelect: () => void
   isPlaceholder?: boolean
+  pointsCancelled?: boolean
 }) {
   const displayName = playerName || (
     type === 'QUALIFIER' ? 'Qualifier' :
     type === 'WILDCARD' ? 'Wild Card' :
+    type === 'LUCKY_LOSER' ? 'Lucky Loser' :
     type === 'BYE' ? 'BYE' :
     null
   );
@@ -359,6 +363,7 @@ function PlayerRow({
     if (type === "SEED" && seed) return `(${seed})`;
     if (type === 'QUALIFIER') return '(Q)';
     if (type === 'WILDCARD') return '(WC)';
+    if (type === 'LUCKY_LOSER') return '(LL)';
     return null;
   };
 
@@ -409,8 +414,8 @@ function PlayerRow({
         </span>
 
         {showPredictionResult && (
-          <Badge className={`ml-auto shrink-0 text-xs ${predictionCorrect ? 'bg-emerald-500 text-white hover:bg-emerald-500' : 'bg-red-500 text-white hover:bg-red-500'}`}>
-            {predictionCorrect ? `+${points} pts` : 'Errou'}
+          <Badge className={`ml-auto shrink-0 text-xs ${predictionCorrect && !pointsCancelled ? 'bg-emerald-500 text-white hover:bg-emerald-500' : 'bg-red-500 text-white hover:bg-red-500'}`}>
+            {pointsCancelled ? 'Anulada' : predictionCorrect ? `+${points} pts` : 'Errou'}
           </Badge>
         )}
 
