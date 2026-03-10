@@ -308,6 +308,21 @@ export async function setMatchPlayers(
   player2: { id?: number; type: string; seed?: number | null },
   tournamentId?: number,
 ): Promise<void> {
+  const isLL = player1.type === 'LUCKY_LOSER' || player2.type === 'LUCKY_LOSER';
+
+  let withdrawnPlayerId: number | null = null;
+  if (isLL && tournamentId) {
+    const match = await sql`SELECT round, player1_id, player2_id FROM bracket_matches WHERE id = ${matchId}`;
+    if (match.length > 0 && match[0].round === 1) {
+      const cm = match[0];
+      if (player1.type === 'LUCKY_LOSER' && cm.player1_id && cm.player1_id !== player1.id) {
+        withdrawnPlayerId = cm.player1_id;
+      } else if (player2.type === 'LUCKY_LOSER' && cm.player2_id && cm.player2_id !== player2.id) {
+        withdrawnPlayerId = cm.player2_id;
+      }
+    }
+  }
+
   await sql`
     UPDATE bracket_matches 
     SET
@@ -317,14 +332,30 @@ export async function setMatchPlayers(
       player2_id = ${player2.id || null},
       player2_type = ${player2.type},
       player2_seed = ${player2.seed || null},
+      points_cancelled = CASE WHEN ${isLL} THEN TRUE ELSE points_cancelled END,
       status = 'pending',
       updated_at = NOW()
     WHERE id = ${matchId}
   `;
 
+  if (withdrawnPlayerId && tournamentId) {
+    await annulPlayerPredictions(tournamentId, withdrawnPlayerId);
+  }
+
   if (tournamentId) {
     await autoAdvanceIfBye(matchId, tournamentId);
   }
+}
+
+async function annulPlayerPredictions(tournamentId: number, playerId: number) {
+  await sql`
+    UPDATE predictions
+    SET points_earned = 0, is_correct = FALSE
+    WHERE predicted_winner_id = ${playerId}
+      AND bracket_match_id IN (
+        SELECT id FROM bracket_matches WHERE tournament_id = ${tournamentId}
+      )
+  `;
 }
 
 async function autoAdvanceIfBye(matchId: number, tournamentId: number) {
@@ -425,6 +456,7 @@ export async function setMatchResult(
     const position = m.position as number;
     const tournamentId = m.tournament_id as number;
     const category = m.category || 'GRAND_SLAM';
+    const pointsCancelled = m.points_cancelled === true;
     // const setsToWin = m.sets_format === 5 ? 3 : 2
     const totalRounds = Math.ceil(Math.log2(m.size as number));
 
@@ -459,7 +491,7 @@ export async function setMatchResult(
     //   }
     // }
 
-    const points = getMatchPoints(category, round, totalRounds);
+    const points = pointsCancelled ? 0 : getMatchPoints(category, round, totalRounds);
 
     // Update match result
     await sql`
@@ -473,7 +505,11 @@ export async function setMatchResult(
       await sql`
         UPDATE predictions
         SET is_correct = (predicted_winner_id = ${winnerId}),
-            points_earned = CASE WHEN predicted_winner_id = ${winnerId} THEN ${points} ELSE 0 END,
+            points_earned = CASE
+              WHEN ${pointsCancelled} THEN 0
+              WHEN predicted_winner_id = ${winnerId} THEN ${points}
+              ELSE 0
+            END,
             is_score_correct = FALSE
         WHERE bracket_match_id = ${matchId}
       `;
@@ -538,7 +574,7 @@ export async function setMatchResult(
         let isScoreCorrect = false;
 
         if (predictedChampion === winnerId) {
-          finalPoints += championPoints;
+          finalPoints += pointsCancelled ? 0 : championPoints;
           // Check score tie-breaker
           if (finalPred?.score) {
             const predSetScore = calculateSetScore(finalPred.score);
@@ -549,7 +585,7 @@ export async function setMatchResult(
         }
 
         if (predictedRunnerUp === runnerUpId) {
-          finalPoints += runnerUpPoints;
+          finalPoints += pointsCancelled ? 0 : runnerUpPoints;
         }
 
         await sql`
@@ -730,15 +766,60 @@ export async function updatePlaceholderPlayer(
   slot: 1 | 2,
   playerId: number,
   tournamentId: number,
+  isLL?: boolean,
 ): Promise<void> {
+  let withdrawnPlayerId: number | null = null;
+  if (isLL) {
+    const match = await sql`SELECT round, player1_id, player2_id FROM bracket_matches WHERE id = ${matchId}`;
+    if (match.length > 0 && match[0].round === 1) {
+      const cm = match[0];
+      if (slot === 1 && cm.player1_id && cm.player1_id !== playerId) {
+        withdrawnPlayerId = cm.player1_id;
+      } else if (slot === 2 && cm.player2_id && cm.player2_id !== playerId) {
+        withdrawnPlayerId = cm.player2_id;
+      }
+    }
+  }
+
   if (slot === 1) {
-    await sql`UPDATE bracket_matches SET player1_id = ${playerId}, updated_at = NOW() WHERE id = ${matchId}`;
+    await sql`
+      UPDATE bracket_matches
+      SET player1_id = ${playerId},
+          player1_type = CASE WHEN ${isLL} THEN 'LUCKY_LOSER' ELSE player1_type END,
+          points_cancelled = CASE WHEN ${isLL} THEN TRUE ELSE points_cancelled END,
+          updated_at = NOW()
+      WHERE id = ${matchId}
+    `;
   } else {
-    await sql`UPDATE bracket_matches SET player2_id = ${playerId}, updated_at = NOW() WHERE id = ${matchId}`;
+    await sql`
+      UPDATE bracket_matches
+      SET player2_id = ${playerId},
+          player2_type = CASE WHEN ${isLL} THEN 'LUCKY_LOSER' ELSE player2_type END,
+          points_cancelled = CASE WHEN ${isLL} THEN TRUE ELSE points_cancelled END,
+          updated_at = NOW()
+      WHERE id = ${matchId}
+    `;
+  }
+
+  if (withdrawnPlayerId) {
+    await annulPlayerPredictions(tournamentId, withdrawnPlayerId);
   }
 
   if (tournamentId) {
     await autoAdvanceIfBye(matchId, tournamentId);
+  }
+}
+
+export async function cancelMatchPoints(matchId: number, cancelled: boolean): Promise<void> {
+  await sql`UPDATE bracket_matches SET points_cancelled = ${cancelled}, updated_at = NOW() WHERE id = ${matchId}`;
+
+  if (cancelled) {
+    // If cancelling, reset points for this match in all predictions
+    await sql`UPDATE predictions SET points_earned = 0 WHERE bracket_match_id = ${matchId}`;
+  } else {
+    // If un-cancelling, we might need to re-calculate points.
+    // For simplicity, let's just let the admin re-save the result or handle it manually if needed.
+    // Re-calculating correctly would require knowing the category and round again.
   }
 }
 

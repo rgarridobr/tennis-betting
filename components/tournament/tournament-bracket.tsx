@@ -386,6 +386,7 @@ function BracketMatchCard({
                 isP1={true}
                 isAdmin={true}
                 isPlaceholder={!p1?.id && p1?.type !== 'PLAYER' && p1?.type !== 'BYE'}
+                pointsCancelled={match.points_cancelled}
               />
             </div>
           }
@@ -404,6 +405,7 @@ function BracketMatchCard({
           score={match.score}
           isP1={true}
           isPlaceholder={!p1?.id && p1?.type !== 'BYE' && p1?.type !== 'PLAYER'}
+          pointsCancelled={match.points_cancelled}
         />
       )}
 
@@ -431,6 +433,7 @@ function BracketMatchCard({
                 isP1={false}
                 isAdmin={true}
                 isPlaceholder={!p2?.id && p2?.type !== 'PLAYER' && p2?.type !== 'BYE'}
+                pointsCancelled={match.points_cancelled}
               />
             </div>
           }
@@ -449,6 +452,7 @@ function BracketMatchCard({
           score={match.score}
           isP1={false}
           isPlaceholder={!p2?.id && p2?.type !== 'BYE' && p2?.type !== 'PLAYER'}
+          pointsCancelled={match.points_cancelled}
         />
       )}
 
@@ -469,10 +473,10 @@ function BracketMatchCard({
         <div className="px-2 pb-2">
           {isPublished && !isCompleted && (
             <div className="flex gap-2 mb-2">
-              {(match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD') && !match.player1_id && (
+              {(match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD' || match.player1_type === 'LUCKY_LOSER') && !match.player1_id && (
                 <ReplacePlaceholderDialog match={match} slot={1} players={players || []} tournamentId={tournamentId} assignedPlayerIds={assignedPlayerIds} />
               )}
-              {(match.player2_type === 'QUALIFIER' || match.player2_type === 'WILDCARD') && !match.player2_id && (
+              {(match.player2_type === 'QUALIFIER' || match.player2_type === 'WILDCARD' || match.player2_type === 'LUCKY_LOSER') && !match.player2_id && (
                 <ReplacePlaceholderDialog match={match} slot={2} players={players || []} tournamentId={tournamentId} assignedPlayerIds={assignedPlayerIds} />
               )}
             </div>
@@ -509,6 +513,7 @@ function PlayerRow({
   isP1,
   isAdmin = false,
   isPlaceholder = false,
+  pointsCancelled = false,
 }: {
   name: string | null;
   seed: number | null;
@@ -523,10 +528,12 @@ function PlayerRow({
   isP1: boolean;
   isAdmin?: boolean;
   isPlaceholder?: boolean;
+  pointsCancelled?: boolean;
 }) {
   const displayName = name || (
     type === 'QUALIFIER' ? 'Qualifier' :
     type === 'WILDCARD' ? 'Wild Card' :
+    type === 'LUCKY_LOSER' ? 'Lucky Loser' :
     type === 'BYE' ? 'BYE' :
     null
   );
@@ -552,6 +559,7 @@ function PlayerRow({
     if (type === 'SEED' && seed) return `(${seed})`;
     if (type === 'QUALIFIER') return '(Q)';
     if (type === 'WILDCARD') return '(WC)';
+    if (type === 'LUCKY_LOSER') return '(LL)';
     return null;
   };
 
@@ -593,6 +601,9 @@ function PlayerRow({
         {indicator && <span className="text-[9px] font-black text-slate-400">{indicator}</span>}
         {isAdmin && !isCompleted && (
           <Pencil className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+        )}
+        {showPredictionResult && pointsCancelled && (
+           <div className="ml-2 bg-red-500 text-white text-[8px] font-black h-4 px-1 flex items-center rounded-sm">ANULADA</div>
         )}
       </div>
 
