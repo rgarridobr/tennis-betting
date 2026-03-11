@@ -574,7 +574,7 @@ export async function setMatchResult(
         let isScoreCorrect = false;
 
         if (predictedChampion === winnerId) {
-          finalPoints += pointsCancelled ? 0 : championPoints;
+          finalPoints = pointsCancelled ? 0 : championPoints;
           // Check score tie-breaker
           if (finalPred?.score) {
             const predSetScore = calculateSetScore(finalPred.score);
@@ -582,10 +582,8 @@ export async function setMatchResult(
               isScoreCorrect = true;
             }
           }
-        }
-
-        if (predictedRunnerUp === runnerUpId) {
-          finalPoints += pointsCancelled ? 0 : runnerUpPoints;
+        } else if (predictedRunnerUp === runnerUpId) {
+          finalPoints = pointsCancelled ? 0 : runnerUpPoints;
         }
 
         await sql`
