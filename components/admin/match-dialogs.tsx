@@ -24,7 +24,8 @@ import {
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/ui/combobox';
-import { Pencil, Trophy, CheckCircle2, AlertCircle, X, Trash2 } from 'lucide-react';
+import { Pencil, Trophy, CheckCircle2, AlertCircle, X, Trash2, RefreshCw } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 // ==================== HELPER FUNCTIONS ====================
 
@@ -288,35 +289,39 @@ export function SetPlayersDialog({
   );
 }
 
-export function ReplacePlaceholderDialog({
+export function ReplaceMatchPlayerDialog({
   match,
-  slot,
   players,
   tournamentId,
-  trigger,
   assignedPlayerIds,
-  forceLLDefault = false,
 }: {
   match: BracketMatch;
-  slot: 1 | 2;
   players: Player[];
   tournamentId: number;
-  trigger?: React.ReactNode;
   assignedPlayerIds?: number[];
-  forceLLDefault?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [selectedSlot, setSelectedSlot] = useState<1 | 2 | null>(null);
   const [playerId, setPlayerId] = useState<string>('');
-  const type = slot === 1 ? match.player1_type : match.player2_type;
-  const [isLL, setIsLL] = useState(type === 'LUCKY_LOSER' || forceLLDefault);
+  const [isLL, setIsLL] = useState(true);
 
   useEffect(() => {
     if (open) {
-      setPlayerId(slot === 1 ? match.player1_id?.toString() || '' : match.player2_id?.toString() || '');
-      setIsLL(type === 'LUCKY_LOSER' || forceLLDefault);
+      setSelectedSlot(null);
+      setPlayerId('');
+      setIsLL(true);
     }
-  }, [open, match, slot, type, forceLLDefault]);
+  }, [open]);
+
+  useEffect(() => {
+    if (selectedSlot) {
+      const currentId = selectedSlot === 1 ? match.player1_id : match.player2_id;
+      const type = selectedSlot === 1 ? match.player1_type : match.player2_type;
+      setPlayerId(currentId?.toString() || '');
+      setIsLL(type === 'LUCKY_LOSER' || !!currentId);
+    }
+  }, [selectedSlot, match]);
 
   const filteredPlayers = players
     .filter((p) => !assignedPlayerIds?.includes(p.id) || p.id.toString() === playerId)
@@ -328,81 +333,106 @@ export function ReplacePlaceholderDialog({
   }));
 
   function handleSubmit() {
-    if (!playerId) return;
+    if (!playerId || !selectedSlot) return;
 
     startTransition(async () => {
-      await updatePlaceholderPlayerAction(match.id, slot, parseInt(playerId), tournamentId, isLL);
+      await updatePlaceholderPlayerAction(match.id, selectedSlot, parseInt(playerId), tournamentId, isLL);
       setOpen(false);
     });
   }
 
-  const isReplacing = forceLLDefault || (slot === 1 ? !!match.player1_id : !!match.player2_id);
-  const typeLabel = type === 'QUALIFIER' ? 'Q' : type === 'WILDCARD' ? 'WC' : 'LL';
+  const p1Name = formatPlayerName(match.player1_name, match.player1_seed, match.player1_type);
+  const p2Name = formatPlayerName(match.player2_name, match.player2_seed, match.player2_type);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {trigger || (
-          <Button
-            variant="outline"
-            size="sm"
-            className={cn(
-              "flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider border-2",
-              isReplacing
-                ? "border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100"
-                : "border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100"
-            )}
-          >
-            {isReplacing ? 'Substituir (LL)' : `Definir ${typeLabel}`}
-          </Button>
-        )}
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider border-2 border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100"
+        >
+          <RefreshCw className="w-3 h-3 mr-1.5" /> Substituir / LL
+        </Button>
       </DialogTrigger>
-      <DialogContent className="rounded-[2rem]">
+      <DialogContent className="rounded-[2rem] max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-black">
-            {isReplacing ? 'Substituir por Lucky Loser' : `Definir Jogador (${type})`}
-          </DialogTitle>
+          <DialogTitle className="text-2xl font-black">Substituir Jogador</DialogTitle>
+          <DialogDescription className="font-bold text-slate-500">
+            Selecione qual lado do confronto deseja alterar.
+          </DialogDescription>
         </DialogHeader>
-        <div className="py-4 space-y-4">
-          <p className="text-sm font-bold text-slate-500">
-            {isReplacing
-              ? 'Substitua o jogador atual por um Lucky Loser.'
-              : `Associe um jogador real ao slot de ${type}.`}
-          </p>
 
-          <Combobox
-            options={options}
-            value={playerId}
-            onValueChange={setPlayerId}
-            placeholder="Selecione o jogador..."
-            className="h-12"
-          />
-
-          <div className="flex items-center space-x-2 p-4 bg-slate-50 rounded-2xl border-2 border-slate-100">
-            <input
-              type="checkbox"
-              id="isLL"
-              checked={isLL}
-              onChange={(e) => setIsLL(e.target.checked)}
-              className="w-5 h-5 rounded-lg border-2 border-slate-300 text-emerald-600 focus:ring-emerald-500"
-            />
-            <label htmlFor="isLL" className="text-sm font-black text-slate-700 cursor-pointer">
-              Este jogador está entrando como Lucky Loser (LL)
-            </label>
+        <div className="py-4 space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              onClick={() => setSelectedSlot(1)}
+              className={cn(
+                'flex flex-col items-center gap-2 p-4 border-2 rounded-2xl transition-all',
+                selectedSlot === 1
+                  ? 'bg-rose-50 border-rose-500 ring-4 ring-rose-50'
+                  : 'border-slate-100 hover:bg-slate-50',
+              )}
+            >
+              <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Lado A</span>
+              <span className="text-sm font-black text-center line-clamp-2">{p1Name}</span>
+            </button>
+            <button
+              onClick={() => setSelectedSlot(2)}
+              className={cn(
+                'flex flex-col items-center gap-2 p-4 border-2 rounded-2xl transition-all',
+                selectedSlot === 2
+                  ? 'bg-rose-50 border-rose-500 ring-4 ring-rose-50'
+                  : 'border-slate-100 hover:bg-slate-50',
+              )}
+            >
+              <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Lado B</span>
+              <span className="text-sm font-black text-center line-clamp-2">{p2Name}</span>
+            </button>
           </div>
-          {isLL && (
-            <p className="text-[10px] text-amber-600 font-bold bg-amber-50 p-3 rounded-xl border border-amber-100">
-              <AlertCircle className="w-3 h-3 inline mr-1" />
-              Ao marcar como LL, a pontuação desta partida será automaticamente anulada para todos os usuários.
-            </p>
+
+          {selectedSlot && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="space-y-2">
+                <Label className="text-xs font-black uppercase tracking-widest text-slate-500">Novo Jogador</Label>
+                <Combobox
+                  options={options}
+                  value={playerId}
+                  onValueChange={setPlayerId}
+                  placeholder="Selecione o jogador..."
+                  className="h-12"
+                />
+              </div>
+
+              <div className="flex items-center space-x-2 p-4 bg-slate-50 rounded-2xl border-2 border-slate-100">
+                <input
+                  type="checkbox"
+                  id="isLL"
+                  checked={isLL}
+                  onChange={(e) => setIsLL(e.target.checked)}
+                  className="w-5 h-5 rounded-lg border-2 border-slate-300 text-rose-600 focus:ring-rose-500"
+                />
+                <label htmlFor="isLL" className="text-sm font-black text-slate-700 cursor-pointer">
+                  Este jogador está entrando como Lucky Loser (LL)
+                </label>
+              </div>
+
+              {isLL && (
+                <p className="text-[10px] text-amber-600 font-bold bg-amber-50 p-3 rounded-xl border border-amber-100">
+                  <AlertCircle className="w-3 h-3 inline mr-1" />
+                  Ao marcar como LL, a pontuação desta partida será automaticamente anulada para todos os usuários.
+                </p>
+              )}
+            </div>
           )}
         </div>
+
         <Button
           onClick={handleSubmit}
-          disabled={isPending || !playerId}
-          className="w-full h-12 rounded-2xl font-black text-lg bg-emerald-600 hover:bg-emerald-700"
+          disabled={isPending || !playerId || !selectedSlot}
+          className="w-full h-14 rounded-2xl font-black text-lg bg-rose-600 hover:bg-rose-700 text-white shadow-xl shadow-rose-100"
         >
-          {isPending ? 'Salvando...' : 'Confirmar Jogador'}
+          {isPending ? 'Salvando...' : 'Confirmar Substituição'}
         </Button>
       </DialogContent>
     </Dialog>

@@ -5,7 +5,7 @@ import type { BracketMatch, Player } from '@/lib/data';
 import { makePredictionAction } from '@/lib/actions/predictions';
 import { Check, Trophy, X, Pencil, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SetPlayersDialog, ReplacePlaceholderDialog, SetResultDialog } from '@/components/admin/match-dialogs';
+import { SetPlayersDialog, ReplaceMatchPlayerDialog, SetResultDialog } from '@/components/admin/match-dialogs';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
@@ -473,29 +473,18 @@ function BracketMatchCard({
         <div className="px-2 pb-2">
           {isPublished && !isCompleted && (
             <div className="flex gap-2 mb-2">
-              {/* Slot 1: Replace placeholder OR replace existing player in Round 1 */}
-              {((match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD' || match.player1_type === 'LUCKY_LOSER') && !match.player1_id) || (match.round === 1) ? (
-                <ReplacePlaceholderDialog
+              {/* Replace placeholder OR replace existing player in Round 1 */}
+              {(match.round === 1 ||
+                ((match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD' || match.player1_type === 'LUCKY_LOSER') && !match.player1_id) ||
+                ((match.player2_type === 'QUALIFIER' || match.player2_type === 'WILDCARD' || match.player2_type === 'LUCKY_LOSER') && !match.player2_id)
+              ) && (
+                <ReplaceMatchPlayerDialog
                   match={match}
-                  slot={1}
                   players={players || []}
                   tournamentId={tournamentId}
                   assignedPlayerIds={assignedPlayerIds}
-                  forceLLDefault={!!match.player1_id}
                 />
-              ) : null}
-
-              {/* Slot 2: Replace placeholder OR replace existing player in Round 1 */}
-              {((match.player2_type === 'QUALIFIER' || match.player2_type === 'WILDCARD' || match.player2_type === 'LUCKY_LOSER') && !match.player2_id) || (match.round === 1) ? (
-                <ReplacePlaceholderDialog
-                  match={match}
-                  slot={2}
-                  players={players || []}
-                  tournamentId={tournamentId}
-                  assignedPlayerIds={assignedPlayerIds}
-                  forceLLDefault={!!match.player2_id}
-                />
-              ) : null}
+              )}
             </div>
           )}
 

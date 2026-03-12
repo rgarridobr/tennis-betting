@@ -6,7 +6,7 @@ import type { BracketMatch, Player } from '@/lib/data'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ChevronDown, ChevronUp, Pencil, Trophy, AlertCircle } from 'lucide-react'
-import { SetPlayersDialog, ReplacePlaceholderDialog, SetResultDialog } from './match-dialogs'
+import { SetPlayersDialog, ReplaceMatchPlayerDialog, SetResultDialog } from './match-dialogs'
 
 interface Props {
   round: number
@@ -159,23 +159,6 @@ function MatchCard({
               </div>
             }
           />
-        ) : !isDraft && !isCompleted && ((match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD' || match.player1_type === 'LUCKY_LOSER') || match.round === 1) ? (
-          <ReplacePlaceholderDialog
-            match={match}
-            slot={1}
-            players={players}
-            tournamentId={tournamentId}
-            assignedPlayerIds={assignedPlayerIds}
-            forceLLDefault={!!match.player1_id}
-            trigger={
-              <div className={`flex items-center justify-between p-2 rounded-xl cursor-pointer transition-colors border border-dashed ${!!match.player1_id ? 'hover:bg-rose-100/50 border-rose-300' : 'hover:bg-amber-100/50 border-amber-300'}`}>
-                <div className={`flex items-center gap-2 text-sm truncate font-bold ${!!match.player1_id ? 'text-rose-700' : 'text-amber-700'}`}>
-                  {getPlayerDisplay(match.player1_id, match.player1_name, match.player1_type, match.player1_seed)}
-                </div>
-                <Pencil className={`w-3 h-3 ${!!match.player1_id ? 'text-rose-500' : 'text-amber-500'}`} />
-              </div>
-            }
-          />
         ) : (
           <div className={`flex items-center justify-between p-2 rounded-xl ${
             isCompleted && match.winner_id === match.player1_id ? 'bg-emerald-100/50 ring-1 ring-emerald-200' : ''
@@ -213,23 +196,6 @@ function MatchCard({
               </div>
             }
           />
-        ) : !isDraft && !isCompleted && ((match.player2_type === 'QUALIFIER' || match.player2_type === 'WILDCARD' || match.player2_type === 'LUCKY_LOSER') || match.round === 1) ? (
-          <ReplacePlaceholderDialog
-            match={match}
-            slot={2}
-            players={players}
-            tournamentId={tournamentId}
-            assignedPlayerIds={assignedPlayerIds}
-            forceLLDefault={!!match.player2_id}
-            trigger={
-              <div className={`flex items-center justify-between p-2 rounded-xl cursor-pointer transition-colors border border-dashed ${!!match.player2_id ? 'hover:bg-rose-100/50 border-rose-300' : 'hover:bg-amber-100/50 border-amber-300'}`}>
-                <div className={`flex items-center gap-2 text-sm truncate font-bold ${!!match.player2_id ? 'text-rose-700' : 'text-amber-700'}`}>
-                  {getPlayerDisplay(match.player2_id, match.player2_name, match.player2_type, match.player2_seed)}
-                </div>
-                <Pencil className={`w-3 h-3 ${!!match.player2_id ? 'text-rose-500' : 'text-amber-500'}`} />
-              </div>
-            }
-          />
         ) : (
           <div className={`flex items-center justify-between p-2 rounded-xl ${
             isCompleted && match.winner_id === match.player2_id ? 'bg-emerald-100/50 ring-1 ring-emerald-200' : ''
@@ -259,24 +225,15 @@ function MatchCard({
           )}
           {isPublished && (
             <>
-              {!isCompleted && (((match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD' || match.player1_type === 'LUCKY_LOSER') && !match.player1_id) || match.round === 1) && (
-                <ReplacePlaceholderDialog
+              {!isCompleted && (match.round === 1 ||
+                ((match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD' || match.player1_type === 'LUCKY_LOSER') && !match.player1_id) ||
+                ((match.player2_type === 'QUALIFIER' || match.player2_type === 'WILDCARD' || match.player2_type === 'LUCKY_LOSER') && !match.player2_id)
+              ) && (
+                <ReplaceMatchPlayerDialog
                   match={match}
-                  slot={1}
                   players={players}
                   tournamentId={tournamentId}
                   assignedPlayerIds={assignedPlayerIds}
-                  forceLLDefault={!!match.player1_id}
-                />
-              )}
-              {!isCompleted && (((match.player2_type === 'QUALIFIER' || match.player2_type === 'WILDCARD' || match.player2_type === 'LUCKY_LOSER') && !match.player2_id) || match.round === 1) && (
-                <ReplacePlaceholderDialog
-                  match={match}
-                  slot={2}
-                  players={players}
-                  tournamentId={tournamentId}
-                  assignedPlayerIds={assignedPlayerIds}
-                  forceLLDefault={!!match.player2_id}
                 />
               )}
               {match.player1_id && match.player2_id && (
