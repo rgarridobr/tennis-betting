@@ -473,12 +473,29 @@ function BracketMatchCard({
         <div className="px-2 pb-2">
           {isPublished && !isCompleted && (
             <div className="flex gap-2 mb-2">
-              {(match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD' || match.player1_type === 'LUCKY_LOSER') && !match.player1_id && (
-                <ReplacePlaceholderDialog match={match} slot={1} players={players || []} tournamentId={tournamentId} assignedPlayerIds={assignedPlayerIds} />
-              )}
-              {(match.player2_type === 'QUALIFIER' || match.player2_type === 'WILDCARD' || match.player2_type === 'LUCKY_LOSER') && !match.player2_id && (
-                <ReplacePlaceholderDialog match={match} slot={2} players={players || []} tournamentId={tournamentId} assignedPlayerIds={assignedPlayerIds} />
-              )}
+              {/* Slot 1: Replace placeholder OR replace existing player in Round 1 */}
+              {((match.player1_type === 'QUALIFIER' || match.player1_type === 'WILDCARD' || match.player1_type === 'LUCKY_LOSER') && !match.player1_id) || (match.round === 1) ? (
+                <ReplacePlaceholderDialog
+                  match={match}
+                  slot={1}
+                  players={players || []}
+                  tournamentId={tournamentId}
+                  assignedPlayerIds={assignedPlayerIds}
+                  forceLLDefault={!!match.player1_id}
+                />
+              ) : null}
+
+              {/* Slot 2: Replace placeholder OR replace existing player in Round 1 */}
+              {((match.player2_type === 'QUALIFIER' || match.player2_type === 'WILDCARD' || match.player2_type === 'LUCKY_LOSER') && !match.player2_id) || (match.round === 1) ? (
+                <ReplacePlaceholderDialog
+                  match={match}
+                  slot={2}
+                  players={players || []}
+                  tournamentId={tournamentId}
+                  assignedPlayerIds={assignedPlayerIds}
+                  forceLLDefault={!!match.player2_id}
+                />
+              ) : null}
             </div>
           )}
 
