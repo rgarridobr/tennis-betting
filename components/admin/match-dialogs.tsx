@@ -350,7 +350,7 @@ export function ReplaceMatchPlayerDialog({
         <Button
           variant="outline"
           size="sm"
-          className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider border-2 border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100"
+          className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider border-2 border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 hover:text-rose-800"
         >
           <RefreshCw className="w-3 h-3 mr-1.5" /> Substituir / LL
         </Button>
