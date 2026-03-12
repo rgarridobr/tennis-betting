@@ -295,6 +295,7 @@ export function ReplacePlaceholderDialog({
   tournamentId,
   trigger,
   assignedPlayerIds,
+  forceLLDefault = false,
 }: {
   match: BracketMatch;
   slot: 1 | 2;
@@ -302,19 +303,20 @@ export function ReplacePlaceholderDialog({
   tournamentId: number;
   trigger?: React.ReactNode;
   assignedPlayerIds?: number[];
+  forceLLDefault?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [playerId, setPlayerId] = useState<string>('');
   const type = slot === 1 ? match.player1_type : match.player2_type;
-  const [isLL, setIsLL] = useState(type === 'LUCKY_LOSER');
+  const [isLL, setIsLL] = useState(type === 'LUCKY_LOSER' || forceLLDefault);
 
   useEffect(() => {
     if (open) {
       setPlayerId(slot === 1 ? match.player1_id?.toString() || '' : match.player2_id?.toString() || '');
-      setIsLL(type === 'LUCKY_LOSER');
+      setIsLL(type === 'LUCKY_LOSER' || forceLLDefault);
     }
-  }, [open, match, slot, type]);
+  }, [open, match, slot, type, forceLLDefault]);
 
   const filteredPlayers = players
     .filter((p) => !assignedPlayerIds?.includes(p.id) || p.id.toString() === playerId)
@@ -334,6 +336,7 @@ export function ReplacePlaceholderDialog({
     });
   }
 
+  const isReplacing = forceLLDefault || (slot === 1 ? !!match.player1_id : !!match.player2_id);
   const typeLabel = type === 'QUALIFIER' ? 'Q' : type === 'WILDCARD' ? 'WC' : 'LL';
 
   return (
@@ -343,19 +346,28 @@ export function ReplacePlaceholderDialog({
           <Button
             variant="outline"
             size="sm"
-            className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider border-2 border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100"
+            className={cn(
+              "flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider border-2",
+              isReplacing
+                ? "border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100"
+                : "border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100"
+            )}
           >
-            Definir {typeLabel}
+            {isReplacing ? 'Substituir (LL)' : `Definir ${typeLabel}`}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="rounded-[2rem]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-black">Definir Jogador ({type})</DialogTitle>
+          <DialogTitle className="text-2xl font-black">
+            {isReplacing ? 'Substituir por Lucky Loser' : `Definir Jogador (${type})`}
+          </DialogTitle>
         </DialogHeader>
         <div className="py-4 space-y-4">
           <p className="text-sm font-bold text-slate-500">
-            Associe um jogador real ao slot de {type}.
+            {isReplacing
+              ? 'Substitua o jogador atual por um Lucky Loser.'
+              : `Associe um jogador real ao slot de ${type}.`}
           </p>
 
           <Combobox
