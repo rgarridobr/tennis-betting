@@ -229,8 +229,7 @@ export default async function AdminDashboardPage() {
                             <p className="font-black text-slate-900 group-hover:text-emerald-600 transition-colors truncate max-w-[120px]">
                               {t.name}
                             </p>
-                            <p className="text-xs font-bold text-slate-400">                                    {getStatusLabels[t.status] || t.status}
-                            </p>
+                            <p className="text-xs font-bold text-slate-400"> {getStatusLabels[t.status] || t.status}</p>
                           </div>
                         </div>
                         <div className="text-right">

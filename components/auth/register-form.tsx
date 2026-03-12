@@ -1,93 +1,117 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useFormStatus } from 'react-dom'
-import { registerAction } from '@/lib/actions/auth'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
-import { formatBrazilianPhoneNumber } from '@/lib/utils'
+import { useState } from 'react';
+import { useFormStatus } from 'react-dom';
+import { registerAction } from '@/lib/actions/auth';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { formatBrazilianPhoneNumber } from '@/lib/utils';
+import { toast } from 'sonner';
 
 function SubmitButton() {
-  const { pending } = useFormStatus()
+  const { pending } = useFormStatus();
   return (
     <Button type="submit" className="w-full" disabled={pending}>
       {pending ? 'Criando conta...' : 'Criar conta'}
     </Button>
-  )
+  );
 }
 
 export function RegisterForm() {
-  const [error, setError] = useState<string | null>(null)
-  const [name, setName] = useState('')
-  const [nickname, setNickname] = useState('')
-  const [whatsapp, setWhatsapp] = useState('')
-  const [tennisClub, setTennisClub] = useState('')
-  const [isNoneChecked, setIsNoneChecked] = useState(false)
-  const [isFirstNameOnlyChecked, setIsFirstNameOnlyChecked] = useState(false)
+  const [error, setError] = useState<string | null>(null);
+  const [name, setName] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
+  const [tennisClub, setTennisClub] = useState('');
+  const [isNoneChecked, setIsNoneChecked] = useState(false);
+  const [isFirstNameOnlyChecked, setIsFirstNameOnlyChecked] = useState(false);
+  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setName(value)
+    const value = e.target.value;
+    setName(value);
     if (isFirstNameOnlyChecked) {
-      const firstName = value.trim().split(' ')[0]
-      setNickname(firstName)
+      const firstName = value.trim().split(' ')[0];
+      setNickname(firstName);
     }
-  }
+  };
 
   const handleFirstNameOnlyChange = (checked: boolean) => {
-    setIsFirstNameOnlyChecked(checked)
+    setIsFirstNameOnlyChecked(checked);
     if (checked) {
-      const firstName = name.trim().split(' ')[0]
-      setNickname(firstName)
+      const firstName = name.trim().split(' ')[0];
+      setNickname(firstName);
     }
-  }
+  };
 
   const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedValue = formatBrazilianPhoneNumber(e.target.value)
-    setWhatsapp(formattedValue)
-  }
+    const formattedValue = formatBrazilianPhoneNumber(e.target.value);
+    setWhatsapp(formattedValue);
+  };
 
   const handleNoneChange = (checked: boolean) => {
-    setIsNoneChecked(checked)
+    setIsNoneChecked(checked);
     if (checked) {
-      setTennisClub('Nenhum')
+      setTennisClub('Nenhum');
     } else {
-      setTennisClub('')
+      setTennisClub('');
     }
-  }
-  
+  };
+
   async function handleSubmit(formData: FormData) {
-    setError(null)
-    const result = await registerAction(formData)
+    setError(null);
+    const isValid = validateForm(formData);
+
+    if (!isValid) {
+      return;
+    }
+    const result = await registerAction(formData);
     if (result?.error) {
-      setError(result.error)
+      setError(result.error);
     }
   }
-  
+
+  function validateForm(formData: FormData): boolean {
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    if (!validateEmail(email) || !validatePassword(password)) {
+      return false;
+    }
+    return !error;
+  }
+
+  function validateEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const cleanEmail = email.trim();
+
+    if (!emailRegex.test(cleanEmail)) {
+      toast.error('Por favor, insira um email válido.');
+      return false;
+    }
+
+    return true;
+  }
+
+  function validatePassword(password: string): boolean {
+    if (password.length < 6) {
+      toast.error('A senha deve conter pelo menos 6 caracteres.');
+      return false;
+    }
+    return true;
+  }
+
   return (
     <Card>
       <CardContent className="pt-6">
         <form action={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg">
-              {error}
-            </div>
-          )}
-          
           <div className="space-y-2">
             <Label htmlFor="name">Nome Completo (privado) *</Label>
-            <Input
-              id="name"
-              name="name"
-              type="text"
-              placeholder=""
-              required
-              value={name}
-              onChange={handleNameChange}
-            />
+            <Input id="name" name="name" type="text" placeholder="" required value={name} onChange={handleNameChange} />
           </div>
 
           <div className="space-y-2">
@@ -117,11 +141,11 @@ export function RegisterForm() {
               readOnly={isFirstNameOnlyChecked}
               className={isFirstNameOnlyChecked ? 'bg-slate-50 cursor-not-allowed' : ''}
             />
-            <p className="text-xs text-slate-500">
+            <p className="text-[10px] text-slate-400 font-bold px-1 italic">
               Seu nome real ficará privado, apenas este apelido será exibido publicamente
             </p>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="email">Email *</Label>
             <Input
@@ -129,10 +153,12 @@ export function RegisterForm() {
               name="email"
               type="email"
               placeholder=""
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="password">Senha *</Label>
             <Input
@@ -140,9 +166,12 @@ export function RegisterForm() {
               name="password"
               type="password"
               placeholder=""
-              minLength={6}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
             />
+                          <p className="text-[10px] text-slate-400 font-bold px-1 italic">Mínimo de 6 caracteres</p>
+
           </div>
 
           <div className="space-y-2">
@@ -162,11 +191,7 @@ export function RegisterForm() {
             <div className="flex items-center justify-between">
               <Label htmlFor="tennis_club">Clube em que joga tênis *</Label>
               <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="no_club" 
-                  checked={isNoneChecked}
-                  onCheckedChange={handleNoneChange}
-                />
+                <Checkbox id="no_club" checked={isNoneChecked} onCheckedChange={handleNoneChange} />
                 <label
                   htmlFor="no_club"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -187,14 +212,12 @@ export function RegisterForm() {
               required
             />
           </div>
-          
-          <div className="text-sm text-slate-500 py-2">
-            Campos com * são obrigatórios
-          </div>
+
+          <div className="text-[10px] text-slate-400 font-bold px-1 italic py-2">Campos com * são obrigatórios</div>
 
           <SubmitButton />
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

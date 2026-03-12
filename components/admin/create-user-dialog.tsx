@@ -1,14 +1,14 @@
-'use client'
+'use client';
 
-import { useState, useTransition } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { createUserAction } from '@/lib/actions/admin'
-import { UserPlus, Mail, Lock, User, AlertCircle, Loader2, Phone, Home } from 'lucide-react'
-import { toast } from 'sonner'
-import { formatBrazilianPhoneNumber } from '@/lib/utils'
-import { Checkbox } from '@/components/ui/checkbox'
+import { useState, useTransition } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { createUserAction } from '@/lib/actions/admin';
+import { UserPlus, Mail, Lock, User, AlertCircle, Loader2, Phone, Home } from 'lucide-react';
+import { toast } from 'sonner';
+import { formatBrazilianPhoneNumber } from '@/lib/utils';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -17,61 +17,93 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
+} from '@/components/ui/dialog';
 
 export function CreateUserDialog() {
-  const [isPending, startTransition] = useTransition()
-  const [open, setOpen] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [name, setName] = useState('')
-  const [nickname, setNickname] = useState('')
-  const [whatsapp, setWhatsapp] = useState('')
-  const [tennisClub, setTennisClub] = useState('')
-  const [isNoneChecked, setIsNoneChecked] = useState(false)
-  const [isFirstNameOnlyChecked, setIsFirstNameOnlyChecked] = useState(false)
+  const [isPending, startTransition] = useTransition();
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [name, setName] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
+  const [tennisClub, setTennisClub] = useState('');
+  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+
+  const [isNoneChecked, setIsNoneChecked] = useState(false);
+  const [isFirstNameOnlyChecked, setIsFirstNameOnlyChecked] = useState(false);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setName(value)
+    const value = e.target.value;
+    setName(value);
+
     if (isFirstNameOnlyChecked) {
-      const firstName = value.trim().split(' ')[0]
-      setNickname(firstName)
+      setNickname(value.trim().split(' ')[0]);
     }
-  }
+  };
 
   const handleFirstNameOnlyChange = (checked: boolean) => {
-    setIsFirstNameOnlyChecked(checked)
+    setIsFirstNameOnlyChecked(checked);
+
     if (checked) {
-      const firstName = name.trim().split(' ')[0]
-      setNickname(firstName)
+      setNickname(name.trim().split(' ')[0]);
     }
-  }
+  };
 
   const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedValue = formatBrazilianPhoneNumber(e.target.value)
-    setWhatsapp(formattedValue)
-  }
+    const formattedValue = formatBrazilianPhoneNumber(e.target.value);
+    setWhatsapp(formattedValue);
+  };
 
   const handleNoneChange = (checked: boolean) => {
-    setIsNoneChecked(checked)
+    setIsNoneChecked(checked);
+
     if (checked) {
-      setTennisClub('Nenhum')
+      setTennisClub('Nenhum');
     } else {
-      setTennisClub('')
+      setTennisClub('');
     }
+  };
+
+  function validateEmail(email: string) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!regex.test(email.trim())) {
+      toast.error('Por favor, insira um email válido.');
+      return false;
+    }
+
+    return true;
+  }
+
+  function validatePassword(password: string) {
+    if (password.length < 6) {
+      toast.error('A senha deve conter pelo menos 6 caracteres.');
+      return false;
+    }
+
+    return true;
   }
 
   async function handleSubmit(formData: FormData) {
-    setError(null)
+    setError(null);
+
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    if (!validateEmail(email) || !validatePassword(password)) return;
+
     startTransition(async () => {
-      const result = await createUserAction(formData)
+      const result = await createUserAction(formData);
+
       if (result.success) {
-        toast.success('Usuário cadastrado com sucesso!')
-        setOpen(false)
+        toast.success('Usuário cadastrado com sucesso!');
+        setOpen(false);
       } else {
-        setError(result.error || 'Erro ao cadastrar usuário')
+        setError(result.error || 'Erro ao cadastrar usuário');
       }
-    })
+    });
   }
 
   return (
@@ -85,12 +117,17 @@ export function CreateUserDialog() {
           Novo Usuário
         </Button>
       </DialogTrigger>
+
       <DialogContent className="rounded-[2rem] border-none shadow-2xl max-w-md p-0 max-h-[90vh] overflow-y-auto">
         <DialogHeader className="p-8 bg-slate-50/50 border-b border-slate-100">
-          <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-4 border border-emerald-200 shadow-sm">
+          <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-4 border border-emerald-200">
             <UserPlus className="w-7 h-7 text-emerald-600" />
           </div>
-          <DialogTitle className="text-3xl font-black text-slate-900 tracking-tight text-left">Novo Usuário</DialogTitle>
+
+          <DialogTitle className="text-3xl font-black text-slate-900 tracking-tight text-left">
+            Novo Usuário
+          </DialogTitle>
+
           <DialogDescription className="text-base font-medium text-slate-400 mt-1 text-left">
             Cadastre um novo participante para o bolão.
           </DialogDescription>
@@ -98,161 +135,158 @@ export function CreateUserDialog() {
 
         <form action={handleSubmit} className="p-8 space-y-6">
           {error && (
-            <div className="bg-red-50 text-red-700 text-sm p-4 rounded-2xl flex items-center gap-3 border-2 border-red-100 animate-in fade-in slide-in-from-top-4">
+            <div className="bg-red-50 text-red-700 text-sm p-5 rounded-2xl flex items-center gap-3 border-2 border-red-100">
               <AlertCircle className="w-5 h-5 shrink-0" />
               <span className="font-bold">{error}</span>
             </div>
           )}
 
+          {/* Nome */}
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest ml-1">
-                <User className="w-3 h-3 text-emerald-500" /> Nome Completo (privado) *
-              </Label>
-              <Input
-                id="name"
-                name="name"
-                value={name}
-                onChange={handleNameChange}
-                placeholder=""
-                required
-                className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300"
-              />
-            </div>
+            <Label className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
+              <User className="w-4 h-4 text-emerald-500" /> Nome Completo (privado) *
+            </Label>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between ml-1">
-                <Label htmlFor="nickname" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest">
-                  <User className="w-3 h-3 text-emerald-500" /> Apelido (visível no site)
-                </Label>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="first_name_only_admin"
-                    checked={isFirstNameOnlyChecked}
-                    onCheckedChange={handleFirstNameOnlyChange}
-                    className="w-3 h-3 border-slate-300 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
-                  />
-                  <label
-                    htmlFor="first_name_only_admin"
-                    className="text-[10px] font-black uppercase tracking-widest text-slate-400 cursor-pointer"
-                  >
-                    Apenas o primeiro nome
-                  </label>
-                </div>
-              </div>
-              <Input
-                id="nickname"
-                name="nickname"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                readOnly={isFirstNameOnlyChecked}
-                placeholder=""
-                className={`h-12 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300 ${isFirstNameOnlyChecked ? 'bg-slate-100 cursor-not-allowed' : 'bg-slate-50'}`}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest ml-1">
-                <Mail className="w-3 h-3 text-emerald-500" /> E-mail *
-              </Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder=""
-                required
-                className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest ml-1">
-                <Lock className="w-3 h-3 text-emerald-500" /> Senha *
-              </Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder=""
-                required
-                minLength={6}
-                className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300"
-              />
-              <p className="text-[10px] text-slate-400 font-bold px-1 italic">Mínimo de 6 caracteres</p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="whatsapp" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest ml-1">
-                <Phone className="w-3 h-3 text-emerald-500" /> WhatsApp
-              </Label>
-              <Input
-                id="whatsapp"
-                name="whatsapp"
-                placeholder=""
-                value={whatsapp}
-                onChange={handleWhatsappChange}
-                maxLength={15}
-                className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between ml-1">
-                <Label htmlFor="tennis_club" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest">
-                  <Home className="w-3 h-3 text-emerald-500" /> Clube em que joga tênis *
-                </Label>
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="no_club_admin" 
-                    checked={isNoneChecked}
-                    onCheckedChange={handleNoneChange}
-                    className="w-3 h-3 border-slate-300 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
-                  />
-                  <label
-                    htmlFor="no_club_admin"
-                    className="text-[10px] font-black uppercase tracking-widest text-slate-400 cursor-pointer"
-                  >
-                    Nenhum
-                  </label>
-                </div>
-              </div>
-              <Input
-                id="tennis_club"
-                name="tennis_club"
-                placeholder=""
-                value={tennisClub}
-                onChange={(e) => setTennisClub(e.target.value)}
-                readOnly={isNoneChecked}
-                required
-                className={`h-12 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300 ${isNoneChecked ? 'bg-slate-100 cursor-not-allowed' : 'bg-slate-50'}`}
-              />
-            </div>
+            <Input
+              name="name"
+              value={name}
+              onChange={handleNameChange}
+              required
+              className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700"
+            />
           </div>
 
-          <div className="text-[10px] text-slate-400 font-black uppercase tracking-widest text-center">
-            Campos com * são obrigatórios
+          {/* Apelido */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <Label className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
+                <User className="w-4 h-4 text-emerald-500" /> Apelido (visível no site)
+              </Label>
+
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="first_name_only_admin"
+                  checked={isFirstNameOnlyChecked}
+                  onCheckedChange={handleFirstNameOnlyChange}
+                />
+                <label
+                  htmlFor="first_name_only_admin"
+                  className="text-[10px] font-black uppercase tracking-widest text-slate-400 cursor-pointer"
+                >
+                  Apenas o primeiro nome
+                </label>
+              </div>
+            </div>
+
+            <Input
+              name="nickname"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              readOnly={isFirstNameOnlyChecked}
+              className={`h-12 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 ${
+                isFirstNameOnlyChecked ? 'bg-slate-100 cursor-not-allowed' : 'bg-slate-50'
+              }`}
+            />
+          </div>
+
+          {/* Email */}
+          <div className="space-y-4">
+            <Label className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
+              <Mail className="w-4 h-4 text-emerald-500" /> Email
+            </Label>
+
+            <Input
+              name="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700"
+            />
+          </div>
+
+          {/* Senha */}
+          <div className="space-y-4">
+            <Label className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
+              <Lock className="w-4 h-4 text-emerald-500" /> Senha
+            </Label>
+
+            <Input
+              name="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700"
+            />
+
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mínimo de 6 caracteres</p>
+          </div>
+
+          {/* WhatsApp */}
+          <div className="space-y-4">
+            <Label className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
+              <Phone className="w-4 h-4 text-emerald-500" /> WhatsApp
+            </Label>
+
+            <Input
+              name="whatsapp"
+              value={whatsapp}
+              onChange={handleWhatsappChange}
+              maxLength={15}
+              className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700"
+            />
+          </div>
+
+          {/* Clube */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <Label className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
+                <Home className="w-4 h-4 text-emerald-500" /> Clube
+              </Label>
+
+              <div className="flex items-center gap-2">
+                <Checkbox id="none_club" checked={isNoneChecked} onCheckedChange={handleNoneChange} />
+                <label
+                  htmlFor="none_club"
+                  className="text-[10px] font-black uppercase tracking-widest text-slate-400 cursor-pointer"
+                >
+                  Nenhum
+                </label>
+              </div>
+            </div>
+
+            <Input
+              name="tennis_club"
+              value={tennisClub}
+              onChange={(e) => setTennisClub(e.target.value)}
+              readOnly={isNoneChecked}
+              required
+              className={`h-12 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 ${
+                isNoneChecked ? 'bg-slate-100 cursor-not-allowed' : 'bg-slate-50'
+              }`}
+            />
           </div>
 
           <DialogFooter className="pt-4">
             <Button
               type="submit"
               disabled={isPending}
-              className="w-full h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white gap-3 text-lg font-black shadow-xl shadow-emerald-200 transition-all active:scale-95"
+              className="w-full h-14 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-white font-black shadow-xl shadow-emerald-500/20"
             >
               {isPending ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
                   Cadastrando...
                 </>
               ) : (
-                <>
-                  Cadastrar Usuário
-                </>
+                'Cadastrar Usuário'
               )}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -30,7 +30,7 @@ export default async function NewTournamentPage() {
           <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-8 sm:p-10">
             <CardTitle className="text-3xl font-black text-slate-900 tracking-tight">Criar Torneio</CardTitle>
             <CardDescription className="text-base font-medium text-slate-400 mt-2">
-              Preencha as informações do Grand Slam. O chaveamento com 127 partidas será gerado automaticamente.
+              Preencha as informações abaixo:
             </CardDescription>
           </CardHeader>
           <CardContent className="p-8 sm:p-10">

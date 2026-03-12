@@ -17,9 +17,6 @@ export default async function AdminUsersPage() {
 
   const users = await getAllUsers();
 
-  console.log(users);
-  const adminCount = users.filter((u) => u.is_admin).length;
-
   return (
     <>
       <PageHero title="Gerenciar Usuários" subtitle="Administre os participantes do bolão"/> 
