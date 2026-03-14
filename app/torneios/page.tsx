@@ -1,6 +1,6 @@
 import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { getTournaments, getTournamentsActive } from '@/lib/data'
+import { getTournaments, getTournamentsActive, getActiveTournament } from '@/lib/data'
 import { DashboardHeader } from '@/components/dashboard/dashboard-header'
 import { TournamentCard } from '@/components/dashboard/tournament-card'
 import { PageHero } from '@/components/shared/page-hero'
@@ -11,11 +11,14 @@ export default async function TournamentsPage() {
   const user = await getSession()
   if (!user) redirect('/login')
 
-  const tournaments = await getTournamentsActive()
+  const [tournaments, activeTournament] = await Promise.all([
+    getTournamentsActive(),
+    getActiveTournament()
+  ])
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <DashboardHeader user={user} />
+      <DashboardHeader user={user} activeTournamentId={activeTournament?.id} />
 
       <PageHero
         title="Torneios"

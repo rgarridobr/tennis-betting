@@ -1,6 +1,6 @@
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { getGlobalRanking, getUserStats } from '@/lib/data';
+import { getGlobalRanking, getUserStats, getActiveTournament } from '@/lib/data';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { PageHero } from '@/components/shared/page-hero';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,7 +11,11 @@ export default async function RankingPage() {
   const user = await getSession();
   if (!user) redirect('/login');
 
-  const [ranking, userStats] = await Promise.all([getGlobalRanking(100), getUserStats(user.id)]);
+  const [ranking, userStats, activeTournament] = await Promise.all([
+    getGlobalRanking(100),
+    getUserStats(user.id),
+    getActiveTournament(),
+  ]);
 
   // Find current user's position
   const userRankEntry = ranking.find((r) => r.user_id === user.id);
@@ -19,7 +23,7 @@ export default async function RankingPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader user={user} />
+      <DashboardHeader user={user} activeTournamentId={activeTournament?.id} />
 
       {/* Header */}
       <PageHero title="Ranking Geral" subtitle="Veja quem está liderando o bolão">

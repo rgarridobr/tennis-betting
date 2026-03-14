@@ -110,7 +110,7 @@ function RankingRow({ entry, isCurrentUser, tournamentId, hasStarted }: { entry:
 
   if (canViewBracket) {
     return (
-      <Link href={`/torneio/${tournamentId}?view=bracket&viewUser=${entry.user_id}`}>
+      <Link href={`/torneio/${tournamentId}?view=ranking&viewUser=${entry.user_id}`}>
         {Content}
       </Link>
     )

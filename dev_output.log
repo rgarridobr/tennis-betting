@@ -1,0 +1,15 @@
+
+> tennis-betting@0.1.0 dev
+> next dev
+
+   ▲ Next.js 16.0.10 (Turbopack)
+   - Local:         http://localhost:3000
+   - Network:       http://192.168.0.2:3000
+
+ ✓ Starting...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ✓ Ready in 723ms
+ ○ Compiling /login ...
+ GET /login 200 in 3.8s (compile: 3.4s, render: 396ms)
+ GET /regras 307 in 1200ms (compile: 999ms, render: 201ms)
+ GET /login 200 in 130ms (compile: 5ms, render: 126ms)

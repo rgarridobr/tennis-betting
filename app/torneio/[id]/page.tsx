@@ -11,16 +11,15 @@ import {
   getEnrollment,
   getTournamentRanking,
   getUserPublicInfo,
+  getActiveTournament,
 } from '@/lib/data'
 import { getDynamicRoundNames } from '@/lib/utils'
 import { DashboardHeader } from '@/components/dashboard/dashboard-header'
 import { TournamentHeader } from '@/components/tournament/tournament-header'
-import { MatchList } from '@/components/tournament/match-list'
 import { FileText, ArrowLeft, Info } from 'lucide-react'
 import Link from 'next/link'
 import { TournamentBracket } from '@/components/tournament/tournament-bracket'
 import { EnrollmentBanner } from '@/components/tournament/enrollment-banner'
-import { TournamentViewToggle } from '@/components/tournament/tournament-view-toggle'
 import { TournamentRanking } from '@/components/tournament/tournament-ranking'
 
 interface TournamentPageProps {
@@ -33,7 +32,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
   if (!user) redirect('/login')
 
   const { id } = await params
-  const { view = 'bracket', viewUser } = await searchParams
+  const { viewUser, view = 'bracket' } = await searchParams
   const tournamentId = parseInt(id, 10)
   if (isNaN(tournamentId)) notFound()
 
@@ -44,14 +43,14 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
   const targetUserId = (viewUser && started) ? parseInt(viewUser, 10) : user.id
   const isViewingOthers = targetUserId !== user.id
 
-  const [matches, targetPredictions, enrollment, participants, tournamentPlayers, ranking, targetUserInfo] = await Promise.all([
+  const [matches, targetPredictions, enrollment, participants, tournamentPlayers, targetUserInfo, activeTournament] = await Promise.all([
     getBracketMatches(tournamentId),
     getUserPredictions(targetUserId, tournamentId),
     getEnrollment(user.id, tournamentId),
     getTournamentParticipantCount(tournamentId),
     getTournamentPlayers(tournamentId),
-    getTournamentRanking(tournamentId),
-    isViewingOthers ? getUserPublicInfo(targetUserId) : null
+    isViewingOthers ? getUserPublicInfo(targetUserId) : null,
+    getActiveTournament()
   ])
 
   const enrolled = !!enrollment
@@ -70,7 +69,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader user={user} />
+      <DashboardHeader user={user} activeTournamentId={activeTournament?.id} />
 
       <TournamentHeader tournament={tournament} participants={participants} />
 
@@ -105,16 +104,12 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
           <div className="flex items-center gap-4">
             {isViewingOthers && (
               <Link
-                href={`/torneio/${tournamentId}?view=ranking`}
+                href={view === 'ranking' ? `/ranking/torneio/${tournamentId}` : `/ranking`}
                 className="flex items-center gap-2 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-bold text-sm transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Voltar ao Ranking
               </Link>
-            )}
-
-            {tournament.status !== 'upcoming' && tournament.status !== 'draft' && tournament.status !== 'STANDBY' && (
-              <TournamentViewToggle currentView={view} />
             )}
           </div>
         </div>
@@ -153,24 +148,6 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
               Este usuário não registrou palpites para este torneio.
             </p>
           </div>
-        ) : view === 'ranking' ? (
-          <TournamentRanking
-            ranking={ranking}
-            currentUserId={user.id}
-            tournamentId={tournamentId}
-            hasStarted={started}
-          />
-        ) : view === 'list' ? (
-          <MatchList
-            matches={matches}
-            userId={user.id}
-            tournamentId={tournamentId}
-            predictions={predictionsRecord}
-            canMakePredictions={enrolled && !started && !isViewingOthers}
-            roundNames={dynamicRoundNames}
-            tournamentCategory={tournament.category}
-            tournamentSize={tournament.size}
-          />
         ) : (
           <TournamentBracket
             matches={matches}

@@ -5,11 +5,9 @@ import { isRound1Complete } from '@/lib/admin';
 import { PageHero } from '@/components/shared/page-hero';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BracketRoundManager } from '@/components/admin/bracket-round-manager';
 import { PlayerManager } from '@/components/admin/player-manager';
 import { PublishBracketButton } from '@/components/admin/publish-bracket-button';
 import { TournamentStatusTransition } from '@/components/admin/tournament-status-transition';
-import { TournamentViewToggle } from '@/components/tournament/tournament-view-toggle';
 import { TournamentBracket } from '@/components/tournament/tournament-bracket';
 import { Trophy, Clock, Hash, Users, ArrowLeft, AlertTriangle, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,9 +21,8 @@ interface Props {
   searchParams: Promise<{ view?: string }>;
 }
 
-export default async function ManageTournamentPage({ params, searchParams }: Props) {
+export default async function ManageTournamentPage({ params }: Props) {
   const { id } = await params;
-  const { view = 'bracket' } = await searchParams;
 
   if (id === 'novo') return null;
 
@@ -46,12 +43,6 @@ export default async function ManageTournamentPage({ params, searchParams }: Pro
     if (m.player1_id) assignedPlayerIds.add(m.player1_id);
     if (m.player2_id) assignedPlayerIds.add(m.player2_id);
   });
-
-  const matchesByRound: Record<number, typeof matches> = {};
-  for (const m of matches) {
-    if (!matchesByRound[m.round]) matchesByRound[m.round] = [];
-    matchesByRound[m.round].push(m);
-  }
 
   const maxRound = matches.length > 0 ? Math.max(...matches.map((m) => m.round)) : 0;
   const dynamicRoundNames = getDynamicRoundNames(maxRound);
@@ -180,7 +171,6 @@ export default async function ManageTournamentPage({ params, searchParams }: Pro
                 <Badge className="bg-emerald-500 text-white font-black px-4 py-1.5 rounded-full">CHAVE FIXA</Badge>
               )}
             </div>
-            {matches.length > 0 && <TournamentViewToggle currentView={view} />}
           </div>
 
           {matches.length === 0 ? (
@@ -189,7 +179,7 @@ export default async function ManageTournamentPage({ params, searchParams }: Pro
                 <p className="text-slate-500 font-medium">O chaveamento ainda não foi gerado.</p>
               </CardContent>
             </Card>
-          ) : view === 'bracket' ? (
+          ) : (
             <TournamentBracket
               matches={matches}
               userId={0}
@@ -202,28 +192,6 @@ export default async function ManageTournamentPage({ params, searchParams }: Pro
               tournamentStatus={tournament.status}
               assignedPlayerIds={Array.from(assignedPlayerIds)}
             />
-          ) : (
-            <div className="space-y-6">
-              {Object.keys(matchesByRound)
-                .map(Number)
-                .sort((a, b) => a - b)
-                .map((round) => {
-                  const roundMatches = matchesByRound[round] || [];
-                  return (
-                    <BracketRoundManager
-                      key={round}
-                      round={round}
-                      roundName={dynamicRoundNames[round]}
-                      matches={roundMatches}
-                      players={players}
-                      tournamentId={tournamentId}
-                      tournamentStatus={tournament.status}
-                      isFinalRound={round === maxRound}
-                      assignedPlayerIds={Array.from(assignedPlayerIds)}
-                    />
-                  );
-                })}
-            </div>
           )}
         </div>
       </main>
