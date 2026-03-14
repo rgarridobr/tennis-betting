@@ -33,10 +33,10 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
 
   const navItems = [
     { href: '/torneios', label: 'Torneios', icon: Trophy },
-    { href: '/meus-palpites', label: 'Meus Palpites', icon: Target, authRequired: true },
+    // { href: '/meus-palpites', label: 'Meus Palpites', icon: Target, authRequired: true },
     { href: '/ranking', label: 'Ranking', icon: Medal },
     { href: '/regras', label: 'Regras', icon: FileText },
-  ].filter(item => !item.authRequired || user);
+  ];
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60">
@@ -99,10 +99,10 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                       <p className="text-sm text-muted-foreground">{user.email}</p>
                     </div>
                   </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
+                  {/* <DropdownMenuSeparator /> */}
+                  {/* <DropdownMenuItem asChild>
                     <Link href="/meus-palpites">Meus Palpites</Link>
-                  </DropdownMenuItem>
+                  </DropdownMenuItem> */}
                   <DropdownMenuItem asChild>
                     <Link href="/perfil">Meu Perfil</Link>
                   </DropdownMenuItem>

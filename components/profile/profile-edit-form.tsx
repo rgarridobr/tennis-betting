@@ -126,7 +126,7 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
           <Input
             id="email"
             name="email"
-            type="email"
+            type="text"
             defaultValue={user.email}
             disabled
             className="bg-slate-50 text-slate-500 cursor-not-allowed"

@@ -43,7 +43,7 @@ export function LoginForm() {
             <Input
               id="email"
               name="email"
-              type="email"
+              type="text"
               placeholder=""
               required
             />

@@ -169,7 +169,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
               <Input
                 id="edit-email"
                 name="email"
-                type="email"
+                type="text"
                 defaultValue={user.email}
                 placeholder=""
                 required
