@@ -100,7 +100,7 @@ export default async function RulesPage() {
                     <div
                       className={cn(
                         'grid grid-cols-2 sm:grid-cols-4 divide-x divide-y divide-slate-100',
-                        config.rounds.length > 5 ? 'md:grid-cols-4' : 'md:grid-cols-3'
+                        config.rounds.length > 5 ? 'md:grid-cols-8' : 'md:grid-cols-6'
                       )}
                     >
                       {config.rounds.map((points, idx) => {
