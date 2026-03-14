@@ -196,6 +196,16 @@ export async function getTournamentById(id: number): Promise<Tournament | null> 
   return rows.length > 0 ? (rows[0] as Tournament) : null
 }
 
+export async function getActiveTournament(): Promise<Tournament | null> {
+  const rows = await sql`
+    SELECT * FROM tournaments
+    WHERE status IN ('OPEN', 'LOCKED', 'IN_PROGRESS')
+    ORDER BY start_date DESC
+    LIMIT 1
+  `
+  return rows.length > 0 ? (rows[0] as Tournament) : null
+}
+
 // ==================== PLAYERS ====================
 
 export async function getPlayers(): Promise<Player[]> {

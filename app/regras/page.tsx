@@ -2,7 +2,7 @@ import { getSession } from '@/lib/auth';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { PageHero } from '@/components/shared/page-hero';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { POINTS_CONFIG } from '@/lib/data';
+import { POINTS_CONFIG, getActiveTournament } from '@/lib/data';
 import { getRoundName, cn } from '@/lib/utils';
 import { Info, HelpCircle, Trophy, Clock, Edit3, Target } from 'lucide-react';
 import { redirect } from 'next/navigation';
@@ -15,6 +15,8 @@ export default async function RulesPage() {
     redirect('/login');
   }
 
+  const [activeTournament] = await Promise.all([getActiveTournament()]);
+
   const categories = [
     { id: 'GRAND_SLAM', name: 'Grand Slam', description: 'Australian Open, Roland Garros, Wimbledon, US Open' },
     { id: 'MASTERS_1000', name: 'Masters 1000', description: 'Indian Wells, Miami, Madrid, Rome, etc.' },
@@ -24,7 +26,7 @@ export default async function RulesPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader user={user} />
+      <DashboardHeader user={user} activeTournamentId={activeTournament?.id} />
 
       <PageHero title="Regras do Bolão" subtitle="Entenda como funciona a pontuação e as participações" />
 
