@@ -26,7 +26,7 @@ export default async function RankingPage() {
       <DashboardHeader user={user} activeTournamentId={activeTournament?.id} />
 
       {/* Header */}
-      <PageHero title="Ranking Geral" subtitle="Veja quem está liderando o bolão">
+      <PageHero title="Ranking Geral" subtitle="Veja quem está liderando a temporada atual">
         <Card className="bg-white/10 border-0 backdrop-blur-sm">
           <CardContent className="p-4 flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">

@@ -112,15 +112,15 @@ export default async function RulesPage() {
                         return (
                           <React.Fragment key={idx}>
                             {isLast && (
-                              <div className="p-4 text-center">
+                              <div className="text-center">
                                 <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Vice-campeão</p>
-                                <p className="text-xl font-black text-emerald-600">{config.runnerUp}</p>
+                                <p className="text-xl font-black text-emerald-600 py-6">{config.runnerUp}</p>
                                 <p className="text-[10px] text-slate-500">pontos</p>
                               </div>
                             )}
-                            <div className="p-4 text-center">
-                              <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">{roundName === 'Final' ? 'CAMPEÃO e/ou CAMPEÃO e VICE-CAMPEÃO' : roundName}</p>
-                              <p className="text-xl font-black text-emerald-600">{points}</p>
+                            <div className="text-center">
+                              <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">{roundName === 'Final' ? 'CAMPEÃO e/ou CAMPEÃO e VICE' : roundName}</p>
+                              <p className="text-xl font-black text-emerald-600 py-6">{points}</p>
                               <p className="text-[10px] text-slate-500">pontos</p>
                             </div>
                           </React.Fragment>
