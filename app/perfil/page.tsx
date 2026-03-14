@@ -1,6 +1,6 @@
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { getUserStats, getGlobalRanking } from '@/lib/data';
+import { getUserStats, getGlobalRanking, getActiveTournament } from '@/lib/data';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { PageHero } from '@/components/shared/page-hero';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +13,11 @@ export default async function PerfilPage() {
   const user = await getSession();
   if (!user) redirect('/login');
 
-  const [stats, ranking] = await Promise.all([getUserStats(user.id), getGlobalRanking(100)]);
+  const [stats, ranking, activeTournament] = await Promise.all([
+    getUserStats(user.id),
+    getGlobalRanking(100),
+    getActiveTournament()
+  ]);
 
   // Find user position in ranking
   const userRankEntry = ranking.find((r) => r.user_id === user.id);
@@ -33,7 +37,7 @@ export default async function PerfilPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardHeader user={user} />
+      <DashboardHeader user={user} activeTournamentId={activeTournament?.id} />
 
       <PageHero title="Meu Perfil" subtitle="Gerencie suas informações e veja suas estatísticas" />
 

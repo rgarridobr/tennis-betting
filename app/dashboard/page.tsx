@@ -1,6 +1,6 @@
 import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { getTournaments, getUserStats, getGlobalRanking, getTournamentsActiveThisMonth } from '@/lib/data'
+import { getTournaments, getUserStats, getGlobalRanking, getTournamentsActiveThisMonth, getActiveTournament } from '@/lib/data'
 import { HeroSection } from '@/components/dashboard/hero-section'
 import { StatsCards } from '@/components/dashboard/stats-cards'
 import { TournamentCard } from '@/components/dashboard/tournament-card'
@@ -11,15 +11,16 @@ export default async function DashboardPage() {
   const user = await getSession()
   if (!user) redirect('/login')
 
-  const [tournaments, stats, ranking] = await Promise.all([
+  const [tournaments, stats, ranking, activeTournament] = await Promise.all([
     getTournamentsActiveThisMonth(),
     getUserStats(user.id),
     getGlobalRanking(10),
+    getActiveTournament(),
   ])
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      <DashboardHeader user={user} />
+      <DashboardHeader user={user} activeTournamentId={activeTournament?.id} />
       <HeroSection user={user} />
 
       <main className="container mx-auto px-4 md:px-32 pb-12">

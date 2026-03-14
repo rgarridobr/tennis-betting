@@ -17,9 +17,10 @@ import { usePathname } from 'next/navigation';
 
 interface DashboardHeaderProps {
   user: User | null;
+  activeTournamentId?: number | null;
 }
 
-export function DashboardHeader({ user }: DashboardHeaderProps) {
+export function DashboardHeader({ user, activeTournamentId }: DashboardHeaderProps) {
   const pathname = usePathname();
 
   const displayName = user?.nickname || user?.name || 'Visitante';
@@ -34,7 +35,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
   const navItems = [
     { href: '/torneios', label: 'Torneios', icon: Trophy },
     // { href: '/meus-palpites', label: 'Meus Palpites', icon: Target, authRequired: true },
-    { href: '/ranking', label: 'Ranking', icon: Medal },
+    { href: '/ranking', label: 'Ranking', icon: Medal, isRanking: true },
     { href: '/regras', label: 'Regras', icon: FileText },
   ];
 
@@ -52,7 +53,43 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         {/* Navigation - Center */}
         <nav className="flex-1 flex items-center justify-center gap-1 sm:gap-2">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
+            const isActive =
+              pathname === item.href ||
+              (item.href !== '/admin' && item.href !== '/ranking' && pathname.startsWith(item.href)) ||
+              (item.href === '/ranking' && pathname.startsWith('/ranking'));
+
+            if (item.isRanking) {
+              return (
+                <DropdownMenu key={item.href}>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base font-medium rounded-lg transition-all flex items-center gap-2 outline-none ${
+                        isActive
+                          ? 'text-emerald-600 bg-emerald-50'
+                          : 'text-slate-600 hover:text-emerald-600 hover:bg-emerald-50'
+                      }`}
+                    >
+                      <item.icon className="w-4 h-4" />
+                      <span className="hidden sm:inline">{item.label}</span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="center" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link href="/ranking" className="cursor-pointer">Ranking Geral</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild disabled={!activeTournamentId}>
+                      {activeTournamentId ? (
+                        <Link href={`/ranking/torneio/${activeTournamentId}`} className="cursor-pointer">
+                          Ranking do Torneio
+                        </Link>
+                      ) : (
+                        <span className="opacity-50 cursor-not-allowed">Ranking do Torneio</span>
+                      )}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              );
+            }
 
             return (
               <Link
