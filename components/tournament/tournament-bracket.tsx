@@ -295,21 +295,30 @@ export function TournamentBracket({
                               <div
                                 className="absolute -right-24 top-1/2 w-24 pointer-events-none"
                                 style={{
-                                  height: `${BASE_GAP / 2 + CARD_HEIGHT / 2 + 2}px`,
+                                  height: `${verticalGap / 2 + CARD_HEIGHT / 2}px`,
                                   top: matchIdx % 2 === 0 ? '50%' : 'auto',
                                   bottom: matchIdx % 2 === 0 ? 'auto' : '50%',
-                                  borderRight: '2px solid rgb(226, 232, 240)',
-                                  borderTop: matchIdx % 2 === 0 ? '2px solid rgb(226, 232, 240)' : 'none',
-                                  borderBottom: matchIdx % 2 !== 0 ? '2px solid rgb(226, 232, 240)' : 'none',
-                                  borderRadius: matchIdx % 2 === 0 ? '0 12px 0 0' : '0 0 12px 0',
                                 }}
                               >
+                                {/* Horizontal line from current match to center of gap */}
                                 <div
                                   className={cn(
                                     'absolute w-1/2 h-[2px] bg-slate-200',
                                     matchIdx % 2 === 0 ? 'top-0 left-0' : 'bottom-0 left-0',
                                   )}
                                 />
+
+                                {/* Vertical line in the center of gap */}
+                                <div
+                                  className="absolute w-[2px] bg-slate-200 left-1/2 top-0 bottom-0"
+                                />
+
+                                {/* Horizontal line from center of gap to next match */}
+                                {matchIdx % 2 === 0 && (
+                                  <div
+                                    className="absolute w-1/2 h-[2px] bg-slate-200 right-0 bottom-0"
+                                  />
+                                )}
                               </div>
                             )}
                           </div>
