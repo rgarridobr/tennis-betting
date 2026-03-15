@@ -72,9 +72,9 @@ export default async function RulesPage() {
             </CardHeader>
             <CardContent>
               <p className="text-slate-600 text-sm leading-relaxed">
-                Você ganha pontos a cada acerto de vencedor. A pontuação é progressiva: rodadas finais valem mais.
-                Na final, se acertar o Campeão e o Vice, você leva apenas a pontuação do Campeão.
-                Caso acerte apenas o Vice, leva a pontuação de Vice.
+                Você ganha pontos a cada acerto de vencedor. A pontuação é progressiva: rodadas finais valem mais. Na
+                final, se acertar o Campeão e o Vice, você leva apenas a pontuação do Campeão. Caso acerte apenas o
+                Vice, leva a pontuação de Vice.
               </p>
             </CardContent>
           </Card>
@@ -102,7 +102,7 @@ export default async function RulesPage() {
                     <div
                       className={cn(
                         'grid grid-cols-2 sm:grid-cols-4 divide-x divide-y divide-slate-100',
-                        config.rounds.length > 5 ? 'md:grid-cols-8' : 'md:grid-cols-6'
+                        config.rounds.length > 5 ? 'md:grid-cols-8' : 'md:grid-cols-6',
                       )}
                     >
                       {config.rounds.map((points, idx) => {
@@ -119,7 +119,9 @@ export default async function RulesPage() {
                               </div>
                             )}
                             <div className="text-center">
-                              <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">{roundName === 'Final' ? 'CAMPEÃO e/ou CAMPEÃO e VICE' : roundName}</p>
+                              <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">
+                                {roundName === 'F' ? 'CAMPEÃO e/ou CAMPEÃO e VICE' : roundName}
+                              </p>
                               <p className="text-xl font-black text-emerald-600 py-3">{points}</p>
                               <p className="text-[10px] text-slate-500">pontos</p>
                             </div>
