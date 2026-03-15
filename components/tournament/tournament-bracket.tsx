@@ -76,9 +76,24 @@ export function TournamentBracket({
 
   // Map of player ID to player details for display in predicted rounds
   const playersById: Record<number, { name: string; seed: number | null; type: string }> = {};
+
+  // First, populate from all players in the tournament (most reliable source)
+  players.forEach(p => {
+    playersById[p.id] = { name: p.name, seed: p.seed, type: 'PLAYER' };
+  });
+
+  // Then, override with match-specific data if available (to get seeds/types correct in context)
   for (const m of matches) {
-    if (m.player1_id) playersById[m.player1_id] = { name: m.player1_name!, seed: m.player1_seed, type: m.player1_type };
-    if (m.player2_id) playersById[m.player2_id] = { name: m.player2_name!, seed: m.player2_seed, type: m.player2_type };
+    if (m.player1_id) playersById[m.player1_id] = {
+      name: m.player1_name || playersById[m.player1_id]?.name || '',
+      seed: m.player1_seed ?? playersById[m.player1_id]?.seed ?? null,
+      type: m.player1_type
+    };
+    if (m.player2_id) playersById[m.player2_id] = {
+      name: m.player2_name || playersById[m.player2_id]?.name || '',
+      seed: m.player2_seed ?? playersById[m.player2_id]?.seed ?? null,
+      type: m.player2_type
+    };
   }
 
   function handlePrediction(matchId: number, winnerId: number, score?: string) {
@@ -150,38 +165,6 @@ export function TournamentBracket({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* View Mode Toggle */}
-      {!isAdmin && (
-        <div className="flex justify-center mb-2">
-          <div className="bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm flex gap-1">
-            <button
-              onClick={() => setViewMode('official')}
-              className={cn(
-                "flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
-                viewMode === 'official'
-                  ? "bg-slate-900 text-white shadow-lg"
-                  : "text-slate-400 hover:bg-slate-50"
-              )}
-            >
-              <Layout className="w-3.5 h-3.5" />
-              Chave Oficial
-            </button>
-            <button
-              onClick={() => setViewMode('predictions')}
-              className={cn(
-                "flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
-                viewMode === 'predictions'
-                  ? "bg-emerald-600 text-white shadow-lg"
-                  : "text-slate-400 hover:bg-slate-50"
-              )}
-            >
-              <UserIcon className="w-3.5 h-3.5" />
-              Meus Palpites
-            </button>
-          </div>
-        </div>
-      )}
-
       {viewMode === 'predictions' && canMakePredictions && (
         <div className="flex items-center justify-between p-6 bg-emerald-50 rounded-[2rem] border border-emerald-100 shadow-sm">
           <div className="flex items-center gap-3">
@@ -215,22 +198,57 @@ export function TournamentBracket({
         </div>
       )}
 
-      {/* Round Filter */}
-      <div className="flex items-center sm:justify-center gap-2 mb-8 sticky top-20 z-40 bg-slate-50/80 backdrop-blur-md py-4 rounded-[2rem] border border-slate-200/50 shadow-sm px-4 overflow-x-auto scrollbar-hide">
-        {rounds.map((round) => (
-          <button
-            key={round}
-            onClick={() => handleRoundSelect(round)}
-            className={cn(
-              "px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all",
-              selectedRound === round
-                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200 scale-105"
-                : "bg-white text-slate-500 hover:text-emerald-600 border border-slate-200 hover:border-emerald-200"
-            )}
-          >
-            {roundNames[round] || `R${round}`}
-          </button>
-        ))}
+      {/* Sticky Header with Toggles and Filters */}
+      <div className="sticky top-20 z-40 bg-slate-50/80 backdrop-blur-md py-4 rounded-[2rem] border border-slate-200/50 shadow-sm px-6 flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
+        {/* View Mode Toggle */}
+        {!isAdmin && (
+          <div className="bg-white p-1 rounded-2xl border border-slate-200 shadow-sm flex gap-1 shrink-0">
+            <button
+              onClick={() => setViewMode('official')}
+              className={cn(
+                "flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                viewMode === 'official'
+                  ? "bg-slate-900 text-white shadow-md"
+                  : "text-slate-400 hover:bg-slate-50"
+              )}
+            >
+              <Layout className="w-3.5 h-3.5" />
+              Chave Oficial
+            </button>
+            <button
+              onClick={() => setViewMode('predictions')}
+              className={cn(
+                "flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                viewMode === 'predictions'
+                  ? "bg-emerald-600 text-white shadow-md"
+                  : "text-slate-400 hover:bg-slate-50"
+              )}
+            >
+              <UserIcon className="w-3.5 h-3.5" />
+              Meus Palpites
+            </button>
+          </div>
+        )}
+
+        <div className="h-[1px] w-full bg-slate-200 md:hidden" />
+
+        {/* Round Filter */}
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide max-w-full">
+          {rounds.map((round) => (
+            <button
+              key={round}
+              onClick={() => handleRoundSelect(round)}
+              className={cn(
+                "px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all shrink-0",
+                selectedRound === round
+                  ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200 scale-105"
+                  : "bg-white text-slate-500 hover:text-emerald-600 border border-slate-200 hover:border-emerald-200"
+              )}
+            >
+              {roundNames[round] || `R${round}`}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="w-full bg-[#f8fafc] rounded-[2.5rem] border border-slate-200 shadow-xl relative overflow-hidden">
