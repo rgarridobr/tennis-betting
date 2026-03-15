@@ -1,15 +1,21 @@
+npm warn exec The following package was not found and will be installed: next@16.1.6
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
 
-> tennis-betting@0.1.0 dev
-> next dev
+✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
 
-   ▲ Next.js 16.0.10 (Turbopack)
-   - Local:         http://localhost:3000
-   - Network:       http://192.168.0.2:3000
+Error: Turbopack build failed with 1 errors:
+./app
+Error: Next.js inferred your workspace root, but it may not be correct.
+    We couldn't find the Next.js package (next/package.json) from the project directory: /app/app
+     To fix this, set turbopack.root in your Next.js config, or ensure the Next.js package is resolvable from this directory.
+    Note: For security and performance reasons, files outside of the project directory will not be compiled.
+    See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
 
- ✓ Starting...
-[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
- ✓ Ready in 723ms
- ○ Compiling /login ...
- GET /login 200 in 3.8s (compile: 3.4s, render: 396ms)
- GET /regras 307 in 1200ms (compile: 999ms, render: 201ms)
- GET /login 200 in 130ms (compile: 5ms, render: 126ms)
+    at ignore-listed frames
+[?25h

@@ -119,7 +119,7 @@ export default async function RulesPage() {
                               </div>
                             )}
                             <div className="text-center">
-                              <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">{roundName === 'Final' ? 'CAMPEÃO e/ou CAMPEÃO e VICE' : roundName}</p>
+                              <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">{roundName === 'F' ? 'CAMPEÃO e/ou CAMPEÃO e VICE' : roundName}</p>
                               <p className="text-xl font-black text-emerald-600 py-3">{points}</p>
                               <p className="text-[10px] text-slate-500">pontos</p>
                             </div>

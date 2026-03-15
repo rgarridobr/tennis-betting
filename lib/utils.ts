@@ -25,9 +25,9 @@ export function formatBrazilianPhoneNumber(value: string) {
 export function getRoundName(round: number, maxRound: number): string {
   if (maxRound === 0) return `Rodada ${round}`;
 
-  if (round === maxRound) return 'Final';
-  if (round === maxRound - 1) return 'Semis';
-  if (round === maxRound - 2) return 'Quartas';
+  if (round === maxRound) return 'F';
+  if (round === maxRound - 1) return 'SF';
+  if (round === maxRound - 2) return 'QF';
   if (round === maxRound - 3) return 'R16';
   if (round === maxRound - 4) return 'R32';
   if (round === maxRound - 5) return 'R64';

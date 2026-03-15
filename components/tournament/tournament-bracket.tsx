@@ -57,6 +57,8 @@ export function TournamentBracket({
     .sort((a, b) => a - b);
   const maxRound = rounds.length > 0 ? Math.max(...rounds) : 0;
 
+  const [selectedRound, setSelectedRound] = useState<number>(rounds[0] || 1);
+
   // Map of player ID to player details for display in predicted rounds
   const playersById: Record<number, { name: string; seed: number | null; type: string }> = {};
   for (const m of matches) {
@@ -166,6 +168,24 @@ export function TournamentBracket({
         </div>
       )}
 
+      {/* Round Filter */}
+      <div className="flex items-center sm:justify-center gap-2 mb-8 sticky top-20 z-40 bg-slate-50/80 backdrop-blur-md py-4 rounded-[2rem] border border-slate-200/50 shadow-sm px-4 overflow-x-auto scrollbar-hide">
+        {rounds.map((round) => (
+          <button
+            key={round}
+            onClick={() => setSelectedRound(round)}
+            className={cn(
+              "px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all",
+              selectedRound === round
+                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200 scale-105"
+                : "bg-white text-slate-500 hover:text-emerald-600 border border-slate-200 hover:border-emerald-200"
+            )}
+          >
+            {roundNames[round] || `R${round}`}
+          </button>
+        ))}
+      </div>
+
       <div className="w-full bg-[#f8fafc] rounded-[2.5rem] border border-slate-200 shadow-xl relative overflow-hidden">
         <div
           className="absolute inset-0 opacity-[0.03] pointer-events-none"
@@ -176,49 +196,106 @@ export function TournamentBracket({
 
         <div
           ref={scrollContainerRef}
-          className="overflow-x-auto overflow-y-auto p-12 min-h-[700px] relative scrollbar-hide"
+          className="overflow-x-auto overflow-y-auto p-8 md:p-12 min-h-[700px] relative scrollbar-hide"
         >
-          <div className="flex gap-24 min-w-max relative pb-20">
-            {rounds.map((round, roundIdx) => {
-              const roundMatches = matchesByRound[round];
-              const multiplier = Math.pow(2, roundIdx);
-              const verticalGap = multiplier === 1 ? BASE_GAP : multiplier * (CARD_HEIGHT + BASE_GAP) - CARD_HEIGHT;
-              const paddingTop = multiplier === 1 ? 0 : ((multiplier - 1) * (CARD_HEIGHT + BASE_GAP)) / 2;
+          <div className="flex gap-24 relative pb-20 min-w-max justify-center">
+            {rounds
+              .filter(r => r === selectedRound || r === rounds[rounds.indexOf(selectedRound) + 1])
+              .map((round) => {
+                const roundIdx = rounds.indexOf(round);
+                const isFinalRound = roundIdx === rounds.length - 1;
+                const relativeIdx = roundIdx - rounds.indexOf(selectedRound);
+                const hasNextVisibleRound = rounds.indexOf(selectedRound) + 1 < rounds.length;
 
-              const isFinalRound = roundIdx === rounds.length - 1;
+                const multiplier = Math.pow(2, relativeIdx);
+                const verticalGap = multiplier === 1 ? BASE_GAP : multiplier * (CARD_HEIGHT + BASE_GAP) - CARD_HEIGHT;
+                const paddingTop = multiplier === 1 ? 0 : ((multiplier - 1) * (CARD_HEIGHT + BASE_GAP)) / 2;
 
-              return (
-                <div key={round} className="flex flex-col w-[300px] relative z-10">
-                  <div className="sticky top-0 z-20 bg-[#f8fafc]/80 backdrop-blur-sm py-3 mb-8 rounded-xl border border-slate-100 shadow-sm text-center">
-                    <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">
-                      {roundNames[round] || `Rodada ${round}`}
-                    </h3>
-                  </div>
+                return (
+                  <div key={round} className="flex flex-col w-[300px] relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="text-center mb-10">
+                      <h3 className="text-sm font-black uppercase tracking-[0.3em] text-emerald-600 bg-emerald-50 inline-block px-6 py-2 rounded-full border border-emerald-100">
+                        {roundNames[round] === 'F' ? 'Final' :
+                         roundNames[round] === 'SF' ? 'Semifinais' :
+                         roundNames[round] === 'QF' ? 'Quartas de Final' :
+                         roundNames[round] || `Rodada ${round}`}
+                      </h3>
+                    </div>
 
-                  <div
-                    className="flex flex-col flex-1"
-                    style={{
-                      gap: `${verticalGap}px`,
-                      paddingTop: `${paddingTop}px`,
-                    }}
-                  >
-                    {Array.from({ length: Math.pow(2, maxRound - round) }).map((_, matchIdx) => {
-                      const position = matchIdx + 1;
-                      const match = matchesMap[`${round}-${position}`];
+                    <div
+                      className="flex flex-col flex-1"
+                      style={{
+                        gap: `${verticalGap}px`,
+                        paddingTop: `${paddingTop}px`,
+                      }}
+                    >
+                      {Array.from({ length: Math.pow(2, maxRound - round) }).map((_, matchIdx) => {
+                        const position = matchIdx + 1;
+                        const match = matchesMap[`${round}-${position}`];
 
-                      if (!match) {
-                        return (
-                          <div key={`missing-${round}-${position}`} className="relative flex items-center" style={{ height: `${CARD_HEIGHT}px` }}>
-                            <div className="bg-rose-50 border-2 border-rose-200 rounded-2xl w-full p-4 flex flex-col items-center justify-center text-rose-600 gap-1 shadow-sm">
-                              <AlertCircle className="w-5 h-5" />
-                              <p className="text-[10px] font-black uppercase tracking-widest text-center">Confronto ausente</p>
-                              <p className="text-[8px] font-bold text-center opacity-70">ERRO DE CHAVEAMENTO</p>
+                        if (!match) {
+                          return (
+                            <div key={`missing-${round}-${position}`} className="relative flex items-center" style={{ height: `${CARD_HEIGHT}px` }}>
+                              <div className="bg-rose-50 border-2 border-rose-200 rounded-2xl w-full p-4 flex flex-col items-center justify-center text-rose-600 gap-1 shadow-sm">
+                                <AlertCircle className="w-5 h-5" />
+                                <p className="text-[10px] font-black uppercase tracking-widest text-center">Confronto ausente</p>
+                                <p className="text-[8px] font-bold text-center opacity-70">ERRO DE CHAVEAMENTO</p>
+                              </div>
                             </div>
-                            {roundIdx < rounds.length - 1 && (
+                          );
+                        }
+
+                        let p1 = null;
+                        let p2 = null;
+
+                        if (match.round === 1 || isAdmin) {
+                          p1 = { id: match.player1_id, name: match.player1_name, seed: match.player1_seed, type: match.player1_type };
+                          p2 = { id: match.player2_id, name: match.player2_name, seed: match.player2_seed, type: match.player2_type };
+                        } else {
+                          const prevRound = match.round - 1;
+                          const m1 = matchesMap[`${prevRound}-${match.position * 2 - 1}`];
+                          const m2 = matchesMap[`${prevRound}-${match.position * 2}`];
+
+                          const pred1 = localPredictions[m1?.id]?.winnerId;
+                          const pred2 = localPredictions[m2?.id]?.winnerId;
+
+                          if (match.player1_id) {
+                            p1 = { id: match.player1_id, name: match.player1_name, seed: match.player1_seed, type: match.player1_type };
+                          } else if (pred1) {
+                            p1 = { id: pred1, ...playersById[pred1] };
+                          }
+
+                          if (match.player2_id) {
+                            p2 = { id: match.player2_id, name: match.player2_name, seed: match.player2_seed, type: match.player2_type };
+                          } else if (pred2) {
+                            p2 = { id: pred2, ...playersById[pred2] };
+                          }
+                        }
+
+                        return (
+                          <div key={match.id} className="relative flex items-center" style={{ height: `${CARD_HEIGHT}px` }}>
+                            <BracketMatchCard
+                              match={match}
+                              p1={p1}
+                              p2={p2}
+                              userId={userId}
+                              tournamentId={tournamentId}
+                              currentPrediction={localPredictions[match.id]}
+                              actualPrediction={predictions[match.id]}
+                              canMakePredictions={canMakePredictions}
+                              isAdmin={isAdmin}
+                              players={players}
+                              tournamentStatus={tournamentStatus}
+                              isFinalRound={isFinalRound}
+                              onPredict={(winnerId, score) => handlePrediction(match.id, winnerId, score)}
+                              assignedPlayerIds={assignedPlayerIds}
+                            />
+
+                            {relativeIdx === 0 && hasNextVisibleRound && (
                               <div
                                 className="absolute -right-24 top-1/2 w-24 pointer-events-none"
                                 style={{
-                                  height: `${verticalGap / 2 + CARD_HEIGHT / 2 + 2}px`,
+                                  height: `${BASE_GAP / 2 + CARD_HEIGHT / 2 + 2}px`,
                                   top: matchIdx % 2 === 0 ? '50%' : 'auto',
                                   bottom: matchIdx % 2 === 0 ? 'auto' : '50%',
                                   borderRight: '2px solid rgb(226, 232, 240)',
@@ -237,84 +314,11 @@ export function TournamentBracket({
                             )}
                           </div>
                         );
-                      }
-
-                      let p1 = null;
-                      let p2 = null;
-
-                      if (match.round === 1 || isAdmin) {
-                        p1 = { id: match.player1_id, name: match.player1_name, seed: match.player1_seed, type: match.player1_type };
-                        p2 = { id: match.player2_id, name: match.player2_name, seed: match.player2_seed, type: match.player2_type };
-                      } else {
-                        const prevRound = match.round - 1;
-                        const m1 = matchesMap[`${prevRound}-${match.position * 2 - 1}`];
-                        const m2 = matchesMap[`${prevRound}-${match.position * 2}`];
-
-                        const pred1 = localPredictions[m1?.id]?.winnerId;
-                        const pred2 = localPredictions[m2?.id]?.winnerId;
-
-                        // Prioritize real players (especially for BYEs or completed matches)
-                        // Fallback to user's predictions for next rounds
-                        if (match.player1_id) {
-                          p1 = { id: match.player1_id, name: match.player1_name, seed: match.player1_seed, type: match.player1_type };
-                        } else if (pred1) {
-                          p1 = { id: pred1, ...playersById[pred1] };
-                        }
-
-                        if (match.player2_id) {
-                          p2 = { id: match.player2_id, name: match.player2_name, seed: match.player2_seed, type: match.player2_type };
-                        } else if (pred2) {
-                          p2 = { id: pred2, ...playersById[pred2] };
-                        }
-                      }
-
-                      return (
-                        <div key={match.id} className="relative flex items-center" style={{ height: `${CARD_HEIGHT}px` }}>
-                          <BracketMatchCard
-                            match={match}
-                            p1={p1}
-                            p2={p2}
-                            userId={userId}
-                            tournamentId={tournamentId}
-                            currentPrediction={localPredictions[match.id]}
-                            actualPrediction={predictions[match.id]}
-                            canMakePredictions={canMakePredictions}
-                            isAdmin={isAdmin}
-                            players={players}
-                            tournamentStatus={tournamentStatus}
-                            isFinalRound={isFinalRound}
-                            onPredict={(winnerId, score) => handlePrediction(match.id, winnerId, score)}
-                            assignedPlayerIds={assignedPlayerIds}
-                          />
-
-                          {roundIdx < rounds.length - 1 && (
-                            <div
-                              className="absolute -right-24 top-1/2 w-24 pointer-events-none"
-                              style={{
-                                height: `${verticalGap / 2 + CARD_HEIGHT / 2 + 2}px`,
-                                top: matchIdx % 2 === 0 ? '50%' : 'auto',
-                                bottom: matchIdx % 2 === 0 ? 'auto' : '50%',
-                                borderRight: '2px solid rgb(226, 232, 240)',
-                                borderTop: matchIdx % 2 === 0 ? '2px solid rgb(226, 232, 240)' : 'none',
-                                borderBottom: matchIdx % 2 !== 0 ? '2px solid rgb(226, 232, 240)' : 'none',
-                                borderRadius: matchIdx % 2 === 0 ? '0 12px 0 0' : '0 0 12px 0',
-                              }}
-                            >
-                              <div
-                                className={cn(
-                                  'absolute w-1/2 h-[2px] bg-slate-200',
-                                  matchIdx % 2 === 0 ? 'top-0 left-0' : 'bottom-0 left-0',
-                                )}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                      })}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
       </div>
