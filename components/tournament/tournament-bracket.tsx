@@ -160,7 +160,7 @@ export function TournamentBracket({
                 "flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
                 viewMode === 'official'
                   ? "bg-slate-900 text-white shadow-lg"
-                  : "text-slate-500 hover:bg-slate-50"
+                  : "text-slate-400 hover:bg-slate-50"
               )}
             >
               <Layout className="w-3.5 h-3.5" />
@@ -172,7 +172,7 @@ export function TournamentBracket({
                 "flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
                 viewMode === 'predictions'
                   ? "bg-emerald-600 text-white shadow-lg"
-                  : "text-slate-500 hover:bg-slate-50"
+                  : "text-slate-400 hover:bg-slate-50"
               )}
             >
               <UserIcon className="w-3.5 h-3.5" />
@@ -313,15 +313,12 @@ export function TournamentBracket({
                             const pred1 = localPredictions[m1?.id]?.winnerId;
                             const pred2 = localPredictions[m2?.id]?.winnerId;
 
-                            if (match.player1_id) {
-                              p1 = { id: match.player1_id, name: match.player1_name, seed: match.player1_seed, type: match.player1_type };
-                            } else if (pred1) {
+                            // In predictions mode, strictly follow the user's predicted path for Rounds > 1
+                            if (pred1) {
                               p1 = { id: pred1, ...playersById[pred1] };
                             }
 
-                            if (match.player2_id) {
-                              p2 = { id: match.player2_id, name: match.player2_name, seed: match.player2_seed, type: match.player2_type };
-                            } else if (pred2) {
+                            if (pred2) {
                               p2 = { id: pred2, ...playersById[pred2] };
                             }
                           }
@@ -437,6 +434,18 @@ function BracketMatchCard({
 
   const selectedWinnerId = currentPrediction?.winnerId;
 
+  // Logic to determine if a player in the user's bracket is "incorrect" based on official results
+  // A player is incorrect if they officially lost a previous round (thus not reaching this match)
+  // or if they lost this match officially.
+  const isP1Incorrect = viewMode === 'predictions' && (
+    (match.player1_id && p1?.id && match.player1_id !== p1.id) ||
+    (match.winner_id && p1?.id && match.winner_id !== p1.id && isCompleted)
+  );
+  const isP2Incorrect = viewMode === 'predictions' && (
+    (match.player2_id && p2?.id && match.player2_id !== p2.id) ||
+    (match.winner_id && p2?.id && match.winner_id !== p2.id && isCompleted)
+  );
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden w-full transition-all hover:shadow-md hover:-translate-y-0.5 group">
       {canEditPlayers ? (
@@ -453,7 +462,7 @@ function BracketMatchCard({
                 type={p1?.type}
                 isWinner={match.winner_id === p1?.id && isCompleted}
                 isSelected={selectedWinnerId === p1?.id}
-                isPredicted={actualPrediction?.winnerId === p1?.id}
+                isPredicted={selectedWinnerId === p1?.id}
                 isCompleted={isCompleted}
                 onSelect={() => {}}
                 canPredict={false}
@@ -474,7 +483,7 @@ function BracketMatchCard({
           type={p1?.type}
           isWinner={match.winner_id === p1?.id && isCompleted}
           isSelected={selectedWinnerId === p1?.id}
-          isPredicted={actualPrediction?.winnerId === p1?.id}
+          isPredicted={selectedWinnerId === p1?.id}
           isCompleted={isCompleted}
           onSelect={() => p1?.id && onPredict(p1.id)}
           canPredict={!!canPredict}
@@ -484,6 +493,7 @@ function BracketMatchCard({
           pointsCancelled={match.points_cancelled}
           isAwaiting={p1?.isAwaiting}
           viewMode={viewMode}
+          isForceIncorrect={isP1Incorrect}
         />
       )}
 
@@ -503,7 +513,7 @@ function BracketMatchCard({
                 type={p2?.type}
                 isWinner={match.winner_id === p2?.id && isCompleted}
                 isSelected={selectedWinnerId === p2?.id}
-                isPredicted={actualPrediction?.winnerId === p2?.id}
+                isPredicted={selectedWinnerId === p2?.id}
                 isCompleted={isCompleted}
                 onSelect={() => {}}
                 canPredict={false}
@@ -524,7 +534,7 @@ function BracketMatchCard({
           type={p2?.type}
           isWinner={match.winner_id === p2?.id && isCompleted}
           isSelected={selectedWinnerId === p2?.id}
-          isPredicted={actualPrediction?.winnerId === p2?.id}
+          isPredicted={selectedWinnerId === p2?.id}
           isCompleted={isCompleted}
           onSelect={() => p2?.id && onPredict(p2.id)}
           canPredict={!!canPredict}
@@ -534,6 +544,7 @@ function BracketMatchCard({
           pointsCancelled={match.points_cancelled}
           isAwaiting={p2?.isAwaiting}
           viewMode={viewMode}
+          isForceIncorrect={isP2Incorrect}
         />
       )}
 
@@ -603,6 +614,7 @@ function PlayerRow({
   pointsCancelled = false,
   isAwaiting = false,
   viewMode = 'predictions',
+  isForceIncorrect = false,
 }: {
   name: string | null;
   seed: number | null;
@@ -642,8 +654,8 @@ function PlayerRow({
   }
 
   const sets = score ? score.split(' ') : [];
-  const showPredictionResult = isCompleted && isPredicted;
-  const predictionCorrect = showPredictionResult && isWinner;
+  const showPredictionResult = (isCompleted && isPredicted) || (isPredicted && isForceIncorrect);
+  const predictionCorrect = showPredictionResult && isWinner && !isForceIncorrect;
 
   const getIndicator = () => {
     if (isPlaceholder) return null;
