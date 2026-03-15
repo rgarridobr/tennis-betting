@@ -99,6 +99,7 @@ export function TournamentCard({ tournament }: TournamentCardProps) {
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-emerald-500" />
               <span>
+                Início às {' '}
                 {new Date(tournament.start_date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>

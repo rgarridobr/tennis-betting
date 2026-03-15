@@ -25,7 +25,7 @@ import { TournamentCard } from '@/components/dashboard/tournament-card';
 export default async function HomePage() {
   const user = await getSession();
   if (user) {
-    if(user.is_admin) {
+    if (user.is_admin) {
       redirect('/admin');
     } else {
       redirect('/dashboard');
@@ -33,7 +33,16 @@ export default async function HomePage() {
   }
 
   const allTournaments = await getTournaments();
-  const featuredTournaments = allTournaments.filter(t => t.status === 'active' || t.status === 'upcoming' || t.status === 'OPEN' || t.status === 'UPCOMING' || t.status === 'IN_PROGRESS').slice(0, 3);
+  const featuredTournaments = allTournaments
+    .filter(
+      (t) =>
+        t.status === 'active' ||
+        t.status === 'upcoming' ||
+        t.status === 'OPEN' ||
+        t.status === 'UPCOMING' ||
+        t.status === 'IN_PROGRESS',
+    )
+    .slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background">
@@ -50,7 +59,10 @@ export default async function HomePage() {
             <Button variant="ghost" asChild className="font-bold text-slate-600 hover:text-emerald-600 rounded-xl">
               <Link href="/login">Entrar</Link>
             </Button>
-            <Button className="bg-emerald-500 text-white hover:bg-emerald-600 font-bold px-6 rounded-xl shadow-lg shadow-emerald-100" asChild>
+            <Button
+              className="bg-emerald-500 text-white hover:bg-emerald-600 font-bold px-6 rounded-xl shadow-lg shadow-emerald-100"
+              asChild
+            >
               <Link href="/cadastro">Começar Agora</Link>
             </Button>
           </div>
@@ -63,27 +75,26 @@ export default async function HomePage() {
           <div className="container mx-auto px-4 md:px-32">
             <div className="relative overflow-hidden rounded-[2.5rem] min-h-[600px] flex items-center">
               {/* Background Image */}
-              <div 
+              <div
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 group-hover:scale-105"
                 style={{
                   backgroundImage: `url('https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=1920&q=80')`,
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
-              
-              <div className="relative px-8 py-20 md:px-16 w-full max-w-3xl">
-                <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-white leading-[1.05] tracking-tight text-balance">
-                  Faça seus palpites e{' '}
-                  <span className="text-emerald-400">
-                    ganhe pontos
-                  </span>
-                </h1>
 
-                <p className="mt-8 text-lg sm:text-xl text-white/80 max-w-xl leading-relaxed font-medium">
-                  Participe do bolão, dê seus palpites nos maiores torneios de tênis do mundo e dispute com seus amigos no ranking.
-                </p>
+<div className="relative px-8 py-20 md:px-16 w-full flex flex-col lg:flex-row items-center lg:items-center justify-between gap-12">
+                <div className="m-w-4xl">
+                  <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-white leading-[1.05] tracking-tight text-balance">
+                    Faça seus palpites e <span className="text-emerald-400">ganhe pontos</span>
+                  </h1>
 
-                <div className="mt-10 flex flex-col sm:flex-row gap-4">
+                  <p className="mt-8 text-lg sm:text-xl text-white/80 max-w-xl leading-relaxed font-medium">
+                    Participe do bolão, dê seus palpites nos maiores torneios de tênis do mundo e dispute com seus
+                    amigos no ranking.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4 shrink-0">
                   <Button
                     size="lg"
                     className="bg-emerald-500 hover:bg-emerald-400 text-white text-lg h-16 px-10 rounded-2xl shadow-xl shadow-emerald-500/20 font-black transition-all hover:-translate-y-1"
@@ -103,22 +114,6 @@ export default async function HomePage() {
                     <Link href="/login">Fazer login</Link>
                   </Button>
                 </div>
-
-                {/* Trust badges */}
-                {/* <div className="mt-12 flex flex-wrap items-center gap-8 text-white/60 text-sm font-bold">
-                  <span className="flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                    Grátis
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <Shield className="w-5 h-5 text-emerald-400" />
-                    Seguro
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <Star className="w-5 h-5 text-emerald-400" />
-                    500+ membros
-                  </span>
-                </div> */}
               </div>
             </div>
           </div>
@@ -131,9 +126,13 @@ export default async function HomePage() {
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-2 h-8 bg-emerald-500 rounded-full" />
-                  <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Torneios em destaque</h2>
+                  <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
+                    Torneios em destaque
+                  </h2>
                 </div>
-                <p className="text-slate-500 text-lg font-medium">Inscreva-se e comece a fazer seus palpites agora mesmo</p>
+                <p className="text-slate-500 text-lg font-medium">
+                  Inscreva-se e comece a fazer seus palpites agora mesmo
+                </p>
               </div>
               <Button
                 variant="ghost"
@@ -223,7 +222,9 @@ export default async function HomePage() {
                 <Star className="w-4 h-4 fill-amber-500" />
                 <span className="font-bold text-xs tracking-wide uppercase">Depoimentos</span>
               </div>
-              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight text-balance">O que dizem nossos participantes</h2>
+              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight text-balance">
+                O que dizem nossos participantes
+              </h2>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
@@ -231,19 +232,22 @@ export default async function HomePage() {
                 {
                   name: 'Carlos Silva',
                   role: 'Participante desde 2026',
-                  content: 'A plataforma é incrível! Interface intuitiva e acompanhar o ranking em tempo real dá um gás a mais na competição.',
+                  content:
+                    'A plataforma é incrível! Interface intuitiva e acompanhar o ranking em tempo real dá um gás a mais na competição.',
                   avatar: 'CS',
                 },
                 {
                   name: 'Ana Rodrigues',
                   role: 'Participante desde 2026',
-                  content: 'Adoro a facilidade de dar os palpites. O sistema de pontos é justo e muito divertido de competir com os amigos.',
+                  content:
+                    'Adoro a facilidade de dar os palpites. O sistema de pontos é justo e muito divertido de competir com os amigos.',
                   avatar: 'AR',
                 },
                 {
                   name: 'Pedro Santos',
                   role: 'Participante desde 2026',
-                  content: 'Melhor bolão de tênis que já participei. Todo Grand Slam eu tô aqui firme e forte. Recomendo demais!',
+                  content:
+                    'Melhor bolão de tênis que já participei. Todo Grand Slam eu tô aqui firme e forte. Recomendo demais!',
                   avatar: 'PS',
                 },
               ].map((testimonial) => (
@@ -275,14 +279,14 @@ export default async function HomePage() {
         <section className="py-24 px-4">
           <div className="container mx-auto max-w-6xl">
             <div className="relative overflow-hidden rounded-[3rem] bg-slate-900 py-20 px-8 text-center">
-              <div 
+              <div
                 className="absolute inset-0 opacity-20 bg-cover bg-center"
                 style={{
                   backgroundImage: `url('https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=1920&q=80')`,
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/20 to-transparent" />
-              
+
               <div className="relative max-w-3xl mx-auto">
                 <h2 className="text-3xl md:text-5xl font-black text-white mb-6 text-balance tracking-tight">
                   Pronto para entrar no jogo?
@@ -296,9 +300,7 @@ export default async function HomePage() {
                     className="bg-emerald-500 hover:bg-emerald-400 text-white text-lg h-16 px-12 rounded-2xl shadow-xl shadow-emerald-500/20 font-black transition-all hover:-translate-y-1"
                     asChild
                   >
-                    <Link href="/cadastro">
-                      Criar minha conta grátis
-                    </Link>
+                    <Link href="/cadastro">Criar minha conta grátis</Link>
                   </Button>
                   <Button
                     size="lg"

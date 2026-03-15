@@ -114,13 +114,13 @@ export default async function RulesPage() {
                             {isLast && (
                               <div className="text-center">
                                 <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Vice-campeão</p>
-                                <p className="text-xl font-black text-emerald-600 py-6">{config.runnerUp}</p>
+                                <p className="text-xl font-black text-emerald-600 py-3">{config.runnerUp}</p>
                                 <p className="text-[10px] text-slate-500">pontos</p>
                               </div>
                             )}
                             <div className="text-center">
                               <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">{roundName === 'Final' ? 'CAMPEÃO e/ou CAMPEÃO e VICE' : roundName}</p>
-                              <p className="text-xl font-black text-emerald-600 py-6">{points}</p>
+                              <p className="text-xl font-black text-emerald-600 py-3">{points}</p>
                               <p className="text-[10px] text-slate-500">pontos</p>
                             </div>
                           </React.Fragment>

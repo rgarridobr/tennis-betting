@@ -1,22 +1,20 @@
-import { getSession } from '@/lib/auth'
-import { redirect } from 'next/navigation'
-import { getTournaments, getUserStats, getGlobalRanking, getTournamentsActiveThisMonth, getActiveTournament } from '@/lib/data'
-import { HeroSection } from '@/components/dashboard/hero-section'
-import { StatsCards } from '@/components/dashboard/stats-cards'
-import { TournamentCard } from '@/components/dashboard/tournament-card'
-import { RankingSection } from '@/components/dashboard/ranking-section'
-import { DashboardHeader } from '@/components/dashboard/dashboard-header'
+import { getSession } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import { getUserStats, getTournamentsActiveThisMonth, getActiveTournament } from '@/lib/data';
+import { HeroSection } from '@/components/dashboard/hero-section';
+import { StatsCards } from '@/components/dashboard/stats-cards';
+import { TournamentCard } from '@/components/dashboard/tournament-card';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 
 export default async function DashboardPage() {
-  const user = await getSession()
-  if (!user) redirect('/login')
+  const user = await getSession();
+  if (!user) redirect('/login');
 
-  const [tournaments, stats, ranking, activeTournament] = await Promise.all([
+  const [tournaments, stats, activeTournament] = await Promise.all([
     getTournamentsActiveThisMonth(),
     getUserStats(user.id),
-    getGlobalRanking(10),
     getActiveTournament(),
-  ])
+  ]);
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
@@ -26,8 +24,8 @@ export default async function DashboardPage() {
       <main className="container mx-auto px-4 md:px-32 pb-12">
         <StatsCards stats={stats} />
 
-        <div className="mt-12 grid lg:grid-cols-3 gap-12">
-          <div className="lg:col-span-2 space-y-12">
+        <div className="mt-12 gap-12">
+          <div className="space-y-12">
             {tournaments.length > 0 && (
               <section>
                 <div className="flex items-center gap-2 mb-6">
@@ -35,7 +33,9 @@ export default async function DashboardPage() {
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight">Torneios deste mês</h2>
                 </div>
                 <div className="grid md:grid-cols-2 gap-8">
-                  {tournaments.map(t => <TournamentCard key={t.id} tournament={t} />)}
+                  {tournaments.map((t) => (
+                    <TournamentCard key={t.id} tournament={t} />
+                  ))}
                 </div>
               </section>
             )}
@@ -46,12 +46,8 @@ export default async function DashboardPage() {
               </div>
             )}
           </div>
-
-          <div>
-            <RankingSection ranking={ranking} currentUserId={user.id} />
-          </div>
         </div>
       </main>
     </div>
-  )
+  );
 }

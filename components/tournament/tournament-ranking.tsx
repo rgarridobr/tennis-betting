@@ -1,16 +1,16 @@
-'use client'
+'use client';
 
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Trophy, Medal, Target, TrendingUp, Crown, Award, CheckCircle2, ChevronRight } from 'lucide-react'
-import type { RankingEntry } from '@/lib/data'
-import Link from 'next/link'
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Trophy, Medal, Target, TrendingUp, Crown, Award, CheckCircle2, ChevronRight } from 'lucide-react';
+import type { RankingEntry } from '@/lib/data';
+import Link from 'next/link';
 
 interface TournamentRankingProps {
-  ranking: RankingEntry[]
-  currentUserId: number
-  tournamentId: number
-  hasStarted: boolean
+  ranking: RankingEntry[];
+  currentUserId: number;
+  tournamentId: number;
+  hasStarted: boolean;
 }
 
 export function TournamentRanking({ ranking, currentUserId, tournamentId, hasStarted }: TournamentRankingProps) {
@@ -23,19 +23,20 @@ export function TournamentRanking({ ranking, currentUserId, tournamentId, hasSta
           <p className="text-slate-500">As classificações aparecerão assim que os resultados forem lançados.</p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
     <div className="space-y-8">
-
       {/* Full List */}
       <Card className="border-0 shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
         <div className="bg-slate-50 px-8 py-6 border-b border-slate-100 flex items-center justify-between">
           <h3 className="text-lg font-black text-slate-900 flex items-center gap-2 uppercase tracking-tight">
             Classificação Completa
           </h3>
-          <Badge variant="outline" className="font-bold">{ranking.length} participantes</Badge>
+          <Badge variant="outline" className="font-bold">
+            {ranking.length} participantes
+          </Badge>
         </div>
         <CardContent className="p-0">
           <div className="divide-y divide-slate-50">
@@ -52,31 +53,49 @@ export function TournamentRanking({ ranking, currentUserId, tournamentId, hasSta
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
-function RankingRow({ entry, isCurrentUser, tournamentId, hasStarted }: { entry: RankingEntry, isCurrentUser: boolean, tournamentId: number, hasStarted: boolean }) {
-  const accuracy = entry.total_predictions > 0
-    ? Math.round((entry.correct_predictions / entry.total_predictions) * 100)
-    : 0
+function RankingRow({
+  entry,
+  isCurrentUser,
+  tournamentId,
+  hasStarted,
+}: {
+  entry: RankingEntry;
+  isCurrentUser: boolean;
+  tournamentId: number;
+  hasStarted: boolean;
+}) {
+  const accuracy =
+    entry.total_predictions > 0 ? Math.round((entry.correct_predictions / entry.total_predictions) * 100) : 0;
 
-  const canViewBracket = hasStarted && !isCurrentUser
+  const canViewBracket = hasStarted && !isCurrentUser;
 
   const Content = (
-    <div className={`flex items-center justify-between px-8 py-6 transition-colors ${isCurrentUser ? 'bg-emerald-50/50' : 'hover:bg-slate-50/50'} ${canViewBracket ? 'cursor-pointer group' : ''}`}>
+    <div
+      className={`flex items-center justify-between px-8 py-6 transition-colors ${isCurrentUser ? 'bg-emerald-50/50' : 'hover:bg-slate-50/50'} ${canViewBracket ? 'cursor-pointer group' : 'cursor-not-allowed'}`}
+    >
       <div className="flex items-center gap-6">
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-black ${
-          entry.rank === 1 ? 'bg-amber-400 text-white' :
-          entry.rank === 2 ? 'bg-slate-400 text-white' :
-          entry.rank === 3 ? 'bg-orange-400 text-white' :
-          'bg-slate-100 text-slate-500'
-        }`}>
+        <div
+          className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-black ${
+            entry.rank === 1
+              ? 'bg-amber-400 text-white'
+              : entry.rank === 2
+                ? 'bg-slate-400 text-white'
+                : entry.rank === 3
+                  ? 'bg-orange-400 text-white'
+                  : 'bg-slate-100 text-slate-500'
+          }`}
+        >
           {entry.rank}
         </div>
         <div>
           <p className="font-black text-slate-900 flex items-center gap-2 leading-none mb-1.5">
             {entry.user_name}
-            {isCurrentUser && <Badge className="bg-emerald-500 text-white border-none font-bold text-[9px] h-4">VOCÊ</Badge>}
+            {isCurrentUser && (
+              <Badge className="bg-emerald-500 text-white border-none font-bold text-[9px] h-4">VOCÊ</Badge>
+            )}
             {entry.final_score_correct && (
               <div title="Acertou o placar da final">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -96,25 +115,18 @@ function RankingRow({ entry, isCurrentUser, tournamentId, hasStarted }: { entry:
 
       <div className="flex items-center gap-6">
         <div className="text-right">
-          <p className="text-2xl font-black text-slate-900 leading-none">
-            {entry.total_points}
-          </p>
+          <p className="text-2xl font-black text-slate-900 leading-none">{entry.total_points}</p>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Pontos</p>
         </div>
-        {canViewBracket && (
           <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-500 transition-colors" />
-        )}
+
       </div>
     </div>
-  )
+  );
 
   if (canViewBracket) {
-    return (
-      <Link href={`/torneio/${tournamentId}?view=ranking&viewUser=${entry.user_id}`}>
-        {Content}
-      </Link>
-    )
+    return <Link href={`/torneio/${tournamentId}?view=ranking&viewUser=${entry.user_id}`}>{Content}</Link>;
   }
 
-  return Content
+  return Content;
 }
