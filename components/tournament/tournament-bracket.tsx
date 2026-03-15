@@ -3,7 +3,7 @@
 import React, { useRef, useState, useTransition } from 'react';
 import type { BracketMatch, Player } from '@/lib/data';
 import { makePredictionAction } from '@/lib/actions/predictions';
-import { Check, Trophy, X, Pencil, AlertCircle } from 'lucide-react';
+import { Check, Trophy, X, Pencil, AlertCircle, Layout, User as UserIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SetPlayersDialog, ReplaceMatchPlayerDialog, SetResultDialog } from '@/components/admin/match-dialogs';
 import { Label } from '@/components/ui/label';
@@ -59,6 +59,7 @@ export function TournamentBracket({
 
   const [selectedRound, setSelectedRound] = useState<number>(rounds[0] || 1);
   const [direction, setDirection] = useState<'left' | 'right' | null>(null);
+  const [viewMode, setViewMode] = useState<'official' | 'predictions'>(hasStarted ? 'official' : 'predictions');
 
   const handleRoundSelect = (round: number) => {
     const currentIndex = rounds.indexOf(selectedRound);
@@ -149,7 +150,39 @@ export function TournamentBracket({
 
   return (
     <div className="flex flex-col gap-6">
-      {canMakePredictions && (
+      {/* View Mode Toggle */}
+      {!isAdmin && (
+        <div className="flex justify-center mb-2">
+          <div className="bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm flex gap-1">
+            <button
+              onClick={() => setViewMode('official')}
+              className={cn(
+                "flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+                viewMode === 'official'
+                  ? "bg-slate-900 text-white shadow-lg"
+                  : "text-slate-500 hover:bg-slate-50"
+              )}
+            >
+              <Layout className="w-3.5 h-3.5" />
+              Chave Oficial
+            </button>
+            <button
+              onClick={() => setViewMode('predictions')}
+              className={cn(
+                "flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+                viewMode === 'predictions'
+                  ? "bg-emerald-600 text-white shadow-lg"
+                  : "text-slate-500 hover:bg-slate-50"
+              )}
+            >
+              <UserIcon className="w-3.5 h-3.5" />
+              Meus Palpites
+            </button>
+          </div>
+        </div>
+      )}
+
+      {viewMode === 'predictions' && canMakePredictions && (
         <div className="flex items-center justify-between p-6 bg-emerald-50 rounded-[2rem] border border-emerald-100 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white">
@@ -175,7 +208,7 @@ export function TournamentBracket({
         </div>
       )}
 
-      {bracketSubmitted && !hasStarted && (
+      {viewMode === 'predictions' && bracketSubmitted && !hasStarted && (
         <div className="flex items-center gap-3 p-6 bg-blue-50 rounded-[2rem] border border-blue-100 shadow-sm">
           <Check className="w-6 h-6 text-blue-500" />
           <p className="font-bold text-blue-900">Seu palpite foi registrado com sucesso! Você poderá alterá-lo até o início do torneio.</p>
@@ -268,28 +301,34 @@ export function TournamentBracket({
                         let p1 = null;
                         let p2 = null;
 
-                        if (match.round === 1 || isAdmin) {
-                          p1 = { id: match.player1_id, name: match.player1_name, seed: match.player1_seed, type: match.player1_type };
-                          p2 = { id: match.player2_id, name: match.player2_name, seed: match.player2_seed, type: match.player2_type };
-                        } else {
-                          const prevRound = match.round - 1;
-                          const m1 = matchesMap[`${prevRound}-${match.position * 2 - 1}`];
-                          const m2 = matchesMap[`${prevRound}-${match.position * 2}`];
-
-                          const pred1 = localPredictions[m1?.id]?.winnerId;
-                          const pred2 = localPredictions[m2?.id]?.winnerId;
-
-                          if (match.player1_id) {
+                        if (viewMode === 'predictions' || match.round === 1 || isAdmin) {
+                          if (match.round === 1 || isAdmin) {
                             p1 = { id: match.player1_id, name: match.player1_name, seed: match.player1_seed, type: match.player1_type };
-                          } else if (pred1) {
-                            p1 = { id: pred1, ...playersById[pred1] };
-                          }
-
-                          if (match.player2_id) {
                             p2 = { id: match.player2_id, name: match.player2_name, seed: match.player2_seed, type: match.player2_type };
-                          } else if (pred2) {
-                            p2 = { id: pred2, ...playersById[pred2] };
+                          } else {
+                            const prevRound = match.round - 1;
+                            const m1 = matchesMap[`${prevRound}-${match.position * 2 - 1}`];
+                            const m2 = matchesMap[`${prevRound}-${match.position * 2}`];
+
+                            const pred1 = localPredictions[m1?.id]?.winnerId;
+                            const pred2 = localPredictions[m2?.id]?.winnerId;
+
+                            if (match.player1_id) {
+                              p1 = { id: match.player1_id, name: match.player1_name, seed: match.player1_seed, type: match.player1_type };
+                            } else if (pred1) {
+                              p1 = { id: pred1, ...playersById[pred1] };
+                            }
+
+                            if (match.player2_id) {
+                              p2 = { id: match.player2_id, name: match.player2_name, seed: match.player2_seed, type: match.player2_type };
+                            } else if (pred2) {
+                              p2 = { id: pred2, ...playersById[pred2] };
+                            }
                           }
+                        } else {
+                          // Official view
+                          p1 = match.player1_id ? { id: match.player1_id, name: match.player1_name, seed: match.player1_seed, type: match.player1_type } : { isAwaiting: true };
+                          p2 = match.player2_id ? { id: match.player2_id, name: match.player2_name, seed: match.player2_seed, type: match.player2_type } : { isAwaiting: true };
                         }
 
                         return (
@@ -302,13 +341,14 @@ export function TournamentBracket({
                               tournamentId={tournamentId}
                               currentPrediction={localPredictions[match.id]}
                               actualPrediction={predictions[match.id]}
-                              canMakePredictions={canMakePredictions}
+                              canMakePredictions={canMakePredictions && viewMode === 'predictions'}
                               isAdmin={isAdmin}
                               players={players}
                               tournamentStatus={tournamentStatus}
                               isFinalRound={isFinalRound}
                               onPredict={(winnerId, score) => handlePrediction(match.id, winnerId, score)}
                               assignedPlayerIds={assignedPlayerIds}
+                              viewMode={viewMode}
                             />
 
                             {relativeIdx === 0 && hasNextVisibleRound && (
@@ -370,6 +410,7 @@ function BracketMatchCard({
   isFinalRound,
   onPredict,
   assignedPlayerIds,
+  viewMode = 'predictions',
 }: {
   match: BracketMatch;
   p1: any;
@@ -385,6 +426,7 @@ function BracketMatchCard({
   isFinalRound?: boolean;
   onPredict: (winnerId: number, score?: string) => void;
   assignedPlayerIds?: number[];
+  viewMode?: 'official' | 'predictions';
 }) {
   const isCompleted = match.status === 'completed';
   const isDraft = tournamentStatus === 'draft' || tournamentStatus === 'STANDBY' || tournamentStatus === 'UPCOMING' || tournamentStatus === 'upcoming';
@@ -420,6 +462,7 @@ function BracketMatchCard({
                 isAdmin={true}
                 isPlaceholder={!p1?.id && p1?.type !== 'PLAYER' && p1?.type !== 'BYE'}
                 pointsCancelled={match.points_cancelled}
+                viewMode={viewMode}
               />
             </div>
           }
@@ -437,8 +480,10 @@ function BracketMatchCard({
           canPredict={!!canPredict}
           score={match.score}
           isP1={true}
-          isPlaceholder={!p1?.id && p1?.type !== 'BYE' && p1?.type !== 'PLAYER'}
+          isPlaceholder={(!p1?.id && p1?.type !== 'BYE' && p1?.type !== 'PLAYER') || p1?.isAwaiting}
           pointsCancelled={match.points_cancelled}
+          isAwaiting={p1?.isAwaiting}
+          viewMode={viewMode}
         />
       )}
 
@@ -467,6 +512,7 @@ function BracketMatchCard({
                 isAdmin={true}
                 isPlaceholder={!p2?.id && p2?.type !== 'PLAYER' && p2?.type !== 'BYE'}
                 pointsCancelled={match.points_cancelled}
+                viewMode={viewMode}
               />
             </div>
           }
@@ -484,8 +530,10 @@ function BracketMatchCard({
           canPredict={!!canPredict}
           score={match.score}
           isP1={false}
-          isPlaceholder={!p2?.id && p2?.type !== 'BYE' && p2?.type !== 'PLAYER'}
+          isPlaceholder={(!p2?.id && p2?.type !== 'BYE' && p2?.type !== 'PLAYER') || p2?.isAwaiting}
           pointsCancelled={match.points_cancelled}
+          isAwaiting={p2?.isAwaiting}
+          viewMode={viewMode}
         />
       )}
 
@@ -553,6 +601,8 @@ function PlayerRow({
   isAdmin = false,
   isPlaceholder = false,
   pointsCancelled = false,
+  isAwaiting = false,
+  viewMode = 'predictions',
 }: {
   name: string | null;
   seed: number | null;
@@ -568,8 +618,10 @@ function PlayerRow({
   isAdmin?: boolean;
   isPlaceholder?: boolean;
   pointsCancelled?: boolean;
+  isAwaiting?: boolean;
+  viewMode?: 'official' | 'predictions';
 }) {
-  const displayName = name || (
+  const displayName = isAwaiting ? 'Aguardando resultados' : name || (
     type === 'QUALIFIER' ? 'Qualifier' :
     type === 'WILDCARD' ? 'Wild Card' :
     type === 'LUCKY_LOSER' ? 'Lucky Loser' :
@@ -610,13 +662,14 @@ function PlayerRow({
       className={cn(
         'flex items-center px-4 py-3 cursor-default transition-all relative min-h-[48px]',
         canPredict && 'cursor-pointer hover:bg-emerald-50/40',
-        isSelected && !isCompleted && 'bg-blue-50/60',
-        showPredictionResult && (predictionCorrect ? 'bg-emerald-50/80' : 'bg-red-50/80'),
+        isSelected && !isCompleted && viewMode === 'predictions' && 'bg-blue-50/60',
+        showPredictionResult && viewMode === 'predictions' && (predictionCorrect ? 'bg-emerald-50/80' : 'bg-red-50/80'),
         isAdmin && !isCompleted && 'hover:bg-slate-50',
-        isPlaceholder && 'text-amber-600 italic font-bold'
+        isPlaceholder && 'text-amber-600 italic font-bold',
+        isAwaiting && 'opacity-60'
       )}
     >
-      {(isSelected || showPredictionResult) && (
+      {(isSelected || showPredictionResult) && viewMode === 'predictions' && (
         <div
           className={cn(
             'absolute left-0 top-0 bottom-0 w-1 rounded-r-full shadow-[0_0_8px_rgba(0,0,0,0.1)]',
@@ -630,9 +683,10 @@ function PlayerRow({
           className={cn(
             'text-xs font-black truncate tracking-tight',
             isWinner ? 'text-slate-900' : 'text-slate-600',
-            isSelected && !isCompleted && 'text-blue-900',
-            showPredictionResult && (predictionCorrect ? 'text-emerald-900' : 'text-red-900'),
-            isPlaceholder && 'text-amber-600'
+            isSelected && !isCompleted && viewMode === 'predictions' && 'text-blue-900',
+            showPredictionResult && viewMode === 'predictions' && (predictionCorrect ? 'text-emerald-900' : 'text-red-900'),
+            isPlaceholder && 'text-amber-600',
+            isAwaiting && 'text-slate-400 font-bold uppercase tracking-widest text-[10px]'
           )}
         >
           {displayName}
@@ -671,20 +725,48 @@ function PlayerRow({
         </div>
       )}
 
-      <div className="flex items-center justify-center w-6 ml-2 shrink-0">
-        {isSelected && !isCompleted ? (
-          <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-200 animate-in zoom-in duration-200">
-            <Check className="w-3 h-3 text-white" />
-          </div>
-        ) : isWinner ? (
-          <div className="w-5 h-5 rounded-full bg-amber-400 flex items-center justify-center shadow-lg shadow-amber-100">
-            <Trophy className="w-3 h-3 text-white" />
-          </div>
-        ) : showPredictionResult && !predictionCorrect ? (
-          <div className="w-5 h-5 rounded-full bg-red-400 flex items-center justify-center shadow-lg shadow-amber-100">
-            <X className="w-3 h-3 text-white" />
-          </div>
-        ) : null}
+      <div className="flex items-center justify-end gap-1.5 ml-2 shrink-0 min-w-[24px]">
+        {viewMode === 'predictions' ? (
+           isSelected && !isCompleted ? (
+            <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-200 animate-in zoom-in duration-200">
+              <Check className="w-3 h-3 text-white" />
+            </div>
+          ) : isWinner ? (
+            <div className="w-5 h-5 rounded-full bg-amber-400 flex items-center justify-center shadow-lg shadow-amber-100">
+              <Trophy className="w-3 h-3 text-white" />
+            </div>
+          ) : showPredictionResult && !predictionCorrect ? (
+            <div className="w-5 h-5 rounded-full bg-red-400 flex items-center justify-center shadow-lg shadow-amber-100">
+              <X className="w-3 h-3 text-white" />
+            </div>
+          ) : null
+        ) : (
+          /* Official Mode Indicators */
+          <>
+            {isWinner && (
+              <div className="w-5 h-5 rounded-full bg-amber-400 flex items-center justify-center shadow-lg shadow-amber-100">
+                <Trophy className="w-3 h-3 text-white" />
+              </div>
+            )}
+            {isPredicted && (
+              isCompleted ? (
+                predictionCorrect ? (
+                  <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-200">
+                    <Check className="w-3 h-3 text-white" />
+                  </div>
+                ) : (
+                  <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center shadow-lg shadow-red-200">
+                    <X className="w-3 h-3 text-white" />
+                  </div>
+                )
+              ) : (
+                <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-200 opacity-60" title="Seu palpite">
+                   <UserIcon className="w-2.5 h-2.5 text-white" />
+                </div>
+              )
+            )}
+          </>
+        )}
       </div>
     </div>
   );
