@@ -58,6 +58,20 @@ export function TournamentBracket({
   const maxRound = rounds.length > 0 ? Math.max(...rounds) : 0;
 
   const [selectedRound, setSelectedRound] = useState<number>(rounds[0] || 1);
+  const [direction, setDirection] = useState<'left' | 'right' | null>(null);
+
+  const handleRoundSelect = (round: number) => {
+    const currentIndex = rounds.indexOf(selectedRound);
+    const nextIndex = rounds.indexOf(round);
+
+    if (nextIndex > currentIndex) {
+      setDirection('right');
+    } else if (nextIndex < currentIndex) {
+      setDirection('left');
+    }
+
+    setSelectedRound(round);
+  };
 
   // Map of player ID to player details for display in predicted rounds
   const playersById: Record<number, { name: string; seed: number | null; type: string }> = {};
@@ -173,7 +187,7 @@ export function TournamentBracket({
         {rounds.map((round) => (
           <button
             key={round}
-            onClick={() => setSelectedRound(round)}
+            onClick={() => handleRoundSelect(round)}
             className={cn(
               "px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all",
               selectedRound === round
@@ -198,7 +212,13 @@ export function TournamentBracket({
           ref={scrollContainerRef}
           className="overflow-x-auto overflow-y-auto p-8 md:p-12 min-h-[700px] relative scrollbar-hide"
         >
-          <div className="flex gap-24 relative pb-20 min-w-max justify-center">
+          <div
+            key={selectedRound}
+            className={cn(
+              "flex gap-24 relative pb-20 min-w-max justify-center animate-in fade-in duration-500",
+              direction === 'right' ? "slide-in-from-right-8" : direction === 'left' ? "slide-in-from-left-8" : "slide-in-from-bottom-4"
+            )}
+          >
             {rounds
               .filter(r => r === selectedRound || r === rounds[rounds.indexOf(selectedRound) + 1])
               .map((round) => {
@@ -212,7 +232,7 @@ export function TournamentBracket({
                 const paddingTop = multiplier === 1 ? 0 : ((multiplier - 1) * (CARD_HEIGHT + BASE_GAP)) / 2;
 
                 return (
-                  <div key={round} className="flex flex-col w-[300px] relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div key={round} className="flex flex-col w-[300px] relative z-10">
                     <div className="text-center mb-10">
                       <h3 className="text-sm font-black uppercase tracking-[0.3em] text-emerald-600 bg-emerald-50 inline-block px-6 py-2 rounded-full border border-emerald-100">
                         {roundNames[round] === 'F' ? 'Final' :
