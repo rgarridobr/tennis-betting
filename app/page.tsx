@@ -71,62 +71,60 @@ export default async function HomePage() {
 
       <main>
         {/* Hero Section */}
-        <section className="relative pt-6 pb-20 overflow-hidden bg-[#f8fafc]">
-          <div className="container mx-auto px-4 md:px-32">
-            <div className="relative overflow-hidden rounded-[2.5rem] min-h-[600px] flex items-center">
-              {/* Background Image */}
-              <div
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 group-hover:scale-105"
-                style={{
-                  backgroundImage: `url('https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=1920&q=80')`,
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
+        <div className="container mx-auto px-4 md:px-32 pt-6">
+          <div className="relative overflow-hidden rounded-2xl">
+            {/* Background Image */}
+            <div
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: `url('https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=1920&q=80')`,
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
 
-<div className="relative px-8 py-20 md:px-16 w-full flex flex-col lg:flex-row items-center lg:items-center justify-between gap-12">
-                <div className="m-w-4xl">
-                  <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-white leading-[1.05] tracking-tight text-balance">
-                    Faça seus palpites e <span className="text-emerald-400">ganhe pontos</span>
-                  </h1>
+            <div className="relative px-8 py-20 md:px-16 w-full flex flex-col lg:flex-row items-center lg:items-center justify-between gap-12">
+              <div className="m-w-4xl">
+                <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-white leading-[1.05] tracking-tight text-balance">
+                  Faça seus palpites e <span className="text-emerald-400">ganhe pontos</span>
+                </h1>
 
-                  <p className="mt-8 text-lg sm:text-xl text-white/80 max-w-xl leading-relaxed font-medium">
-                    Participe do bolão, dê seus palpites nos maiores torneios de tênis do mundo e dispute com seus
-                    amigos no ranking.
-                  </p>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-4 shrink-0">
-                  <Button
-                    size="lg"
-                    className="bg-emerald-500 hover:bg-emerald-400 text-white text-lg h-16 px-10 rounded-2xl shadow-xl shadow-emerald-500/20 font-black transition-all hover:-translate-y-1"
-                    asChild
-                  >
-                    <Link href="/cadastro">
-                      Criar minha conta
-                      <ArrowRight className="w-5 h-5 ml-2" />
-                    </Link>
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-white/20 text-white hover:bg-white/10 hover:text-white text-lg h-16 px-10 rounded-2xl bg-white/5 backdrop-blur-md font-bold transition-all hover:-translate-y-1"
-                    asChild
-                  >
-                    <Link href="/login">Fazer login</Link>
-                  </Button>
-                </div>
+                <p className="mt-8 text-lg sm:text-xl text-white/80 max-w-xl leading-relaxed font-medium">
+                  Participe do bolão, dê seus palpites nos maiores torneios de tênis do mundo e dispute com seus amigos
+                  no ranking.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4 shrink-0">
+                <Button
+                  size="lg"
+                  className="bg-emerald-500 hover:bg-emerald-400 text-white text-lg h-16 px-10 rounded-2xl shadow-xl shadow-emerald-500/20 font-black transition-all hover:-translate-y-1"
+                  asChild
+                >
+                  <Link href="/cadastro">
+                    Criar minha conta
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Link>
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-white/20 text-white hover:bg-white/10 hover:text-white text-lg h-16 px-10 rounded-2xl bg-white/5 backdrop-blur-md font-bold transition-all hover:-translate-y-1"
+                  asChild
+                >
+                  <Link href="/login">Fazer login</Link>
+                </Button>
               </div>
             </div>
           </div>
-        </section>
+        </div>
 
         {/* Featured Tournaments */}
-        <section className="py-24 bg-white relative overflow-hidden">
+        <section className="py-12 bg-white relative overflow-hidden">
           <div className="container mx-auto px-4 md:px-32">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-2 h-8 bg-emerald-500 rounded-full" />
-                  <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">
                     Torneios em destaque
                   </h2>
                 </div>
@@ -146,7 +144,7 @@ export default async function HomePage() {
               </Button>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-2 gap-8">
               {featuredTournaments.map((tournament) => (
                 <TournamentCard key={tournament.id} tournament={tournament} />
               ))}
@@ -282,7 +280,7 @@ export default async function HomePage() {
               <div
                 className="absolute inset-0 opacity-20 bg-cover bg-center"
                 style={{
-                  backgroundImage: `url('https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=1920&q=80')`,
+                  backgroundImage: `url('https://images.unsplash.com/photo-1560012057-4372e14c5085?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/20 to-transparent" />
