@@ -7,6 +7,7 @@ import { tennisBall } from '@lucide/lab';
 
 interface TournamentCardProps {
   tournament: Tournament;
+  href?: string;
 }
 
 const surfaceColors: Record<string, string> = {
@@ -32,7 +33,7 @@ function formatDate(dateString: string): string {
   return date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
 }
 
-export function TournamentCard({ tournament }: TournamentCardProps) {
+export function TournamentCard({ tournament, href }: TournamentCardProps) {
   const isLockedByDate = new Date(tournament.start_date) <= new Date();
   const isFinished =
     tournament.status === 'finished' || tournament.status === 'FINISHED' || tournament.status === 'completed';
@@ -77,7 +78,7 @@ export function TournamentCard({ tournament }: TournamentCardProps) {
   };
 
   return (
-    <Link href={`/torneio/${tournament.id}`}>
+    <Link href={href || `/torneio/${tournament.id}`}>
       <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1 pt-0 rounded-[2rem]">
         <div className="relative h-60">
           <img src={imageUrl || '/placeholder.svg'} alt={tournament.name} className="w-full h-full object-cover" />
