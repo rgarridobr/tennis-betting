@@ -33,12 +33,12 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
     getTournamentsByYearAndMonth(currentDate.getFullYear(), currentDate.getMonth() + 1),
     getActiveTournament(),
   ]);
-
+    const activeStatuses = ['active', 'published', 'OPEN', 'LOCKED', 'IN_PROGRESS'];
   // Apply filters
   let filteredTournaments = allTournaments;
 
   if (status === 'active') {
-    filteredTournaments = filteredTournaments.filter((t) => ['UPCOMING'].includes(t.status));
+    filteredTournaments = filteredTournaments.filter((t) => activeStatuses.includes(t.status));
   } else if (status === 'finished') {
     filteredTournaments = filteredTournaments.filter((t) => ['finished', 'FINISHED', 'completed'].includes(t.status));
   }

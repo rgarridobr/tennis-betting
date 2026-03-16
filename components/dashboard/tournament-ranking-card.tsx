@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Trophy, MapPin, ChevronRight, Award } from 'lucide-react';
 import Link from 'next/link';
 import type { Tournament } from '@/lib/data';
+import Image from 'next/image';
 
 interface TournamentRankingCardProps {
   tournament: Tournament;
@@ -51,29 +52,27 @@ export function TournamentRankingCard({ tournament, href }: TournamentRankingCar
   return (
     <Link href={href}>
       <Card className="overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1 rounded-[2rem] bg-white">
-        <div className={`h-32 bg-gradient-to-br ${categoryGradient} relative flex items-center justify-center overflow-hidden`}>
-          {/* Decorative pattern */}
-          <div className="absolute inset-0 opacity-10 pointer-events-none flex items-center justify-center">
-             <Trophy className="w-40 h-40 transform rotate-12 translate-x-10 translate-y-5" />
+        <div className="h-32 relative flex items-center justify-center overflow-hidden">
+          {/* Background */}
+          <div
+            className="absolute inset-0 w-full h-full bg-contain  bg-center bg-no-repeat"
+            style={{
+              backgroundImage: `url('/images/categories/${tournament.category === 'GRAND_SLAM' ? 'grandslam.png' : tournament.category === 'MASTERS_1000' ? 'atpmasters1000.png' : tournament.category === 'ATP_500' ? 'atp500.png' : 'atp250.png'}')`,
+            }}
+          />
+ 
+          {/* Conteúdo */}
+          <div className="relative z-10 w-full h-full">
+            {isFinished && (
+              <>
+                <div className="absolute top-4 right-4">
+                  <Badge className="bg-amber-400 text-amber-950 border-none font-black text-[10px] uppercase tracking-wider">
+                    Finalizado
+                  </Badge>
+                </div>
+              </>
+            )}
           </div>
-
-          <div className="absolute top-4 left-4">
-             <Badge className="bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-md font-bold">
-               {getCategoryLabel(tournament.category)}
-             </Badge>
-          </div>
-
-          <div className="bg-white/10 p-4 rounded-full backdrop-blur-md border border-white/20">
-             <Award className="w-10 h-10 text-white" />
-          </div>
-
-          {isFinished && (
-            <div className="absolute top-4 right-4">
-               <Badge className="bg-amber-400 text-amber-950 border-none font-black text-[10px] uppercase tracking-wider">
-                 Finalizado
-               </Badge>
-            </div>
-          )}
         </div>
 
         <CardContent className="p-6">
@@ -82,14 +81,17 @@ export function TournamentRankingCard({ tournament, href }: TournamentRankingCar
               {tournament.name}
             </h3>
             <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1 flex items-center gap-1">
-              <MapPin className="w-3 h-3" /> {tournament.location} • {surfaceLabels[tournament.surface] || tournament.surface}
+              <MapPin className="w-3 h-3" /> {tournament.location} •{' '}
+              {surfaceLabels[tournament.surface] || tournament.surface}
             </p>
           </div>
 
           <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
             <div className="flex items-center gap-2 text-slate-500 text-sm font-bold">
               <Calendar className="w-4 h-4" />
-              <span>{formatDate(tournament.start_date)} - {formatDate(tournament.end_date)}</span>
+              <span>
+                {formatDate(tournament.start_date)} - {formatDate(tournament.end_date)}
+              </span>
             </div>
 
             <div className="flex items-center gap-1 text-emerald-600 font-black text-sm group-hover:gap-2 transition-all">
