@@ -28,7 +28,6 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
   const currentPage = page ? parseInt(page) : 1;
 
   const currentDate = new Date();
-  console.log(currentDate.getMonth());
 
   const [allTournaments, activeTournament] = await Promise.all([
     getTournamentsByYearAndMonth(currentDate.getFullYear(), currentDate.getMonth() + 1),
