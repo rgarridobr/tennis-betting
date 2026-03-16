@@ -239,13 +239,14 @@ export function TournamentBracket({
       </div>
 
       <div className="w-full bg-gray-300 rounded-[2.5rem] border border-slate-200 shadow-xl relative overflow-hidden">
-
-
-        <div ref={scrollContainerRef} className="overflow-x-auto overflow-y-auto p-8 md:p-12 relative scrollbar-hide">
+        <div
+          ref={scrollContainerRef}
+          className="overflow-x-auto overflow-y-auto relative scrollbar-hide max-h-[75vh]"
+        >
           <div
             key={selectedRound}
             className={cn(
-              'flex gap-24 relative pb-20 min-w-max justify-center animate-in fade-in duration-500',
+              'flex gap-24 relative pb-20 min-w-max justify-center animate-in fade-in duration-500 p-8 md:p-12 pt-0',
               direction === 'right'
                 ? 'slide-in-from-right-8'
                 : direction === 'left'
@@ -267,8 +268,8 @@ export function TournamentBracket({
 
                 return (
                   <div key={round} className="flex flex-col w-[300px] relative z-10">
-                    <div className="text-center mb-10">
-                      <h3 className="text-sm font-black uppercase tracking-[0.3em] text-emerald-600 bg-emerald-50 inline-block px-6 py-2 rounded-full border border-emerald-100">
+                    <div className="sticky top-0 z-30 bg-gray-300 py-6 mb-10 flex flex-col items-center gap-2 border-b border-gray-400/40 shadow-sm">
+                      <h3 className="text-sm font-black uppercase tracking-[0.3em] text-emerald-600 bg-emerald-50 inline-block px-6 py-2 rounded-full border border-emerald-100 shadow-sm">
                         {roundNames[round] === 'F'
                           ? 'Final'
                           : roundNames[round] === 'SF'
@@ -277,6 +278,11 @@ export function TournamentBracket({
                               ? 'Quartas de Final'
                               : roundNames[round] || `Rodada ${round}`}
                       </h3>
+                      {hasNextVisibleRound && (
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">
+                          {relativeIdx === 0 ? '← Coluna Esquerda' : 'Coluna Direita →'}
+                        </span>
+                      )}
                     </div>
 
                     <div
