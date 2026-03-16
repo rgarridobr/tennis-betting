@@ -87,15 +87,17 @@ export default async function ManageTournamentPage({ params }: Props) {
 
       <main className="container mx-auto px-4 md:px-32 py-8">
         {/* Status e Voltar */}
-        <div className="flex items-center justify-between mb-8">
-          <Button variant="outline" size="sm" asChild className="bg-transparent">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <Button variant="outline" size="sm" asChild className="bg-transparent w-fit">
             <Link href="/admin/torneios">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar
             </Link>
           </Button>
-          <div className="flex items-center gap-4">
+
+          <div className="flex items-center gap-3 flex-wrap">
             <TournamentStatusTransition tournamentId={tournamentId} status={tournament.status} />
+
             <Badge
               className={
                 tournament.status === 'active' || tournament.status === 'OPEN'

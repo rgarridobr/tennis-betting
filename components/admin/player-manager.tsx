@@ -100,7 +100,9 @@ export function PlayerManager({ players }: Props) {
                 filtered.map((p) => (
                   <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-slate-800 truncate max-w-[60%]">{p.name}</span>
+                      <span className="text-sm font-medium text-slate-800 truncate max-w-[140px] sm:max-w-none sm:truncate-none">
+                        {p.name}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       {p.country && <span className="text-xs text-slate-500 mr-2">{p.country}</span>}
