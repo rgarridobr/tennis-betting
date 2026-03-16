@@ -2,7 +2,7 @@ import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getTournamentsByYear, getActiveTournament } from '@/lib/data';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { TournamentCard } from '@/components/dashboard/tournament-card';
+import { TournamentRankingCard } from '@/components/dashboard/tournament-ranking-card';
 import { PageHero } from '@/components/shared/page-hero';
 import { Card, CardContent } from '@/components/ui/card';
 import { SearchX, Award } from 'lucide-react';
@@ -106,7 +106,7 @@ export default async function TournamentRankingListPage({ searchParams }: PagePr
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {paginatedTournaments.map((t) => (
-                <TournamentCard
+                <TournamentRankingCard
                   key={t.id}
                   tournament={t}
                   href={`/ranking/torneio/${t.id}`}
