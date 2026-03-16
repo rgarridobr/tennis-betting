@@ -24,7 +24,7 @@ export function EnrollmentBanner({ tournament }: EnrollmentBannerProps) {
                 <Lock className="w-6 h-6 text-emerald-600" />
               </div>
               <div>
-                <h3 className="font-bold text-lg text-slate-900">Participe do Bolao!</h3>
+                <h3 className="font-bold text-lg text-slate-900">Participe do Bolão!</h3>
                 <p className="text-slate-600 mt-1">
                   Inscreva-se para fazer seus palpites no chaveamento completo do {tournament.name}.
                 </p>

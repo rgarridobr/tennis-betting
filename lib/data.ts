@@ -191,6 +191,16 @@ export async function getTournaments(): Promise<Tournament[]> {
   return rows as Tournament[]
 }
 
+export async function getTournamentsByYearAndMonth(year: number, month: number): Promise<Tournament[]> {
+  const rows = await sql`
+    SELECT * FROM tournaments 
+    WHERE EXTRACT(YEAR FROM start_date) = ${year}
+    AND EXTRACT(MONTH FROM start_date) = ${month}
+    ORDER BY start_date ASC
+  `
+  return rows as Tournament[]
+}
+
 export async function getTournamentById(id: number): Promise<Tournament | null> {
   const rows = await sql`SELECT * FROM tournaments WHERE id = ${id}`
   return rows.length > 0 ? (rows[0] as Tournament) : null

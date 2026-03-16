@@ -1,66 +1,60 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { Check, Trophy, Loader2, FileText } from 'lucide-react'
-import Link from 'next/link'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { Check, Trophy, Loader2, FileText } from 'lucide-react';
+import Link from 'next/link';
 
 interface EnrollmentModalProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
   tournament: {
-    id: number
-    name: string
-  }
+    id: number;
+    name: string;
+  };
 }
 
 export function EnrollmentModal({ isOpen, onClose, tournament }: EnrollmentModalProps) {
-  const router = useRouter()
-  const [step, setStep] = useState<'info' | 'processing' | 'success'>('info')
-  const [isProcessing, setIsProcessing] = useState(false)
+  const router = useRouter();
+  const [step, setStep] = useState<'info' | 'processing' | 'success'>('info');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleEnroll = async () => {
-    setIsProcessing(true)
-    setStep('processing')
+    setIsProcessing(true);
+    setStep('processing');
 
     try {
       const response = await fetch('/api/tournament/enroll', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tournamentId: tournament.id }),
-      })
+      });
 
       if (response.ok) {
-        setStep('success')
+        setStep('success');
         setTimeout(() => {
-          onClose()
-          router.refresh()
-        }, 2000)
+          onClose();
+          router.refresh();
+        }, 2000);
       } else {
-        setStep('info')
+        setStep('info');
       }
     } catch {
-      setStep('info')
+      setStep('info');
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }
+  };
 
   const handleClose = () => {
     if (step !== 'processing') {
-      setStep('info')
-      onClose()
+      setStep('info');
+      onClose();
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -70,10 +64,10 @@ export function EnrollmentModal({ isOpen, onClose, tournament }: EnrollmentModal
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-amber-500" />
-                Participar do Bolao
+                Participar do Bolão
               </DialogTitle>
               <DialogDescription>
-                Inscreva-se no bolao de {tournament.name} e dispute com outros participantes!
+                Inscreva-se no bolão de {tournament.name} e dispute com outros participantes!
               </DialogDescription>
             </DialogHeader>
 
@@ -138,5 +132,5 @@ export function EnrollmentModal({ isOpen, onClose, tournament }: EnrollmentModal
         )}
       </DialogContent>
     </Dialog>
-  )
+  );
 }

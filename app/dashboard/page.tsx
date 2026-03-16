@@ -1,6 +1,6 @@
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { getUserStats, getTournamentsActiveThisMonth, getActiveTournament } from '@/lib/data';
+import { getUserStats, getTournamentsByYearAndMonth, getActiveTournament } from '@/lib/data';
 import { HeroSection } from '@/components/dashboard/hero-section';
 import { StatsCards } from '@/components/dashboard/stats-cards';
 import { TournamentCard } from '@/components/dashboard/tournament-card';
@@ -10,14 +10,15 @@ export default async function DashboardPage() {
   const user = await getSession();
   if (!user) redirect('/login');
 
+  const currentDate = new Date();
   const [tournaments, stats, activeTournament] = await Promise.all([
-    getTournamentsActiveThisMonth(),
+    getTournamentsByYearAndMonth(currentDate.getFullYear(), currentDate.getMonth() + 1),
     getUserStats(user.id),
     getActiveTournament(),
   ]);
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="min-h-screen bg-slate-50">
       <DashboardHeader user={user} activeTournamentId={activeTournament?.id} />
       <HeroSection user={user} />
 
@@ -32,7 +33,7 @@ export default async function DashboardPage() {
                   <div className="w-2 h-8 bg-emerald-500 rounded-full" />
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight">Torneios deste mês</h2>
                 </div>
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid md:grid-cols-3 gap-8">
                   {tournaments.map((t) => (
                     <TournamentCard key={t.id} tournament={t} />
                   ))}

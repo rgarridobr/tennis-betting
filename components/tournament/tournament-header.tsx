@@ -1,6 +1,10 @@
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, MapPin } from 'lucide-react';
+import { Calendar, Clock, Icon, MapPin, Users, Zap } from 'lucide-react';
 import type { Tournament } from '@/lib/data';
+import { PageHero } from '../shared/page-hero';
+import { Card, CardContent } from '../ui/card';
+import { tennisBall } from '@lucide/lab';
+import { getCategory } from '@/lib/utils';
 
 interface TournamentHeaderProps {
   tournament: Tournament;
@@ -27,7 +31,7 @@ const surfaceImages: Record<string, string> = {
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
+  return date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' });
 }
 
 export function TournamentHeader({ tournament, participants = 0 }: TournamentHeaderProps) {
@@ -54,55 +58,29 @@ export function TournamentHeader({ tournament, participants = 0 }: TournamentHea
   const bgImage = surfaceImages[tournament.surface] || surfaceImages.Hard;
 
   return (
-    <div className="relative py-16 md:py-22 overflow-hidden">
-      <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('${bgImage}')` }} />
-      <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-800/85 to-slate-900/80" />
-
-      <div className="relative container mx-auto px-4 md:px-32">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
-            <div className="flex flex-wrap items-center gap-3 mb-3">
-              <Badge className={surfaceColors[tournament.surface] || 'bg-slate-500 text-white'}>
-                {surfaceLabels[tournament.surface] || tournament.surface}
-              </Badge>
-              <Badge className={statusColor}>{statusLabel}</Badge>
+    <PageHero
+      title={tournament.name}
+      subtitle={
+        tournament.location +
+        `\n${formatDate(tournament.start_date)} - ${formatDate(tournament.end_date)}` +
+        `\n Início às ${new Date(tournament.start_date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` +
+        `\n${surfaceLabels[tournament.surface] || tournament.surface}`
+      }
+      bgImage={bgImage}
+    >
+      <div className="flex items-center gap-4">
+        <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl">
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
+              <Icon iconNode={tennisBall} className="w-6 h-6 text-emerald-400" />
             </div>
-
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">{tournament.name}</h1>
-
-            <div className="flex flex-wrap items-center gap-4 text-sm text-white/80">
-              <div className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4" />
-                <span>
-                  {new Date(tournament.start_date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-1.5">
-                <Calendar className="w-4 h-4" />
-                <span>
-                  {formatDate(tournament.start_date)} - {formatDate(tournament.end_date)}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <MapPin className="w-4 h-4" />
-                <span>{tournament.location}</span>
-              </div>
+            <div>
+              <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Categoria</p>
+              <p className="text-2xl font-black text-white">{getCategory(tournament.category)}</p>
             </div>
-          </div>
-
-          <div className="flex gap-4">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 text-center">
-              <p className="text-2xl font-bold text-white">{participants}</p>
-              <p className="text-xs text-white/70">Participantes</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 text-center">
-              <p className="text-2xl font-bold text-white">128</p>
-              <p className="text-xs text-white/70">Jogadores</p>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
-    </div>
+    </PageHero>
   );
 }

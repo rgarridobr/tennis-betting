@@ -1,9 +1,10 @@
-import { ReactNode, useMemo } from 'react'
+import { ReactNode, useMemo } from 'react';
 
 interface PageHeroProps {
-  title: string
-  subtitle: string
-  children?: ReactNode
+  title: string;
+  subtitle: string;
+  children?: ReactNode;
+  bgImage?: string;
 }
 
 const HERO_IMAGES = [
@@ -12,23 +13,21 @@ const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1646343249983-34dc5dd86b66?q=80&w=1470&auto=format&fit=crop',
   'https://images.unsplash.com/photo-1530915534664-4ac6423816b7?q=80&w=1470&auto=format&fit=crop',
   'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?q=80&w=1470&auto=format&fit=crop',
-]
+];
 
-export function PageHero({ title, subtitle, children }: PageHeroProps) {
-  const backgroundImage = useMemo(() => {
-    const index = Math.floor(Math.random() * HERO_IMAGES.length)
-    return HERO_IMAGES[index]
-  }, [])
+export function PageHero({ title, subtitle, children, bgImage }: PageHeroProps) {
+  const backgroundImage =
+    bgImage ||
+    useMemo(() => {
+      const index = Math.floor(Math.random() * HERO_IMAGES.length);
+      return HERO_IMAGES[index];
+    }, []);
 
   return (
     <div className="container mx-auto px-4 md:px-32 py-8">
       <div className="relative overflow-hidden rounded-[2.5rem] shadow-2xl">
-        
         {/* Background Image */}
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${backgroundImage}')` }}
-        />
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('${backgroundImage}')` }} />
 
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/20 to-black/80" />
@@ -41,16 +40,18 @@ export function PageHero({ title, subtitle, children }: PageHeroProps) {
                 {title}
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl font-medium">
-                {subtitle}
+                {subtitle.split('\n').map((line, i) => (
+                  <span key={i}>
+                    {line}
+                    <br />
+                  </span>
+                ))}
               </p>
             </div>
-            <div className="flex shrink-0">
-              {children}
-            </div>
+            <div className="flex shrink-0">{children}</div>
           </div>
         </div>
-
       </div>
     </div>
-  )
+  );
 }

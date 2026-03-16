@@ -58,7 +58,11 @@ export function TournamentBracket({
     .sort((a, b) => a - b);
   const maxRound = rounds.length > 0 ? Math.max(...rounds) : 0;
 
-  const [selectedRound, setSelectedRound] = useState<number>(rounds[0] || 1);
+  const isFinishedTournament =
+    tournamentStatus === 'FINISHED' || tournamentStatus === 'finished' || tournamentStatus === 'completed';
+console.log(tournamentStatus)
+
+  const [selectedRound, setSelectedRound] = useState<number>(isFinishedTournament ? maxRound : rounds[0] || 1);
   const [direction, setDirection] = useState<'left' | 'right' | null>(null);
   const [viewMode, setViewMode] = useState<'official' | 'predictions'>(hasStarted ? 'official' : 'predictions');
 
@@ -809,7 +813,8 @@ function PlayerRow({
             const isSetWinner = parseInt(setScore) > parseInt(opponentScore);
 
             return (
-              setScore !== undefined && viewMode !== 'predictions' && (
+              setScore !== undefined &&
+              viewMode !== 'predictions' && (
                 <React.Fragment key={i}>
                   <div
                     className={cn(

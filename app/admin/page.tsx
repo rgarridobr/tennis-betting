@@ -72,7 +72,7 @@ export default async function AdminDashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="min-h-screen bg-slate-50">
       <PageHero
         title="Painel Administrativo"
         subtitle="Gerencie torneios, jogadores e participantes do bolão com ferramentas exclusivas."

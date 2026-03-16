@@ -43,7 +43,11 @@ export function TournamentCard({ tournament }: TournamentCardProps) {
       ? 'Em Andamento'
       : tournament.status === 'active' || tournament.status === 'OPEN'
         ? 'Apostas Abertas'
-        : 'Em breve';
+        : tournament.status === 'STANDBY'
+          ? 'Agendado'
+          : tournament.status === 'UPCOMING'
+            ? 'Preparando chaveamento'
+            : '';
 
   const statusColor = isFinished
     ? 'bg-slate-500 text-white border-none'
@@ -51,7 +55,9 @@ export function TournamentCard({ tournament }: TournamentCardProps) {
       ? 'bg-blue-500 text-white border-none'
       : tournament.status === 'active' || tournament.status === 'OPEN'
         ? 'bg-emerald-500 text-white border-none'
-        : 'bg-amber-500 text-white border-none';
+        : tournament.status === 'STANDBY'
+          ? 'bg-amber-500 text-white border-none'
+          : 'bg-purple-500 text-white border-none';
 
   const imageUrl = tournament.image_url || surfaceImages[tournament.surface] || surfaceImages.Hard;
 
@@ -99,7 +105,7 @@ export function TournamentCard({ tournament }: TournamentCardProps) {
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-emerald-500" />
               <span>
-                Início às {' '}
+                Início às{' '}
                 {new Date(tournament.start_date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
