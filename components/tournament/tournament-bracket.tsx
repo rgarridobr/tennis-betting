@@ -241,11 +241,58 @@ export function TournamentBracket({
       <div className="w-full bg-gray-300 rounded-[2.5rem] border border-slate-200 shadow-xl relative overflow-hidden">
 
 
-        <div ref={scrollContainerRef} className="overflow-x-auto overflow-y-auto p-8 md:p-12 relative scrollbar-hide">
+        <div
+          ref={scrollContainerRef}
+          className="overflow-x-auto overflow-y-auto relative max-h-[700px] border-t border-slate-200/50 bg-gray-300 scroll-smooth"
+        >
+          {/* Header Row - Sticky vertically but scrolls horizontally with content */}
+          <div
+            className={cn(
+              'sticky top-0 z-30 flex gap-24 px-8 md:px-12 pt-8 pb-10 min-w-max justify-center bg-gray-300 border-b-2 border-gray-400/50 shadow-md animate-in fade-in duration-500',
+              direction === 'right' ? 'slide-in-from-right-8' : direction === 'left' ? 'slide-in-from-left-8' : '',
+            )}
+            key={`header-${selectedRound}`}
+          >
+            {rounds
+              .filter((r) => r === selectedRound || r === rounds[rounds.indexOf(selectedRound) + 1])
+              .map((round) => {
+                const roundIdx = rounds.indexOf(round);
+                const relativeIdx = roundIdx - rounds.indexOf(selectedRound);
+
+                return (
+                  <div key={`header-${round}`} className="w-[300px] flex flex-col items-center gap-3">
+                    <span
+                      className={cn(
+                        'text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-[0.2em] border shadow-sm shrink-0',
+                        relativeIdx === 0
+                          ? 'text-blue-700 bg-blue-100 border-blue-200'
+                          : 'text-amber-700 bg-amber-100 border-amber-200',
+                      )}
+                    >
+                      {relativeIdx === 0 ? '← Lado Esquerdo' : 'Lado Direito →'}
+                    </span>
+                    <h3 className="text-xs md:text-sm font-black uppercase tracking-[0.2em] text-white bg-slate-900 inline-block px-8 py-3 rounded-2xl shadow-xl border border-slate-800 min-w-[220px] text-center shrink-0">
+                      {roundNames && roundNames[round] ? (
+                        roundNames[round] === 'F'
+                          ? 'Final'
+                          : roundNames[round] === 'SF'
+                            ? 'Semifinais'
+                            : roundNames[round] === 'QF'
+                              ? 'Quartas de Final'
+                              : roundNames[round]
+                      ) : (
+                        `Rodada ${round}`
+                      )}
+                    </h3>
+                  </div>
+                );
+              })}
+          </div>
+
           <div
             key={selectedRound}
             className={cn(
-              'flex gap-24 relative pb-20 min-w-max justify-center animate-in fade-in duration-500',
+              'flex gap-24 relative px-8 md:px-12 pt-12 pb-20 min-w-max justify-center animate-in fade-in duration-500',
               direction === 'right'
                 ? 'slide-in-from-right-8'
                 : direction === 'left'
@@ -267,18 +314,6 @@ export function TournamentBracket({
 
                 return (
                   <div key={round} className="flex flex-col w-[300px] relative z-10">
-                    <div className="sticky top-0 z-20 bg-gray-300 -mx-12 px-12 -mt-8 md:-mt-12 pt-8 md:pt-12 pb-6 mb-4 text-center">
-                      <h3 className="text-sm font-black uppercase tracking-[0.3em] text-emerald-600 bg-emerald-50 inline-block px-6 py-2 rounded-full border border-emerald-100 shadow-sm">
-                        {roundNames[round] === 'F'
-                          ? 'Final'
-                          : roundNames[round] === 'SF'
-                            ? 'Semifinais'
-                            : roundNames[round] === 'QF'
-                              ? 'Quartas de Final'
-                              : roundNames[round] || `Rodada ${round}`}
-                      </h3>
-                    </div>
-
                     <div
                       className="flex flex-col flex-1"
                       style={{
