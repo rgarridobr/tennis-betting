@@ -267,8 +267,8 @@ export function TournamentBracket({
 
                 return (
                   <div key={round} className="flex flex-col w-[300px] relative z-10">
-                    <div className="text-center mb-10">
-                      <h3 className="text-sm font-black uppercase tracking-[0.3em] text-emerald-600 bg-emerald-50 inline-block px-6 py-2 rounded-full border border-emerald-100">
+                    <div className="sticky top-0 z-20 bg-gray-300 -mx-12 px-12 -mt-8 md:-mt-12 pt-8 md:pt-12 pb-6 mb-4 text-center">
+                      <h3 className="text-sm font-black uppercase tracking-[0.3em] text-emerald-600 bg-emerald-50 inline-block px-6 py-2 rounded-full border border-emerald-100 shadow-sm">
                         {roundNames[round] === 'F'
                           ? 'Final'
                           : roundNames[round] === 'SF'
