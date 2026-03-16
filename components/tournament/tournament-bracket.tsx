@@ -146,7 +146,7 @@ export function TournamentBracket({
     });
   };
 
-  const CARD_HEIGHT = 130;
+  const CARD_HEIGHT = isAdmin ? 130 : 105;
   const BASE_GAP = isAdmin ? 30 : 1;
 
   return (
@@ -809,16 +809,19 @@ function PlayerRow({
             const isSetWinner = parseInt(setScore) > parseInt(opponentScore);
 
             return (
-              setScore !== undefined && (
-                <div
-                  key={i}
-                  className={cn(
-                    'w-5 h-6 flex items-center justify-center text-[10px] font-black rounded-sm shadow-sm',
-                    isSetWinner ? 'bg-emerald-500 text-white' : 'bg-slate-50 text-slate-400 border border-slate-100',
-                  )}
-                >
-                  {setScore}
-                </div>
+              setScore !== undefined && viewMode !== 'predictions' && (
+                <React.Fragment key={i}>
+                  <div
+                    className={cn(
+                      'w-5 h-6 flex items-center justify-center text-[10px] font-black',
+                      isSetWinner ? 'text-emerald-500' : 'text-slate-400',
+                    )}
+                  >
+                    {setScore}
+                  </div>
+
+                  {i < sets.length - 1 && <span className="text-slate-400 font-black text-[10px]">-</span>}
+                </React.Fragment>
               )
             );
           })}
@@ -838,20 +841,16 @@ function PlayerRow({
               </div>
             )
           ) : isWinner ? (
-            <div className="w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center shadow-lg shadow-amber-100">
-              <ArrowRight className="w-5 h-5 text-white" />
-            </div>
-          ) : showPredictionResult && !predictionCorrect ? (
-            <div className="w-6 h-6 rounded-full bg-red-400 flex items-center justify-center shadow-lg shadow-amber-100">
-              <X className="w-5 h-5 text-white" />
+            <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-100">
+              <Check className="w-5 h-5 text-white" />
             </div>
           ) : null
         ) : (
           /* Official Mode Indicators */
           <>
             {isWinner && (
-              <div className="w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center shadow-lg shadow-amber-100">
-                <ArrowRight className="w-5 h-5 text-white" />
+              <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-100">
+                <Check className="w-5 h-5 text-white" />
               </div>
             )}
           </>
