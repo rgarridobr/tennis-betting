@@ -60,7 +60,6 @@ export function TournamentBracket({
 
   const isFinishedTournament =
     tournamentStatus === 'FINISHED' || tournamentStatus === 'finished' || tournamentStatus === 'completed';
-console.log(tournamentStatus)
 
   const [selectedRound, setSelectedRound] = useState<number>(isFinishedTournament ? maxRound : rounds[0] || 1);
   const [direction, setDirection] = useState<'left' | 'right' | null>(null);
