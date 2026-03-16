@@ -444,7 +444,7 @@ export async function setMatchResult(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const matchData = await sql`
-      SELECT bm.*, t.sets_format, t.size, t.status as tournament_status
+      SELECT bm.*, t.sets_format, t.size, t.status as tournament_status, t.category
       FROM bracket_matches bm
       JOIN tournaments t ON bm.tournament_id = t.id
       WHERE bm.id = ${matchId}
@@ -491,7 +491,8 @@ export async function setMatchResult(
     //   }
     // }
 
-    const points = pointsCancelled ? 0 : getMatchPoints(category, round, totalRounds);
+    const isBye = score === 'BYE';
+    const points = (pointsCancelled || isBye) ? 0 : getMatchPoints(category, round, totalRounds);
 
     // Update match result
     await sql`
