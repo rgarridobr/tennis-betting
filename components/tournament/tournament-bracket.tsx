@@ -267,16 +267,12 @@ export function TournamentBracket({
 
                 return (
                   <div key={round} className="flex flex-col w-[300px] relative z-10">
-                    <div className="text-center mb-10">
-                      <h3 className="text-sm font-black uppercase tracking-[0.3em] text-emerald-600 bg-emerald-50 inline-block px-6 py-2 rounded-full border border-emerald-100">
-                        {roundNames[round] === 'F'
-                          ? 'Final'
-                          : roundNames[round] === 'SF'
-                            ? 'Semifinais'
-                            : roundNames[round] === 'QF'
-                              ? 'Quartas de Final'
-                              : roundNames[round] || `Rodada ${round}`}
-                      </h3>
+                    <div className="sticky top-0 z-20 bg-gray-300 -mx-12 px-12 pt-2 pb-10 -mt-2">
+                      <div className="text-center">
+                        <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 bg-emerald-50/90 backdrop-blur-sm inline-block px-8 py-2.5 rounded-full border border-emerald-200/50 shadow-sm transition-all">
+                          {roundNames[round] || `R${round}`}
+                        </h3>
+                      </div>
                     </div>
 
                     <div
