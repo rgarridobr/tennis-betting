@@ -77,14 +77,10 @@ export function DashboardHeader({ user, activeTournamentId }: DashboardHeaderPro
                     <DropdownMenuItem asChild>
                       <Link href="/ranking" className="cursor-pointer">Ranking Geral</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild disabled={!activeTournamentId}>
-                      {activeTournamentId ? (
-                        <Link href={`/ranking/torneio/${activeTournamentId}`} className="cursor-pointer">
-                          Ranking do Torneio
-                        </Link>
-                      ) : (
-                        <span className="opacity-50 cursor-not-allowed">Ranking do Torneio</span>
-                      )}
+                    <DropdownMenuItem asChild>
+                      <Link href="/ranking/torneio" className="cursor-pointer">
+                        Ranking por Torneio
+                      </Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
