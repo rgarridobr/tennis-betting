@@ -1,5 +1,5 @@
-import { getSession } from '@/lib/auth'
-import { redirect, notFound } from 'next/navigation'
+import { getSession } from '@/lib/auth';
+import { redirect, notFound } from 'next/navigation';
 import {
   getTournamentById,
   getBracketMatches,
@@ -12,60 +12,69 @@ import {
   getTournamentRanking,
   getUserPublicInfo,
   getActiveTournament,
-} from '@/lib/data'
-import { getDynamicRoundNames } from '@/lib/utils'
-import { DashboardHeader } from '@/components/dashboard/dashboard-header'
-import { TournamentHeader } from '@/components/tournament/tournament-header'
-import { FileText, ArrowLeft, Info } from 'lucide-react'
-import Link from 'next/link'
-import { TournamentBracket } from '@/components/tournament/tournament-bracket'
-import { EnrollmentBanner } from '@/components/tournament/enrollment-banner'
-import { TournamentRanking } from '@/components/tournament/tournament-ranking'
+} from '@/lib/data';
+import { getDynamicRoundNames } from '@/lib/utils';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { TournamentHeader } from '@/components/tournament/tournament-header';
+import { FileText, ArrowLeft, Info } from 'lucide-react';
+import Link from 'next/link';
+import { TournamentBracket } from '@/components/tournament/tournament-bracket';
+import { EnrollmentBanner } from '@/components/tournament/enrollment-banner';
+import { TournamentRanking } from '@/components/tournament/tournament-ranking';
 
 interface TournamentPageProps {
-  params: Promise<{ id: string }>
-  searchParams: Promise<{ view?: string, viewUser?: string }>
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ view?: string; viewUser?: string }>;
 }
 
 export default async function TournamentPage({ params, searchParams }: TournamentPageProps) {
-  const user = await getSession()
-  if (!user) redirect('/login')
+  const user = await getSession();
+  if (!user) redirect('/login');
 
-  const { id } = await params
-  const { viewUser, view = 'bracket' } = await searchParams
-  const tournamentId = parseInt(id, 10)
-  if (isNaN(tournamentId)) notFound()
+  const { id } = await params;
+  const { viewUser, view = 'bracket' } = await searchParams;
+  const tournamentId = parseInt(id, 10);
+  if (isNaN(tournamentId)) notFound();
 
-  const tournament = await getTournamentById(tournamentId)
-  if (!tournament) notFound()
+  const tournament = await getTournamentById(tournamentId);
+  if (!tournament) notFound();
 
-  const started = await hasTournamentStarted(tournamentId)
-  const targetUserId = (viewUser && started) ? parseInt(viewUser, 10) : user.id
-  const isViewingOthers = targetUserId !== user.id
+  const started = await hasTournamentStarted(tournamentId);
+  const targetUserId = viewUser && started ? parseInt(viewUser, 10) : user.id;
+  const isViewingOthers = targetUserId !== user.id;
 
-  const [matches, targetPredictions, enrollment, participants, tournamentPlayers, targetUserInfo, activeTournament] = await Promise.all([
-    getBracketMatches(tournamentId),
-    getUserPredictions(targetUserId, tournamentId),
-    getEnrollment(user.id, tournamentId),
-    getTournamentParticipantCount(tournamentId),
-    getTournamentPlayers(tournamentId),
-    isViewingOthers ? getUserPublicInfo(targetUserId) : null,
-    getActiveTournament()
-  ])
+  const [matches, targetPredictions, enrollment, participants, tournamentPlayers, targetUserInfo, activeTournament] =
+    await Promise.all([
+      getBracketMatches(tournamentId),
+      getUserPredictions(targetUserId, tournamentId),
+      getEnrollment(user.id, tournamentId),
+      getTournamentParticipantCount(tournamentId),
+      getTournamentPlayers(tournamentId),
+      isViewingOthers ? getUserPublicInfo(targetUserId) : null,
+      getActiveTournament(),
+    ]);
 
-  const enrolled = !!enrollment
+  const enrolled = !!enrollment;
 
   // Map: bracketMatchId -> prediction object
-  const predictionsRecord: Record<number, { winnerId: number, score?: string }> = {}
+  const predictionsRecord: Record<number, { winnerId: number; score?: string }> = {};
   for (const p of targetPredictions) {
     predictionsRecord[p.bracket_match_id] = {
       winnerId: p.predicted_winner_id,
-      score: p.predicted_score || undefined
-    }
+      score: p.predicted_score || undefined,
+    };
   }
 
-  const maxRound = matches.length > 0 ? Math.max(...matches.map(m => m.round)) : 0
-  const dynamicRoundNames = getDynamicRoundNames(maxRound)
+  const maxRound = matches.length > 0 ? Math.max(...matches.map((m) => m.round)) : 0;
+  const dynamicRoundNames = getDynamicRoundNames(maxRound);
+
+  function subtractDays(date: string | Date, days: number) {
+    const d = new Date(date);
+    d.setDate(d.getDate() - days);
+    return d;
+  }
+
+  const twoDaysBefore = subtractDays(tournament.start_date, 2);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -74,10 +83,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
       <TournamentHeader tournament={tournament} participants={participants} />
 
       <main className="container mx-auto px-4 md:px-32 py-12">
-        {!enrolled && (
-          <EnrollmentBanner tournament={tournament} />
-        )}
-
+        {!enrolled && <EnrollmentBanner tournament={tournament} />}
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div className="flex flex-col md:flex-row md:items-end gap-4">
@@ -86,9 +92,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
                 {isViewingOthers ? 'Visualizando Chave' : 'Chaveamento'}
               </h2>
               {enrolled && !isViewingOthers && (
-                <span className="text-sm text-emerald-600 font-bold">
-                  Inscrito - Faça seus palpites!
-                </span>
+                <span className="text-sm text-emerald-600 font-bold">Inscrito - Faça seus palpites!</span>
               )}
             </div>
 
@@ -122,21 +126,35 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
               </div>
               <div>
                 <p className="text-blue-900 font-black text-lg leading-tight">
-                  Você está visualizando os palpites de <span className="text-blue-600">{targetUserInfo?.name || 'Usuário'}</span>
+                  Você está visualizando os palpites de{' '}
+                  <span className="text-blue-600">{targetUserInfo?.name || 'Usuário'}</span>
                 </p>
-                <p className="text-blue-700/70 text-sm font-bold uppercase tracking-wider">Modo de Apenas Visualização</p>
+                <p className="text-blue-700/70 text-sm font-bold uppercase tracking-wider">
+                  Modo de Apenas Visualização
+                </p>
               </div>
             </div>
           </div>
         )}
 
-        {(tournament.status === 'upcoming' || tournament.status === 'draft' || tournament.status === 'STANDBY' || tournament.status === 'UPCOMING' || matches.length === 0) ? (
+        {tournament.status === 'upcoming' ||
+        tournament.status === 'draft' ||
+        tournament.status === 'STANDBY' ||
+        tournament.status === 'UPCOMING' ||
+        matches.length === 0 ? (
           <div className="text-center py-24 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm px-6">
-            <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">
-              Chaveamento indisponível para este torneio
-            </h3>
+            <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">Você chegou cedo!</h3>
             <p className="text-slate-500 text-lg font-medium max-w-2xl mx-auto">
-              O chaveamento para este torneio ainda não está disponível. Por favor, volte mais tarde para visualizar o chaveamento assim que for liberado.
+              As chaves de simples masculino ainda não estão disponíveis.
+            </p>{' '}
+            <p className="text-slate-500 text-lg font-medium max-w-2xl mx-auto mb-4">Volte aqui por volta de:</p>
+            <p className="text-slate-500 text-xl font-bold max-w-2xl mx-auto capitalize">
+              {twoDaysBefore.toLocaleDateString('pt-BR', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              })}
             </p>
           </div>
         ) : isViewingOthers && targetPredictions.length === 0 ? (
@@ -163,5 +181,5 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
         )}
       </main>
     </div>
-  )
+  );
 }

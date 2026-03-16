@@ -238,13 +238,8 @@ export function TournamentBracket({
         </div>
       </div>
 
-      <div className="w-full bg-[#f8fafc] rounded-[2.5rem] border border-slate-200 shadow-xl relative overflow-hidden">
-        <div
-          className="absolute inset-0 opacity-[0.03] pointer-events-none"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}
-        />
+      <div className="w-full bg-gray-300 rounded-[2.5rem] border border-slate-200 shadow-xl relative overflow-hidden">
+
 
         <div ref={scrollContainerRef} className="overflow-x-auto overflow-y-auto p-8 md:p-12 relative scrollbar-hide">
           <div
@@ -823,8 +818,6 @@ function PlayerRow({
                   >
                     {setScore}
                   </div>
-
-                  {i < sets.length - 1 && <span className="text-slate-400 font-black text-[10px]">-</span>}
                 </React.Fragment>
               )
             );
@@ -836,25 +829,25 @@ function PlayerRow({
         {viewMode === 'predictions' ? (
           isSelected && !isCompleted ? (
             !predictionCorrect ? (
-              <div className="w-6 h-6 rounded-full bg-red-400 flex items-center justify-center shadow-lg shadow-amber-100">
-                <X className="w-5 h-5 text-white" />
+              <div className="w-6 h-6 rounded-full flex items-center justify-center">
+                <X className="w-5 h-5 text-red-400" />
               </div>
             ) : (
-              <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-200 animate-in zoom-in duration-200">
-                <Clock className="w-5 h-5 text-white" />
+              <div className="w-6 h-6 rounded-full flex items-center justify-center">
+                <Clock className="w-5 h-5 text-blue-500" />
               </div>
             )
           ) : isWinner ? (
-            <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-100">
-              <Check className="w-5 h-5 text-white" />
+            <div className="w-6 h-6 rounded-full flex items-center justify-center">
+              <Check className="w-5 h-5 text-emerald-500" />
             </div>
           ) : null
         ) : (
           /* Official Mode Indicators */
           <>
             {isWinner && (
-              <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-100">
-                <Check className="w-5 h-5 text-white" />
+              <div className="w-6 h-6 rounded-full flex items-center justify-center">
+                <Check className="w-5 h-5 text-emerald-500" />
               </div>
             )}
           </>
