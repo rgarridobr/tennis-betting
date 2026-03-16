@@ -165,7 +165,7 @@ export default async function ManageTournamentPage({ params }: Props) {
         )}
 
         {/* Rodadas do Chaveamento */}
-        <div className="space-y-6 pb-20">
+        <div className="space-y-6 pb-2">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-black text-slate-900 tracking-tight">Chaveamento</h2>
