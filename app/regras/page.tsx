@@ -73,8 +73,8 @@ export default async function RulesPage() {
             <CardContent>
               <p className="text-slate-600 text-sm leading-relaxed">
                 Você ganha pontos a cada acerto de vencedor. A pontuação é progressiva: rodadas finais valem mais. Na
-                final, se acertar o Campeão e o Vice, você leva apenas a pontuação do Campeão. Caso acerte apenas o
-                Vice, leva a pontuação de Vice.
+                final, se você acertar o Campeão ou o Vice-Campeão, você soma a pontuação de qual acertou. Já se acertar
+                o Campeão e o Vice-Campeão, você soma a pontuação apenas do Campeão.
               </p>
             </CardContent>
           </Card>
