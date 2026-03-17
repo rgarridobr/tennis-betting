@@ -2,6 +2,7 @@
 
 import React, { useRef, useState, useTransition } from 'react';
 import type { BracketMatch, Player } from '@/lib/data';
+import { getFlagUrl } from '@/lib/countries';
 import { makePredictionAction } from '@/lib/actions/predictions';
 import { Check, Trophy, X, Pencil, AlertCircle, Layout, User as UserIcon, ArrowRight, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -79,8 +80,10 @@ export function TournamentBracket({
   };
 
   // Map of player ID to player details for display in predicted rounds
-  const playersById: Record<number, { name: string; display_name: string | null; seed: number | null; type: string }> =
-    {};
+  const playersById: Record<
+    number,
+    { name: string; display_name: string | null; seed: number | null; type: string; country: string | null }
+  > = {};
   for (const m of matches) {
     if (m.player1_id)
       playersById[m.player1_id] = {
@@ -88,6 +91,7 @@ export function TournamentBracket({
         display_name: m.player1_display_name,
         seed: m.player1_seed,
         type: m.player1_type,
+        country: m.player1_country,
       };
     if (m.player2_id)
       playersById[m.player2_id] = {
@@ -95,6 +99,7 @@ export function TournamentBracket({
         display_name: m.player2_display_name,
         seed: m.player2_seed,
         type: m.player2_type,
+        country: m.player2_country,
       };
   }
 
@@ -333,6 +338,7 @@ export function TournamentBracket({
                               display_name: match.player1_display_name,
                               seed: match.player1_seed,
                               type: match.player1_type,
+                              country: match.player1_country,
                             };
                             p2 = {
                               id: match.player2_id,
@@ -340,6 +346,7 @@ export function TournamentBracket({
                               display_name: match.player2_display_name,
                               seed: match.player2_seed,
                               type: match.player2_type,
+                              country: match.player2_country,
                             };
                           } else {
                             const prevRound = match.round - 1;
@@ -359,6 +366,7 @@ export function TournamentBracket({
                                 name: match.player1_name,
                                 seed: match.player1_seed,
                                 type: match.player1_type,
+                                country: match.player1_country,
                               };
                             }
 
@@ -370,6 +378,7 @@ export function TournamentBracket({
                                 name: match.player2_name,
                                 seed: match.player2_seed,
                                 type: match.player2_type,
+                                country: match.player2_country,
                               };
                             }
                           }
@@ -382,6 +391,7 @@ export function TournamentBracket({
                                 display_name: match.player1_display_name,
                                 seed: match.player1_seed,
                                 type: match.player1_type,
+                                country: match.player1_country,
                               }
                             : { isAwaiting: true };
                           p2 = match.player2_id
@@ -391,6 +401,7 @@ export function TournamentBracket({
                                 display_name: match.player2_display_name,
                                 seed: match.player2_seed,
                                 type: match.player2_type,
+                                country: match.player2_country,
                               }
                             : { isAwaiting: true };
                         }
@@ -538,6 +549,7 @@ function BracketMatchCard({
                 display_name={p1?.display_name || null}
                 seed={p1?.seed || null}
                 type={p1?.type}
+                country={p1?.country}
                 isWinner={match.winner_id === p1?.id && isCompleted}
                 isSelected={selectedWinnerId === p1?.id}
                 isPredicted={selectedWinnerId === p1?.id}
@@ -560,6 +572,7 @@ function BracketMatchCard({
           display_name={p1?.display_name || null}
           seed={p1?.seed || null}
           type={p1?.type}
+          country={p1?.country}
           isWinner={match.winner_id === p1?.id && isCompleted}
           isSelected={selectedWinnerId === p1?.id}
           isPredicted={selectedWinnerId === p1?.id}
@@ -591,6 +604,7 @@ function BracketMatchCard({
                 display_name={p2?.display_name || null}
                 seed={p2?.seed || null}
                 type={p2?.type}
+                country={p2?.country}
                 isWinner={match.winner_id === p2?.id && isCompleted}
                 isSelected={selectedWinnerId === p2?.id}
                 isPredicted={selectedWinnerId === p2?.id}
@@ -613,6 +627,7 @@ function BracketMatchCard({
           display_name={p2?.display_name || null}
           seed={p2?.seed || null}
           type={p2?.type}
+          country={p2?.country}
           isWinner={match.winner_id === p2?.id && isCompleted}
           isSelected={selectedWinnerId === p2?.id}
           isPredicted={selectedWinnerId === p2?.id}
@@ -698,11 +713,13 @@ function PlayerRow({
   isAwaiting = false,
   viewMode = 'predictions',
   isForceIncorrect = false,
+  country = null,
 }: {
   name: string | null;
   display_name?: string | null;
   seed: number | null;
   type?: string;
+  country?: string | null;
   isWinner: boolean;
   isSelected: boolean;
   isPredicted: boolean;
@@ -758,6 +775,7 @@ function PlayerRow({
   };
 
   const indicator = getIndicator();
+  const flagUrl = getFlagUrl(country);
 
   return (
     <div
@@ -782,6 +800,14 @@ function PlayerRow({
       )}
 
       <div className="flex-1 min-w-0 flex items-center gap-2">
+        {flagUrl && (
+          <img
+            src={flagUrl}
+            alt={country!}
+            className="w-5 h-3.5 object-cover rounded-sm shadow-sm"
+            onError={(e) => (e.currentTarget.style.display = 'none')}
+          />
+        )}
         <span
           className={cn(
             'text-xs font-black truncate tracking-tight',
