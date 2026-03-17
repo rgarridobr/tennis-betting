@@ -112,8 +112,8 @@ export function AdminMatchActions({
                   <RefreshCw className="w-6 h-6 text-rose-600" />
                 </div>
                 <div className="text-left">
-                  <p className="font-black">Substituir / LL</p>
-                  <p className="text-xs font-bold text-rose-600/70">Substitua um jogador ou adicione um Lucky Loser.</p>
+                  <p className="font-black">Substituir / Definir Q</p>
+                  <p className="text-xs font-bold text-rose-600/70">Substitua um jogador, preencha um Qualifier ou adicione um LL.</p>
                 </div>
               </button>
             }
