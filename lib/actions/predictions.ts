@@ -28,8 +28,7 @@ export async function makePredictionAction(
 export async function saveFullBracketAction(
   userId: number,
   tournamentId: number,
-  predictions: Array<{ matchId: number; winnerId: number; score?: string }>,
-  isConcluded: boolean = false
+  predictions: Array<{ matchId: number; winnerId: number; score?: string }>
 ) {
   // Verify user is enrolled
   const enrolled = await isUserEnrolled(userId, tournamentId)
@@ -44,20 +43,35 @@ export async function saveFullBracketAction(
   }
 
   // Batch insert/update predictions
+  const matchIds = predictions.map(p => p.matchId)
+
+  // 1. Delete predictions that are no longer in the provided list for this tournament
+  if (matchIds.length > 0) {
+    await sql`
+      DELETE FROM predictions
+      WHERE user_id = ${userId}
+      AND bracket_match_id IN (
+        SELECT id FROM bracket_matches WHERE tournament_id = ${tournamentId}
+      )
+      AND bracket_match_id NOT IN (SELECT unnest(${matchIds}::int[]))
+    `
+  } else {
+    await sql`
+      DELETE FROM predictions
+      WHERE user_id = ${userId}
+      AND bracket_match_id IN (
+        SELECT id FROM bracket_matches WHERE tournament_id = ${tournamentId}
+      )
+    `
+  }
+
+  // 2. Insert/Update predictions
   for (const p of predictions) {
     await sql`
       INSERT INTO predictions (user_id, bracket_match_id, predicted_winner_id, predicted_score)
       VALUES (${userId}, ${p.matchId}, ${p.winnerId}, ${p.score || null})
       ON CONFLICT (user_id, bracket_match_id)
       DO UPDATE SET predicted_winner_id = ${p.winnerId}, predicted_score = ${p.score || null}
-    `
-  }
-
-  if (isConcluded) {
-    await sql`
-      UPDATE user_tournaments
-      SET bracket_submitted = TRUE
-      WHERE user_id = ${userId} AND tournament_id = ${tournamentId}
     `
   }
 
