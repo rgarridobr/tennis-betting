@@ -232,7 +232,7 @@ export async function getActiveTournament(): Promise<Tournament | null> {
 // ==================== PLAYERS ====================
 
 export async function getPlayers(): Promise<Player[]> {
-  const rows = await sql`SELECT * FROM players ORDER BY seed NULLS LAST, name ASC`
+  const rows = await sql`SELECT * FROM players ORDER BY name ASC`
   return rows as Player[]
 }
 

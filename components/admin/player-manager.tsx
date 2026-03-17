@@ -131,7 +131,7 @@ function AddPlayersDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="gap-1.5">
+        <Button size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200">
           <UserPlus className="w-4 h-4" /> Adicionar
         </Button>
       </DialogTrigger>

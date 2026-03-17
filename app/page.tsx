@@ -72,7 +72,7 @@ export default async function HomePage() {
                 backgroundImage: `url('https://images.unsplash.com/photo-1530915534664-4ac6423816b7?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
               }}
             />
-        <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/20 to-black/80" />
+            <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/20 to-black/80" />
 
             <div className="relative px-8 py-20 md:px-16 w-full flex flex-col lg:flex-row items-center lg:items-center justify-between gap-12">
               <div className="m-w-4xl">
@@ -308,64 +308,11 @@ export default async function HomePage() {
       {/* Footer */}
       <footer className="py-10">
         <div className="container mx-auto px-4 md:px-32">
-          {/* <div className="grid md:grid-cols-4 gap-12 mb-16">
-            <div className="md:col-span-2">
-              <Link href="/" className="flex items-center gap-2.5 text-white mb-6 group">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                  <Trophy className="w-6 h-6 text-white" />
-                </div>
-                <span className="font-black text-2xl tracking-tight">Bolão de Tênis</span>
-              </Link>
-              <p className="text-slate-500 max-w-sm font-medium leading-relaxed">
-                A plataforma definitiva para fãs de tênis. Faça seus palpites, acompanhe os resultados ao vivo e dispute o topo do ranking mundial.
-              </p>
-            </div>
-
-            <div>
-              <h4 className="font-semibold text-white mb-4">Links</h4>
-              <ul className="space-y-2 text-slate-400">
-                <li>
-                  <Link href="/cadastro" className="hover:text-white transition-colors">
-                    Criar conta
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/login" className="hover:text-white transition-colors">
-                    Entrar
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    Como funciona
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold text-white mb-4">Legal</h4>
-              <ul className="space-y-2 text-slate-400">
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    Termos de uso
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    Privacidade
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white transition-colors">
-                    Contato
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div> */}
-
-          <div className="text-center text-slate-500 text-sm">
+          <div className="text-center text-slate-500 text-sm space-y-2">
             <p>© {new Date().getFullYear()} TennisPool. Todos os direitos reservados.</p>
+            <p className="max-w-md mx-auto text-[10px] leading-relaxed opacity-70 font-medium">
+              Este site não é oficial e não é afiliado à ATP ou aos torneios citados.
+            </p>
           </div>
         </div>
       </footer>
