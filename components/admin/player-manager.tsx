@@ -78,7 +78,7 @@ export function PlayerManager({ players }: Props) {
         <CollapsibleContent className="data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down overflow-hidden">
           <CardContent>
             {/* Search */}
-            <div className="relative mb-4">
+            <div className="relative mb-4 mt-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
                 placeholder="Buscar jogador..."
@@ -99,10 +99,15 @@ export function PlayerManager({ players }: Props) {
               ) : (
                 filtered.map((p) => (
                   <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-slate-800 truncate max-w-[140px] sm:max-w-none sm:truncate-none">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <span className="text-sm font-medium text-slate-800 truncate">
                         {p.name}
                       </span>
+                      {p.display_name && (
+                        <Badge variant="outline" className="text-[10px] py-0 h-4 bg-slate-50 text-slate-500 border-slate-200">
+                          {p.display_name}
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       {p.country && <span className="text-xs text-slate-500 mr-2">{p.country}</span>}
@@ -201,6 +206,12 @@ function AddSinglePlayer({ onSuccess }: { onSuccess: () => void }) {
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="display_name">Nome de Exibição (Chaveamento)</Label>
+        <Input id="display_name" name="display_name" placeholder="Ex: Car. Alcaraz" />
+        <p className="text-[10px] text-slate-500">Como o nome aparecerá no chaveamento. Se vazio, usa o nome completo.</p>
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="country">Sigla do País</Label>
         <Input id="country" name="country" placeholder="Ex: ESP" />
       </div>
@@ -256,6 +267,12 @@ function EditPlayerDialog({ player }: { player: Player }) {
           <div className="space-y-2">
             <Label htmlFor="edit-name">Nome do Jogador *</Label>
             <Input id="edit-name" name="name" defaultValue={player.name} required />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-display-name">Nome de Exibição (Chaveamento)</Label>
+            <Input id="edit-display-name" name="display_name" defaultValue={player.display_name || ''} placeholder="Ex: Car. Alcaraz" />
+            <p className="text-[10px] text-slate-500">Como o nome aparecerá no chaveamento. Se vazio, usa o nome completo.</p>
           </div>
 
           <div className="space-y-2">
@@ -368,13 +385,12 @@ function ImportPlayersForm({ onSuccess }: { onSuccess: () => void }) {
         <Textarea
           name="players"
           rows={10}
-          placeholder={`Cole a lista no formato:\nCarlos Alcaraz (ESP)\nJannik Sinner (ITA)\nNovak Djokovic (SRB)\n...\n\nOu apenas nomes:\nCarlos Alcaraz\nJannik Sinner\nNovak Djokovic`}
+          placeholder={`Cole a lista no formato:\nCarlos Alcaraz (ESP) [Car. Alcaraz]\nJannik Sinner (ITA) [J. Sinner]\nNovak Djokovic (SRB)\n...\n\nOu apenas nomes:\nCarlos Alcaraz\nJannik Sinner\nNovak Djokovic`}
           className="font-mono text-xs max-h-50"
           required
         />
         <p className="text-xs text-slate-400">
-          Formatos aceitos: "Nome (Pais)" ou apenas "Nome". Um jogador por linha. O sistema ignora numeracao caso
-          exista.
+          Formatos aceitos: "Nome (Pais) [Nome Exibição]", "Nome (Pais)" ou apenas "Nome". Um jogador por linha. O sistema ignora numeracao caso exista.
         </p>
       </div>
 

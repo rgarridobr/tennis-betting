@@ -128,12 +128,13 @@ export async function createPlayerAction(formData: FormData) {
   await requireAdmin()
   const name = formData.get('name') as string
   const country = (formData.get('country') as string) || null
+  const display_name = (formData.get('display_name') as string) || null
   const seedStr = formData.get('seed') as string
   const seed = seedStr ? parseInt(seedStr, 10) : null
 
   if (!name) return { success: false, error: 'Nome obrigatório' }
 
-  await createPlayer(name, country, seed)
+  await createPlayer(name, country, seed, display_name)
   revalidatePath('/admin/torneios')
   return { success: true }
 }
@@ -151,10 +152,11 @@ export async function updatePlayerAction(id: number, formData: FormData) {
   await requireAdmin()
   const name = formData.get('name') as string
   const country = (formData.get('country') as string) || null
+  const display_name = (formData.get('display_name') as string) || null
 
   if (!name) return { success: false, error: 'Nome obrigatório' }
 
-  const result = await updatePlayer(id, name, country)
+  const result = await updatePlayer(id, name, country, display_name)
   if (result.success) {
     revalidatePath('/admin/torneios')
   }
@@ -164,19 +166,33 @@ export async function updatePlayerAction(id: number, formData: FormData) {
 export async function importPlayersAction(playersText: string) {
   await requireAdmin()
   const lines = playersText.split('\n').filter(l => l.trim())
-  const players: Array<{ name: string; country: string | null; seed: number | null }> = []
+  const players: Array<{ name: string; country: string | null; seed: number | null; display_name: string | null }> = []
 
   for (const line of lines) {
     const cleaned = line.trim()
     // Remove leading numbers like "1. " or "1) "
     const withoutNumber = cleaned.replace(/^(\d+)[.)]\s*/, '')
 
-    const countryMatch = withoutNumber.match(/\(([^)]+)\)\s*$/)
+    // Extract country: (ESP)
+    const countryMatch = withoutNumber.match(/\(([^)]+)\)/)
     const country = countryMatch ? countryMatch[1] : null
-    const name = countryMatch ? withoutNumber.slice(0, withoutNumber.lastIndexOf('(')).trim() : withoutNumber.trim()
+
+    // Extract display name: [Car. Alcaraz]
+    const displayNameMatch = withoutNumber.match(/\[([^\]]+)\]/)
+    const display_name = displayNameMatch ? displayNameMatch[1] : null
+
+    // Extract name: Everything before first metadata marker
+    let name = withoutNumber
+    if (countryMatch || displayNameMatch) {
+      const countryIdx = countryMatch?.index ?? Infinity
+      const displayIdx = displayNameMatch?.index ?? Infinity
+      name = withoutNumber.slice(0, Math.min(countryIdx, displayIdx)).trim()
+    } else {
+      name = withoutNumber.trim()
+    }
 
     if (name) {
-      players.push({ name, country, seed: null })
+      players.push({ name, country, seed: null, display_name })
     }
   }
 

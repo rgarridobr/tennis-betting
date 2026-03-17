@@ -79,10 +79,23 @@ export function TournamentBracket({
   };
 
   // Map of player ID to player details for display in predicted rounds
-  const playersById: Record<number, { name: string; seed: number | null; type: string }> = {};
+  const playersById: Record<number, { name: string; display_name: string | null; seed: number | null; type: string }> =
+    {};
   for (const m of matches) {
-    if (m.player1_id) playersById[m.player1_id] = { name: m.player1_name!, seed: m.player1_seed, type: m.player1_type };
-    if (m.player2_id) playersById[m.player2_id] = { name: m.player2_name!, seed: m.player2_seed, type: m.player2_type };
+    if (m.player1_id)
+      playersById[m.player1_id] = {
+        name: m.player1_name!,
+        display_name: m.player1_display_name,
+        seed: m.player1_seed,
+        type: m.player1_type,
+      };
+    if (m.player2_id)
+      playersById[m.player2_id] = {
+        name: m.player2_name!,
+        display_name: m.player2_display_name,
+        seed: m.player2_seed,
+        type: m.player2_type,
+      };
   }
 
   function handlePrediction(matchId: number, winnerId: number, score?: string) {
@@ -190,7 +203,7 @@ export function TournamentBracket({
       )}
 
       {/* Sticky Header with Toggles and Filters */}
-      <div className="sticky top-20 z-40 bg-slate-50/80 backdrop-blur-md py-4 rounded-[2rem] border border-slate-200/50 shadow-sm px-6 flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
+      <div className="sticky top-20 z-40 bg-slate-50/80 backdrop-blur-md py-1 rounded-[2rem] border border-slate-200/50 shadow-sm px-6 flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
         {/* View Mode Toggle */}
         {!isAdmin && (
           <div className="bg-white p-1 rounded-2xl border border-slate-200 shadow-sm flex gap-1 shrink-0">
@@ -228,7 +241,7 @@ export function TournamentBracket({
               className={cn(
                 'px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all shrink-0',
                 selectedRound === round
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200 scale-105'
+                  ? 'bg-emerald-600 text-white'
                   : 'bg-white text-slate-500 hover:text-emerald-600 border border-slate-200 hover:border-emerald-200',
               )}
             >
@@ -268,7 +281,7 @@ export function TournamentBracket({
 
                 return (
                   <div key={round} className="flex flex-col w-[300px] relative z-10">
-                    <div className="sticky top-0 md:pt-3 pt-25 z-30 bg-gray-300 py-6 mb-10 flex flex-col items-center gap-2 border-b border-gray-400/40 shadow-sm rounded-b-lg">
+                    <div className="sticky top-0 md:pt-3 pt-25 z-30 py-6 mb-10 flex flex-col items-center gap-2">
                       <h3 className="text-sm font-black uppercase tracking-[0.3em] text-emerald-600 bg-emerald-50 inline-block px-6 py-2 rounded-full border border-emerald-100 shadow-sm">
                         {roundNames[round] === 'F'
                           ? 'Final'
@@ -278,11 +291,6 @@ export function TournamentBracket({
                               ? 'Quartas de Final'
                               : roundNames[round] || `Rodada ${round}`}
                       </h3>
-                      {hasNextVisibleRound && (
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">
-                          {relativeIdx === 0 ? '← Coluna Esquerda' : 'Coluna Direita →'}
-                        </span>
-                      )}
                     </div>
 
                     <div
@@ -322,12 +330,14 @@ export function TournamentBracket({
                             p1 = {
                               id: match.player1_id,
                               name: match.player1_name,
+                              display_name: match.player1_display_name,
                               seed: match.player1_seed,
                               type: match.player1_type,
                             };
                             p2 = {
                               id: match.player2_id,
                               name: match.player2_name,
+                              display_name: match.player2_display_name,
                               seed: match.player2_seed,
                               type: match.player2_type,
                             };
@@ -369,6 +379,7 @@ export function TournamentBracket({
                             ? {
                                 id: match.player1_id,
                                 name: match.player1_name,
+                                display_name: match.player1_display_name,
                                 seed: match.player1_seed,
                                 type: match.player1_type,
                               }
@@ -377,6 +388,7 @@ export function TournamentBracket({
                             ? {
                                 id: match.player2_id,
                                 name: match.player2_name,
+                                display_name: match.player2_display_name,
                                 seed: match.player2_seed,
                                 type: match.player2_type,
                               }
@@ -523,6 +535,7 @@ function BracketMatchCard({
             <div className="cursor-pointer group">
               <PlayerRow
                 name={p1?.name || null}
+                display_name={p1?.display_name || null}
                 seed={p1?.seed || null}
                 type={p1?.type}
                 isWinner={match.winner_id === p1?.id && isCompleted}
@@ -544,6 +557,7 @@ function BracketMatchCard({
       ) : (
         <PlayerRow
           name={p1?.name || null}
+          display_name={p1?.display_name || null}
           seed={p1?.seed || null}
           type={p1?.type}
           isWinner={match.winner_id === p1?.id && isCompleted}
@@ -574,6 +588,7 @@ function BracketMatchCard({
             <div className="cursor-pointer group">
               <PlayerRow
                 name={p2?.name || null}
+                display_name={p2?.display_name || null}
                 seed={p2?.seed || null}
                 type={p2?.type}
                 isWinner={match.winner_id === p2?.id && isCompleted}
@@ -595,6 +610,7 @@ function BracketMatchCard({
       ) : (
         <PlayerRow
           name={p2?.name || null}
+          display_name={p2?.display_name || null}
           seed={p2?.seed || null}
           type={p2?.type}
           isWinner={match.winner_id === p2?.id && isCompleted}
@@ -665,6 +681,7 @@ function BracketMatchCard({
 
 function PlayerRow({
   name,
+  display_name,
   seed,
   type,
   isWinner,
@@ -683,6 +700,7 @@ function PlayerRow({
   isForceIncorrect = false,
 }: {
   name: string | null;
+  display_name?: string | null;
   seed: number | null;
   type?: string;
   isWinner: boolean;
@@ -741,21 +759,6 @@ function PlayerRow({
 
   const indicator = getIndicator();
 
-  function formatName(name: string) {
-    const parts = name.trim().split(' ');
-
-    if (parts.length === 1) return name;
-
-    if (parts.length === 2) {
-      return `${parts[0][0]}. ${parts[1]}`;
-    }
-
-    const firstInitial = parts[0][0];
-    const lastName = parts[parts.length - 1];
-
-    return `${firstInitial}. ${lastName}`;
-  }
-
   return (
     <div
       onClick={canPredict ? onSelect : undefined}
@@ -791,7 +794,7 @@ function PlayerRow({
             isAwaiting && 'text-slate-400 font-bold uppercase tracking-widest text-[10px]',
           )}
         >
-          {formatName(displayName)}
+          {display_name || displayName}
         </span>
         {indicator && <span className="text-[9px] font-black text-slate-400">{indicator}</span>}
         {isAdmin && !isCompleted && (

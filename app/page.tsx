@@ -280,7 +280,7 @@ export default async function HomePage() {
                   Pronto para entrar no jogo?
                 </h2>
                 <p className="text-emerald-100/80 text-lg mb-10 font-medium">
-                  Crie sua conta grátis agora e comece a pontuar nos maiores torneios de tênis do mundo.
+                  Cadastre-se agora e comece a pontuar nos maiores torneios do tênis mundial.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button
@@ -288,7 +288,7 @@ export default async function HomePage() {
                     className="bg-emerald-500 hover:bg-emerald-400 text-white text-lg h-16 px-12 rounded-2xl shadow-xl shadow-emerald-500/20 font-black transition-all hover:-translate-y-1"
                     asChild
                   >
-                    <Link href="/cadastro">Criar minha conta grátis</Link>
+                    <Link href="/cadastro">Quero me cadastrar</Link>
                   </Button>
                   <Button
                     size="lg"

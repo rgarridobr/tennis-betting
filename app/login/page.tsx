@@ -39,15 +39,19 @@ export default async function LoginPage() {
         <div className="w-full max-w-md space-y-8">
           <div className="text-center lg:text-left">
             <h1 className="text-4xl font-black text-slate-900 tracking-tight">Bem-vindo de volta</h1>
-            <p className="text-slate-500 mt-3 font-medium text-lg">Entre na sua conta para continuar seus palpites.</p>
+            <p className="text-slate-500 mt-3 font-medium text-lg">
+              Entre no seu Perfil para marcar seus palpites
+              <br />
+              ou acompanhar os resultados.
+            </p>
           </div>
 
           <LoginForm />
 
           <p className="text-center text-slate-500 font-medium">
-            Não tem uma conta?{' '}
+            Ainda não tem um Perfil?{' '}
             <Link href="/cadastro" className="text-emerald-600 font-black hover:underline underline-offset-4">
-              Cadastre-se grátis
+              Cadastre-se
             </Link>
           </p>
 

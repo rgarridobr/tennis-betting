@@ -170,7 +170,7 @@ export default async function ManageTournamentPage({ params }: Props) {
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-black text-slate-900 tracking-tight">Chaveamento</h2>
               {tournament.status !== 'draft' && (
-                <Badge className="bg-emerald-500 text-white font-black px-4 py-1.5 rounded-full">CHAVE FIXA</Badge>
+                <Badge className="bg-emerald-600 text-white font-black px-4 py-1.5 rounded-full">CHAVE FIXA</Badge>
               )}
             </div>
           </div>

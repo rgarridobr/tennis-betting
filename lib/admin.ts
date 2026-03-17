@@ -244,11 +244,19 @@ export async function generateBracket(tournamentId: number): Promise<void> {
 
 // ==================== PLAYER MANAGEMENT ====================
 
-export async function createPlayer(name: string, country: string | null, seed: number | null): Promise<number> {
+export async function createPlayer(
+  name: string,
+  country: string | null,
+  seed: number | null,
+  display_name: string | null = null,
+): Promise<number> {
   const result = await sql`
-    INSERT INTO players (name, country, seed)
-    VALUES (${name}, ${country}, ${seed})
-    ON CONFLICT (name) DO UPDATE SET country = COALESCE(${country}, players.country), seed = COALESCE(${seed}, players.seed)
+    INSERT INTO players (name, country, seed, display_name)
+    VALUES (${name}, ${country}, ${seed}, ${display_name})
+    ON CONFLICT (name) DO UPDATE SET 
+      country = COALESCE(${country}, players.country), 
+      seed = COALESCE(${seed}, players.seed),
+      display_name = COALESCE(${display_name}, players.display_name)
     RETURNING id
   `;
   return result[0].id as number;
@@ -271,11 +279,12 @@ export async function updatePlayer(
   id: number,
   name: string,
   country: string | null,
+  display_name: string | null,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     await sql`
       UPDATE players
-      SET name = ${name}, country = ${country}
+      SET name = ${name}, country = ${country}, display_name = ${display_name}
       WHERE id = ${id}
     `;
     return { success: true };
@@ -286,14 +295,17 @@ export async function updatePlayer(
 }
 
 export async function importPlayers(
-  players: Array<{ name: string; country: string | null; seed: number | null }>,
+  players: Array<{ name: string; country: string | null; seed: number | null; display_name: string | null }>,
 ): Promise<number> {
   let count = 0;
   for (const p of players) {
     await sql`
-      INSERT INTO players (name, country, seed)
-      VALUES (${p.name}, ${p.country}, ${p.seed})
-      ON CONFLICT (name) DO UPDATE SET country = COALESCE(${p.country}, players.country), seed = COALESCE(${p.seed}, players.seed)
+      INSERT INTO players (name, country, seed, display_name)
+      VALUES (${p.name}, ${p.country}, ${p.seed}, ${p.display_name})
+      ON CONFLICT (name) DO UPDATE SET 
+        country = COALESCE(${p.country}, players.country), 
+        seed = COALESCE(${p.seed}, players.seed),
+        display_name = COALESCE(${p.display_name}, players.display_name)
     `;
     count++;
   }

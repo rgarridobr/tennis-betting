@@ -28,6 +28,7 @@ export interface Tournament {
 export interface Player {
   id: number
   name: string
+  display_name: string | null
   country: string | null
   seed: number | null
 }
@@ -55,12 +56,15 @@ export interface BracketMatch {
   points_cancelled: boolean
   // Joined player names
   player1_name: string | null
+  player1_display_name: string | null
   player1_country: string | null
   player1_seed_val: number | null // Renamed from player1_seed to avoid conflict with bracket_matches.player1_seed
   player2_name: string | null
+  player2_display_name: string | null
   player2_country: string | null
   player2_seed_val: number | null
   winner_name: string | null
+  winner_display_name: string | null
 }
 
 export interface Prediction {
@@ -262,9 +266,9 @@ export async function getBracketMatches(tournamentId: number): Promise<BracketMa
   const rows = await sql`
     SELECT 
       bm.*,
-      p1.name as player1_name, p1.country as player1_country, p1.seed as player1_seed_val,
-      p2.name as player2_name, p2.country as player2_country, p2.seed as player2_seed_val,
-      w.name as winner_name
+      p1.name as player1_name, p1.display_name as player1_display_name, p1.country as player1_country, p1.seed as player1_seed_val,
+      p2.name as player2_name, p2.display_name as player2_display_name, p2.country as player2_country, p2.seed as player2_seed_val,
+      w.name as winner_name, w.display_name as winner_display_name
     FROM bracket_matches bm
     LEFT JOIN players p1 ON bm.player1_id = p1.id
     LEFT JOIN players p2 ON bm.player2_id = p2.id
@@ -279,9 +283,9 @@ export async function getBracketMatchesByRound(tournamentId: number, round: numb
   const rows = await sql`
     SELECT 
       bm.*,
-      p1.name as player1_name, p1.country as player1_country, p1.seed as player1_seed_val,
-      p2.name as player2_name, p2.country as player2_country, p2.seed as player2_seed_val,
-      w.name as winner_name
+      p1.name as player1_name, p1.display_name as player1_display_name, p1.country as player1_country, p1.seed as player1_seed_val,
+      p2.name as player2_name, p2.display_name as player2_display_name, p2.country as player2_country, p2.seed as player2_seed_val,
+      w.name as winner_name, w.display_name as winner_display_name
     FROM bracket_matches bm
     LEFT JOIN players p1 ON bm.player1_id = p1.id
     LEFT JOIN players p2 ON bm.player2_id = p2.id
@@ -476,7 +480,7 @@ export async function getTournamentParticipantCount(tournamentId: number): Promi
 
 export async function getTournamentPlayers(tournamentId: number): Promise<Player[]> {
   const players = await sql`
-    SELECT DISTINCT p.id, p.name, p.country, p.seed
+    SELECT DISTINCT p.id, p.name, p.display_name, p.country, p.seed
     FROM players p
     JOIN bracket_matches bm ON (p.id = bm.player1_id OR p.id = bm.player2_id)
     WHERE bm.tournament_id = ${tournamentId}
