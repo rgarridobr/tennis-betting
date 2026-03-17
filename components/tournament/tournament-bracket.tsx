@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useRef, useState, useTransition } from 'react';
+import React, { useRef, useState, useTransition, useEffect } from 'react';
 import type { BracketMatch, Player } from '@/lib/data';
 import { getFlagUrl } from '@/lib/countries';
-import { makePredictionAction } from '@/lib/actions/predictions';
+import { saveFullBracketAction } from '@/lib/actions/predictions';
 import { Check, Trophy, X, Pencil, AlertCircle, Layout, User as UserIcon, ArrowRight, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AdminMatchActions } from '@/components/admin/admin-match-actions';
@@ -44,7 +44,39 @@ export function TournamentBracket({
   const [localPredictions, setLocalPredictions] =
     useState<Record<number, { winnerId: number; score?: string }>>(predictions);
   const [isSaving, setIsSaving] = useState(false);
+  const [isInitialMount, setIsInitialMount] = useState(true);
   const [isTransitioning, startTransition] = useTransition();
+
+  // Debounce saving predictions
+  useEffect(() => {
+    if (isInitialMount) {
+      setIsInitialMount(false);
+      return;
+    }
+
+    if (!canMakePredictions) return;
+
+    const timer = setTimeout(async () => {
+      setIsSaving(true);
+      try {
+        const predictionArray = Object.entries(localPredictions).map(([matchId, data]) => ({
+          matchId: parseInt(matchId),
+          winnerId: data.winnerId,
+          score: data.score,
+        }));
+
+        await saveFullBracketAction(userId, tournamentId, predictionArray);
+        toast.success('Palpite salvo com sucesso!');
+      } catch (error: any) {
+        console.error(error);
+        toast.error(error.message || 'Ocorreu um erro ao salvar seu palpite. Tente novamente.');
+      } finally {
+        setIsSaving(false);
+      }
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [localPredictions, userId, tournamentId, canMakePredictions]);
 
   // Group matches by round and position for easy lookup
   const matchesMap: Record<string, BracketMatch> = {};
@@ -138,81 +170,12 @@ export function TournamentBracket({
     });
   }
 
-  async function handleFinish() {
-    if (!canMakePredictions || isSaving) return;
-    setIsSaving(true);
-    try {
-      const { saveFullBracketAction } = await import('@/lib/actions/predictions');
-      const predictionArray = Object.entries(localPredictions).map(([matchId, data]) => ({
-        matchId: parseInt(matchId),
-        winnerId: data.winnerId,
-        score: data.score,
-      }));
-
-      await saveFullBracketAction(userId, tournamentId, predictionArray, true);
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error.message || 'Ocorreu um erro ao salvar seu palpite. Tente novamente.');
-    } finally {
-      setIsSaving(false);
-    }
-  }
-
-  const isBracketComplete = () => {
-    return matches.every((m) => {
-      // Only require predictions for matches that have both players determined
-      const p1 = playersById[m.player1_id!];
-      const p2 = playersById[m.player2_id!];
-      if (!p1 || !p2) return true; // Skip matches without both players set
-      return !!localPredictions[m.id]?.winnerId;
-    });
-  };
 
   const CARD_HEIGHT = 110;
   const BASE_GAP = 24;
 
   return (
     <div className="flex flex-col gap-6">
-      {viewMode === 'predictions' && canMakePredictions && (
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 sm:p-6 bg-emerald-50 rounded-[2rem] border border-emerald-100 shadow-sm">
-          {/* Lado esquerdo */}
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white shrink-0">
-              <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
-            </div>
-
-            <div>
-              <p className="font-black text-emerald-900 leading-tight text-sm sm:text-base">Modo de Palpite Ativo</p>
-              <p className="text-[11px] sm:text-xs font-bold text-emerald-700">
-                Preencha todo o chaveamento e clique em concluir.
-              </p>
-            </div>
-          </div>
-
-          {/* Botão */}
-          <button
-            onClick={handleFinish}
-            disabled={!isBracketComplete() || isSaving}
-            className={cn(
-              'w-full sm:w-auto px-6 sm:px-8 py-3 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider transition-all shadow-lg',
-              isBracketComplete()
-                ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-200'
-                : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none',
-            )}
-          >
-            {isSaving ? 'Salvando...' : 'Concluir Palpite'}
-          </button>
-        </div>
-      )}
-
-      {viewMode === 'predictions' && bracketSubmitted && !hasStarted && (
-        <div className="flex items-center gap-3 p-6 bg-blue-50 rounded-[2rem] border border-blue-100 shadow-sm">
-          <Check className="w-6 h-6 text-blue-500" />
-          <p className="font-bold text-blue-900">
-            Seu palpite foi registrado com sucesso! Você poderá alterá-lo até o início do torneio.
-          </p>
-        </div>
-      )}
 
       {/* Sticky Header with Toggles and Filters */}
       <div className="sticky top-20 z-40 bg-slate-50/80 backdrop-blur-md py-1 rounded-[2rem] border border-slate-200/50 shadow-sm px-6 flex flex-col md:flex-row items-center justify-between gap-4 mb-8">

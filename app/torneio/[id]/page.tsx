@@ -174,7 +174,6 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
             predictions={predictionsRecord}
             canMakePredictions={enrolled && !started && !isViewingOthers}
             roundNames={dynamicRoundNames}
-            bracketSubmitted={isViewingOthers ? false : enrollment?.bracket_submitted}
             hasStarted={started}
             tournamentStatus={tournament.status}
           />
