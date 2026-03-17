@@ -79,7 +79,7 @@ export function TournamentCard({ tournament, href }: TournamentCardProps) {
 
   return (
     <Link href={href || `/torneio/${tournament.id}`}>
-      <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1 pt-0 rounded-[2rem]">
+      <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1 pt-0 rounded-[2rem] py-4 gap-3">
         <div className="relative h-60">
           <img src={imageUrl || '/placeholder.svg'} alt={tournament.name} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
@@ -97,7 +97,7 @@ export function TournamentCard({ tournament, href }: TournamentCardProps) {
             </Badge>
           </div>
         </div>
-        <CardContent className="px-6 py-5 bg-white">
+        <CardContent className="px-6 py-0 bg-white">
           <div className="flex flex-col gap-2 text-sm font-semibold text-slate-500">
             <div className="flex items-center gap-2">
               <Icon iconNode={tennisBall} className="w-4 h-4 text-emerald-500" />

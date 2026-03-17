@@ -50,7 +50,7 @@ export function TournamentRankingCard({ tournament, href }: TournamentRankingCar
 
   return (
     <Link href={href}>
-      <Card className="overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1 rounded-[2rem] bg-white">
+      <Card className="overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1 rounded-[2rem] bg-white py-1 gap-3">
         <div
           className={`h-32 relative flex items-center justify-center overflow-hidden bg-gradient-to-br ${categoryGradient}`}
         >
@@ -77,7 +77,7 @@ export function TournamentRankingCard({ tournament, href }: TournamentRankingCar
           </div>
         </div>
 
-        <CardContent className="p-6">
+        <CardContent className="px-6 py-4">
           <div className="mb-4">
             <h3 className="font-black text-slate-900 text-xl leading-tight group-hover:text-emerald-600 transition-colors">
               {tournament.name}
@@ -88,7 +88,7 @@ export function TournamentRankingCard({ tournament, href }: TournamentRankingCar
             </p>
           </div>
 
-          <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
+          <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-100">
             <div className="flex items-center gap-2 text-slate-500 text-sm font-bold">
               <Calendar className="w-4 h-4" />
               <span>
