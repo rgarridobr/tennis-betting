@@ -226,9 +226,9 @@ export function TournamentBracket({
 
       <div className="w-full bg-[#f8fafc] rounded-[2.5rem] border border-slate-200 shadow-xl relative overflow-hidden">
         <div
-          className="absolute inset-0 blur-[3px] pointer-events-none brightness-45"
+          className="absolute inset-0 blur-[3px] pointer-events-none brightness-75"
           style={{
-            backgroundImage: `url("https://images.unsplash.com/photo-1567220703384-23523417dba4?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")`,
+            backgroundImage: `url("https://i.cbc.ca/ais/b11cff07-3bac-4bd3-b3bd-2f7714560c84,1769517092924/full/max/0/default.jpg?im=Crop,rect=(0,146,3401,1913);")`,
            }}
         />
         <div

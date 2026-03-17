@@ -354,13 +354,21 @@ export async function getUserStats(userId: number): Promise<UserStats> {
       COUNT(CASE WHEN p.is_correct = false THEN 1 END) as wrong_predictions,
       COUNT(p.id) as total_predictions
     FROM predictions p
-    WHERE p.user_id = ${userId} AND p.is_correct IS NOT NULL
+    JOIN bracket_matches m ON m.id = p.bracket_match_id
+    JOIN tournaments t ON t.id = m.tournament_id
+    WHERE 
+      p.user_id = ${userId}
+      AND p.is_correct IS NOT NULL
+      AND t.status IN ('OPEN')
   `;
+
   const activeTournaments = await sql`
     SELECT COUNT(DISTINCT ut.tournament_id) as count
     FROM user_tournaments ut
     JOIN tournaments t ON ut.tournament_id = t.id
-    WHERE ut.user_id = ${userId} AND t.status IN ('upcoming', 'active', 'published', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS')
+    WHERE 
+      ut.user_id = ${userId} 
+      AND t.status IN ('upcoming', 'active', 'published', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS')
   `;
   const totalPoints = Number(stats[0]?.total_points || 0);
   const correct = Number(stats[0]?.correct_predictions || 0);
@@ -380,17 +388,20 @@ export async function getUserStats(userId: number): Promise<UserStats> {
 
 export async function getGlobalRanking(limit: number = 50): Promise<RankingEntry[]> {
   const ranking = await sql`
-    SELECT 
-      u.id as user_id,
-      COALESCE(NULLIF(u.nickname, ''), u.name) as user_name,
-      (SELECT COUNT(*) FROM predictions WHERE user_id = u.id AND is_correct = true) as correct_predictions,
-      (SELECT COUNT(*) FROM predictions WHERE user_id = u.id AND is_correct IS NOT NULL) as total_predictions,
-      COALESCE((SELECT SUM(points_earned) FROM predictions WHERE user_id = u.id), 0) as total_points
-    FROM users u
-    WHERE u.is_admin = false AND u.is_deleted = false
-    ORDER BY total_points DESC, correct_predictions DESC
-    LIMIT ${limit}
-  `;
+    SELECT *
+    FROM (
+      SELECT 
+        u.id as user_id,
+        COALESCE(NULLIF(u.nickname, ''), u.name) as user_name,
+        (SELECT COUNT(*) FROM predictions WHERE user_id = u.id AND is_correct = true) as correct_predictions,
+        (SELECT COUNT(*) FROM predictions WHERE user_id = u.id AND is_correct IS NOT NULL) as total_predictions,
+        COALESCE((SELECT SUM(points_earned) FROM predictions WHERE user_id = u.id), 0) as total_points
+      FROM users u
+      WHERE u.is_admin = false AND u.is_deleted = false
+    ) r
+    WHERE r.total_points > 0
+    ORDER BY r.total_points DESC, r.correct_predictions DESC
+    LIMIT ${limit}`;
   return ranking.map((r, i) => ({
     user_id: r.user_id as number,
     user_name: r.user_name as string,
