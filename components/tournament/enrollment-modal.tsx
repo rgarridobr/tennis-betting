@@ -84,13 +84,16 @@ export function EnrollmentModal({ isOpen, onClose, tournament }: EnrollmentModal
                   <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
                     <span className="text-[10px] font-bold text-emerald-600">2</span>
                   </div>
-                  <p>Após inscrito, você poderá preencher todos os seus palpites de uma vez só ou por partes.</p>
+                  <p>Após inscrito, você poderá iniciar os palpites nos jogos já confirmados.</p>
                 </div>
                 <div className="flex items-start gap-3 text-slate-600">
                   <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
                     <span className="text-[10px] font-bold text-emerald-600">3</span>
                   </div>
-                  <p>Acompanhe o ranking em tempo real conforme os jogos oficiais forem acontecendo.</p>
+                  <p>
+                    Assim que os classificados no qualifying forem inseridos na chave principal do torneio, pode-se
+                    completar os palpites do bolão.
+                  </p>
                 </div>
 
                 <Link
@@ -117,7 +120,7 @@ export function EnrollmentModal({ isOpen, onClose, tournament }: EnrollmentModal
         {step === 'processing' && (
           <div className="py-12 text-center">
             <Loader2 className="w-12 h-12 mx-auto text-emerald-600 animate-spin mb-4" />
-            <p className="font-semibold text-lg text-slate-900">Processando inscricao...</p>
+            <p className="font-semibold text-lg text-slate-900">Processando inscrição...</p>
           </div>
         )}
 
@@ -126,7 +129,7 @@ export function EnrollmentModal({ isOpen, onClose, tournament }: EnrollmentModal
             <div className="w-16 h-16 mx-auto rounded-full bg-emerald-100 flex items-center justify-center mb-4">
               <Check className="w-8 h-8 text-emerald-600" />
             </div>
-            <p className="font-semibold text-lg text-emerald-600">Inscricao confirmada!</p>
+            <p className="font-semibold text-lg text-emerald-600">Inscrição confirmada!</p>
             <p className="text-sm text-slate-500 mt-1">Agora você pode fazer seus palpites</p>
           </div>
         )}

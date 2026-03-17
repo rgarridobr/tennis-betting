@@ -167,7 +167,7 @@ export function TournamentBracket({
     });
   };
 
-  const CARD_HEIGHT = isAdmin ? 130 : 105;
+  const CARD_HEIGHT = isAdmin ? 130 : 110;
   const BASE_GAP = isAdmin ? 30 : 1;
 
   return (
@@ -257,10 +257,7 @@ export function TournamentBracket({
       </div>
 
       <div className="w-full bg-gray-300 rounded-[2.5rem] border border-slate-200 shadow-xl relative overflow-hidden">
-        <div
-          ref={scrollContainerRef}
-          className="overflow-x-auto overflow-y-auto relative scrollbar-hide max-h-[75vh]"
-        >
+        <div ref={scrollContainerRef} className="overflow-x-auto overflow-y-auto relative scrollbar-hide max-h-[75vh]">
           <div
             key={selectedRound}
             className={cn(
@@ -863,15 +860,9 @@ function PlayerRow({
       <div className="flex items-center justify-end gap-1.5 ml-2 shrink-0 min-w-[24px]">
         {viewMode === 'predictions' ? (
           isSelected && !isCompleted ? (
-            !predictionCorrect ? (
-              <div className="w-6 h-6 rounded-full flex items-center justify-center">
-                <X className="w-5 h-5 text-red-400" />
-              </div>
-            ) : (
-              <div className="w-6 h-6 rounded-full flex items-center justify-center">
-                <Clock className="w-5 h-5 text-blue-500" />
-              </div>
-            )
+            <div className="w-6 h-6 rounded-full flex items-center justify-center">
+              <Clock className="w-5 h-5 text-blue-500" />
+            </div>
           ) : isWinner ? (
             <div className="w-6 h-6 rounded-full flex items-center justify-center">
               <Check className="w-5 h-5 text-emerald-500" />
