@@ -207,7 +207,7 @@ function AddSinglePlayer({ onSuccess }: { onSuccess: () => void }) {
 
       <div className="space-y-2">
         <Label htmlFor="display_name">Nome de Exibição (Chaveamento)</Label>
-        <Input id="display_name" name="display_name" placeholder="Ex: Car. Alcaraz" />
+        <Input id="display_name" name="display_name" placeholder="" />
         <p className="text-[10px] text-slate-500">Como o nome aparecerá no chaveamento. Se vazio, usa o nome completo.</p>
       </div>
 
@@ -271,7 +271,7 @@ function EditPlayerDialog({ player }: { player: Player }) {
 
           <div className="space-y-2">
             <Label htmlFor="edit-display-name">Nome de Exibição (Chaveamento)</Label>
-            <Input id="edit-display-name" name="display_name" defaultValue={player.display_name || ''} placeholder="Ex: Car. Alcaraz" />
+            <Input id="edit-display-name" name="display_name" defaultValue={player.display_name || ''} placeholder="" />
             <p className="text-[10px] text-slate-500">Como o nome aparecerá no chaveamento. Se vazio, usa o nome completo.</p>
           </div>
 
