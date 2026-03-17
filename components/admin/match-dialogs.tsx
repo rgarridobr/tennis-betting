@@ -324,9 +324,15 @@ export function ReplaceMatchPlayerDialog({
       const currentId = selectedSlot === 1 ? match.player1_id : match.player2_id;
       const type = selectedSlot === 1 ? match.player1_type : match.player2_type;
       setPlayerId(currentId?.toString() || '');
-      setIsLL(type === 'LUCKY_LOSER' || !!currentId);
+      // If it's a specific player already there, default to LL for replacement.
+      // If it's an empty placeholder (like QUALIFIER), default to false (just filling the slot).
+      setIsLL(type === 'LUCKY_LOSER' || (!!currentId && type === 'PLAYER'));
     }
   }, [selectedSlot, match]);
+
+  const currentType = selectedSlot === 1 ? match.player1_type : match.player2_type;
+  const currentId = selectedSlot === 1 ? match.player1_id : match.player2_id;
+  const isFillingPlaceholder = !currentId && (currentType === 'QUALIFIER' || currentType === 'WILDCARD');
 
   const filteredPlayers = players
     .filter((p) => !assignedPlayerIds?.includes(p.id) || p.id.toString() === playerId)
@@ -358,12 +364,14 @@ export function ReplaceMatchPlayerDialog({
           size="sm"
           className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider border-2 border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 hover:text-rose-800"
         >
-          <RefreshCw className="w-3 h-3 mr-1.5" /> Substituir / LL
+          <RefreshCw className="w-3 h-3 mr-1.5" /> Substituir / LL / Definir Q
         </Button>
       </DialogTrigger>
       <DialogContent className="rounded-[2rem] max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-black">Substituir Jogador</DialogTitle>
+          <DialogTitle className="text-2xl font-black">
+            {isFillingPlaceholder ? 'Definir Jogador' : 'Substituir Jogador'}
+          </DialogTitle>
           <DialogDescription className="font-bold text-slate-500">
             Selecione qual lado do confronto deseja alterar.
           </DialogDescription>
@@ -419,7 +427,9 @@ export function ReplaceMatchPlayerDialog({
                   className="w-5 h-5 rounded-lg border-2 border-slate-300 text-rose-600 focus:ring-rose-500"
                 />
                 <label htmlFor="isLL" className="text-sm font-black text-slate-700 cursor-pointer">
-                  Este jogador está entrando como Lucky Loser (LL)
+                  {isFillingPlaceholder 
+                    ? 'Este jogador está entrando como Lucky Loser (LL)' 
+                    : 'Substituir por Lucky Loser (LL)'}
                 </label>
               </div>
 
@@ -438,7 +448,7 @@ export function ReplaceMatchPlayerDialog({
           disabled={isPending || !playerId || !selectedSlot}
           className="w-full h-14 rounded-2xl font-black text-lg bg-rose-600 hover:bg-rose-700 text-white shadow-xl shadow-rose-100"
         >
-          {isPending ? 'Salvando...' : 'Confirmar Substituição'}
+          {isPending ? 'Salvando...' : isFillingPlaceholder ? 'Confirmar Jogador' : 'Confirmar Substituição'}
         </Button>
       </DialogContent>
     </Dialog>

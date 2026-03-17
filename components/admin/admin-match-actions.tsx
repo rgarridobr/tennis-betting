@@ -112,8 +112,10 @@ export function AdminMatchActions({
                   <RefreshCw className="w-6 h-6 text-rose-600" />
                 </div>
                 <div className="text-left">
-                  <p className="font-black">Substituir / LL</p>
-                  <p className="text-xs font-bold text-rose-600/70">Substitua um jogador ou adicione um Lucky Loser.</p>
+                  <p className="font-black">Substituir / LL / Definir Q</p>
+                  <p className="text-xs font-bold text-rose-600/70">
+                    Substitua um jogador, preencha um Qualifier ou adicione um LL.
+                  </p>
                 </div>
               </button>
             }
@@ -166,12 +168,11 @@ export function AdminMatchActions({
             </button>
           )}
         </DialogTrigger>
-      <DialogContent className="max-w-full sm:max-w-lg">
-
-            <DialogHeader>
-              <DialogTitle>{title}</DialogTitle>
-              <DialogDescription className="text-slate-400 font-bold">{description}</DialogDescription>
-            </DialogHeader>
+        <DialogContent className="max-w-full sm:max-w-lg" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogDescription className="text-slate-400 font-bold">{description}</DialogDescription>
+          </DialogHeader>
           <div className="p-2">{content}</div>
         </DialogContent>
       </Dialog>
