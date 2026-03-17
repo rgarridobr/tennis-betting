@@ -154,12 +154,14 @@ export function SetPlayersDialog({
   tournamentId,
   trigger,
   assignedPlayerIds,
+  onSuccess,
 }: {
   match: BracketMatch;
   players: Player[];
   tournamentId: number;
   trigger?: React.ReactNode;
   assignedPlayerIds?: number[];
+  onSuccess?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -222,6 +224,7 @@ export function SetPlayersDialog({
         const result = await setMatchPlayersAction(match.id, p1 as any, p2 as any, tournamentId);
         if (result?.success) {
           setOpen(false);
+          onSuccess?.();
         } else {
           setError('Erro ao salvar confronto');
         }
@@ -294,11 +297,13 @@ export function ReplaceMatchPlayerDialog({
   players,
   tournamentId,
   assignedPlayerIds,
+  onSuccess,
 }: {
   match: BracketMatch;
   players: Player[];
   tournamentId: number;
   assignedPlayerIds?: number[];
+  onSuccess?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -338,6 +343,7 @@ export function ReplaceMatchPlayerDialog({
     startTransition(async () => {
       await updatePlaceholderPlayerAction(match.id, selectedSlot, parseInt(playerId), tournamentId, isLL);
       setOpen(false);
+      onSuccess?.();
     });
   }
 
@@ -443,10 +449,12 @@ export function SetResultDialog({
   match,
   tournamentId,
   isFinalRound,
+  onSuccess,
 }: {
   match: BracketMatch;
   tournamentId: number;
   isFinalRound?: boolean;
+  onSuccess?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [showConfirmFinish, setShowConfirmFinish] = useState(false);
@@ -482,6 +490,7 @@ export function SetResultDialog({
         setTimeout(() => {
           setOpen(false);
           setSuccess(false);
+          onSuccess?.();
         }, 1000);
       } else {
         setError(result.error || 'Erro ao limpar resultado');
@@ -502,6 +511,7 @@ export function SetResultDialog({
         setTimeout(() => {
           setOpen(false);
           setSuccess(false);
+          onSuccess?.();
         }, 1000);
       } else {
         setError(result.error || 'Erro ao alterar pontuação');
@@ -535,6 +545,7 @@ export function SetResultDialog({
           setOpen(false);
           setSuccess(false);
           setWinnerId('');
+          onSuccess?.();
         }, 1000);
       } else {
         setError(result.error || 'Erro ao salvar');

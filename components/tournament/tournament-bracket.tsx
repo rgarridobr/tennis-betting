@@ -6,9 +6,10 @@ import { getFlagUrl } from '@/lib/countries';
 import { makePredictionAction } from '@/lib/actions/predictions';
 import { Check, Trophy, X, Pencil, AlertCircle, Layout, User as UserIcon, ArrowRight, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SetPlayersDialog, ReplaceMatchPlayerDialog, SetResultDialog } from '@/components/admin/match-dialogs';
+import { AdminMatchActions } from '@/components/admin/admin-match-actions';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { Settings } from 'lucide-react';
 
 interface TournamentBracketProps {
   matches: BracketMatch[];
@@ -167,8 +168,8 @@ export function TournamentBracket({
     });
   };
 
-  const CARD_HEIGHT = isAdmin ? 130 : 110;
-  const BASE_GAP = isAdmin ? 30 : 1;
+  const CARD_HEIGHT = 110;
+  const BASE_GAP = 24;
 
   return (
     <div className="flex flex-col gap-6">
@@ -510,27 +511,11 @@ function BracketMatchCard({
   viewMode?: 'official' | 'predictions';
 }) {
   const isCompleted = match.status === 'completed';
-  const isDraft =
-    tournamentStatus === 'draft' ||
-    tournamentStatus === 'STANDBY' ||
-    tournamentStatus === 'UPCOMING' ||
-    tournamentStatus === 'upcoming';
-  const isPublished =
-    tournamentStatus === 'active' ||
-    tournamentStatus === 'published' ||
-    tournamentStatus === 'OPEN' ||
-    tournamentStatus === 'LOCKED' ||
-    tournamentStatus === 'IN_PROGRESS';
-  const isLocked =
-    tournamentStatus === 'finished' || tournamentStatus === 'completed' || tournamentStatus === 'FINISHED';
   const canPredict = canMakePredictions && !isCompleted && p1?.id && p2?.id;
-  const canEditPlayers = isAdmin && isDraft && match.round === 1;
 
   const selectedWinnerId = currentPrediction?.winnerId;
 
   // Logic to determine if a player in the user's bracket is "incorrect" based on official results
-  // A player is incorrect if they officially lost a previous round (thus not reaching this match)
-  // or if they lost this match officially.
   const isP1Incorrect =
     viewMode === 'predictions' &&
     ((match.player1_id && p1?.id && match.player1_id !== p1.id) ||
@@ -540,115 +525,53 @@ function BracketMatchCard({
     ((match.player2_id && p2?.id && match.player2_id !== p2.id) ||
       (match.winner_id && p2?.id && match.winner_id !== p2.id && isCompleted));
 
-  return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden w-full transition-all hover:shadow-md hover:-translate-y-0.5 group">
-      {canEditPlayers ? (
-        <SetPlayersDialog
-          match={match}
-          players={players || []}
-          tournamentId={tournamentId}
-          assignedPlayerIds={assignedPlayerIds}
-          trigger={
-            <div className="cursor-pointer group">
-              <PlayerRow
-                name={p1?.name || null}
-                display_name={p1?.display_name || null}
-                seed={p1?.seed || null}
-                type={p1?.type}
-                country={p1?.country}
-                isWinner={match.winner_id === p1?.id && isCompleted}
-                isSelected={selectedWinnerId === p1?.id}
-                isPredicted={selectedWinnerId === p1?.id}
-                isCompleted={isCompleted}
-                onSelect={() => {}}
-                canPredict={false}
-                score={match.score}
-                isP1={true}
-                isAdmin={true}
-                isPlaceholder={!p1?.id && p1?.type !== 'PLAYER' && p1?.type !== 'BYE'}
-                pointsCancelled={match.points_cancelled}
-                viewMode={viewMode}
-              />
-            </div>
-          }
-        />
-      ) : (
-        <PlayerRow
-          name={p1?.name || null}
-          display_name={p1?.display_name || null}
-          seed={p1?.seed || null}
-          type={p1?.type}
-          country={p1?.country}
-          isWinner={match.winner_id === p1?.id && isCompleted}
-          isSelected={selectedWinnerId === p1?.id}
-          isPredicted={selectedWinnerId === p1?.id}
-          isCompleted={isCompleted}
-          onSelect={() => p1?.id && onPredict(p1.id)}
-          canPredict={!!canPredict}
-          score={match.score}
-          isP1={true}
-          isPlaceholder={(!p1?.id && p1?.type !== 'BYE' && p1?.type !== 'PLAYER') || p1?.isAwaiting}
-          pointsCancelled={match.points_cancelled}
-          isAwaiting={p1?.isAwaiting}
-          viewMode={viewMode}
-          isForceIncorrect={isP1Incorrect}
-        />
-      )}
+  const cardContent = (
+    <>
+      <PlayerRow
+        name={p1?.name || null}
+        display_name={p1?.display_name || null}
+        seed={p1?.seed || null}
+        type={p1?.type}
+        country={p1?.country}
+        isWinner={match.winner_id === p1?.id && isCompleted}
+        isSelected={selectedWinnerId === p1?.id}
+        isPredicted={selectedWinnerId === p1?.id}
+        isCompleted={isCompleted}
+        onSelect={() => p1?.id && onPredict(p1.id)}
+        canPredict={!!canPredict}
+        score={match.score}
+        isP1={true}
+        isPlaceholder={(!p1?.id && p1?.type !== 'BYE' && p1?.type !== 'PLAYER') || p1?.isAwaiting}
+        pointsCancelled={match.points_cancelled}
+        isAwaiting={p1?.isAwaiting}
+        viewMode={viewMode}
+        isForceIncorrect={isP1Incorrect}
+        isAdmin={isAdmin}
+      />
 
       <div className="h-[1px] bg-slate-50 mx-4" />
 
-      {canEditPlayers ? (
-        <SetPlayersDialog
-          match={match}
-          players={players || []}
-          tournamentId={tournamentId}
-          assignedPlayerIds={assignedPlayerIds}
-          trigger={
-            <div className="cursor-pointer group">
-              <PlayerRow
-                name={p2?.name || null}
-                display_name={p2?.display_name || null}
-                seed={p2?.seed || null}
-                type={p2?.type}
-                country={p2?.country}
-                isWinner={match.winner_id === p2?.id && isCompleted}
-                isSelected={selectedWinnerId === p2?.id}
-                isPredicted={selectedWinnerId === p2?.id}
-                isCompleted={isCompleted}
-                onSelect={() => {}}
-                canPredict={false}
-                score={match.score}
-                isP1={false}
-                isAdmin={true}
-                isPlaceholder={!p2?.id && p2?.type !== 'PLAYER' && p2?.type !== 'BYE'}
-                pointsCancelled={match.points_cancelled}
-                viewMode={viewMode}
-              />
-            </div>
-          }
-        />
-      ) : (
-        <PlayerRow
-          name={p2?.name || null}
-          display_name={p2?.display_name || null}
-          seed={p2?.seed || null}
-          type={p2?.type}
-          country={p2?.country}
-          isWinner={match.winner_id === p2?.id && isCompleted}
-          isSelected={selectedWinnerId === p2?.id}
-          isPredicted={selectedWinnerId === p2?.id}
-          isCompleted={isCompleted}
-          onSelect={() => p2?.id && onPredict(p2.id)}
-          canPredict={!!canPredict}
-          score={match.score}
-          isP1={false}
-          isPlaceholder={(!p2?.id && p2?.type !== 'BYE' && p2?.type !== 'PLAYER') || p2?.isAwaiting}
-          pointsCancelled={match.points_cancelled}
-          isAwaiting={p2?.isAwaiting}
-          viewMode={viewMode}
-          isForceIncorrect={isP2Incorrect}
-        />
-      )}
+      <PlayerRow
+        name={p2?.name || null}
+        display_name={p2?.display_name || null}
+        seed={p2?.seed || null}
+        type={p2?.type}
+        country={p2?.country}
+        isWinner={match.winner_id === p2?.id && isCompleted}
+        isSelected={selectedWinnerId === p2?.id}
+        isPredicted={selectedWinnerId === p2?.id}
+        isCompleted={isCompleted}
+        onSelect={() => p2?.id && onPredict(p2.id)}
+        canPredict={!!canPredict}
+        score={match.score}
+        isP1={false}
+        isPlaceholder={(!p2?.id && p2?.type !== 'BYE' && p2?.type !== 'PLAYER') || p2?.isAwaiting}
+        pointsCancelled={match.points_cancelled}
+        isAwaiting={p2?.isAwaiting}
+        viewMode={viewMode}
+        isForceIncorrect={isP2Incorrect}
+        isAdmin={isAdmin}
+      />
 
       {isFinalRound && canMakePredictions && selectedWinnerId && (
         <div className="px-4 py-3 bg-blue-50/30 border-t border-slate-50 flex flex-col gap-2">
@@ -664,37 +587,37 @@ function BracketMatchCard({
           />
         </div>
       )}
+    </>
+  );
 
-      {isAdmin && !isLocked && (
-        <div className="px-2 pb-2">
-          {isPublished && !isCompleted && (
-            <div className="flex gap-2 mb-2">
-              {/* Replace placeholder OR replace existing player in Round 1 */}
-              {(match.round === 1 ||
-                ((match.player1_type === 'QUALIFIER' ||
-                  match.player1_type === 'WILDCARD' ||
-                  match.player1_type === 'LUCKY_LOSER') &&
-                  !match.player1_id) ||
-                ((match.player2_type === 'QUALIFIER' ||
-                  match.player2_type === 'WILDCARD' ||
-                  match.player2_type === 'LUCKY_LOSER') &&
-                  !match.player2_id)) && (
-                <ReplaceMatchPlayerDialog
-                  match={match}
-                  players={players || []}
-                  tournamentId={tournamentId}
-                  assignedPlayerIds={assignedPlayerIds}
-                />
-              )}
+  return (
+    <div
+      className={cn(
+        'bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden w-full transition-all hover:shadow-md hover:-translate-y-0.5 group relative',
+        isAdmin && 'cursor-pointer hover:border-emerald-200 hover:ring-2 hover:ring-emerald-50',
+      )}
+    >
+      {isAdmin ? (
+        <AdminMatchActions
+          match={match}
+          players={players || []}
+          tournamentId={tournamentId}
+          assignedPlayerIds={assignedPlayerIds}
+          isFinalRound={isFinalRound}
+          tournamentStatus={tournamentStatus}
+          trigger={
+            <div className="relative">
+              {cardContent}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                <div className="bg-emerald-500 text-white p-1.5 rounded-lg shadow-lg shadow-emerald-200">
+                  <Settings className="w-3.5 h-3.5" />
+                </div>
+              </div>
             </div>
-          )}
-
-          {match.player1_id && match.player2_id && (
-            <div className="flex">
-              {isPublished && <SetResultDialog match={match} tournamentId={tournamentId} isFinalRound={isFinalRound} />}
-            </div>
-          )}
-        </div>
+          }
+        />
+      ) : (
+        cardContent
       )}
     </div>
   );
