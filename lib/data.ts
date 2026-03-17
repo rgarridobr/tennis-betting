@@ -1,125 +1,125 @@
-import { sql } from './db'
+import { sql } from './db';
 
 // ==================== INTERFACES ====================
 
 export interface Tournament {
-  id: number
-  name: string
-  surface: string
-  location: string
-  start_date: string
-  end_date: string
-  image_url: string | null
-  status: string
-  created_at: string
-  category: string
-  category_custom: string | null
-  format: string
-  sets_format: number
-  size: number
-  has_seeds: boolean
-  has_qualifiers: boolean
-  has_wildcards: boolean
-  has_byes: boolean
-  champion_id: number | null
-  runner_up_id: number | null
+  id: number;
+  name: string;
+  surface: string;
+  location: string;
+  start_date: string;
+  end_date: string;
+  image_url: string | null;
+  status: string;
+  created_at: string;
+  category: string;
+  category_custom: string | null;
+  format: string;
+  sets_format: number;
+  size: number;
+  has_seeds: boolean;
+  has_qualifiers: boolean;
+  has_wildcards: boolean;
+  has_byes: boolean;
+  champion_id: number | null;
+  runner_up_id: number | null;
 }
 
 export interface Player {
-  id: number
-  name: string
-  display_name: string | null
-  country: string | null
-  seed: number | null
+  id: number;
+  name: string;
+  display_name: string | null;
+  country: string | null;
+  seed: number | null;
 }
 
 export interface TournamentMetadata {
-  id: number
-  name: string
+  id: number;
+  name: string;
 }
 
 export interface BracketMatch {
-  id: number
-  tournament_id: number
-  round: number
-  position: number
-  player1_id: number | null
-  player2_id: number | null
-  winner_id: number | null
-  score: string | null
-  match_date: string | null
-  status: string
-  player1_type: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER'
-  player2_type: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER'
-  player1_seed: number | null
-  player2_seed: number | null
-  points_cancelled: boolean
+  id: number;
+  tournament_id: number;
+  round: number;
+  position: number;
+  player1_id: number | null;
+  player2_id: number | null;
+  winner_id: number | null;
+  score: string | null;
+  match_date: string | null;
+  status: string;
+  player1_type: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER';
+  player2_type: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER';
+  player1_seed: number | null;
+  player2_seed: number | null;
+  points_cancelled: boolean;
   // Joined player names
-  player1_name: string | null
-  player1_display_name: string | null
-  player1_country: string | null
-  player1_seed_val: number | null // Renamed from player1_seed to avoid conflict with bracket_matches.player1_seed
-  player2_name: string | null
-  player2_display_name: string | null
-  player2_country: string | null
-  player2_seed_val: number | null
-  winner_name: string | null
-  winner_display_name: string | null
+  player1_name: string | null;
+  player1_display_name: string | null;
+  player1_country: string | null;
+  player1_seed_val: number | null; // Renamed from player1_seed to avoid conflict with bracket_matches.player1_seed
+  player2_name: string | null;
+  player2_display_name: string | null;
+  player2_country: string | null;
+  player2_seed_val: number | null;
+  winner_name: string | null;
+  winner_display_name: string | null;
 }
 
 export interface Prediction {
-  id: number
-  user_id: number
-  bracket_match_id: number
-  predicted_winner_id: number
-  predicted_score: string | null
-  is_correct: boolean | null
-  points_earned: number
-  created_at: string
+  id: number;
+  user_id: number;
+  bracket_match_id: number;
+  predicted_winner_id: number;
+  predicted_score: string | null;
+  is_correct: boolean | null;
+  points_earned: number;
+  created_at: string;
 }
 
 export interface UserStats {
-  total_points: number
-  correct_predictions: number
-  wrong_predictions: number
-  total_predictions: number
-  accuracy: number
-  active_tournaments: number
+  total_points: number;
+  correct_predictions: number;
+  wrong_predictions: number;
+  total_predictions: number;
+  accuracy: number;
+  active_tournaments: number;
 }
 
 export interface RankingEntry {
-  user_id: number
-  user_name: string
-  correct_predictions: number
-  total_predictions: number
-  total_points: number
-  rank: number
-  final_score_correct?: boolean
+  user_id: number;
+  user_name: string;
+  correct_predictions: number;
+  total_predictions: number;
+  total_points: number;
+  rank: number;
+  final_score_correct?: boolean;
 }
 
 export interface PredictionWithDetails {
-  id: number
-  bracket_match_id: number
-  predicted_winner_id: number
-  predicted_winner_name: string
-  predicted_score: string | null
-  is_correct: boolean | null
-  points_earned: number
-  created_at: string
-  player1_name: string | null
-  player2_name: string | null
-  player1_type: string
-  player2_type: string
-  player1_seed: number | null
-  player2_seed: number | null
-  round: number
-  match_date: string | null
-  score: string | null
-  match_status: string
-  winner_name: string | null
-  tournament_id: number
-  tournament_name: string
-  tournament_size: number
+  id: number;
+  bracket_match_id: number;
+  predicted_winner_id: number;
+  predicted_winner_name: string;
+  predicted_score: string | null;
+  is_correct: boolean | null;
+  points_earned: number;
+  created_at: string;
+  player1_name: string | null;
+  player2_name: string | null;
+  player1_type: string;
+  player2_type: string;
+  player1_seed: number | null;
+  player2_seed: number | null;
+  round: number;
+  match_date: string | null;
+  score: string | null;
+  match_status: string;
+  winner_name: string | null;
+  tournament_id: number;
+  tournament_name: string;
+  tournament_size: number;
 }
 
 // ==================== ROUND CONFIG ====================
@@ -131,8 +131,8 @@ export const ROUND_MATCHES: Record<number, number> = {
   4: 8,
   5: 4,
   6: 2,
-  7: 1
-}
+  7: 1,
+};
 
 export const ROUND_POINTS: Record<number, number> = {
   1: 10,
@@ -141,27 +141,27 @@ export const ROUND_POINTS: Record<number, number> = {
   4: 180,
   5: 360,
   6: 720,
-  7: 2000
-}
+  7: 2000,
+};
 
-export const POINTS_CONFIG: Record<string, { rounds: number[], runnerUp: number }> = {
+export const POINTS_CONFIG: Record<string, { rounds: number[]; runnerUp: number }> = {
   GRAND_SLAM: {
     rounds: [10, 45, 90, 180, 360, 720, 2000],
-    runnerUp: 1200
+    runnerUp: 1200,
   },
   MASTERS_1000: {
     rounds: [10, 30, 50, 100, 200, 400, 1000],
-    runnerUp: 650
+    runnerUp: 650,
   },
   ATP_500: {
     rounds: [25, 50, 100, 200, 500],
-    runnerUp: 330
+    runnerUp: 330,
   },
   ATP_250: {
     rounds: [10, 20, 45, 90, 250],
-    runnerUp: 150
-  }
-}
+    runnerUp: 150,
+  },
+};
 
 export function getMatchPoints(category: string, round: number, totalRounds: number): number {
   const config = POINTS_CONFIG[category] || POINTS_CONFIG.GRAND_SLAM;
@@ -175,8 +175,9 @@ export function getMatchPoints(category: string, round: number, totalRounds: num
 // ==================== TOURNAMENTS ====================
 
 export async function getTournamentsActive(): Promise<Tournament[]> {
-  const rows = await sql`SELECT * FROM tournaments WHERE status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS') ORDER BY start_date ASC`
-  return rows as Tournament[]
+  const rows =
+    await sql`SELECT * FROM tournaments WHERE status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS') ORDER BY start_date ASC`;
+  return rows as Tournament[];
 }
 
 export async function getTournamentsActiveThisMonth(): Promise<Tournament[]> {
@@ -186,8 +187,8 @@ export async function getTournamentsActiveThisMonth(): Promise<Tournament[]> {
       AND start_date >= DATE_TRUNC('month', CURRENT_DATE)
       AND start_date < (DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month')
     ORDER BY start_date ASC
-  `
-  return rows as Tournament[]
+  `;
+  return rows as Tournament[];
 }
 
 export async function getTournamentsByYear(year: number): Promise<Tournament[]> {
@@ -195,13 +196,13 @@ export async function getTournamentsByYear(year: number): Promise<Tournament[]> 
     SELECT * FROM tournaments
     WHERE EXTRACT(YEAR FROM start_date) = ${year}
     ORDER BY start_date DESC
-  `
-  return rows as Tournament[]
+  `;
+  return rows as Tournament[];
 }
 
 export async function getTournaments(): Promise<Tournament[]> {
-  const rows = await sql`SELECT * FROM tournaments ORDER BY start_date ASC`
-  return rows as Tournament[]
+  const rows = await sql`SELECT * FROM tournaments ORDER BY start_date ASC`;
+  return rows as Tournament[];
 }
 
 export async function getTournamentsByYearAndMonth(year: number, month: number): Promise<Tournament[]> {
@@ -210,13 +211,13 @@ export async function getTournamentsByYearAndMonth(year: number, month: number):
     WHERE EXTRACT(YEAR FROM start_date) = ${year}
     AND EXTRACT(MONTH FROM start_date) = ${month}
     ORDER BY start_date ASC
-  `
-  return rows as Tournament[]
+  `;
+  return rows as Tournament[];
 }
 
 export async function getTournamentById(id: number): Promise<Tournament | null> {
-  const rows = await sql`SELECT * FROM tournaments WHERE id = ${id}`
-  return rows.length > 0 ? (rows[0] as Tournament) : null
+  const rows = await sql`SELECT * FROM tournaments WHERE id = ${id}`;
+  return rows.length > 0 ? (rows[0] as Tournament) : null;
 }
 
 export async function getActiveTournament(): Promise<Tournament | null> {
@@ -225,39 +226,39 @@ export async function getActiveTournament(): Promise<Tournament | null> {
     WHERE status IN ('OPEN', 'LOCKED', 'IN_PROGRESS')
     ORDER BY start_date DESC
     LIMIT 1
-  `
-  return rows.length > 0 ? (rows[0] as Tournament) : null
+  `;
+  return rows.length > 0 ? (rows[0] as Tournament) : null;
 }
 
 // ==================== PLAYERS ====================
 
 export async function getPlayers(): Promise<Player[]> {
-  const rows = await sql`SELECT * FROM players ORDER BY name ASC`
-  return rows as Player[]
+  const rows = await sql`SELECT * FROM players ORDER BY name ASC`;
+  return rows as Player[];
 }
 
 export async function getPlayerById(id: number): Promise<Player | null> {
-  const rows = await sql`SELECT * FROM players WHERE id = ${id}`
-  return rows.length > 0 ? (rows[0] as Player) : null
+  const rows = await sql`SELECT * FROM players WHERE id = ${id}`;
+  return rows.length > 0 ? (rows[0] as Player) : null;
 }
 
-export async function getUserPublicInfo(userId: number): Promise<{ id: number, name: string } | null> {
+export async function getUserPublicInfo(userId: number): Promise<{ id: number; name: string } | null> {
   const rows = await sql`
     SELECT id, COALESCE(NULLIF(nickname, ''), name) as name
     FROM users
     WHERE id = ${userId} AND (is_deleted IS FALSE OR is_deleted IS NULL)
-  `
-  return rows.length > 0 ? (rows[0] as { id: number, name: string }) : null
+  `;
+  return rows.length > 0 ? (rows[0] as { id: number; name: string }) : null;
 }
 
 export async function getTournamentNames(): Promise<TournamentMetadata[]> {
-  const rows = await sql`SELECT * FROM tournament_names ORDER BY name ASC`
-  return rows as TournamentMetadata[]
+  const rows = await sql`SELECT * FROM tournament_names ORDER BY name ASC`;
+  return rows as TournamentMetadata[];
 }
 
 export async function getTournamentLocations(): Promise<TournamentMetadata[]> {
-  const rows = await sql`SELECT * FROM tournament_locations ORDER BY name ASC`
-  return rows as TournamentMetadata[]
+  const rows = await sql`SELECT * FROM tournament_locations ORDER BY name ASC`;
+  return rows as TournamentMetadata[];
 }
 
 // ==================== BRACKET MATCHES ====================
@@ -275,8 +276,8 @@ export async function getBracketMatches(tournamentId: number): Promise<BracketMa
     LEFT JOIN players w ON bm.winner_id = w.id
     WHERE bm.tournament_id = ${tournamentId}
     ORDER BY bm.round ASC, bm.position ASC
-  `
-  return rows as BracketMatch[]
+  `;
+  return rows as BracketMatch[];
 }
 
 export async function getBracketMatchesByRound(tournamentId: number, round: number): Promise<BracketMatch[]> {
@@ -292,8 +293,8 @@ export async function getBracketMatchesByRound(tournamentId: number, round: numb
     LEFT JOIN players w ON bm.winner_id = w.id
     WHERE bm.tournament_id = ${tournamentId} AND bm.round = ${round}
     ORDER BY bm.position ASC
-  `
-  return rows as BracketMatch[]
+  `;
+  return rows as BracketMatch[];
 }
 
 // ==================== PREDICTIONS ====================
@@ -301,14 +302,14 @@ export async function getBracketMatchesByRound(tournamentId: number, round: numb
 export async function createPrediction(
   userId: number,
   bracketMatchId: number,
-  predictedWinnerId: number
+  predictedWinnerId: number,
 ): Promise<void> {
   await sql`
     INSERT INTO predictions (user_id, bracket_match_id, predicted_winner_id)
     VALUES (${userId}, ${bracketMatchId}, ${predictedWinnerId})
     ON CONFLICT (user_id, bracket_match_id) 
     DO UPDATE SET predicted_winner_id = ${predictedWinnerId}
-  `
+  `;
 }
 
 export async function getUserPredictions(userId: number, tournamentId: number): Promise<Prediction[]> {
@@ -316,8 +317,8 @@ export async function getUserPredictions(userId: number, tournamentId: number): 
     SELECT p.* FROM predictions p
     JOIN bracket_matches bm ON p.bracket_match_id = bm.id
     WHERE p.user_id = ${userId} AND bm.tournament_id = ${tournamentId}
-  `
-  return rows as Prediction[]
+  `;
+  return rows as Prediction[];
 }
 
 export async function getUserPredictionsWithDetails(userId: number): Promise<PredictionWithDetails[]> {
@@ -339,8 +340,8 @@ export async function getUserPredictionsWithDetails(userId: number): Promise<Pre
     JOIN tournaments t ON bm.tournament_id = t.id
     WHERE p.user_id = ${userId}
     ORDER BY p.created_at DESC
-  `
-  return rows as PredictionWithDetails[]
+  `;
+  return rows as PredictionWithDetails[];
 }
 
 // ==================== STATS & RANKING ====================
@@ -354,18 +355,18 @@ export async function getUserStats(userId: number): Promise<UserStats> {
       COUNT(p.id) as total_predictions
     FROM predictions p
     WHERE p.user_id = ${userId} AND p.is_correct IS NOT NULL
-  `
+  `;
   const activeTournaments = await sql`
     SELECT COUNT(DISTINCT ut.tournament_id) as count
     FROM user_tournaments ut
     JOIN tournaments t ON ut.tournament_id = t.id
     WHERE ut.user_id = ${userId} AND t.status IN ('upcoming', 'active', 'published', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS')
-  `
-  const totalPoints = Number(stats[0]?.total_points || 0)
-  const correct = Number(stats[0]?.correct_predictions || 0)
-  const wrong = Number(stats[0]?.wrong_predictions || 0)
-  const total = Number(stats[0]?.total_predictions || 0)
-  const resolved = correct + wrong
+  `;
+  const totalPoints = Number(stats[0]?.total_points || 0);
+  const correct = Number(stats[0]?.correct_predictions || 0);
+  const wrong = Number(stats[0]?.wrong_predictions || 0);
+  const total = Number(stats[0]?.total_predictions || 0);
+  const resolved = correct + wrong;
 
   return {
     total_points: totalPoints,
@@ -374,7 +375,7 @@ export async function getUserStats(userId: number): Promise<UserStats> {
     total_predictions: total,
     accuracy: resolved > 0 ? Math.round((correct / resolved) * 100) : 0,
     active_tournaments: Number(activeTournaments[0]?.count || 0),
-  }
+  };
 }
 
 export async function getGlobalRanking(limit: number = 50): Promise<RankingEntry[]> {
@@ -389,7 +390,7 @@ export async function getGlobalRanking(limit: number = 50): Promise<RankingEntry
     WHERE u.is_admin = false AND u.is_deleted = false
     ORDER BY total_points DESC, correct_predictions DESC
     LIMIT ${limit}
-  `
+  `;
   return ranking.map((r, i) => ({
     user_id: r.user_id as number,
     user_name: r.user_name as string,
@@ -398,7 +399,7 @@ export async function getGlobalRanking(limit: number = 50): Promise<RankingEntry
     total_points: Number(r.total_points || 0),
     final_score_correct: Boolean(r.final_score_correct),
     rank: i + 1,
-  }))
+  }));
 }
 
 export async function getTournamentRanking(tournamentId: number, limit: number = 100): Promise<RankingEntry[]> {
@@ -409,20 +410,26 @@ export async function getTournamentRanking(tournamentId: number, limit: number =
         COALESCE(NULLIF(u.nickname, ''), u.name) as user_name,
         COUNT(CASE WHEN p.is_correct = true THEN 1 END) as correct_predictions,
         COUNT(p.id) as total_predictions,
-        SUM(p.points_earned) as total_points,
-        -- Check final score tie-breaker
+        COALESCE(SUM(p.points_earned), 0) as total_points,
         MAX(CASE WHEN p.is_score_correct = true THEN 1 ELSE 0 END) as final_score_correct
       FROM users u
-      JOIN user_tournaments ut ON u.id = ut.user_id
-      LEFT JOIN predictions p ON u.id = p.user_id
-      LEFT JOIN bracket_matches bm ON p.bracket_match_id = bm.id AND bm.tournament_id = ${tournamentId}
-      WHERE ut.tournament_id = ${tournamentId} AND u.is_admin = false AND u.is_deleted = false AND p.is_correct IS NOT NULL
+      JOIN user_tournaments ut 
+        ON u.id = ut.user_id
+      LEFT JOIN bracket_matches bm 
+        ON bm.tournament_id = ${tournamentId}
+      LEFT JOIN predictions p 
+        ON u.id = p.user_id 
+        AND p.bracket_match_id = bm.id
+      WHERE 
+        ut.tournament_id = ${tournamentId} 
+        AND u.is_admin = false 
+        AND u.is_deleted = false
       GROUP BY u.id, u.name, u.nickname
     )
     SELECT * FROM tournament_stats
     ORDER BY total_points DESC, correct_predictions DESC, final_score_correct DESC, user_name ASC
     LIMIT ${limit}
-  `
+  `;
 
   return ranking.map((r, i) => ({
     user_id: r.user_id as number,
@@ -432,34 +439,34 @@ export async function getTournamentRanking(tournamentId: number, limit: number =
     total_points: Number(r.total_points || 0),
     final_score_correct: Boolean(r.final_score_correct),
     rank: i + 1,
-  }))
+  }));
 }
 
 export async function getUserRanking(userId: number): Promise<RankingEntry | null> {
-  const ranking = await getGlobalRanking(1000)
-  return ranking.find(r => r.user_id === userId) || null
+  const ranking = await getGlobalRanking(1000);
+  return ranking.find((r) => r.user_id === userId) || null;
 }
 
 // ==================== ENROLLMENT ====================
 
 export interface Enrollment {
-  id: number
-  user_id: number
-  tournament_id: number
-  bracket_submitted: boolean
+  id: number;
+  user_id: number;
+  tournament_id: number;
+  bracket_submitted: boolean;
 }
 
 export async function getEnrollment(userId: number, tournamentId: number): Promise<Enrollment | null> {
   const rows = await sql`
     SELECT * FROM user_tournaments
     WHERE user_id = ${userId} AND tournament_id = ${tournamentId}
-  `
-  return rows.length > 0 ? (rows[0] as Enrollment) : null
+  `;
+  return rows.length > 0 ? (rows[0] as Enrollment) : null;
 }
 
 export async function isUserEnrolled(userId: number, tournamentId: number): Promise<boolean> {
-  const enrollment = await getEnrollment(userId, tournamentId)
-  return !!enrollment
+  const enrollment = await getEnrollment(userId, tournamentId);
+  return !!enrollment;
 }
 
 export async function enrollUser(userId: number, tournamentId: number): Promise<void> {
@@ -467,16 +474,15 @@ export async function enrollUser(userId: number, tournamentId: number): Promise<
     INSERT INTO user_tournaments (user_id, tournament_id)
     VALUES (${userId}, ${tournamentId})
     ON CONFLICT (user_id, tournament_id) DO NOTHING
-  `
+  `;
 }
 
 export async function getTournamentParticipantCount(tournamentId: number): Promise<number> {
   const result = await sql`
     SELECT COUNT(*) as count FROM user_tournaments WHERE tournament_id = ${tournamentId}
-  `
-  return Number(result[0]?.count || 0)
+  `;
+  return Number(result[0]?.count || 0);
 }
-
 
 export async function getTournamentPlayers(tournamentId: number): Promise<Player[]> {
   const players = await sql`
@@ -485,22 +491,22 @@ export async function getTournamentPlayers(tournamentId: number): Promise<Player
     JOIN bracket_matches bm ON (p.id = bm.player1_id OR p.id = bm.player2_id)
     WHERE bm.tournament_id = ${tournamentId}
     ORDER BY p.name ASC
-  `
-  return players as Player[]
+  `;
+  return players as Player[];
 }
 
 export async function hasTournamentStarted(tournamentId: number): Promise<boolean> {
-  const tournament = await getTournamentById(tournamentId)
+  const tournament = await getTournamentById(tournamentId);
 
   if (tournament) {
-    const startDate = new Date(tournament.start_date)
+    const startDate = new Date(tournament.start_date);
 
     // Ajustar para horário de Brasília (UTC-3)
-    const now = new Date()
-    const brasiliaNow = new Date(now.getTime() - 3 * 60 * 60 * 1000)
-    
+    const now = new Date();
+    const brasiliaNow = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+
     if (startDate <= brasiliaNow) {
-      return true
+      return true;
     }
   }
 
@@ -510,7 +516,7 @@ export async function hasTournamentStarted(tournamentId: number): Promise<boolea
     WHERE tournament_id = ${tournamentId}
       AND status = 'completed'
       AND score != 'BYE'
-  `
+  `;
 
-  return Number(result[0]?.count || 0) > 0
+  return Number(result[0]?.count || 0) > 0;
 }
