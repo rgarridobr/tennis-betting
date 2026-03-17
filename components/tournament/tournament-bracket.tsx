@@ -173,21 +173,27 @@ export function TournamentBracket({
   return (
     <div className="flex flex-col gap-6">
       {viewMode === 'predictions' && canMakePredictions && (
-        <div className="flex items-center justify-between p-6 bg-emerald-50 rounded-[2rem] border border-emerald-100 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 sm:p-6 bg-emerald-50 rounded-[2rem] border border-emerald-100 shadow-sm">
+          {/* Lado esquerdo */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white">
-              <Trophy className="w-5 h-5" />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white shrink-0">
+              <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
+
             <div>
-              <p className="font-black text-emerald-900 leading-tight">Modo de Palpite Ativo</p>
-              <p className="text-xs font-bold text-emerald-700">Preencha todo o chaveamento e clique em concluir.</p>
+              <p className="font-black text-emerald-900 leading-tight text-sm sm:text-base">Modo de Palpite Ativo</p>
+              <p className="text-[11px] sm:text-xs font-bold text-emerald-700">
+                Preencha todo o chaveamento e clique em concluir.
+              </p>
             </div>
           </div>
+
+          {/* Botão */}
           <button
             onClick={handleFinish}
             disabled={!isBracketComplete() || isSaving}
             className={cn(
-              'px-8 py-3 rounded-2xl font-black text-sm uppercase tracking-wider transition-all shadow-lg',
+              'w-full sm:w-auto px-6 sm:px-8 py-3 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider transition-all shadow-lg',
               isBracketComplete()
                 ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-200'
                 : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none',
@@ -257,7 +263,10 @@ export function TournamentBracket({
       </div>
 
       <div className="w-full bg-gray-300 rounded-[2.5rem] border border-slate-200 shadow-xl relative overflow-hidden">
-        <div ref={scrollContainerRef} className="overflow-x-auto overflow-y-auto relative scrollbar-hide max-h-[75vh]">
+        <div
+          ref={scrollContainerRef}
+          className="overflow-x-auto overflow-y-auto relative scrollbar-hide max-h-[70vh] md:max-h-[75vh]"
+        >
           <div
             key={selectedRound}
             className={cn(
@@ -283,7 +292,7 @@ export function TournamentBracket({
 
                 return (
                   <div key={round} className="flex flex-col w-[300px] relative z-10">
-                    <div className="sticky top-0 md:pt-3 pt-25 z-30 py-6 mb-10 flex flex-col items-center gap-2">
+                    <div className="sticky top-0 md:pt-3 pt-25 z-30 flex flex-col items-center gap-2 m-auto">
                       <h3 className="text-sm font-black uppercase tracking-[0.3em] text-emerald-600 bg-emerald-50 inline-block px-6 py-2 rounded-full border border-emerald-100 shadow-sm">
                         {roundNames[round] === 'F'
                           ? 'Final'
