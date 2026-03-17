@@ -170,13 +170,11 @@ export function TournamentBracket({
     });
   }
 
-
   const CARD_HEIGHT = 110;
   const BASE_GAP = 24;
 
   return (
     <div className="flex flex-col gap-6">
-
       {/* Sticky Header with Toggles and Filters */}
       <div className="sticky top-20 z-40 bg-slate-50/80 backdrop-blur-md py-1 rounded-[2rem] border border-slate-200/50 shadow-sm px-6 flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
         {/* View Mode Toggle */}
@@ -208,7 +206,7 @@ export function TournamentBracket({
         <div className="h-[1px] w-full bg-slate-200 md:hidden" />
 
         {/* Round Filter */}
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide max-w-full py-5 px-5">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide max-w-full py-5 px-5 z-50">
           {rounds.map((round) => (
             <button
               key={round}
@@ -226,7 +224,13 @@ export function TournamentBracket({
         </div>
       </div>
 
-      <div className="w-full bg-gray-300 rounded-[2.5rem] border border-slate-200 shadow-xl relative overflow-hidden">
+      <div className="w-full bg-[#f8fafc] rounded-[2.5rem] border border-slate-200 shadow-xl relative overflow-hidden">
+        <div
+          className="absolute inset-0 blur-[1px] pointer-events-none brightness-45"
+          style={{
+            backgroundImage: `url("https://images.unsplash.com/photo-1693614055643-4a4ffd88b3ac?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")`,
+           }}
+        />
         <div
           ref={scrollContainerRef}
           className="overflow-x-auto overflow-y-auto relative scrollbar-hide max-h-[70vh] md:max-h-[75vh]"
@@ -256,7 +260,7 @@ export function TournamentBracket({
 
                 return (
                   <div key={round} className="flex flex-col w-[300px] relative z-10">
-                    <div className="sticky top-0 md:pt-3 pt-25 z-30 flex flex-col items-center gap-2 m-auto">
+                    <div className="sticky top-0 md:pt-3 pt-10 z-30 flex flex-col items-center gap-2 m-auto">
                       <h3 className="text-sm font-black uppercase tracking-[0.3em] text-emerald-600 bg-emerald-50 inline-block px-6 py-2 rounded-full border border-emerald-100 shadow-sm">
                         {roundNames[round] === 'F'
                           ? 'Final'
