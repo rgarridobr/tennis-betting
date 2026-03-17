@@ -52,25 +52,28 @@ export function TournamentRankingCard({ tournament, href }: TournamentRankingCar
   return (
     <Link href={href}>
       <Card className="overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1 rounded-[2rem] bg-white">
-        <div className="h-32 relative flex items-center justify-center overflow-hidden">
-          {/* Background */}
-          <div
-            className="absolute inset-0 w-full h-full bg-contain  bg-center bg-no-repeat"
-            style={{
-              backgroundImage: `url('/images/categories/${tournament.category === 'GRAND_SLAM' ? 'grandslam.png' : tournament.category === 'MASTERS_1000' ? 'atpmasters1000.png' : tournament.category === 'ATP_500' ? 'atp500.png' : 'atp250.png'}')`,
-            }}
-          />
- 
-          {/* Conteúdo */}
-          <div className="relative z-10 w-full h-full">
+        <div className={`h-32 relative flex items-center justify-center overflow-hidden bg-gradient-to-br ${categoryGradient}`}>
+          {/* Decorative Pattern */}
+          <div className="absolute inset-0 opacity-10 flex items-center justify-center pointer-events-none">
+            <Trophy className="w-32 h-32 rotate-12 text-white" />
+          </div>
+
+          <div className="relative z-10 flex flex-col items-center justify-center">
+            <div className="bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20">
+              <span className="text-white text-[10px] font-black tracking-[0.2em] uppercase">
+                {getCategoryLabel(tournament.category)}
+              </span>
+            </div>
+          </div>
+
+          {/* Status Badge */}
+          <div className="absolute inset-0 z-20 w-full h-full">
             {isFinished && (
-              <>
-                <div className="absolute top-4 right-4">
-                  <Badge className="bg-amber-400 text-amber-950 border-none font-black text-[10px] uppercase tracking-wider">
-                    Finalizado
-                  </Badge>
-                </div>
-              </>
+              <div className="absolute top-4 right-4">
+                <Badge className="bg-white/20 hover:bg-white/30 text-white backdrop-blur-md border-none font-black text-[10px] uppercase tracking-wider">
+                  Finalizado
+                </Badge>
+              </div>
             )}
           </div>
         </div>

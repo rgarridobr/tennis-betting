@@ -364,8 +364,11 @@ export default async function HomePage() {
             </div>
           </div> */}
 
-          <div className="text-center text-slate-500 text-sm">
+          <div className="text-center text-slate-500 text-sm space-y-2">
             <p>© {new Date().getFullYear()} TennisPool. Todos os direitos reservados.</p>
+            <p className="max-w-md mx-auto text-[10px] leading-relaxed opacity-70 font-medium">
+              Este site não é oficial e não é afiliado à ATP ou aos torneios citados.
+            </p>
           </div>
         </div>
       </footer>
