@@ -176,6 +176,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
             roundNames={dynamicRoundNames}
             hasStarted={started}
             tournamentStatus={tournament.status}
+            tournamentCategory={tournament.category}
           />
         )}
       </main>

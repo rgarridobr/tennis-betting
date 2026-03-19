@@ -4,8 +4,10 @@ import React, { useRef, useState, useTransition, useEffect } from 'react';
 import type { BracketMatch, Player } from '@/lib/data';
 import { getFlagUrl } from '@/lib/countries';
 import { saveFullBracketAction } from '@/lib/actions/predictions';
-import { Check, Trophy, X, Pencil, AlertCircle, Layout, User as UserIcon, ArrowRight, Clock } from 'lucide-react';
+import { Check, Trophy, X, Pencil, AlertCircle, Layout, User as UserIcon, ArrowRight, Clock, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SetPredictionScoreDialog } from './set-prediction-score-dialog';
+import { useRouter } from 'next/navigation';
 import { AdminMatchActions } from '@/components/admin/admin-match-actions';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
@@ -21,6 +23,7 @@ interface TournamentBracketProps {
   isAdmin?: boolean;
   players?: Player[];
   tournamentStatus?: string;
+  tournamentCategory?: string;
   bracketSubmitted?: boolean;
   hasStarted?: boolean;
   assignedPlayerIds?: number[];
@@ -36,6 +39,7 @@ export function TournamentBracket({
   isAdmin = false,
   players = [],
   tournamentStatus = 'published',
+  tournamentCategory = 'GRAND_SLAM',
   bracketSubmitted = false,
   hasStarted = false,
   assignedPlayerIds,
@@ -98,6 +102,18 @@ export function TournamentBracket({
   const [selectedRound, setSelectedRound] = useState<number>(isFinishedTournament ? maxRound : rounds[0] || 1);
   const [direction, setDirection] = useState<'left' | 'right' | null>(null);
   const [viewMode, setViewMode] = useState<'official' | 'predictions'>(hasStarted ? 'official' : 'predictions');
+  const router = useRouter();
+
+  // Dialog state for prediction score (Final)
+  const [isScoreDialogOpen, setIsScoreDialogOpen] = useState(false);
+  const [scoreDialogData, setScoreDialogData] = useState<{
+    matchId: number;
+    winnerId: number;
+    p1: any;
+    p2: any;
+  } | null>(null);
+
+  const isFinalPredicted = localPredictions[matches.find((m) => m.round === maxRound)?.id || -1]?.score;
 
   const handleRoundSelect = (round: number) => {
     const currentIndex = rounds.indexOf(selectedRound);
@@ -136,8 +152,14 @@ export function TournamentBracket({
       };
   }
 
-  function handlePrediction(matchId: number, winnerId: number, score?: string) {
+  function handlePrediction(matchId: number, winnerId: number, score?: string, isFinal?: boolean, p1?: any, p2?: any) {
     if (!canMakePredictions) return;
+
+    if (isFinal && !score) {
+      setScoreDialogData({ matchId, winnerId, p1, p2 });
+      setIsScoreDialogOpen(true);
+      return;
+    }
 
     setLocalPredictions((prev) => {
       const next = { ...prev };
@@ -222,7 +244,33 @@ export function TournamentBracket({
             </button>
           ))}
         </div>
+
+        {/* Finalizar Button */}
+        {viewMode === 'predictions' && isFinalPredicted && (
+          <button
+            onClick={() => router.push('/')}
+            className="flex items-center gap-2 px-8 py-3 bg-emerald-600 text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all hover:-translate-y-1 animate-in fade-in slide-in-from-right-4"
+          >
+            Finalizar
+            <LogOut className="w-4 h-4" />
+          </button>
+        )}
       </div>
+
+      <SetPredictionScoreDialog
+        isOpen={isScoreDialogOpen}
+        onOpenChange={setIsScoreDialogOpen}
+        p1={scoreDialogData?.p1}
+        p2={scoreDialogData?.p2}
+        winnerId={scoreDialogData?.winnerId || 0}
+        initialScore={localPredictions[scoreDialogData?.matchId || 0]?.score}
+        category={tournamentCategory}
+        onSave={(winnerId, score) => {
+          if (scoreDialogData) {
+            handlePrediction(scoreDialogData.matchId, winnerId, score, true);
+          }
+        }}
+      />
 
       <div className="w-full bg-[#f8fafc] rounded-[2.5rem] border border-slate-200 shadow-xl relative overflow-hidden">
         <div
@@ -399,7 +447,7 @@ export function TournamentBracket({
                               players={players}
                               tournamentStatus={tournamentStatus}
                               isFinalRound={isFinalRound}
-                              onPredict={(winnerId, score) => handlePrediction(match.id, winnerId, score)}
+                              onPredict={(winnerId, score) => handlePrediction(match.id, winnerId, score, isFinalRound, p1, p2)}
                               assignedPlayerIds={assignedPlayerIds}
                               viewMode={viewMode}
                             />
@@ -540,20 +588,6 @@ function BracketMatchCard({
         isAdmin={isAdmin}
       />
 
-      {isFinalRound && canMakePredictions && selectedWinnerId && (
-        <div className="px-4 py-3 bg-blue-50/30 border-t border-slate-50 flex flex-col gap-2">
-          <Label className="text-[9px] font-black uppercase text-blue-600 tracking-widest">
-            Placar da Final (Tie-break)
-          </Label>
-          <input
-            type="text"
-            placeholder="Ex: 3-1"
-            value={currentPrediction?.score || ''}
-            onChange={(e) => onPredict(selectedWinnerId, e.target.value)}
-            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-      )}
     </>
   );
 
@@ -659,6 +693,10 @@ function PlayerRow({
 
   const sets = score ? score.split(' ') : [];
   const showPredictionResult = (isCompleted && isPredicted) || (isPredicted && isForceIncorrect);
+
+  const displaySets = viewMode === 'predictions' && score && score.includes('-') && !score.includes(' ')
+    ? [score]
+    : sets;
   const predictionCorrect = showPredictionResult && isWinner && !isForceIncorrect;
 
   const getIndicator = () => {
@@ -727,17 +765,16 @@ function PlayerRow({
         )}
       </div>
 
-      {sets.length > 0 && (
+      {displaySets.length > 0 && (
         <div className="flex items-center gap-1.5 ml-3">
-          {sets.map((set, i) => {
+          {displaySets.map((set, i) => {
             const parts = set.split('-');
             const setScore = isP1 ? parts[0] : parts[1];
             const opponentScore = isP1 ? parts[1] : parts[0];
             const isSetWinner = parseInt(setScore) > parseInt(opponentScore);
 
             return (
-              setScore !== undefined &&
-              viewMode !== 'predictions' && (
+              setScore !== undefined && (
                 <React.Fragment key={i}>
                   <div
                     className={cn(
