@@ -4,7 +4,7 @@ import React, { useRef, useState, useTransition, useEffect } from 'react';
 import type { BracketMatch, Player } from '@/lib/data';
 import { getFlagUrl } from '@/lib/countries';
 import { saveFullBracketAction } from '@/lib/actions/predictions';
-import { Check, Trophy, X, Pencil, AlertCircle, Layout, User as UserIcon, ArrowRight, Clock, LogOut } from 'lucide-react';
+import { Check, Trophy, X, Pencil, AlertCircle, Layout, User as UserIcon, ArrowRight, Clock, LogOut, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SetPredictionScoreDialog } from './set-prediction-score-dialog';
 import { useRouter } from 'next/navigation';
@@ -48,6 +48,7 @@ export function TournamentBracket({
   const [localPredictions, setLocalPredictions] =
     useState<Record<number, { winnerId: number; score?: string }>>(predictions);
   const [isSaving, setIsSaving] = useState(false);
+  const [isFinalizing, setIsFinalizing] = useState(false);
   const [isInitialMount, setIsInitialMount] = useState(true);
   const [isTransitioning, startTransition] = useTransition();
 
@@ -126,6 +127,26 @@ export function TournamentBracket({
     }
 
     setSelectedRound(round);
+  };
+
+  const handleFinalize = async () => {
+    if (isFinalizing) return;
+    setIsFinalizing(true);
+    try {
+      const predictionArray = Object.entries(localPredictions).map(([matchId, data]) => ({
+        matchId: parseInt(matchId),
+        winnerId: data.winnerId,
+        score: data.score,
+      }));
+
+      await saveFullBracketAction(userId, tournamentId, predictionArray);
+      toast.success('Palpite salvo com sucesso!');
+      router.push('/');
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || 'Ocorreu um erro ao salvar seu palpite. Tente novamente.');
+      setIsFinalizing(false);
+    }
   };
 
   // Map of player ID to player details for display in predicted rounds
@@ -248,11 +269,26 @@ export function TournamentBracket({
         {/* Finalizar Button */}
         {viewMode === 'predictions' && isFinalPredicted && (
           <button
-            onClick={() => router.push('/')}
-            className="flex items-center gap-2 px-8 py-3 bg-emerald-600 text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all hover:-translate-y-1 animate-in fade-in slide-in-from-right-4"
+            onClick={handleFinalize}
+            disabled={isFinalizing}
+            className={cn(
+              'flex items-center gap-2 px-8 py-3 bg-emerald-600 text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-200 transition-all animate-in fade-in slide-in-from-right-4',
+              isFinalizing
+                ? 'opacity-80 cursor-not-allowed'
+                : 'hover:bg-emerald-700 hover:-translate-y-1',
+            )}
           >
-            Finalizar
-            <LogOut className="w-4 h-4" />
+            {isFinalizing ? (
+              <>
+                Salvando...
+                <Loader2 className="w-4 h-4 animate-spin" />
+              </>
+            ) : (
+              <>
+                Finalizar
+                <LogOut className="w-4 h-4" />
+              </>
+            )}
           </button>
         )}
       </div>

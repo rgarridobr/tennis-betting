@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { Trophy } from 'lucide-react';
+import { PlayerScoreRow } from './player-score-row-props';
 
 interface SetPredictionScoreDialogProps {
   isOpen: boolean;
@@ -95,55 +96,27 @@ export function SetPredictionScoreDialog({
 
         <div className="grid gap-6 py-6">
           <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <div className="flex flex-col">
-                <span className="text-xs font-black uppercase text-slate-400 tracking-widest mb-1">Jogador 1</span>
-                <span className={cn("text-sm font-black truncate max-w-[150px]", winnerId === p1?.id ? "text-emerald-600" : "text-slate-700")}>
-                  {p1?.display_name || p1?.name || 'Jogador 1'}
-                </span>
-              </div>
-              <div className="flex gap-1">
-                {options.map((opt) => (
-                  <button
-                    key={`p1-${opt}`}
-                    onClick={() => setScore1(opt)}
-                    className={cn(
-                      "w-10 h-10 rounded-xl font-black transition-all border-2",
-                      score1 === opt
-                        ? "bg-emerald-600 border-emerald-600 text-white shadow-md shadow-emerald-100"
-                        : "bg-white border-slate-200 text-slate-400 hover:border-emerald-200 hover:text-emerald-600"
-                    )}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            </div>
+<div className="flex flex-col gap-4">
+  <PlayerScoreRow
+    player={p1}
+    label="Jogador 1"
+    score={score1}
+    setScore={setScore1}
+    winnerId={winnerId}
+    maxSets={maxSets}
+    options={options}
+  />
 
-            <div className="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <div className="flex flex-col">
-                <span className="text-xs font-black uppercase text-slate-400 tracking-widest mb-1">Jogador 2</span>
-                <span className={cn("text-sm font-black truncate max-w-[150px]", winnerId === p2?.id ? "text-emerald-600" : "text-slate-700")}>
-                  {p2?.display_name || p2?.name || 'Jogador 2'}
-                </span>
-              </div>
-              <div className="flex gap-1">
-                {options.map((opt) => (
-                  <button
-                    key={`p2-${opt}`}
-                    onClick={() => setScore2(opt)}
-                    className={cn(
-                      "w-10 h-10 rounded-xl font-black transition-all border-2",
-                      score2 === opt
-                        ? "bg-emerald-600 border-emerald-600 text-white shadow-md shadow-emerald-100"
-                        : "bg-white border-slate-200 text-slate-400 hover:border-emerald-200 hover:text-emerald-600"
-                    )}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            </div>
+  <PlayerScoreRow
+    player={p2}
+    label="Jogador 2"
+    score={score2}
+    setScore={setScore2}
+    winnerId={winnerId}
+    maxSets={maxSets}
+    options={options}
+  />
+</div>
           </div>
         </div>
 

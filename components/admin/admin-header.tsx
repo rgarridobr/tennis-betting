@@ -36,7 +36,9 @@ export function AdminHeader({ user }: AdminHeaderProps) {
   ]
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60">
+    // <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 border-b border-slate-200 border-b-2">
+         <header className="sticky top-0 z-50 bg-gradient-to-br from-[#071f1a] via-[#0a3a33] to-[#0d5a4d] backdrop-blur-xl "> 
+
       <div className="container mx-auto px-4 md:px-32 h-20 flex items-center justify-between">
         {/* Logo - Left */}
         <Link href="/admin" className="flex items-center gap-2.5 text-emerald-600 group">
