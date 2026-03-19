@@ -40,14 +40,14 @@ export function DashboardHeader({ user, activeTournamentId }: DashboardHeaderPro
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60">
+    <header className="sticky top-0 z-50 bg-gradient-to-br from-[#041a16] via-[#062c25] to-[#083a31] backdrop-blur-xl border-b border-white/5">
       <div className="container mx-auto px-4 md:px-32 h-20 flex items-center justify-between">
         {/* Logo - Left */}
-        <Link href="/dashboard" className="flex items-center gap-2.5 text-emerald-600 group">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-200 group-hover:scale-110 transition-transform">
+        <Link href="/dashboard" className="flex items-center gap-2.5 group">
+          <div className="w-10 h-10 rounded-xl bg-[#6EC46C] flex items-center justify-center shadow-lg shadow-[#6EC46C]/20 group-hover:scale-110 transition-transform">
             <Trophy className="w-6 h-6 text-white" />
           </div>
-          <span className="hidden sm:inline font-black text-xl tracking-tight text-slate-900">TennisPool</span>
+          <span className="hidden sm:inline font-black text-xl tracking-tight text-[#D32D18]">TennisPool</span>
         </Link>
 
         {/* Navigation - Center */}
@@ -65,8 +65,8 @@ export function DashboardHeader({ user, activeTournamentId }: DashboardHeaderPro
                     <button
                       className={`px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base font-medium rounded-lg transition-all flex items-center gap-2 outline-none ${
                         isActive
-                          ? 'text-emerald-600 bg-emerald-50'
-                          : 'text-slate-600 hover:text-emerald-600 hover:bg-emerald-50'
+                          ? 'text-[#6EC46C] bg-white'
+                          : 'text-white hover:text-[#6EC46C] hover:bg-white/10'
                       }`}
                     >
                       <item.icon className="w-4 h-4" />
@@ -93,8 +93,8 @@ export function DashboardHeader({ user, activeTournamentId }: DashboardHeaderPro
                 href={item.href}
                 className={`px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base font-medium rounded-lg transition-all flex items-center gap-2 ${
                   isActive
-                    ? 'text-emerald-600 bg-emerald-50'
-                    : 'text-slate-600 hover:text-emerald-600 hover:bg-emerald-50'
+                    ? 'text-[#6EC46C] bg-white'
+                    : 'text-white hover:text-[#6EC46C] hover:bg-white/10'
                 }`}
               >
                 <item.icon className="w-4 h-4" />
@@ -109,8 +109,8 @@ export function DashboardHeader({ user, activeTournamentId }: DashboardHeaderPro
           {user ? (
             <>
               <div className="hidden sm:flex flex-col items-end mr-1">
-                <p className="text-sm font-black text-slate-900 leading-none">{displayName}</p>
-                <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mt-1">Participante</p>
+                <p className="text-sm font-black text-[#D32D18] leading-none">{displayName}</p>
+                <p className="text-[10px] font-bold text-[#6EC46C] uppercase tracking-wider mt-1">Participante</p>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -148,10 +148,10 @@ export function DashboardHeader({ user, activeTournamentId }: DashboardHeaderPro
             </>
           ) : (
             <div className="flex items-center gap-2">
-              <Button variant="ghost" asChild className="font-bold text-slate-600 hover:text-emerald-600 rounded-xl hidden sm:flex">
+              <Button variant="ghost" asChild className="font-bold text-white hover:text-[#6EC46C] hover:bg-white/10 rounded-xl hidden sm:flex">
                 <Link href="/login">Entrar</Link>
               </Button>
-              <Button className="bg-emerald-500 text-white hover:bg-emerald-600 font-bold px-6 rounded-xl shadow-lg shadow-emerald-100" asChild>
+              <Button className="bg-[#6EC46C] text-white hover:bg-[#6EC46C]/90 font-bold px-6 rounded-xl shadow-lg shadow-[#6EC46C]/20" asChild>
                 <Link href="/cadastro">Cadastrar</Link>
               </Button>
             </div>
