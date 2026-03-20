@@ -15,6 +15,10 @@ export default async function RulesPage() {
     redirect('/login');
   }
 
+  if (user.is_admin) {
+    redirect('/admin');
+  }
+
   const [activeTournament] = await Promise.all([getActiveTournament()]);
 
   const categories = [

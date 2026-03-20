@@ -20,6 +20,7 @@ interface TournamentRankingPageProps {
 export default async function TournamentRankingPage({ params }: TournamentRankingPageProps) {
   const user = await getSession();
   if (!user) redirect('/login');
+  if (user.is_admin) redirect('/admin');
 
   const { id } = await params;
   const tournamentId = parseInt(id, 10);

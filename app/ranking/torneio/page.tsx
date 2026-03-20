@@ -23,6 +23,7 @@ const ITEMS_PER_PAGE = 9;
 export default async function TournamentRankingListPage({ searchParams }: PageProps) {
   const user = await getSession();
   if (!user) redirect('/login');
+  if (user.is_admin) redirect('/admin');
 
   const { status, search, category, page } = await searchParams;
   const currentPage = page ? parseInt(page) : 1;

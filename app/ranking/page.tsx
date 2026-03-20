@@ -10,6 +10,7 @@ import { Trophy, Medal, Target, TrendingUp, Crown, Award } from 'lucide-react';
 export default async function RankingPage() {
   const user = await getSession();
   if (!user) redirect('/login');
+  if (user.is_admin) redirect('/admin');
 
   const [ranking, userStats, activeTournament] = await Promise.all([
     getGlobalRanking(100),

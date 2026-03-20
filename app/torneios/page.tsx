@@ -23,6 +23,7 @@ const ITEMS_PER_PAGE = 9;
 export default async function TournamentsPage({ searchParams }: PageProps) {
   const user = await getSession();
   if (!user) redirect('/login');
+  if (user.is_admin) redirect('/admin');
 
   const { status, search, category, page } = await searchParams;
   const currentPage = page ? parseInt(page) : 1;
@@ -33,7 +34,7 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
     getTournamentsByYearAndMonth(currentDate.getFullYear(), currentDate.getMonth() + 1),
     getActiveTournament(),
   ]);
-    const activeStatuses = ['active', 'published', 'OPEN', 'LOCKED', 'IN_PROGRESS'];
+  const activeStatuses = ['active', 'published', 'OPEN', 'LOCKED', 'IN_PROGRESS'];
   // Apply filters
   let filteredTournaments = allTournaments;
 
