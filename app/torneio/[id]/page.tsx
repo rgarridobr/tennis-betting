@@ -83,7 +83,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
       <TournamentHeader tournament={tournament} participants={participants} />
 
       <main className="container mx-auto px-4 md:px-32 py-12">
-        {!enrolled && <EnrollmentBanner tournament={tournament} />}
+        {!enrolled && !started  && <EnrollmentBanner tournament={tournament} />}
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div className="flex flex-col md:flex-row md:items-end gap-4">

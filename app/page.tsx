@@ -45,7 +45,7 @@ export default async function HomePage() {
             <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-200 group-hover:scale-110 transition-transform">
               <Trophy className="w-6 h-6 text-white" />
             </div>
-            <span className="hidden sm:inline font-black text-xl tracking-tight text-slate-900">Bolão de Tênis</span>
+            <span className="hidden sm:inline font-black text-xl tracking-tight text-slate-900">TennisPool</span>
           </Link>
           <div className="flex items-center gap-3">
             <Button variant="ghost" asChild className="font-bold text-slate-600 hover:text-emerald-600 rounded-xl">

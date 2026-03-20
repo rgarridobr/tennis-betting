@@ -3,8 +3,6 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Trophy, MapPin, ChevronRight, Award } from 'lucide-react';
 import Link from 'next/link';
 import type { Tournament } from '@/lib/data';
-import Image from 'next/image';
-import { getStatusLabels } from '@/lib/utils';
 
 interface TournamentRankingCardProps {
   tournament: Tournament;
@@ -30,7 +28,6 @@ function formatDate(dateString: string): string {
 }
 
 export function TournamentRankingCard({ tournament, href }: TournamentRankingCardProps) {
-
   const categoryGradient = categoryColors[tournament.category] || 'from-slate-500 to-slate-700';
 
   const getCategoryLabel = (category: string) => {
@@ -47,6 +44,22 @@ export function TournamentRankingCard({ tournament, href }: TournamentRankingCar
         return category;
     }
   };
+  const isLockedByDate = new Date(tournament.start_date) <= new Date();
+
+  const isFinished =
+    tournament.status === 'finished' || tournament.status === 'FINISHED' || tournament.status === 'completed';
+
+  const statusLabel = isFinished
+    ? 'Finalizado'
+    : isLockedByDate
+      ? 'Em Andamento'
+      : tournament.status === 'active' || tournament.status === 'OPEN'
+        ? 'Apostas Abertas'
+        : tournament.status === 'STANDBY'
+          ? 'Agendado'
+          : tournament.status === 'UPCOMING'
+            ? 'Preparando chaveamento'
+            : '';
 
   return (
     <Link href={href}>
@@ -69,11 +82,11 @@ export function TournamentRankingCard({ tournament, href }: TournamentRankingCar
 
           {/* Status Badge */}
           <div className="absolute inset-0 z-20 w-full h-full">
-             <div className="absolute top-4 right-4">
-                <Badge className="bg-white/20 hover:bg-white/30 text-white backdrop-blur-md border-none font-black text-[10px] uppercase tracking-wider">
-                  {getStatusLabels[tournament.status]}
-                </Badge>
-              </div>
+            <div className="absolute top-4 right-4">
+              <Badge className="bg-white/20 hover:bg-white/30 text-white backdrop-blur-md border-none font-black text-[10px] uppercase tracking-wider">
+                {statusLabel}
+              </Badge>
+            </div>
           </div>
         </div>
 
