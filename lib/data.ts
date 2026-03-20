@@ -435,6 +435,7 @@ export async function getTournamentRanking(tournamentId: number, limit: number =
         ut.tournament_id = ${tournamentId} 
         AND u.is_admin = false 
         AND u.is_deleted = false
+        AND bm.status = 'completed'
       GROUP BY u.id, u.name, u.nickname
     )
     SELECT * FROM tournament_stats
