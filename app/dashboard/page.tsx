@@ -10,6 +10,7 @@ import { RankingSection } from '@/components/dashboard/ranking-section';
 export default async function DashboardPage() {
   const user = await getSession();
   if (!user) redirect('/login');
+  if (user.is_admin) redirect('/admin');
 
   const currentDate = new Date();
   const [tournaments, stats, ranking, activeTournament] = await Promise.all([

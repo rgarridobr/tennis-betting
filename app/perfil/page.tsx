@@ -12,6 +12,7 @@ import { ProfilePasswordForm } from '@/components/profile/profile-password-form'
 export default async function PerfilPage() {
   const user = await getSession();
   if (!user) redirect('/login');
+  if (user.is_admin) redirect('/admin');
 
   const [stats, ranking, activeTournament] = await Promise.all([
     getUserStats(user.id),

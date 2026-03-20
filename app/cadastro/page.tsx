@@ -8,7 +8,13 @@ import { RotatingQuote } from '@/components/auth/rotating-quote';
 
 export default async function RegisterPage() {
   const user = await getSession();
-  if (user) redirect('/dashboard');
+  if (user) {
+    if (user.is_admin) {
+      redirect('/admin');
+    } else {
+      redirect('/dashboard');
+    }
+  }
 
   return (
     <div className="min-h-screen flex bg-[#f8fafc] container mx-auto px-4 md:px-32">

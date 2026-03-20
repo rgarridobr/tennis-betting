@@ -30,6 +30,7 @@ interface TournamentPageProps {
 export default async function TournamentPage({ params, searchParams }: TournamentPageProps) {
   const user = await getSession();
   if (!user) redirect('/login');
+  if (user.is_admin) redirect('/admin');
 
   const { id } = await params;
   const { viewUser, view = 'bracket' } = await searchParams;
