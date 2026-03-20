@@ -125,7 +125,7 @@ function RankingRow({
   );
 
   if (canViewBracket) {
-    return <Link href={`/torneio/${tournamentId}?view=ranking&viewUser=${entry.user_id}`}>{Content}</Link>;
+    return <Link href={`/torneios/${tournamentId}?view=ranking&viewUser=${entry.user_id}`}>{Content}</Link>;
   }
 
   return Content;

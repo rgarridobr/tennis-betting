@@ -94,7 +94,7 @@ export async function updateStartDateTournamentAction(tournamentId: number, newD
   try {
     await updateTournament(tournamentId, { start_date: newDate })
     revalidatePath(`/admin/torneios/${tournamentId}`)
-    revalidatePath(`/torneio/${tournamentId}`)
+    revalidatePath(`/torneios/${tournamentId}`)
     return { success: true }
   } catch (error) {
     console.error("Error updating tournament date:", error)
@@ -214,7 +214,7 @@ export async function setMatchPlayersAction(
   await requireAdmin()
   await setMatchPlayers(matchId, player1, player2, tournamentId)
   revalidatePath(`/admin/torneios/${tournamentId}`)
-  revalidatePath(`/torneio/${tournamentId}`)
+  revalidatePath(`/torneios/${tournamentId}`)
   return { success: true }
 }
 
@@ -223,7 +223,7 @@ export async function prepareTournamentAction(tournamentId: number) {
   try {
     await prepareTournament(tournamentId)
     revalidatePath(`/admin/torneios/${tournamentId}`)
-    revalidatePath(`/torneio/${tournamentId}`)
+    revalidatePath(`/torneios/${tournamentId}`)
     revalidatePath('/admin/torneios')
     revalidatePath('/dashboard')
     return { success: true }
@@ -238,7 +238,7 @@ export async function resetTournamentToStandbyAction(tournamentId: number) {
   try {
     await resetTournamentToStandby(tournamentId)
     revalidatePath(`/admin/torneios/${tournamentId}`)
-    revalidatePath(`/torneio/${tournamentId}`)
+    revalidatePath(`/torneios/${tournamentId}`)
     revalidatePath('/admin/torneios')
     revalidatePath('/dashboard')
     return { success: true }
@@ -253,7 +253,7 @@ export async function randomizeFirstRoundAction(tournamentId: number) {
   try {
     await randomizeFirstRound(tournamentId)
     revalidatePath(`/admin/torneios/${tournamentId}`)
-    revalidatePath(`/torneio/${tournamentId}`)
+    revalidatePath(`/torneios/${tournamentId}`)
     return { success: true }
   } catch (error: any) {
     console.error("Error randomizing first round:", error)
@@ -266,7 +266,7 @@ export async function publishTournamentAction(tournamentId: number) {
   try {
     await publishTournament(tournamentId)
     revalidatePath(`/admin/torneios/${tournamentId}`)
-    revalidatePath(`/torneio/${tournamentId}`)
+    revalidatePath(`/torneios/${tournamentId}`)
     revalidatePath('/dashboard')
     return { success: true }
   } catch (error) {
@@ -285,7 +285,7 @@ export async function updatePlaceholderPlayerAction(
   await requireAdmin()
   await updatePlaceholderPlayer(matchId, slot, playerId, tournamentId, isLL)
   revalidatePath(`/admin/torneios/${tournamentId}`)
-  revalidatePath(`/torneio/${tournamentId}`)
+  revalidatePath(`/torneios/${tournamentId}`)
   revalidatePath('/ranking')
   revalidatePath('/dashboard')
   return { success: true }
@@ -302,7 +302,7 @@ export async function setMatchResultAction(
 
   if (result.success) {
     revalidatePath(`/admin/torneios/${tournamentId}`)
-    revalidatePath(`/torneio/${tournamentId}`)
+    revalidatePath(`/torneios/${tournamentId}`)
     revalidatePath('/ranking')
     revalidatePath('/dashboard')
   }
@@ -319,7 +319,7 @@ export async function cancelMatchPointsAction(
   try {
     await cancelMatchPoints(matchId, cancelled)
     revalidatePath(`/admin/torneios/${tournamentId}`)
-    revalidatePath(`/torneio/${tournamentId}`)
+    revalidatePath(`/torneios/${tournamentId}`)
     revalidatePath('/ranking')
     revalidatePath('/dashboard')
     return { success: true }
@@ -338,7 +338,7 @@ export async function clearMatchResultAction(
 
   if (result.success) {
     revalidatePath(`/admin/torneios/${tournamentId}`)
-    revalidatePath(`/torneio/${tournamentId}`)
+    revalidatePath(`/torneios/${tournamentId}`)
     revalidatePath('/ranking')
     revalidatePath('/dashboard')
   }

@@ -77,6 +77,6 @@ export async function saveFullBracketAction(
     `;
   }
 
-  revalidatePath(`/torneio/${tournamentId}`);
+  revalidatePath(`/torneios/${tournamentId}`);
   return { success: true };
 }

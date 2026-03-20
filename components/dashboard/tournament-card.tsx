@@ -78,7 +78,7 @@ export function TournamentCard({ tournament, href }: TournamentCardProps) {
   };
 
   return (
-    <Link href={href || `/torneio/${tournament.id}`}>
+    <Link href={href || `/torneios/${tournament.id}`}>
       <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1 pt-0 rounded-[2rem] py-4 gap-3">
         <div className="relative h-60">
           <img src={imageUrl || '/placeholder.svg'} alt={tournament.name} className="w-full h-full object-cover" />
