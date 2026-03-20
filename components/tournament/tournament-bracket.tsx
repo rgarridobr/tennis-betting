@@ -267,7 +267,7 @@ export function TournamentBracket({
         </div>
 
         {/* Finalizar Button */}
-        {viewMode === 'predictions' && isFinalPredicted && (
+        {viewMode === 'predictions' && !hasStarted && isFinalPredicted && (
           <button
             onClick={handleFinalize}
             disabled={isFinalizing}

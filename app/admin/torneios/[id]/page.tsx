@@ -81,10 +81,9 @@ export default async function ManageTournamentPage({ params }: Props) {
         subtitle={`${tournament.location} \u2022 ${format(parseDate(tournament.start_date), 'dd/MM/yyyy - HH:mm', { locale: ptBR })} \u2022 ${surfaceLabels[tournament.surface] || tournament.surface}`}
       >
         <div className="grid grid-cols-1 gap-4">
-          <EditTournamentDateModal tournamentId={tournamentId} currentDate={new Date(tournament.start_date)} />
+          <EditTournamentDateModal tournamentId={tournamentId} currentDate={new Date(tournament.start_date)} hasFinished={tournament.status === 'finished'}/>
         </div>
       </PageHero>
-
       <main className="container mx-auto px-4 md:px-32 py-8">
         {/* Status e Voltar */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">

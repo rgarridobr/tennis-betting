@@ -92,7 +92,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
               <h2 className="text-2xl font-black text-slate-900 tracking-tight">
                 {isViewingOthers ? 'Visualizando Chave' : 'Chaveamento'}
               </h2>
-              {enrolled && !isViewingOthers && (
+              {enrolled && !started  && !isViewingOthers && (
                 <span className="text-sm text-emerald-600 font-bold">Inscrito - Faça seus palpites!</span>
               )}
             </div>

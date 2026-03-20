@@ -14,10 +14,11 @@ import { updateStartDateTournamentAction } from '@/lib/actions/admin';
 interface Props {
   tournamentId: number;
   currentDate: Date;
+  hasFinished: boolean;
 }
 
-export function EditTournamentDateModal({ tournamentId, currentDate }: Props) {
-  const [date, setDate] = useState<Date | undefined>(currentDate);
+export function EditTournamentDateModal({ tournamentId, currentDate, hasFinished }: Props) {
+  const [date, setDate] = useState<Date | undefined>(toUTCFromBrasilia(currentDate));
   const [loading, setLoading] = useState(false);
   async function handleSave() {
     if (!date) return;
@@ -36,17 +37,25 @@ export function EditTournamentDateModal({ tournamentId, currentDate }: Props) {
     setLoading(false);
   }
 
+  function toUTCFromBrasilia(date: Date) {
+    const offset = 3 * 60;
+    return new Date(date.getTime() + offset * 60 * 1000);
+  }
+
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button
+        {!hasFinished && (
+
+          <Button
           variant="outline"
           size="lg"
           className="border-white/20 text-white hover:bg-white/10 hover:text-white rounded-2xl bg-white/5 backdrop-blur-md font-bold h-14"
-        >
+          >
           <Calendar className="w-4 h-4 mr-2" />
           Alterar data e hora
         </Button>
+        )}
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[420px] rounded-3xl">
