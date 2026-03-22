@@ -134,8 +134,10 @@ export function AdminMatchActions({
                   <Trophy className="w-6 h-6 text-emerald-600" />
                 </div>
                 <div className="text-left">
-                  <p className="font-black">Registrar Resultado</p>
-                  <p className="text-xs font-bold text-emerald-600/70">Defina o vencedor e o placar da partida.</p>
+                  <p className="font-black">{isCompleted ? 'Alterar Resultado' : 'Registrar Resultado'}</p>
+                  <p className="text-xs font-bold text-emerald-600/70">
+                    {isCompleted ? 'Corrija o vencedor ou o placar desta partida.' : 'Defina o vencedor e o placar da partida.'}
+                  </p>
                 </div>
               </button>
             }

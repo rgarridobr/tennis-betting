@@ -562,6 +562,8 @@ function BracketMatchCard({
   viewMode?: 'official' | 'predictions';
 }) {
   const isCompleted = match.status === 'completed';
+  const isFinishedTournament =
+    tournamentStatus === 'FINISHED' || tournamentStatus === 'finished' || tournamentStatus === 'completed';
   const canPredict = canMakePredictions && !isCompleted && p1?.id && p2?.id;
 
   const selectedWinnerId = currentPrediction?.winnerId;
@@ -598,6 +600,7 @@ function BracketMatchCard({
         viewMode={viewMode}
         isForceIncorrect={isP1Incorrect}
         isAdmin={isAdmin}
+        isFinishedTournament={isFinishedTournament}
       />
 
       <div className="h-[1px] bg-slate-50 mx-4" />
@@ -622,6 +625,7 @@ function BracketMatchCard({
         viewMode={viewMode}
         isForceIncorrect={isP2Incorrect}
         isAdmin={isAdmin}
+        isFinishedTournament={isFinishedTournament}
       />
 
     </>
@@ -632,10 +636,10 @@ function BracketMatchCard({
       className={cn(
         'bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden w-full transition-all hover:shadow-md hover:-translate-y-0.5 group relative',
         (isAdmin || canPredict) && 'cursor-pointer',
-        isAdmin && !isCompleted && 'hover:border-emerald-200 hover:ring-2 hover:ring-emerald-50',
+        isAdmin && !isFinishedTournament && 'hover:border-emerald-200 hover:ring-2 hover:ring-emerald-50',
       )}
     >
-      {isAdmin && !isCompleted ? (
+      {isAdmin && !isFinishedTournament ? (
         <AdminMatchActions
           match={match}
           players={players || []}
@@ -681,6 +685,7 @@ function PlayerRow({
   viewMode = 'predictions',
   isForceIncorrect = false,
   country = null,
+  isFinishedTournament = false,
 }: {
   name: string | null;
   display_name?: string | null;
@@ -700,6 +705,8 @@ function PlayerRow({
   pointsCancelled?: boolean;
   isAwaiting?: boolean;
   viewMode?: 'official' | 'predictions';
+  isForceIncorrect?: boolean;
+  isFinishedTournament?: boolean;
 }) {
   const displayName = isAwaiting
     ? 'Aguardando resultados'
@@ -752,11 +759,11 @@ function PlayerRow({
       onClick={canPredict ? onSelect : undefined}
       className={cn(
         'flex items-center px-4 py-3 transition-all relative min-h-[48px]',
-        canPredict || (isAdmin && !isCompleted) ? 'cursor-pointer' : 'cursor-default',
+        canPredict || (isAdmin && !isFinishedTournament) ? 'cursor-pointer' : 'cursor-default',
         canPredict && 'hover:bg-emerald-50/40',
         isSelected && !isCompleted && viewMode === 'predictions' && 'bg-blue-50/60',
         showPredictionResult && viewMode === 'predictions' && (predictionCorrect ? 'bg-emerald-50/80' : 'bg-red-50/80'),
-        isAdmin && !isCompleted && 'hover:bg-slate-50',
+        isAdmin && !isFinishedTournament && 'hover:bg-slate-50',
         isPlaceholder && 'text-amber-600 italic font-bold',
         isAwaiting && 'opacity-60',
       )}

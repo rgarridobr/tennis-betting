@@ -572,12 +572,14 @@ export function SetResultDialog({
           size="sm"
           className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-100"
         >
-          <Trophy className="w-3 h-3 mr-1.5" /> Resultado
+          <Trophy className="w-3 h-3 mr-1.5" /> {match.status === 'completed' ? 'Alterar' : 'Resultado'}
         </Button>
       </DialogTrigger>
       <DialogContent className="rounded-[2rem] max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-black">Registrar Resultado</DialogTitle>
+          <DialogTitle className="text-2xl font-black">
+            {match.status === 'completed' ? 'Alterar Resultado' : 'Registrar Resultado'}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6 pt-4">
           <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
