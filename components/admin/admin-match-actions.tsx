@@ -62,16 +62,16 @@ export function AdminMatchActions({
 
   const showReplace =
     isPublished &&
-    !isCompleted &&
     (match.round === 1 ||
-      ((match.player1_type === 'QUALIFIER' ||
-        match.player1_type === 'WILDCARD' ||
-        match.player1_type === 'LUCKY_LOSER') &&
-        !match.player1_id) ||
-      ((match.player2_type === 'QUALIFIER' ||
-        match.player2_type === 'WILDCARD' ||
-        match.player2_type === 'LUCKY_LOSER') &&
-        !match.player2_id));
+      (!isCompleted &&
+        (((match.player1_type === 'QUALIFIER' ||
+          match.player1_type === 'WILDCARD' ||
+          match.player1_type === 'LUCKY_LOSER') &&
+          !match.player1_id) ||
+          ((match.player2_type === 'QUALIFIER' ||
+            match.player2_type === 'WILDCARD' ||
+            match.player2_type === 'LUCKY_LOSER') &&
+            !match.player2_id))));
 
   const showResult = isPublished && match.player1_id && match.player2_id;
 

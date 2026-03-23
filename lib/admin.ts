@@ -779,16 +779,20 @@ export async function updatePlaceholderPlayer(
   tournamentId: number,
   isLL?: boolean,
 ): Promise<void> {
+  const matchData = await sql`
+    SELECT round, position, status, player1_id, player2_id
+    FROM bracket_matches
+    WHERE id = ${matchId}
+  `;
+  if (matchData.length === 0) return;
+  const m = matchData[0];
+
   let withdrawnPlayerId: number | null = null;
-  if (isLL) {
-    const match = await sql`SELECT round, player1_id, player2_id FROM bracket_matches WHERE id = ${matchId}`;
-    if (match.length > 0 && match[0].round === 1) {
-      const cm = match[0];
-      if (slot === 1 && cm.player1_id && cm.player1_id !== playerId) {
-        withdrawnPlayerId = cm.player1_id;
-      } else if (slot === 2 && cm.player2_id && cm.player2_id !== playerId) {
-        withdrawnPlayerId = cm.player2_id;
-      }
+  if (isLL && m.round === 1) {
+    if (slot === 1 && m.player1_id && m.player1_id !== playerId) {
+      withdrawnPlayerId = m.player1_id;
+    } else if (slot === 2 && m.player2_id && m.player2_id !== playerId) {
+      withdrawnPlayerId = m.player2_id;
     }
   }
 
@@ -810,6 +814,25 @@ export async function updatePlaceholderPlayer(
           updated_at = NOW()
       WHERE id = ${matchId}
     `;
+  }
+
+  if (m.status === 'completed') {
+    // Reset match result
+    await sql`
+      UPDATE bracket_matches
+      SET winner_id = NULL, score = NULL, status = 'pending', updated_at = NOW()
+      WHERE id = ${matchId}
+    `;
+
+    // Reset predictions for this match
+    await sql`
+      UPDATE predictions
+      SET is_correct = NULL, points_earned = 0, is_score_correct = FALSE
+      WHERE bracket_match_id = ${matchId}
+    `;
+
+    // Cascade reset to next rounds
+    await advancePlayer(tournamentId, m.round, m.position, null);
   }
 
   if (withdrawnPlayerId) {
