@@ -116,6 +116,20 @@ export function TournamentBracket({
 
   const isFinalPredicted = localPredictions[matches.find((m) => m.round === maxRound)?.id || -1]?.score;
 
+  // Track officially eliminated players and the round they lost to highlight incorrect predictions early
+  const playerEliminatedInRound = new Map<number, number>();
+  const allOfficialPlayerIds = new Set<number>();
+
+  for (const m of matches) {
+    if (m.player1_id) allOfficialPlayerIds.add(m.player1_id);
+    if (m.player2_id) allOfficialPlayerIds.add(m.player2_id);
+
+    if (m.status === 'completed' && m.winner_id) {
+      const loserId = m.player1_id === m.winner_id ? m.player2_id : m.player1_id;
+      if (loserId) playerEliminatedInRound.set(loserId, m.round);
+    }
+  }
+
   const handleRoundSelect = (round: number) => {
     const currentIndex = rounds.indexOf(selectedRound);
     const nextIndex = rounds.indexOf(round);
@@ -486,6 +500,8 @@ export function TournamentBracket({
                               onPredict={(winnerId, score) => handlePrediction(match.id, winnerId, score, isFinalRound, p1, p2)}
                               assignedPlayerIds={assignedPlayerIds}
                               viewMode={viewMode}
+                              playerEliminatedInRound={playerEliminatedInRound}
+                              allOfficialPlayerIds={allOfficialPlayerIds}
                             />
 
                             {relativeIdx === 0 && hasNextVisibleRound && (
@@ -544,6 +560,8 @@ function BracketMatchCard({
   onPredict,
   assignedPlayerIds,
   viewMode = 'predictions',
+  playerEliminatedInRound,
+  allOfficialPlayerIds,
 }: {
   match: BracketMatch;
   p1: any;
@@ -560,6 +578,8 @@ function BracketMatchCard({
   onPredict: (winnerId: number, score?: string) => void;
   assignedPlayerIds?: number[];
   viewMode?: 'official' | 'predictions';
+  playerEliminatedInRound: Map<number, number>;
+  allOfficialPlayerIds: Set<number>;
 }) {
   const isCompleted = match.status === 'completed';
   const isFinishedTournament =
@@ -571,12 +591,19 @@ function BracketMatchCard({
   // Logic to determine if a player in the user's bracket is "incorrect" based on official results
   const isP1Incorrect =
     viewMode === 'predictions' &&
-    ((match.player1_id && p1?.id && match.player1_id !== p1.id) ||
-      (match.winner_id && p1?.id && match.winner_id !== p1.id && isCompleted));
+    p1?.id &&
+    ((match.player1_id && match.player1_id !== p1.id) ||
+      (match.winner_id && match.winner_id !== p1.id && isCompleted) ||
+      (playerEliminatedInRound.has(p1.id) && playerEliminatedInRound.get(p1.id)! <= match.round) ||
+      (!allOfficialPlayerIds.has(p1.id) && p1.type !== 'BYE'));
+
   const isP2Incorrect =
     viewMode === 'predictions' &&
-    ((match.player2_id && p2?.id && match.player2_id !== p2.id) ||
-      (match.winner_id && p2?.id && match.winner_id !== p2.id && isCompleted));
+    p2?.id &&
+    ((match.player2_id && match.player2_id !== p2.id) ||
+      (match.winner_id && match.winner_id !== p2.id && isCompleted) ||
+      (playerEliminatedInRound.has(p2.id) && playerEliminatedInRound.get(p2.id)! <= match.round) ||
+      (!allOfficialPlayerIds.has(p2.id) && p2.type !== 'BYE'));
 
   const cardContent = (
     <>
@@ -836,7 +863,7 @@ function PlayerRow({
 
       <div className="flex items-center justify-end gap-1.5 ml-2 shrink-0 min-w-[24px]">
         {viewMode === 'predictions' ? (
-          isSelected && !isCompleted ? (
+          isSelected && !isCompleted && !isForceIncorrect ? (
             <div className="w-6 h-6 rounded-full flex items-center justify-center">
               <Clock className="w-5 h-5 text-blue-500" />
             </div>
