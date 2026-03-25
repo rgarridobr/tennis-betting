@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Plus, Settings, Trophy, Zap, Calendar, ClipboardList, MapPin, ChevronRight } from 'lucide-react';
 import { DeleteTournamentButton } from '@/components/admin/delete-tournament-button';
+import { TournamentVisibilityToggle } from '@/components/admin/tournament-visibility-toggle';
 import { cn, getStatusLabels } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -305,11 +306,17 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
                                   </p>
                                 </div>
                                 <div className="flex flex-col items-end gap-2 shrink-0">
-                                  <Badge
-                                    className={`${statusColors[tournament.status] || 'bg-slate-100 text-slate-600'} border-none font-black uppercase text-[10px] tracking-wider px-3 py-1 rounded-full whitespace-nowrap`}
-                                  >
-                                    {getStatusLabels[tournament.status] || tournament.status}
-                                  </Badge>
+                                  <div className="flex items-center gap-2">
+                                    <TournamentVisibilityToggle
+                                      tournamentId={tournament.id}
+                                      isVisible={tournament.is_visible}
+                                    />
+                                    <Badge
+                                      className={`${statusColors[tournament.status] || 'bg-slate-100 text-slate-600'} border-none font-black uppercase text-[10px] tracking-wider px-3 py-1 rounded-full whitespace-nowrap`}
+                                    >
+                                      {getStatusLabels[tournament.status] || tournament.status}
+                                    </Badge>
+                                  </div>
                                   {(tournament.status === 'STANDBY' ||
                                     tournament.status === 'draft' ||
                                     tournament.status === 'UPCOMING' ||

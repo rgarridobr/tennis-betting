@@ -21,6 +21,7 @@ export interface Tournament {
   has_qualifiers: boolean;
   has_wildcards: boolean;
   has_byes: boolean;
+  is_visible: boolean;
   champion_id: number | null;
   runner_up_id: number | null;
 }
@@ -176,14 +177,15 @@ export function getMatchPoints(category: string, round: number, totalRounds: num
 
 export async function getTournamentsActive(): Promise<Tournament[]> {
   const rows =
-    await sql`SELECT * FROM tournaments WHERE status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS') ORDER BY start_date ASC`;
+    await sql`SELECT * FROM tournaments WHERE is_visible = TRUE AND status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS') ORDER BY start_date ASC`;
   return rows as Tournament[];
 }
 
 export async function getTournamentsActiveThisMonth(): Promise<Tournament[]> {
   const rows = await sql`
     SELECT * FROM tournaments
-    WHERE status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS')
+    WHERE is_visible = TRUE
+      AND status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS')
       AND start_date >= DATE_TRUNC('month', CURRENT_DATE)
       AND start_date < (DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month')
     ORDER BY start_date ASC
@@ -194,7 +196,8 @@ export async function getTournamentsActiveThisMonth(): Promise<Tournament[]> {
 export async function getTournamentsByYear(year: number): Promise<Tournament[]> {
   const rows = await sql`
     SELECT * FROM tournaments
-    WHERE EXTRACT(YEAR FROM start_date) = ${year}
+    WHERE is_visible = TRUE
+      AND EXTRACT(YEAR FROM start_date) = ${year}
     ORDER BY start_date DESC
   `;
   return rows as Tournament[];
@@ -208,7 +211,8 @@ export async function getTournaments(): Promise<Tournament[]> {
 export async function getTournamentsByYearAndMonth(year: number, month: number): Promise<Tournament[]> {
   const rows = await sql`
     SELECT * FROM tournaments 
-    WHERE EXTRACT(YEAR FROM start_date) = ${year}
+    WHERE is_visible = TRUE
+    AND EXTRACT(YEAR FROM start_date) = ${year}
     AND EXTRACT(MONTH FROM start_date) = ${month}
     ORDER BY start_date ASC
   `;
@@ -223,7 +227,8 @@ export async function getTournamentById(id: number): Promise<Tournament | null> 
 export async function getActiveTournament(): Promise<Tournament | null> {
   const rows = await sql`
     SELECT * FROM tournaments
-    WHERE status IN ('OPEN', 'LOCKED', 'IN_PROGRESS')
+    WHERE is_visible = TRUE
+      AND status IN ('OPEN', 'LOCKED', 'IN_PROGRESS')
     ORDER BY start_date DESC
     LIMIT 1
   `;

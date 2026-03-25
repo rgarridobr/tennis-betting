@@ -1,4 +1,4 @@
-import { getAllUsers } from '@/lib/admin';
+import { getAllUsers, countAllUsers } from '@/lib/admin';
 import { PageHero } from '@/components/shared/page-hero';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,12 +10,32 @@ import { Users, ShieldCheck, UserCheck, Phone, Home, Icon } from 'lucide-react';
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { tennisBall } from '@lucide/lab';
+import { UserFilters } from '@/components/admin/user-filters';
+import { UserPagination } from '@/components/admin/user-pagination';
 
-export default async function AdminUsersPage() {
+interface Props {
+  searchParams: Promise<{
+    search?: string;
+    page?: string;
+  }>;
+}
+
+const ITEMS_PER_PAGE = 20;
+
+export default async function AdminUsersPage({ searchParams }: Props) {
   const myUser = await getSession();
   if (!myUser || !myUser.is_admin) redirect('/login');
 
-  const users = await getAllUsers();
+  const { search, page } = await searchParams;
+  const currentPage = page ? parseInt(page) : 1;
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  const [users, totalUsers] = await Promise.all([
+    getAllUsers({ search, limit: ITEMS_PER_PAGE, offset }),
+    countAllUsers(search)
+  ]);
+
+  const totalPages = Math.ceil(totalUsers / ITEMS_PER_PAGE);
 
   return (
     <>
@@ -29,6 +49,8 @@ export default async function AdminUsersPage() {
           </div>
           <CreateUserDialog />
         </div>
+
+        <UserFilters />
 
         {users.length === 0 ? (
           <Card className="border-0 shadow-md">
@@ -45,7 +67,7 @@ export default async function AdminUsersPage() {
                 <div className="w-2 h-8 bg-emerald-500 rounded-full" />
                 <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                   <UserCheck className="w-6 h-6 text-emerald-600" />
-                  Todos os Usuários ({users.length})
+                  Todos os Usuários ({totalUsers})
                 </h2>
               </div>
               <Card className="border-0 shadow-xl overflow-hidden pt-0 rounded-[2rem] bg-white">
@@ -132,6 +154,8 @@ export default async function AdminUsersPage() {
                   </div>
                 </CardContent>
               </Card>
+
+              <UserPagination currentPage={currentPage} totalPages={totalPages} />
             </section>
           </div>
         )}
