@@ -178,6 +178,8 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
             hasStarted={started}
             tournamentStatus={tournament.status}
             tournamentCategory={tournament.category}
+            isEnrolled={enrolled}
+            isViewingOthers={isViewingOthers}
           />
         )}
       </main>

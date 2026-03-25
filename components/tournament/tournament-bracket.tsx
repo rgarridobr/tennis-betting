@@ -27,6 +27,8 @@ interface TournamentBracketProps {
   bracketSubmitted?: boolean;
   hasStarted?: boolean;
   assignedPlayerIds?: number[];
+  isEnrolled?: boolean;
+  isViewingOthers?: boolean;
 }
 
 export function TournamentBracket({
@@ -43,6 +45,8 @@ export function TournamentBracket({
   bracketSubmitted = false,
   hasStarted = false,
   assignedPlayerIds,
+  isEnrolled = false,
+  isViewingOthers = false,
 }: TournamentBracketProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [localPredictions, setLocalPredictions] =
@@ -102,7 +106,9 @@ export function TournamentBracket({
 
   const [selectedRound, setSelectedRound] = useState<number>(isFinishedTournament ? maxRound : rounds[0] || 1);
   const [direction, setDirection] = useState<'left' | 'right' | null>(null);
-  const [viewMode, setViewMode] = useState<'official' | 'predictions'>(hasStarted ? 'official' : 'predictions');
+  const [viewMode, setViewMode] = useState<'official' | 'predictions'>(
+    isViewingOthers ? 'predictions' : (hasStarted || !isEnrolled ? 'official' : 'predictions')
+  );
   const router = useRouter();
 
   // Dialog state for prediction score (Final)
@@ -235,7 +241,7 @@ export function TournamentBracket({
       {/* Sticky Header with Toggles and Filters */}
       <div className="sticky top-20 z-40 bg-slate-50/80 backdrop-blur-md py-1 rounded-[2rem] border border-slate-200/50 shadow-sm px-6 flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
         {/* View Mode Toggle */}
-        {!isAdmin && (
+        {!isAdmin && (isEnrolled || isViewingOthers) && (
           <div className="bg-white p-1 rounded-2xl border border-slate-200 shadow-sm flex gap-1 shrink-0">
             <button
               onClick={() => setViewMode('official')}
@@ -255,7 +261,7 @@ export function TournamentBracket({
               )}
             >
               <UserIcon className="w-3 h-3" />
-              Meu Palpite
+              {isViewingOthers ? 'Ver Palpite' : 'Meu Palpite'}
             </button>
           </div>
         )}
