@@ -273,14 +273,14 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
                           {group.list.length}
                         </Badge>
                       </div>
-                      <div className="grid sm:grid-cols-1 xl:grid-cols-2 gap-6">
+                      <div className="grid sm:grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
                         {group.list.map((tournament) => (
                           <Card
                             key={tournament.id}
-                            className="border-0 shadow-xl overflow-hidden hover:shadow-2xl transition-all rounded-[2.5rem] bg-white group"
+                            className="flex flex-col border-0 shadow-xl overflow-hidden hover:shadow-2xl transition-all rounded-[2.5rem] bg-white group h-full"
                           >
                             <div
-                              className={`h-3 ${
+                              className={`h-3 shrink-0 ${
                                 tournament.status === 'STANDBY' || tournament.status === 'draft'
                                   ? 'bg-slate-400'
                                   : tournament.status === 'OPEN' ||
@@ -294,46 +294,41 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
                                         : 'bg-slate-300'
                               }`}
                             />
-                            <CardContent className="p-8">
-                              <div className="flex items-start justify-between mb-4 gap-4">
-                                <div className="min-w-0">
-                                  <h3 className="font-black text-slate-900 text-2xl tracking-tight leading-tight truncate">
-                                    {tournament.name}
-                                  </h3>
-                                  <p className="text-sm font-bold text-slate-400 mt-1 flex items-center gap-1">
-                                    <MapPin className="w-3 h-3" />
-                                    {tournament.location}
-                                  </p>
-                                </div>
-                                <div className="flex flex-col items-end gap-2 shrink-0">
-                                  <div className="flex items-center gap-2">
-                                    <TournamentVisibilityToggle
-                                      tournamentId={tournament.id}
-                                      isVisible={tournament.is_visible}
-                                    />
-                                    <Badge
-                                      className={`${statusColors[tournament.status] || 'bg-slate-100 text-slate-600'} border-none font-black uppercase text-[10px] tracking-wider px-3 py-1 rounded-full whitespace-nowrap`}
-                                    >
-                                      {getStatusLabels[tournament.status] || tournament.status}
-                                    </Badge>
-                                  </div>
-                                  {(tournament.status === 'STANDBY' ||
-                                    tournament.status === 'draft' ||
-                                    tournament.status === 'UPCOMING' ||
-                                    tournament.status === 'upcoming') && (
-                                    <DeleteTournamentButton
-                                      tournamentId={tournament.id}
-                                      tournamentName={tournament.name}
-                                    />
-                                  )}
-                                </div>
+                            <CardContent className="p-8 flex flex-col h-full">
+                              {/* Line 1: Nome do Torneio */}
+                              <div className="mb-2">
+                                <h3 className="font-black text-slate-900 text-2xl tracking-tight leading-tight line-clamp-2 min-h-[3.5rem]">
+                                  {tournament.name}
+                                </h3>
                               </div>
 
+                              {/* Line 2: Cidade, País */}
+                              <div className="mb-4">
+                                <p className="text-sm font-bold text-slate-400 flex items-center gap-1">
+                                  <MapPin className="w-3.5 h-3.5" />
+                                  {tournament.location}
+                                </p>
+                              </div>
+
+                              {/* Line 3: Botão de visibilidade e status */}
+                              <div className="flex items-center gap-2 mb-6">
+                                <TournamentVisibilityToggle
+                                  tournamentId={tournament.id}
+                                  isVisible={tournament.is_visible}
+                                />
+                                <Badge
+                                  className={`${statusColors[tournament.status] || 'bg-slate-100 text-slate-600'} border-none font-black uppercase text-[10px] tracking-wider px-3 py-1.5 rounded-full whitespace-nowrap`}
+                                >
+                                  {getStatusLabels[tournament.status] || tournament.status}
+                                </Badge>
+                              </div>
+
+                              {/* Line 4: Piso, jogadores e data */}
                               <div className="flex flex-wrap items-center gap-2 text-sm font-bold text-slate-500 mb-8">
-                                <span className="px-4 py-1.5 bg-slate-100 rounded-full">
+                                <span className="px-4 py-1.5 bg-slate-100 rounded-full text-slate-600">
                                   {surfaceEmojis[tournament.surface] || tournament.surface}
                                 </span>
-                                <span className="px-4 py-1.5 bg-slate-100 rounded-full">
+                                <span className="px-4 py-1.5 bg-slate-100 rounded-full text-slate-600">
                                   {tournament.size} jogadores
                                 </span>
                                 <span className="px-4 py-1.5 bg-emerald-50 text-emerald-700 rounded-full flex items-center gap-1.5">
@@ -342,18 +337,28 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
                                 </span>
                               </div>
 
-                              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-6 border-t border-slate-100">
+                              {/* Line 5: GERENCIAR + Lixeira */}
+                              <div className="mt-auto flex items-center gap-3 pt-6 border-t border-slate-100">
                                 <Button
                                   variant="outline"
                                   size="lg"
                                   asChild
-                                  className="flex-1 rounded-2xl font-black border-2 hover:bg-slate-50 transition-colors"
+                                  className="flex-1 rounded-2xl font-black border-2 hover:bg-slate-50 transition-colors h-14"
                                 >
                                   <Link href={`/admin/torneios/${tournament.id}`}>
                                     <Settings className="w-4 h-4 mr-2" />
                                     Gerenciar
                                   </Link>
                                 </Button>
+                                {(tournament.status === 'STANDBY' ||
+                                  tournament.status === 'draft' ||
+                                  tournament.status === 'UPCOMING' ||
+                                  tournament.status === 'upcoming') && (
+                                  <DeleteTournamentButton
+                                    tournamentId={tournament.id}
+                                    tournamentName={tournament.name}
+                                  />
+                                )}
                               </div>
                             </CardContent>
                           </Card>
