@@ -39,7 +39,8 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
   if (isNaN(tournamentId)) notFound();
 
   const tournament = await getTournamentById(tournamentId);
-  if (!tournament) notFound();
+  
+  if (!tournament || !tournament.is_visible) notFound();
 
   const started = await hasTournamentStarted(tournamentId);
   const targetUserId = viewUser && started ? parseInt(viewUser, 10) : user.id;
