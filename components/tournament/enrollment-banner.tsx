@@ -1,18 +1,41 @@
 'use client'
 
-import { useState } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Lock } from 'lucide-react'
-import { EnrollmentModal } from './enrollment-modal'
-import type { Tournament } from '@/lib/data'
+import { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Lock, AlertCircle } from 'lucide-react';
+import { EnrollmentModal } from './enrollment-modal';
+import type { Tournament } from '@/lib/data';
 
 interface EnrollmentBannerProps {
-  tournament: Tournament
+  tournament: Tournament;
+  activeEnrollment?: Tournament | null;
 }
 
-export function EnrollmentBanner({ tournament }: EnrollmentBannerProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false)
+export function EnrollmentBanner({ tournament, activeEnrollment }: EnrollmentBannerProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  if (activeEnrollment && activeEnrollment.id !== tournament.id) {
+    return (
+      <Card className="mb-6 border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
+        <CardContent className="p-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-full bg-amber-100">
+              <AlertCircle className="w-6 h-6 text-amber-600" />
+            </div>
+            <div>
+              <h3 className="font-bold text-lg text-slate-900">Inscrição Restrita</h3>
+              <p className="text-slate-600 mt-1">
+                Você já está participando do torneio <strong>{activeEnrollment.name}</strong>. Pelas regras do bolão,
+                você só pode disputar um torneio de cada vez. Você poderá se inscrever em novos torneios assim que o
+                atual for finalizado.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <>
@@ -42,11 +65,7 @@ export function EnrollmentBanner({ tournament }: EnrollmentBannerProps) {
         </CardContent>
       </Card>
 
-      <EnrollmentModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        tournament={tournament}
-      />
+      <EnrollmentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} tournament={tournament} />
     </>
-  )
+  );
 }

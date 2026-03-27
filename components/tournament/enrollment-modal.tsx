@@ -21,10 +21,12 @@ export function EnrollmentModal({ isOpen, onClose, tournament }: EnrollmentModal
   const router = useRouter();
   const [step, setStep] = useState<'info' | 'processing' | 'success'>('info');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleEnroll = async () => {
     setIsProcessing(true);
     setStep('processing');
+    setErrorMessage(null);
 
     try {
       const response = await fetch('/api/tournament/enroll', {
@@ -40,9 +42,12 @@ export function EnrollmentModal({ isOpen, onClose, tournament }: EnrollmentModal
           router.refresh();
         }, 2000);
       } else {
+        const data = await response.json();
+        setErrorMessage(data.error || 'Erro ao realizar inscrição');
         setStep('info');
       }
     } catch {
+      setErrorMessage('Erro de conexão ao realizar inscrição');
       setStep('info');
     } finally {
       setIsProcessing(false);
@@ -95,6 +100,22 @@ export function EnrollmentModal({ isOpen, onClose, tournament }: EnrollmentModal
                     completar os palpites do bolão.
                   </p>
                 </div>
+
+                <div className="flex items-start gap-3 text-amber-600 font-medium">
+                  <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-[10px] font-bold">!</span>
+                  </div>
+                  <p className="text-xs">
+                    Importante: Você só pode participar de um torneio por vez. Novos torneios só serão liberados após a
+                    conclusão do atual.
+                  </p>
+                </div>
+
+                {errorMessage && (
+                  <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-red-600 text-xs font-bold animate-in fade-in slide-in-from-top-1">
+                    {errorMessage}
+                  </div>
+                )}
 
                 <Link
                   href="/regras"

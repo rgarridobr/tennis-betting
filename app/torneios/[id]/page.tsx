@@ -12,6 +12,7 @@ import {
   getTournamentRanking,
   getUserPublicInfo,
   getActiveTournament,
+  getUserActiveEnrollment,
 } from '@/lib/data';
 import { getDynamicRoundNames } from '@/lib/utils';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
@@ -44,16 +45,25 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
   const targetUserId = viewUser && started ? parseInt(viewUser, 10) : user.id;
   const isViewingOthers = targetUserId !== user.id;
 
-  const [matches, targetPredictions, enrollment, participants, tournamentPlayers, targetUserInfo, activeTournament] =
-    await Promise.all([
-      getBracketMatches(tournamentId),
-      getUserPredictions(targetUserId, tournamentId),
-      getEnrollment(user.id, tournamentId),
-      getTournamentParticipantCount(tournamentId),
-      getTournamentPlayers(tournamentId),
-      isViewingOthers ? getUserPublicInfo(targetUserId) : null,
-      getActiveTournament(),
-    ]);
+  const [
+    matches,
+    targetPredictions,
+    enrollment,
+    participants,
+    tournamentPlayers,
+    targetUserInfo,
+    activeTournament,
+    activeEnrollment,
+  ] = await Promise.all([
+    getBracketMatches(tournamentId),
+    getUserPredictions(targetUserId, tournamentId),
+    getEnrollment(user.id, tournamentId),
+    getTournamentParticipantCount(tournamentId),
+    getTournamentPlayers(tournamentId),
+    isViewingOthers ? getUserPublicInfo(targetUserId) : null,
+    getActiveTournament(),
+    getUserActiveEnrollment(user.id),
+  ]);
 
   const enrolled = !!enrollment;
 
@@ -84,7 +94,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
       <TournamentHeader tournament={tournament} participants={participants} />
 
       <main className="container mx-auto px-4 md:px-32 py-12">
-        {!enrolled && !started  && <EnrollmentBanner tournament={tournament} />}
+        {!enrolled && !started && <EnrollmentBanner tournament={tournament} activeEnrollment={activeEnrollment} />}
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div className="flex flex-col md:flex-row md:items-end gap-4">
