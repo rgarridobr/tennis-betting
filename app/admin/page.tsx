@@ -104,7 +104,7 @@ export default async function AdminDashboardPage() {
 
         {/* Alerts & Attention Section */}
         {adminStats.pendingResults > 0 && (
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-1 gap-6">
             {adminStats.pendingResults > 0 && (
               <Card className="border-2 border-emerald-100 bg-emerald-50/30 rounded-[2rem] overflow-hidden">
                 <CardContent className="p-6 flex items-center justify-between gap-4">

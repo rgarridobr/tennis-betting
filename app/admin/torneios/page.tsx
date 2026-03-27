@@ -246,6 +246,12 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
             ) : (
               <div className="space-y-12">
                 {[
+                  {
+                    title: 'Em Andamento / Bloqueados',
+                    list: inProgressTournaments,
+                    icon: Zap,
+                    color: 'text-blue-500',
+                  },
                   { title: 'Abertos para Apostas', list: openTournaments, icon: Zap, color: 'text-emerald-500' },
                   { title: 'Próximos (Visíveis)', list: upcomingTournaments, icon: Calendar, color: 'text-amber-500' },
 
@@ -254,12 +260,6 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
                     list: standbyTournaments,
                     icon: ClipboardList,
                     color: 'text-slate-500',
-                  },
-                  {
-                    title: 'Em Andamento / Bloqueados',
-                    list: inProgressTournaments,
-                    icon: Zap,
-                    color: 'text-blue-500',
                   },
                   { title: 'Finalizados', list: completedTournaments, icon: Trophy, color: 'text-slate-400' },
                 ]
