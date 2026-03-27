@@ -388,7 +388,7 @@ export async function getUserStats(userId: number): Promise<UserStats> {
     WHERE 
       p.user_id = ${userId}
       AND p.is_correct IS NOT NULL
-      AND t.status IN ('OPEN')
+      AND t.status IN ('IN_PROGRESS')
   `;
 
   const activeTournaments = await sql`
