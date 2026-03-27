@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
+import { ResetPasswordDialog } from './reset-password-dialog'
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -19,6 +20,7 @@ function SubmitButton() {
 
 export function LoginForm() {
   const [error, setError] = useState<string | null>(null)
+  const [resetDialogOpen, setResetDialogOpen] = useState(false)
   
   async function handleSubmit(formData: FormData) {
     setError(null)
@@ -50,7 +52,16 @@ export function LoginForm() {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Senha</Label>
+              <button
+                type="button"
+                onClick={() => setResetDialogOpen(true)}
+                className="text-xs font-semibold text-emerald-600 hover:underline"
+              >
+                Esqueci minha senha
+              </button>
+            </div>
             <Input
               id="password"
               name="password"
@@ -62,6 +73,11 @@ export function LoginForm() {
           
           <SubmitButton />
         </form>
+
+        <ResetPasswordDialog
+          open={resetDialogOpen}
+          onOpenChange={setResetDialogOpen}
+        />
       </CardContent>
     </Card>
   )
