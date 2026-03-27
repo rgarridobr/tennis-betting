@@ -175,13 +175,24 @@ export function getMatchPoints(category: string, round: number, totalRounds: num
 
 // ==================== TOURNAMENTS ====================
 
+async function syncTournamentStatuses(): Promise<void> {
+  await sql`
+    UPDATE tournaments
+    SET status = 'IN_PROGRESS', updated_at = NOW()
+    WHERE status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING')
+      AND start_date <= (NOW() - INTERVAL '3 hours')
+  `;
+}
+
 export async function getTournamentsActive(): Promise<Tournament[]> {
+  await syncTournamentStatuses();
   const rows =
     await sql`SELECT * FROM tournaments WHERE is_visible = TRUE AND status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS') ORDER BY start_date ASC`;
   return rows as Tournament[];
 }
 
 export async function getTournamentsActiveThisMonth(): Promise<Tournament[]> {
+  await syncTournamentStatuses();
   const rows = await sql`
     SELECT * FROM tournaments
     WHERE is_visible = TRUE
@@ -194,6 +205,7 @@ export async function getTournamentsActiveThisMonth(): Promise<Tournament[]> {
 }
 
 export async function getTournamentsByYear(year: number): Promise<Tournament[]> {
+  await syncTournamentStatuses();
   const rows = await sql`
     SELECT * FROM tournaments
     WHERE is_visible = TRUE
@@ -204,11 +216,13 @@ export async function getTournamentsByYear(year: number): Promise<Tournament[]> 
 }
 
 export async function getTournaments(): Promise<Tournament[]> {
+  await syncTournamentStatuses();
   const rows = await sql`SELECT * FROM tournaments ORDER BY start_date ASC`;
   return rows as Tournament[];
 }
 
 export async function getTournamentsByYearAndMonth(year: number, month: number): Promise<Tournament[]> {
+  await syncTournamentStatuses();
   const rows = await sql`
     SELECT * FROM tournaments 
     WHERE is_visible = TRUE
@@ -220,11 +234,21 @@ export async function getTournamentsByYearAndMonth(year: number, month: number):
 }
 
 export async function getTournamentById(id: number): Promise<Tournament | null> {
+  // Auto-update status if started
+  await sql`
+    UPDATE tournaments
+    SET status = 'IN_PROGRESS', updated_at = NOW()
+    WHERE id = ${id}
+      AND status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING')
+      AND start_date <= (NOW() - INTERVAL '3 hours')
+  `;
+
   const rows = await sql`SELECT * FROM tournaments WHERE id = ${id}`;
   return rows.length > 0 ? (rows[0] as Tournament) : null;
 }
 
 export async function getActiveTournament(): Promise<Tournament | null> {
+  await syncTournamentStatuses();
   const rows = await sql`
     SELECT * FROM tournaments
     WHERE is_visible = TRUE
@@ -515,16 +539,8 @@ export async function getTournamentPlayers(tournamentId: number): Promise<Player
 export async function hasTournamentStarted(tournamentId: number): Promise<boolean> {
   const tournament = await getTournamentById(tournamentId);
 
-  if (tournament) {
-    const startDate = new Date(tournament.start_date);
-
-    // Ajustar para horário de Brasília (UTC-3)
-    const now = new Date();
-    const brasiliaNow = new Date(now.getTime() - 3 * 60 * 60 * 1000);
-
-    if (startDate <= brasiliaNow) {
-      return true;
-    }
+  if (tournament && (tournament.status === 'IN_PROGRESS' || tournament.status === 'LOCKED' || tournament.status === 'finished' || tournament.status === 'completed' || tournament.status === 'FINISHED')) {
+    return true;
   }
 
   const result = await sql`
