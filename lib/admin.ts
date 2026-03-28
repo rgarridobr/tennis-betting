@@ -522,8 +522,7 @@ export async function setMatchResult(
               WHEN ${pointsCancelled} THEN 0
               WHEN predicted_winner_id = ${winnerId} THEN ${points}
               ELSE 0
-            END,
-            is_score_correct = FALSE
+            END
         WHERE bracket_match_id = ${matchId}
       `;
       // Advance winner to next round
@@ -584,26 +583,24 @@ export async function setMatchResult(
         const predictedRunnerUp = predictedChampion === semi1Winner ? semi2Winner : semi1Winner;
 
         let finalPoints = 0;
-        let isScoreCorrect = false;
+        let isRunnerUpCorrect = false;
 
         if (predictedChampion === winnerId) {
           finalPoints = pointsCancelled ? 0 : championPoints;
-          // Check score tie-breaker
-          if (finalPred?.score) {
-            const predSetScore = calculateSetScore(finalPred.score);
-            if (predSetScore === actualSetScore) {
-              isScoreCorrect = true;
-            }
+
+          if (predictedRunnerUp === runnerUpId) {
+            isRunnerUpCorrect = true;
           }
         } else if (predictedRunnerUp === runnerUpId) {
           finalPoints = pointsCancelled ? 0 : runnerUpPoints;
+          isRunnerUpCorrect = true;
         }
 
         await sql`
           UPDATE predictions
           SET is_correct = (predicted_winner_id = ${winnerId}),
               points_earned = ${finalPoints},
-              is_score_correct = ${isScoreCorrect}
+              is_runner_up_correct = ${isRunnerUpCorrect}
           WHERE bracket_match_id = ${matchId} AND user_id = ${uId}
         `;
       }
@@ -657,7 +654,7 @@ export async function clearMatchResult(matchId: number): Promise<{ success: bool
     // Reset predictions for this match
     await sql`
       UPDATE predictions
-      SET is_correct = NULL, points_earned = 0, is_score_correct = FALSE
+      SET is_correct = NULL, points_earned = 0
       WHERE bracket_match_id = ${matchId}
     `;
 
@@ -827,7 +824,7 @@ export async function updatePlaceholderPlayer(
     // Reset predictions for this match
     await sql`
       UPDATE predictions
-      SET is_correct = NULL, points_earned = 0, is_score_correct = FALSE
+      SET is_correct = NULL, points_earned = 0
       WHERE bracket_match_id = ${matchId}
     `;
 

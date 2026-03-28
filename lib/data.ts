@@ -75,6 +75,7 @@ export interface Prediction {
   predicted_winner_id: number;
   predicted_score: string | null;
   is_correct: boolean | null;
+  is_runner_up_correct: boolean | null;
   points_earned: number;
   created_at: string;
 }
@@ -96,6 +97,9 @@ export interface RankingEntry {
   total_points: number;
   rank: number;
   final_score_correct?: boolean;
+  hit_champion?: boolean;
+  hit_both?: boolean;
+  global_points?: number;
 }
 
 export interface PredictionWithDetails {
@@ -429,7 +433,7 @@ export async function getGlobalRanking(limit: number = 50): Promise<RankingEntry
       WHERE u.is_admin = false AND u.is_deleted = false
     ) r
     WHERE r.total_points > 0
-    ORDER BY r.total_points DESC, r.correct_predictions DESC
+    ORDER BY r.total_points DESC, r.correct_predictions DESC, r.user_name ASC
     LIMIT ${limit}`;
   return ranking.map((r, i) => ({
     user_id: r.user_id as number,
@@ -437,7 +441,6 @@ export async function getGlobalRanking(limit: number = 50): Promise<RankingEntry
     correct_predictions: Number(r.correct_predictions || 0),
     total_predictions: Number(r.total_predictions || 0),
     total_points: Number(r.total_points || 0),
-    final_score_correct: Boolean(r.final_score_correct),
     rank: i + 1,
   }));
 }
@@ -451,7 +454,9 @@ export async function getTournamentRanking(tournamentId: number, limit: number =
         COUNT(CASE WHEN p.is_correct = true THEN 1 END) as correct_predictions,
         COUNT(p.id) as total_predictions,
         COALESCE(SUM(p.points_earned), 0) as total_points,
-        MAX(CASE WHEN p.is_score_correct = true THEN 1 ELSE 0 END) as final_score_correct
+        MAX(CASE WHEN p.is_correct = true AND bm.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = ${tournamentId}) THEN 1 ELSE 0 END) as hit_champion,
+        MAX(CASE WHEN p.is_runner_up_correct = true AND p.is_correct = true THEN 1 ELSE 0 END) as hit_both,
+        COALESCE((SELECT SUM(points_earned) FROM predictions WHERE user_id = u.id), 0) as global_points
       FROM users u
       JOIN user_tournaments ut 
         ON u.id = ut.user_id
@@ -468,7 +473,7 @@ export async function getTournamentRanking(tournamentId: number, limit: number =
       GROUP BY u.id, u.name, u.nickname
     )
     SELECT * FROM tournament_stats
-    ORDER BY total_points DESC, correct_predictions DESC, final_score_correct DESC, user_name ASC
+    ORDER BY total_points DESC, hit_champion DESC, hit_both DESC, correct_predictions DESC, global_points DESC, user_name ASC
     LIMIT ${limit}
   `;
 
@@ -478,7 +483,9 @@ export async function getTournamentRanking(tournamentId: number, limit: number =
     correct_predictions: Number(r.correct_predictions || 0),
     total_predictions: Number(r.total_predictions || 0),
     total_points: Number(r.total_points || 0),
-    final_score_correct: Boolean(r.final_score_correct),
+    hit_champion: Boolean(r.hit_champion),
+    hit_both: Boolean(r.hit_both),
+    global_points: Number(r.global_points || 0),
     rank: i + 1,
   }));
 }
