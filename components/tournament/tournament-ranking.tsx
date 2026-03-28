@@ -96,9 +96,9 @@ function RankingRow({
             {isCurrentUser && (
               <Badge className="bg-emerald-500 text-white border-none font-bold text-[9px] h-4">VOCÊ</Badge>
             )}
-            {entry.final_score_correct && (
-              <div title="Acertou o placar da final">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            {entry.hit_champion && (
+              <div title={entry.hit_both ? "Acertou Campeão e Vice" : "Acertou o Campeão"}>
+                <Trophy className={`w-4 h-4 ${entry.hit_both ? 'text-amber-500' : 'text-emerald-500'}`} />
               </div>
             )}
           </p>

@@ -165,8 +165,10 @@ export default async function RulesPage() {
             nesta ordem:
           </p>
           <ol className="list-decimal list-inside space-y-2 text-slate-700 font-medium">
-            <li>Maior número total de acertos (vencedores de partidas).</li>
-            <li>Acerto do placar exato na grande final (Sets).</li>
+            <li>Acertou o Campeão do Torneio;</li>
+            <li>Acertou o Campeão e o Vice-Campeão;</li>
+            <li>Maior número total de acertos (vencedores de partidas);</li>
+            <li>Maior pontuação no Ranking Geral (pontuação acumulada nas etapas);</li>
           </ol>
         </section>
       </main>
