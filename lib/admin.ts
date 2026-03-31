@@ -92,8 +92,26 @@ export async function updateTournament(
     has_wildcards: boolean;
     has_byes: boolean;
     image_url?: string;
+    status?: string;
   }>
 ): Promise<void> {
+  // If updating start_date, check if we need to revert status to OPEN
+  if (data.start_date) {
+    const result = await sql`
+      SELECT status,
+             (${data.start_date}::timestamp > (NOW() - INTERVAL '3 hours')) as is_future
+      FROM tournaments
+      WHERE id = ${tournamentId}
+    `;
+    if (result.length > 0) {
+      const currentStatus = result[0].status;
+      const isFuture = result[0].is_future;
+
+      if (currentStatus === 'IN_PROGRESS' && isFuture) {
+        data.status = 'OPEN';
+      }
+    }
+  }
 
   const entries = Object.entries(data).filter(([_, v]) => v !== undefined);
 
