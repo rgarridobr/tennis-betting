@@ -750,6 +750,8 @@ function PlayerRow({
           ? 'Wild Card'
           : type === 'LUCKY_LOSER'
             ? 'Lucky Loser'
+          : type === 'NEXT_GEN'
+            ? 'Next Gen'
             : type === 'BYE'
               ? 'BYE'
               : null);
@@ -781,6 +783,7 @@ function PlayerRow({
     if (type === 'QUALIFIER') return '(Q)';
     if (type === 'WILDCARD') return '(WC)';
     if (type === 'LUCKY_LOSER') return '(LL)';
+    if (type === 'NEXT_GEN') return '(NG)';
     return null;
   };
 

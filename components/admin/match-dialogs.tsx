@@ -34,6 +34,7 @@ function formatPlayerName(name: string | null, seed: number | null, type?: strin
     if (type === 'QUALIFIER') return 'Qualifier';
     if (type === 'WILDCARD') return 'Wild Card';
     if (type === 'LUCKY_LOSER') return 'Lucky Loser';
+    if (type === 'NEXT_GEN') return 'Next Gen';
     if (type === 'BYE') return 'BYE';
     return 'A definir';
   }
@@ -42,6 +43,7 @@ function formatPlayerName(name: string | null, seed: number | null, type?: strin
   if (type === 'QUALIFIER') return `${name} (Q)`;
   if (type === 'WILDCARD') return `${name} (WC)`;
   if (type === 'LUCKY_LOSER') return `${name} (LL)`;
+  if (type === 'NEXT_GEN') return `${name} (NG)`;
   return name;
 }
 
@@ -59,8 +61,8 @@ function SlotConfig({
   assignedPlayerIds = [],
 }: {
   label: string;
-  type: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER';
-  setType: (value: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER') => void;
+  type: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER' | 'NEXT_GEN';
+  setType: (value: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER' | 'NEXT_GEN') => void;
   playerId: string;
   setPlayerId: (value: string) => void;
   seed: string;
@@ -80,7 +82,7 @@ function SlotConfig({
   return (
     <div className="space-y-4 bg-slate-50 rounded-2xl border border-slate-100">
       {' '}
-      {(type === 'PLAYER' || type === 'SEED' || type === 'QUALIFIER' || type === 'WILDCARD' || type === 'LUCKY_LOSER') && (
+      {(type === 'PLAYER' || type === 'SEED' || type === 'QUALIFIER' || type === 'WILDCARD' || type === 'LUCKY_LOSER' || type === 'NEXT_GEN') && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label className="text-[10px] font-bold">
@@ -137,6 +139,9 @@ function SlotConfig({
           <SelectItem value="LUCKY_LOSER" className="font-bold">
             Lucky Loser (LL)
           </SelectItem>
+          <SelectItem value="NEXT_GEN" className="font-bold">
+            Next Gen (NG)
+          </SelectItem>
           <SelectItem value="BYE" className="font-bold">
             BYE
           </SelectItem>
@@ -167,13 +172,13 @@ export function SetPlayersDialog({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const [p1Type, setP1Type] = useState<'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER'>(
+  const [p1Type, setP1Type] = useState<'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER' | 'NEXT_GEN'>(
     (match.player1_type as any) || 'PLAYER',
   );
   const [p1Id, setP1Id] = useState(match.player1_id?.toString() || '');
   const [p1Seed, setP1Seed] = useState(match.player1_seed?.toString() || '');
 
-  const [p2Type, setP2Type] = useState<'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER'>(
+  const [p2Type, setP2Type] = useState<'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER' | 'NEXT_GEN'>(
     (match.player2_type as any) || 'PLAYER',
   );
   const [p2Id, setP2Id] = useState(match.player2_id?.toString() || '');
@@ -332,7 +337,7 @@ export function ReplaceMatchPlayerDialog({
 
   const currentType = selectedSlot === 1 ? match.player1_type : match.player2_type;
   const currentId = selectedSlot === 1 ? match.player1_id : match.player2_id;
-  const isFillingPlaceholder = !currentId && (currentType === 'QUALIFIER' || currentType === 'WILDCARD');
+  const isFillingPlaceholder = !currentId && (currentType === 'QUALIFIER' || currentType === 'WILDCARD' || currentType === 'NEXT_GEN');
 
   const filteredPlayers = players
     .filter((p) => !assignedPlayerIds?.includes(p.id) || p.id.toString() === playerId)
