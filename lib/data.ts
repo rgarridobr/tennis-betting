@@ -232,8 +232,8 @@ export async function getTournamentsByYearAndMonth(year: number, month: number):
     WHERE is_visible = TRUE
     AND EXTRACT(YEAR FROM start_date) = ${year}
     AND EXTRACT(MONTH FROM start_date) = ${month}
-    AND start_date <= (NOW() - INTERVAL '3 hours')
-    ORDER BY start_date ASC`;
+    ORDER BY start_date ASC
+  `;
   return rows as Tournament[];
 }
 

@@ -6,13 +6,14 @@ import { StatsCards } from '@/components/dashboard/stats-cards';
 import { TournamentCard } from '@/components/dashboard/tournament-card';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { RankingSection } from '@/components/dashboard/ranking-section';
+import { DateBR } from '@/lib/utils';
 
 export default async function DashboardPage() {
   const user = await getSession();
   if (!user) redirect('/login');
   if (user.is_admin) redirect('/admin');
 
-  const currentDate = new Date();
+  const currentDate = DateBR();
   const [tournaments, stats, ranking, activeTournament] = await Promise.all([
     getTournamentsByYearAndMonth(currentDate.getFullYear(), currentDate.getMonth() + 1),
     getUserStats(user.id),
