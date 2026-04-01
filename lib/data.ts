@@ -232,8 +232,8 @@ export async function getTournamentsByYearAndMonth(year: number, month: number):
     WHERE is_visible = TRUE
     AND EXTRACT(YEAR FROM start_date) = ${year}
     AND EXTRACT(MONTH FROM start_date) = ${month}
-    ORDER BY start_date ASC
-  `;
+    AND start_date <= (NOW() - INTERVAL '3 hours')
+    ORDER BY start_date ASC`;
   return rows as Tournament[];
 }
 
@@ -257,6 +257,7 @@ export async function getActiveTournament(): Promise<Tournament | null> {
     SELECT * FROM tournaments
     WHERE is_visible = TRUE
       AND status IN ('OPEN', 'LOCKED', 'IN_PROGRESS')
+      AND start_date <= (NOW() - INTERVAL '3 hours')
     ORDER BY start_date DESC
     LIMIT 1
   `;
