@@ -12,7 +12,6 @@ import {
   getTournamentRanking,
   getUserPublicInfo,
   getActiveTournament,
-  getUserActiveEnrollment,
 } from '@/lib/data';
 import { getDynamicRoundNames } from '@/lib/utils';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
@@ -54,7 +53,6 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
     tournamentPlayers,
     targetUserInfo,
     activeTournament,
-    activeEnrollment,
   ] = await Promise.all([
     getBracketMatches(tournamentId),
     getUserPredictions(targetUserId, tournamentId),
@@ -63,7 +61,6 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
     getTournamentPlayers(tournamentId),
     isViewingOthers ? getUserPublicInfo(targetUserId) : null,
     getActiveTournament(),
-    getUserActiveEnrollment(user.id),
   ]);
 
   const enrolled = !!enrollment;
@@ -95,7 +92,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
       <TournamentHeader tournament={tournament} participants={participants} />
 
       <main className="container mx-auto px-4 md:px-32 py-12">
-        {!enrolled && !started && <EnrollmentBanner tournament={tournament} activeEnrollment={activeEnrollment} />}
+        {!enrolled && !started && <EnrollmentBanner tournament={tournament} />}
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div className="flex flex-col md:flex-row md:items-end gap-4">

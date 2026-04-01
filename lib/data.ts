@@ -526,16 +526,6 @@ export async function enrollUser(userId: number, tournamentId: number): Promise<
   `;
 }
 
-export async function getUserActiveEnrollment(userId: number): Promise<Tournament | null> {
-  const rows = await sql`
-    SELECT t.* FROM user_tournaments ut
-    JOIN tournaments t ON ut.tournament_id = t.id
-    WHERE ut.user_id = ${userId}
-      AND t.status NOT IN ('finished', 'completed', 'FINISHED')
-    LIMIT 1
-  `;
-  return rows.length > 0 ? (rows[0] as Tournament) : null;
-}
 
 export async function getTournamentParticipantCount(tournamentId: number): Promise<number> {
   const result = await sql`

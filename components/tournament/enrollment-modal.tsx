@@ -101,15 +101,6 @@ export function EnrollmentModal({ isOpen, onClose, tournament }: EnrollmentModal
                   </p>
                 </div>
 
-                <div className="flex items-start gap-3 text-amber-600 font-medium">
-                  <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-[10px] font-bold">!</span>
-                  </div>
-                  <p className="text-xs">
-                    Importante: Você só pode participar de um torneio por vez. Novos torneios só serão liberados após a
-                    conclusão do atual.
-                  </p>
-                </div>
 
                 {errorMessage && (
                   <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-red-600 text-xs font-bold animate-in fade-in slide-in-from-top-1">

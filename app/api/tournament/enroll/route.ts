@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { isUserEnrolled, enrollUser, getUserActiveEnrollment } from '@/lib/data';
+import { isUserEnrolled, enrollUser } from '@/lib/data';
 
 export async function POST(request: Request) {
   try {
@@ -18,16 +18,6 @@ export async function POST(request: Request) {
     const enrolled = await isUserEnrolled(user.id, tournamentId);
     if (enrolled) {
       return NextResponse.json({ error: 'Já inscrito neste torneio' }, { status: 400 });
-    }
-
-    const activeEnrollment = await getUserActiveEnrollment(user.id);
-    if (activeEnrollment) {
-      return NextResponse.json(
-        {
-          error: `Você já possui uma inscrição ativa no torneio ${activeEnrollment.name}. Você só poderá se inscrever em um novo torneio após o término do atual.`,
-        },
-        { status: 400 },
-      );
     }
 
     await enrollUser(user.id, tournamentId);
