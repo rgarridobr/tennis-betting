@@ -1,6 +1,6 @@
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { getTournamentsByYear, getActiveTournament } from '@/lib/data';
+import { getAllVisibleTournaments, getActiveTournament } from '@/lib/data';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { TournamentRankingCard } from '@/components/dashboard/tournament-ranking-card';
 import { PageHero } from '@/components/shared/page-hero';
@@ -28,9 +28,8 @@ export default async function TournamentRankingListPage({ searchParams }: PagePr
   const { status, search, category, page } = await searchParams;
   const currentPage = page ? parseInt(page) : 1;
 
-  const currentDate = new Date();
   const [allTournaments, activeTournament] = await Promise.all([
-    getTournamentsByYear(currentDate.getFullYear()),
+    getAllVisibleTournaments(),
     getActiveTournament(),
   ]);
 
@@ -79,7 +78,7 @@ export default async function TournamentRankingListPage({ searchParams }: PagePr
                 <Award className="w-6 h-6 text-amber-400" />
               </div>
               <div>
-                <p className="text-amber-100/70 text-xs font-bold uppercase tracking-wider">Total do Ano</p>
+                <p className="text-amber-100/70 text-xs font-bold uppercase tracking-wider">Total</p>
                 <p className="text-2xl font-black text-white">{filteredTournaments.length}</p>
               </div>
             </CardContent>
