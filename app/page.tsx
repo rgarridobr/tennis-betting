@@ -19,7 +19,7 @@ import {
   CheckCircle2,
   MapPin,
 } from 'lucide-react';
-import { getTournaments, getTournamentsByYearAndMonth } from '@/lib/data';
+import { getTournaments, getAllVisibleTournaments } from '@/lib/data';
 import { TournamentCard } from '@/components/dashboard/tournament-card';
 
 export default async function HomePage() {
@@ -32,8 +32,7 @@ export default async function HomePage() {
     }
   }
 
-  const currentDate = new Date();
-  const allTournaments = await getTournamentsByYearAndMonth(currentDate.getFullYear(), currentDate.getMonth() + 1);
+  const allTournaments = await getAllVisibleTournaments();
   const featuredTournaments = allTournaments.slice(0, 3);
 
   return (
