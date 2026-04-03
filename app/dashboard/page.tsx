@@ -7,6 +7,9 @@ import { TournamentCard } from '@/components/dashboard/tournament-card';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { RankingSection } from '@/components/dashboard/ranking-section';
 import { DateBR } from '@/lib/utils';
+import { ChevronRight } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export default async function DashboardPage() {
   const user = await getSession();
@@ -14,7 +17,7 @@ export default async function DashboardPage() {
   if (user.is_admin) redirect('/admin');
 
   const [tournaments, stats, ranking, activeTournament] = await Promise.all([
-    getAllVisibleTournaments(),
+    getAllVisibleTournaments(4),
     getUserStats(user.id),
     getGlobalRanking(5),
     getActiveTournament(),
@@ -32,10 +35,27 @@ export default async function DashboardPage() {
           <div className="lg:col-span-2 space-y-12">
             {tournaments.length > 0 && (
               <section>
-                <div className="flex items-center gap-2 mb-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+              <div>
+                <div className="flex items-center gap-2 mb-4">
                   <div className="w-2 h-8 bg-emerald-500 rounded-full" />
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight">Torneios Disponíveis</h2>
                 </div>
+                <p className="text-slate-500 text-lg font-medium">
+                  Alguns torneios estão acontecendo agora. Participe e mostre suas habilidades!
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                className="text-emerald-600 hover:bg-emerald-50 font-bold rounded-xl px-6"
+                asChild
+              >
+                <Link href="/torneios" className="flex items-center gap-2">
+                  Ver todos
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </Button>
+            </div>
                 <div className="grid md:grid-cols-2 gap-8">
                   {tournaments.map((t) => (
                     <TournamentCard key={t.id} tournament={t} />

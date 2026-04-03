@@ -237,8 +237,25 @@ export async function getTournamentsByYearAndMonth(year: number, month: number):
   return rows as Tournament[];
 }
 
-export async function getAllVisibleTournaments(): Promise<Tournament[]> {
+export async function getAllVisibleTournaments(limit?: number): Promise<Tournament[]> {
   await syncTournamentStatuses();
+
+  if (limit) {
+    const rows = await sql`
+      SELECT * FROM tournaments
+      WHERE is_visible = TRUE
+      ORDER BY
+        CASE
+          WHEN status IN ('IN_PROGRESS', 'LOCKED', 'active') THEN 1
+          WHEN status IN ('OPEN', 'UPCOMING', 'upcoming', 'published') THEN 2
+          ELSE 3
+        END ASC,
+        start_date DESC
+      LIMIT ${limit}
+    `;
+    return rows as Tournament[];
+  }
+
   const rows = await sql`
     SELECT * FROM tournaments
     WHERE is_visible = TRUE
@@ -250,6 +267,7 @@ export async function getAllVisibleTournaments(): Promise<Tournament[]> {
       END ASC,
       start_date DESC
   `;
+
   return rows as Tournament[];
 }
 
@@ -542,7 +560,6 @@ export async function enrollUser(userId: number, tournamentId: number): Promise<
   `;
 }
 
-
 export async function getTournamentParticipantCount(tournamentId: number): Promise<number> {
   const result = await sql`
     SELECT COUNT(*) as count FROM user_tournaments WHERE tournament_id = ${tournamentId}
@@ -564,7 +581,14 @@ export async function getTournamentPlayers(tournamentId: number): Promise<Player
 export async function hasTournamentStarted(tournamentId: number): Promise<boolean> {
   const tournament = await getTournamentById(tournamentId);
 
-  if (tournament && (tournament.status === 'IN_PROGRESS' || tournament.status === 'LOCKED' || tournament.status === 'finished' || tournament.status === 'completed' || tournament.status === 'FINISHED')) {
+  if (
+    tournament &&
+    (tournament.status === 'IN_PROGRESS' ||
+      tournament.status === 'LOCKED' ||
+      tournament.status === 'finished' ||
+      tournament.status === 'completed' ||
+      tournament.status === 'FINISHED')
+  ) {
     return true;
   }
 
