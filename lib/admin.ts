@@ -908,7 +908,7 @@ export async function countAllUsers(search?: string) {
 }
 
 export async function getAdminStats() {
-  const [needsReview, newUsers, topTournaments, pendingResults, totalPredictions] = await Promise.all([
+  const [needsReview, newUsers, topTournaments, totalPredictions] = await Promise.all([
     // Tournaments needing review
     sql`SELECT COUNT(*) as count FROM tournaments WHERE needs_review = TRUE`,
 
@@ -952,7 +952,6 @@ export async function getAdminStats() {
       status: t.status as string,
       participants: Number(t.participants || 0),
     })),
-    pendingResults: Number(pendingResults[0]?.count || 0),
     totalPredictions: Number(totalPredictions[0]?.count || 0),
   };
 }

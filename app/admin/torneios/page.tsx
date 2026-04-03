@@ -64,8 +64,6 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
     (t) => t.status === 'FINISHED' || t.status === 'finished' || t.status === 'completed',
   );
 
-
-
   const statusColors: Record<string, string> = {
     STANDBY: 'bg-slate-100 text-slate-700',
     draft: 'bg-rose-100 text-rose-700',
@@ -97,12 +95,13 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
             <h2 className="text-3xl font-black text-slate-900 tracking-tight">Lista de Torneios</h2>
             <p className="text-slate-500 font-medium">Acompanhe e edite seus campeonatos</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <SyncAtpButton />
+
             <Button
               asChild
               size="lg"
-              className="bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-2xl shadow-xl shadow-emerald-500/20 h-14"
+              className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-2xl shadow-xl shadow-emerald-500/20 h-12 sm:h-14"
             >
               <Link href="/admin/torneios/novo">
                 <Plus className="w-5 h-5 mr-2" />
@@ -136,9 +135,9 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
                         scroll={false}
                         className={cn(
                           'flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap border transition-all capitalize',
-                            isSelected
-                              ? 'bg-emerald-50 border-emerald-200 text-emerald-900 shadow-md'
-                              : 'bg-white border-transparent hover:border-slate-100 hover:bg-slate-50 text-slate-600',
+                          isSelected
+                            ? 'bg-emerald-50 border-emerald-200 text-emerald-900 shadow-md'
+                            : 'bg-white border-transparent hover:border-slate-100 hover:bg-slate-50 text-slate-600',
                         )}
                       >
                         {m.name}

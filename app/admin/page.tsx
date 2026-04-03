@@ -102,37 +102,6 @@ export default async function AdminDashboardPage() {
           ))}
         </div>
 
-        {/* Alerts & Attention Section */}
-        {adminStats.pendingResults > 0 && (
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-1 gap-6">
-            {adminStats.pendingResults > 0 && (
-              <Card className="border-2 border-emerald-100 bg-emerald-50/30 rounded-[2rem] overflow-hidden">
-                <CardContent className="p-6 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center shrink-0">
-                      <Zap className="w-6 h-6 text-emerald-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-black text-slate-900 text-lg">Resultados Pendentes</h3>
-                      <p className="text-sm font-medium text-slate-600">
-                        Existem {adminStats.pendingResults} partidas prontas para lançamento de resultados.
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    asChild
-                    className="rounded-xl border-emerald-200 hover:bg-emerald-100 text-emerald-700 font-bold"
-                  >
-                    <Link href="/admin/torneios">Lançar</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        )}
-
         <div className="mt-12 grid lg:grid-cols-3 gap-12">
           {/* Recent Tournaments */}
           <div className="lg:col-span-2 space-y-8">
