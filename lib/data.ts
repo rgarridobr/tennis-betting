@@ -237,6 +237,22 @@ export async function getTournamentsByYearAndMonth(year: number, month: number):
   return rows as Tournament[];
 }
 
+export async function getAllVisibleTournaments(): Promise<Tournament[]> {
+  await syncTournamentStatuses();
+  const rows = await sql`
+    SELECT * FROM tournaments
+    WHERE is_visible = TRUE
+    ORDER BY
+      CASE
+        WHEN status IN ('IN_PROGRESS', 'LOCKED', 'active') THEN 1
+        WHEN status IN ('OPEN', 'UPCOMING', 'upcoming', 'published') THEN 2
+        ELSE 3
+      END ASC,
+      start_date DESC
+  `;
+  return rows as Tournament[];
+}
+
 export async function getTournamentById(id: number): Promise<Tournament | null> {
   // Auto-update status if started
   await sql`
@@ -526,16 +542,6 @@ export async function enrollUser(userId: number, tournamentId: number): Promise<
   `;
 }
 
-export async function getUserActiveEnrollment(userId: number): Promise<Tournament | null> {
-  const rows = await sql`
-    SELECT t.* FROM user_tournaments ut
-    JOIN tournaments t ON ut.tournament_id = t.id
-    WHERE ut.user_id = ${userId}
-      AND t.status NOT IN ('finished', 'completed', 'FINISHED')
-    LIMIT 1
-  `;
-  return rows.length > 0 ? (rows[0] as Tournament) : null;
-}
 
 export async function getTournamentParticipantCount(tournamentId: number): Promise<number> {
   const result = await sql`

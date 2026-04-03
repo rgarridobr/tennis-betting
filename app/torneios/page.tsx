@@ -1,6 +1,6 @@
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { getTournamentsByYearAndMonth, getActiveTournament } from '@/lib/data';
+import { getAllVisibleTournaments, getActiveTournament } from '@/lib/data';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { TournamentCard } from '@/components/dashboard/tournament-card';
 import { PageHero } from '@/components/shared/page-hero';
@@ -28,10 +28,8 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
   const { status, search, category, page } = await searchParams;
   const currentPage = page ? parseInt(page) : 1;
 
-  const currentDate = new Date();
-
   const [allTournaments, activeTournament] = await Promise.all([
-    getTournamentsByYearAndMonth(currentDate.getFullYear(), currentDate.getMonth() + 1),
+    getAllVisibleTournaments(),
     getActiveTournament(),
   ]);
   const activeStatuses = ['active', 'published', 'OPEN', 'LOCKED', 'IN_PROGRESS'];
@@ -96,7 +94,7 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
                   ? 'Torneios Finalizados'
                   : status === 'active'
                     ? 'Torneios Ativos'
-                    : 'Todos deste mês'}
+                    : 'Todos os Torneios'}
               </h2>
               <span className="ml-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold">
                 {totalItems} {totalItems === 1 ? 'torneio' : 'torneios'}

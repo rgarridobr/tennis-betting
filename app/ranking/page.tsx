@@ -27,27 +27,7 @@ export default async function RankingPage() {
       <DashboardHeader user={user} activeTournamentId={activeTournament?.id} />
 
       {/* Header */}
-      <PageHero title="Ranking Geral" subtitle="Veja quem está liderando a temporada atual">
-        <Card className="bg-white/10 border-0 backdrop-blur-sm">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
-              <span className="text-2xl font-bold text-white">{userPosition}º</span>
-            </div>
-            <div>
-              <p className="text-emerald-100 text-sm">Sua posição</p>
-              <p className="text-white font-semibold">
-                {user.nickname ||
-                  user.name.charAt(0).toUpperCase() +
-                    user.name.slice(1).toLowerCase().split(' ')[0] +
-                    (user.name.split(' ').length > 1
-                      ? ' ' + user.name.split(' ')[1].charAt(0).toUpperCase() + '.'
-                      : '')}
-              </p>
-              <p className="text-amber-300 font-bold">{userStats.total_points} pontos</p>
-            </div>
-          </CardContent>
-        </Card>
-      </PageHero>
+      <PageHero title="Ranking Geral" subtitle="Veja quem está liderando a temporada atual"/>
 
       <main className="container mx-auto px-4 md:px-32 py-8">
         {ranking.length === 0 ? (
