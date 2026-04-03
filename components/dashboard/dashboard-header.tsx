@@ -44,7 +44,7 @@ export function DashboardHeader({ user, activeTournamentId }: DashboardHeaderPro
       <div className="container mx-auto px-4 md:px-32 h-20 flex items-center justify-between">
         {/* Logo - Left */}
         <Link href="/dashboard" className="flex items-center gap-2.5 group">
-          <div className="w-10 h-10 rounded-xl bg-[#6EC46C] flex items-center justify-center shadow-lg shadow-[#6EC46C]/20 group-hover:scale-110 transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-[#6EC46C]/20 group-hover:scale-110 transition-transform">
             <Trophy className="w-6 h-6 text-white" />
           </div>
           <span className="hidden sm:inline font-black text-xl tracking-tight text-[#D32D18]">TennisPool</span>
@@ -112,7 +112,7 @@ export function DashboardHeader({ user, activeTournamentId }: DashboardHeaderPro
             <>
               <div className="hidden sm:flex flex-col items-end mr-1">
                 <p className="text-sm font-black text-[#D32D18] leading-none">{displayName}</p>
-                <p className="text-[10px] font-bold text-[#6EC46C] uppercase tracking-wider mt-1">Participante</p>
+                <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider mt-1">Participante</p>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -121,7 +121,7 @@ export function DashboardHeader({ user, activeTournamentId }: DashboardHeaderPro
                     className="relative h-11 w-11 rounded-2xl p-0 overflow-hidden hover:bg-transparent"
                   >
                     <Avatar className="h-11 w-11 rounded-2xl">
-                      <AvatarFallback className="bg-slate-100 text-emerald-600 font-black rounded-2xl border-2 border-emerald-100">
+                      <AvatarFallback className="bg-slate-100 text-emerald-500 font-black rounded-2xl border-2 border-emerald-100">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
