@@ -176,14 +176,13 @@ export async function runAtpSync() {
           displayYear,
         )
 
-        // 🚫 TORNEIO JÁ COMEÇOU → IGNORA
-        // Use a 3-hour buffer for Brasilia time if needed, but start < now is generally fine.
-        if (start < now) {
+        const year = start.getFullYear()
+
+        // 🚫 TORNEIO DE ANOS ANTERIORES → IGNORA
+        if (year < now.getFullYear() - 1) {
           skippedCount++
           continue
         }
-
-        const year = start.getFullYear()
 
         const locationParts = atp.Location.split(',').map((s) => s.trim())
         const city = locationParts[0]
@@ -201,23 +200,24 @@ export async function runAtpSync() {
           (c) =>
             atpNameNormalized === normalizeString(c.name) ||
             atp.Name.toUpperCase().includes(c.code.replace(/_/g, ' ')) ||
-            atp.Name.toUpperCase().includes(c.name.toUpperCase()) ||
-            c.name.toUpperCase().includes(city.toUpperCase())
+            atp.Name.toUpperCase().includes(c.name.toUpperCase())
         )
 
-        if (!bestMatch && country) {
+        // Only use location fallback if it's a Masters 1000 or Grand Slam, or if it's a very specific city match
+        if (!bestMatch) {
           bestMatch = concepts.find(
             (c) =>
               c.category === category &&
-              c.default_country &&
-              normalizeString(c.default_country) === normalizeString(country),
+              (c.name.toUpperCase().includes(city.toUpperCase()) ||
+                city.toUpperCase().includes(c.name.toUpperCase()) ||
+                (c.default_city && c.default_city.toUpperCase().includes(city.toUpperCase())))
           )
         }
 
         if (bestMatch) matchedConceptId = bestMatch.id
 
         const code = bestMatch ? bestMatch.code : normalizeString(atp.Name)
-        const slug = `${code}-${year}`
+        let slug = `${code}-${year}`
         const needsReview = !matchedConceptId
 
         // Fix bracket size calculation
@@ -250,14 +250,25 @@ export async function runAtpSync() {
         } else {
            // Fallback to slug if no API ID match
            const existingBySlug = await sql`
-             SELECT id FROM tournaments WHERE slug = ${slug} AND year = ${year}
+             SELECT id, api_id FROM tournaments WHERE slug = ${slug} AND year = ${year}
            `
 
-           if (existingBySlug.length > 0) {
+           // Collision check: if the slug is taken by a tournament with a different API ID
+           if (existingBySlug.length > 0 && existingBySlug[0].api_id && existingBySlug[0].api_id !== atp.Id) {
+              console.log(`Collision detected for slug ${slug}. Using alternative slug.`)
+              slug = `${slug}-${atp.Id}`
+           }
+
+           const finalExisting = await sql`
+             SELECT id FROM tournaments WHERE (api_id = ${atp.Id} OR slug = ${slug}) AND year = ${year}
+           `
+
+           if (finalExisting.length > 0) {
              await sql`
                UPDATE tournaments SET
                  tournament_concept_id = ${matchedConceptId},
                  name = ${atp.Name},
+                 slug = ${slug},
                  surface = ${atp.Surface},
                  location = ${atp.Location},
                  start_date = ${start.toISOString()},
@@ -269,7 +280,7 @@ export async function runAtpSync() {
                  location_text = ${atp.Location},
                  needs_review = ${needsReview},
                  updated_at = CURRENT_TIMESTAMP
-               WHERE id = ${existingBySlug[0].id}
+               WHERE id = ${finalExisting[0].id}
              `
              updatedCount++
            } else {

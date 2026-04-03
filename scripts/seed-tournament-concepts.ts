@@ -135,7 +135,37 @@ const CONCEPTS = [
     draw_size: 56
   },
 
-  // ATP 500 (principais)
+  // ATP 500
+  {
+    code: 'ROTTERDAM',
+    name: 'Rotterdam',
+    category: 'ATP_500',
+    surface: 'Hard',
+    default_country: 'Netherlands',
+    default_city: 'Rotterdam',
+    sets_format: 3,
+    draw_size: 32
+  },
+  {
+    code: 'DALLAS',
+    name: 'Dallas',
+    category: 'ATP_500',
+    surface: 'Hard',
+    default_country: 'USA',
+    default_city: 'Dallas',
+    sets_format: 3,
+    draw_size: 32
+  },
+  {
+    code: 'DOHA',
+    name: 'Doha',
+    category: 'ATP_500',
+    surface: 'Hard',
+    default_country: 'Qatar',
+    default_city: 'Doha',
+    sets_format: 3,
+    draw_size: 32
+  },
   {
     code: 'RIO_OPEN',
     name: 'Rio Open',
@@ -177,12 +207,42 @@ const CONCEPTS = [
     draw_size: 48
   },
   {
+    code: 'MUNICH',
+    name: 'Munich',
+    category: 'ATP_500',
+    surface: 'Clay',
+    default_country: 'Germany',
+    default_city: 'Munich',
+    sets_format: 3,
+    draw_size: 32
+  },
+  {
     code: 'HAMBURG',
     name: 'Hamburg',
     category: 'ATP_500',
     surface: 'Clay',
     default_country: 'Germany',
     default_city: 'Hamburg',
+    sets_format: 3,
+    draw_size: 32
+  },
+  {
+    code: 'HALLE',
+    name: 'Halle',
+    category: 'ATP_500',
+    surface: 'Grass',
+    default_country: 'Germany',
+    default_city: 'Halle',
+    sets_format: 3,
+    draw_size: 32
+  },
+  {
+    code: 'QUEENS_CLUB',
+    name: "Queen's Club",
+    category: 'ATP_500',
+    surface: 'Grass',
+    default_country: 'United Kingdom',
+    default_city: 'London',
     sets_format: 3,
     draw_size: 32
   },
