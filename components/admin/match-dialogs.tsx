@@ -36,6 +36,7 @@ function formatPlayerName(name: string | null, seed: number | null, type?: strin
     if (type === 'LUCKY_LOSER') return 'Lucky Loser';
     if (type === 'NEXT_GEN') return 'Next Gen';
     if (type === 'BYE') return 'BYE';
+    if (type === 'ALT') return 'Alternate';
     return 'A definir';
   }
 
@@ -44,6 +45,7 @@ function formatPlayerName(name: string | null, seed: number | null, type?: strin
   if (type === 'WILDCARD') return `${name} (WC)`;
   if (type === 'LUCKY_LOSER') return `${name} (LL)`;
   if (type === 'NEXT_GEN') return `${name} (NG)`;
+  if (type === 'ALT') return `${name} (ALT)`;
   return name;
 }
 
@@ -82,7 +84,12 @@ function SlotConfig({
   return (
     <div className="space-y-4 bg-slate-50 rounded-2xl border border-slate-100">
       {' '}
-      {(type === 'PLAYER' || type === 'SEED' || type === 'QUALIFIER' || type === 'WILDCARD' || type === 'LUCKY_LOSER' || type === 'NEXT_GEN') && (
+      {(type === 'PLAYER' ||
+        type === 'SEED' ||
+        type === 'QUALIFIER' ||
+        type === 'WILDCARD' ||
+        type === 'LUCKY_LOSER' ||
+        type === 'NEXT_GEN') && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label className="text-[10px] font-bold">
@@ -142,6 +149,9 @@ function SlotConfig({
           <SelectItem value="NEXT_GEN" className="font-bold">
             Next Gen (NG)
           </SelectItem>
+          <SelectItem value="ALT" className="font-bold">
+            Alternate (ALT)
+          </SelectItem>
           <SelectItem value="BYE" className="font-bold">
             BYE
           </SelectItem>
@@ -172,15 +182,15 @@ export function SetPlayersDialog({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const [p1Type, setP1Type] = useState<'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER' | 'NEXT_GEN'>(
-    (match.player1_type as any) || 'PLAYER',
-  );
+  const [p1Type, setP1Type] = useState<
+    'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER' | 'NEXT_GEN'
+  >((match.player1_type as any) || 'PLAYER');
   const [p1Id, setP1Id] = useState(match.player1_id?.toString() || '');
   const [p1Seed, setP1Seed] = useState(match.player1_seed?.toString() || '');
 
-  const [p2Type, setP2Type] = useState<'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER' | 'NEXT_GEN'>(
-    (match.player2_type as any) || 'PLAYER',
-  );
+  const [p2Type, setP2Type] = useState<
+    'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILDCARD' | 'BYE' | 'LUCKY_LOSER' | 'NEXT_GEN'
+  >((match.player2_type as any) || 'PLAYER');
   const [p2Id, setP2Id] = useState(match.player2_id?.toString() || '');
   const [p2Seed, setP2Seed] = useState(match.player2_seed?.toString() || '');
 
@@ -337,7 +347,8 @@ export function ReplaceMatchPlayerDialog({
 
   const currentType = selectedSlot === 1 ? match.player1_type : match.player2_type;
   const currentId = selectedSlot === 1 ? match.player1_id : match.player2_id;
-  const isFillingPlaceholder = !currentId && (currentType === 'QUALIFIER' || currentType === 'WILDCARD' || currentType === 'NEXT_GEN');
+  const isFillingPlaceholder =
+    !currentId && (currentType === 'QUALIFIER' || currentType === 'WILDCARD' || currentType === 'NEXT_GEN');
 
   const filteredPlayers = players
     .filter((p) => !assignedPlayerIds?.includes(p.id) || p.id.toString() === playerId)
@@ -432,8 +443,8 @@ export function ReplaceMatchPlayerDialog({
                   className="w-5 h-5 rounded-lg border-2 border-slate-300 text-rose-600 focus:ring-rose-500"
                 />
                 <label htmlFor="isLL" className="text-sm font-black text-slate-700 cursor-pointer">
-                  {isFillingPlaceholder 
-                    ? 'Este jogador está entrando como Lucky Loser (LL)' 
+                  {isFillingPlaceholder
+                    ? 'Este jogador está entrando como Lucky Loser (LL)'
                     : 'Substituir por Lucky Loser (LL)'}
                 </label>
               </div>
