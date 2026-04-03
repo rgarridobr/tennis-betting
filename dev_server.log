@@ -8,9 +8,7 @@
 
  ✓ Starting...
 [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
- ✓ Ready in 741ms
- ○ Compiling /torneios ...
- GET /torneios 307 in 6.2s (compile: 5.6s, render: 546ms)
- GET /login 200 in 1616ms (compile: 1305ms, render: 310ms)
- GET /torneios/1 307 in 2.9s (compile: 2.7s, render: 211ms)
- GET /login 200 in 113ms (compile: 5ms, render: 108ms)
+ ✓ Ready in 1384ms
+ ○ Compiling /admin/torneios ...
+ GET /admin/torneios 307 in 7.5s (compile: 5.8s, render: 1673ms)
+ GET /login 200 in 1722ms (compile: 1437ms, render: 285ms)
