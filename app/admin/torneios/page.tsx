@@ -4,9 +4,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { Plus, Settings, Trophy, Zap, Calendar, ClipboardList, MapPin, ChevronRight } from 'lucide-react';
+import { Plus, Settings, Trophy, Zap, Calendar, ClipboardList, MapPin, ChevronRight, RefreshCcw } from 'lucide-react';
 import { DeleteTournamentButton } from '@/components/admin/delete-tournament-button';
 import { TournamentVisibilityToggle } from '@/components/admin/tournament-visibility-toggle';
+import { SyncAtpButton } from '@/components/admin/sync-atp-button';
 import { cn, getStatusLabels } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -96,16 +97,19 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
             <h2 className="text-3xl font-black text-slate-900 tracking-tight">Lista de Torneios</h2>
             <p className="text-slate-500 font-medium">Acompanhe e edite seus campeonatos</p>
           </div>
-          <Button
-            asChild
-            size="lg"
-            className="bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-2xl shadow-xl shadow-emerald-500/20 h-14"
-          >
-            <Link href="/admin/torneios/novo">
-              <Plus className="w-5 h-5 mr-2" />
-              Novo Torneio
-            </Link>
-          </Button>
+          <div className="flex items-center gap-3">
+            <SyncAtpButton />
+            <Button
+              asChild
+              size="lg"
+              className="bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-2xl shadow-xl shadow-emerald-500/20 h-14"
+            >
+              <Link href="/admin/torneios/novo">
+                <Plus className="w-5 h-5 mr-2" />
+                Novo Torneio
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
