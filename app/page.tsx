@@ -120,7 +120,7 @@ export default async function HomePage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10 text-lg h-16 px-10 rounded-2xl bg-white/5 backdrop-blur-md font-bold transition-all hover:-translate-y-1"
+                  className="border-white/20 text-white hover:text-white hover:bg-white/10 text-lg h-16 px-10 rounded-2xl bg-white/5 backdrop-blur-md font-bold transition-all hover:-translate-y-1"
                   asChild
                 >
                   <Link href="/login">Fazer login</Link>
