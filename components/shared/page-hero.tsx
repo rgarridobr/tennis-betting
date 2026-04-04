@@ -57,7 +57,7 @@ export function PageHero({
         <div className="relative px-8 py-12 sm:px-12 sm:py-16 md:px-16 md:py-33">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
             {/* Text block */}
-            <div className="space-y-6 max-w-2xl">
+            <div className="space-y-6 max-w-4xl">
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white leading-tight tracking-tight drop-shadow-2xl">
                 {title}
               </h1>
