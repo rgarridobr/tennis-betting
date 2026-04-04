@@ -105,7 +105,7 @@ export function TournamentFilters() {
         )}
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-200 pb-4">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <Tabs
           value={currentStatus}
           onValueChange={(value) => handleFilterChange('status', value)}

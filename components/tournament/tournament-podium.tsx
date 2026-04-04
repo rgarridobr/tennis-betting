@@ -64,17 +64,18 @@ export function PodiumMedal({ place }: { place: 1 | 2 | 3 }) {
 
 interface TournamentPodiumProps {
   ranking: RankingEntry[];
-  isFinished: boolean;
+  isFinished?: boolean;
+  title?: string;
 }
 
-export function TournamentPodium({ ranking, isFinished }: TournamentPodiumProps) {
+export function TournamentPodium({ ranking, isFinished, title }: TournamentPodiumProps) {
   if (!ranking || ranking.length === 0) return null;
 
   return (
     <div className="mb-8">
       <div className="flex items-center gap-3 mb-6">
         <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-          {isFinished ? 'Pódio do Torneio' : 'Liderança Atual'}
+          {title || (isFinished ? 'Pódio do Torneio' : 'Liderança Atual')}
         </h2>
         <Badge className="bg-amber-100 text-amber-700 font-black px-4 py-1.5 rounded-full border-none">
           RANKING
