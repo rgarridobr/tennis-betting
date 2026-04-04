@@ -15,6 +15,8 @@ export async function updateProfile(formData: FormData) {
     const name = formData.get('name') as string
     const nickname = formData.get('nickname') as string
     const tennis_club = formData.get('tennis_club') as string
+    const state = formData.get('state') as string
+    const city = formData.get('city') as string
 
     if (!name || name.trim().length === 0) {
       return { success: false, error: 'Nome é obrigatório' }
@@ -24,6 +26,10 @@ export async function updateProfile(formData: FormData) {
       return { success: false, error: 'Clube em que joga tênis é obrigatório' }
     }
 
+    if (!state || !city) {
+      return { success: false, error: 'Estado e cidade são obrigatórios' }
+    }
+
     if (name.trim().length < 2) {
       return { success: false, error: 'Nome deve ter pelo menos 2 caracteres' }
     }
@@ -31,7 +37,13 @@ export async function updateProfile(formData: FormData) {
     // Update user (email cannot be changed)
     await sql`
       UPDATE users 
-      SET name = ${name.trim()}, nickname = ${nickname?.trim() || null}, tennis_club = ${tennis_club.trim()}, updated_at = NOW()
+      SET
+        name = ${name.trim()},
+        nickname = ${nickname?.trim() || null},
+        tennis_club = ${tennis_club.trim()},
+        state = ${state},
+        city = ${city},
+        updated_at = NOW()
       WHERE id = ${user.id}
     `
 

@@ -12,6 +12,11 @@ export default async function RankingPage() {
   if (!user) redirect('/login');
   if (user.is_admin) redirect('/admin');
 
+  // Mandatory profile completion for state and city
+  if (!user.state || !user.city) {
+    redirect('/completar-cadastro');
+  }
+
   const [ranking, userStats, activeTournament] = await Promise.all([
     getGlobalRanking(100),
     getUserStats(user.id),

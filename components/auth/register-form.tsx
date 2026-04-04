@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatBrazilianPhoneNumber } from '@/lib/utils';
+import { StateCitySelector } from '@/components/shared/state-city-selector';
 import { toast } from 'sonner';
 
 function SubmitButton() {
@@ -30,6 +31,8 @@ export function RegisterForm() {
   const [isFirstNameOnlyChecked, setIsFirstNameOnlyChecked] = useState(false);
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [state, setState] = useState('');
+  const [city, setCity] = useState('');
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -158,6 +161,14 @@ export function RegisterForm() {
               required
             />
           </div>
+
+          <StateCitySelector
+            selectedState={state}
+            selectedCity={city}
+            onStateChange={setState}
+            onCityChange={setCity}
+            required
+          />
 
           <div className="space-y-2">
             <Label htmlFor="password">Senha *</Label>
