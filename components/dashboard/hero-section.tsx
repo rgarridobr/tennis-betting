@@ -7,21 +7,21 @@ interface HeroSectionProps {
 
 export function HeroSection({ user }: HeroSectionProps) {
   return (
-    <div className="container mx-auto px-4 md:px-32 pt-6">
-      <div className="relative overflow-hidden rounded-[2rem] shadow-2xl">
+    <div className="container mx-auto px-4 md:px-32 py-8">
+      <div className="relative overflow-hidden rounded-[2.5rem] shadow-2xl">
         {/* Background */}
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat brightness-75 scale-105"
+          className="absolute inset-0 bg-cover bg-center brightness-75 scale-105"
           style={{
             backgroundImage: `url('https://images.unsplash.com/photo-1530915534664-4ac6423816b7?q=80&w=1470&auto=format&fit=crop')`,
           }}
         />
 
         {/* Overlay forte + blur */}
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+        <div className="absolute inset-0 bg-black/60" />
 
         {/* Glow sutil (verde) */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/20 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-transparent" />
 
         {/* Content */}
         <div className="relative px-6 py-12 sm:px-8 sm:py-16 md:px-10 md:py-20 text-center">

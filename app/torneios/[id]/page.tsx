@@ -1,5 +1,5 @@
-import { getSession } from '@/lib/auth';
-import { redirect, notFound } from 'next/navigation';
+import { getSession } from "@/lib/auth";
+import { redirect, notFound } from "next/navigation";
 import {
   getTournamentById,
   getBracketMatches,
@@ -12,34 +12,37 @@ import {
   getTournamentRanking,
   getUserPublicInfo,
   getActiveTournament,
-} from '@/lib/data';
-import { getDynamicRoundNames } from '@/lib/utils';
-import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { TournamentHeader } from '@/components/tournament/tournament-header';
-import { FileText, ArrowLeft, Info } from 'lucide-react';
-import Link from 'next/link';
-import { TournamentBracket } from '@/components/tournament/tournament-bracket';
-import { EnrollmentBanner } from '@/components/tournament/enrollment-banner';
-import { TournamentRanking } from '@/components/tournament/tournament-ranking';
-import { TournamentPodium } from '@/components/tournament/tournament-podium';
+} from "@/lib/data";
+import { getDynamicRoundNames } from "@/lib/utils";
+import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { TournamentHeader } from "@/components/tournament/tournament-header";
+import { FileText, ArrowLeft, Info } from "lucide-react";
+import Link from "next/link";
+import { TournamentBracket } from "@/components/tournament/tournament-bracket";
+import { EnrollmentBanner } from "@/components/tournament/enrollment-banner";
+import { TournamentRanking } from "@/components/tournament/tournament-ranking";
+import { TournamentPodium } from "@/components/tournament/tournament-podium";
 
 interface TournamentPageProps {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ view?: string; viewUser?: string }>;
 }
 
-export default async function TournamentPage({ params, searchParams }: TournamentPageProps) {
+export default async function TournamentPage({
+  params,
+  searchParams,
+}: TournamentPageProps) {
   const user = await getSession();
-  if (!user) redirect('/login');
-  if (user.is_admin) redirect('/admin');
+  if (!user) redirect("/login");
+  if (user.is_admin) redirect("/admin");
 
   const { id } = await params;
-  const { viewUser, view = 'bracket' } = await searchParams;
+  const { viewUser, view = "bracket" } = await searchParams;
   const tournamentId = parseInt(id, 10);
   if (isNaN(tournamentId)) notFound();
 
   const tournament = await getTournamentById(tournamentId);
-  
+
   if (!tournament || !tournament.is_visible) notFound();
 
   const started = await hasTournamentStarted(tournamentId);
@@ -66,12 +69,18 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
     getTournamentRanking(tournamentId, 3),
   ]);
 
-  const isFinished = tournament.status === 'finished' || tournament.status === 'FINISHED' || tournament.status === 'completed';
+  const isFinished =
+    tournament.status === "finished" ||
+    tournament.status === "FINISHED" ||
+    tournament.status === "completed";
 
   const enrolled = !!enrollment;
 
   // Map: bracketMatchId -> prediction object
-  const predictionsRecord: Record<number, { winnerId: number; score?: string }> = {};
+  const predictionsRecord: Record<
+    number,
+    { winnerId: number; score?: string }
+  > = {};
   for (const p of targetPredictions) {
     predictionsRecord[p.bracket_match_id] = {
       winnerId: p.predicted_winner_id,
@@ -79,7 +88,8 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
     };
   }
 
-  const maxRound = matches.length > 0 ? Math.max(...matches.map((m) => m.round)) : 0;
+  const maxRound =
+    matches.length > 0 ? Math.max(...matches.map((m) => m.round)) : 0;
   const dynamicRoundNames = getDynamicRoundNames(maxRound);
 
   function subtractDays(date: string | Date, days: number) {
@@ -98,7 +108,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
 
       <main className="container mx-auto px-4 md:px-32 py-12">
         {!enrolled && !started && <EnrollmentBanner tournament={tournament} />}
-    
+
         {ranking && ranking.length > 0 && !isViewingOthers && (
           <TournamentPodium ranking={ranking} isFinished={isFinished} />
         )}
@@ -107,10 +117,12 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
           <div className="flex flex-col md:flex-row md:items-end gap-4">
             <div>
               <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-                {isViewingOthers ? 'Visualizando Chave' : 'Chaveamento'}
+                {isViewingOthers ? "Visualizando Chave" : "Chaveamento"}
               </h2>
-              {enrolled && !started  && !isViewingOthers && (
-                <span className="text-sm text-emerald-600 font-bold">Inscrito - Faça seus palpites!</span>
+              {enrolled && !started && !isViewingOthers && (
+                <span className="text-sm text-emerald-600 font-bold">
+                  Inscrito - Faça seus palpites!
+                </span>
               )}
             </div>
 
@@ -126,7 +138,11 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
           <div className="flex items-center gap-4">
             {isViewingOthers && (
               <Link
-                href={view === 'ranking' ? `/ranking/torneio/${tournamentId}` : `/ranking`}
+                href={
+                  view === "ranking"
+                    ? `/ranking/torneio/${tournamentId}`
+                    : `/ranking`
+                }
                 className="flex items-center gap-2 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-bold text-sm transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -144,34 +160,37 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
               </div>
               <div>
                 <p className="text-blue-900 font-black text-lg leading-tight">
-                  Você está visualizando os palpites de{' '}
-                  <span className="text-blue-600">{targetUserInfo?.name || 'Usuário'}</span>
-                </p>
-                <p className="text-blue-700/70 text-sm font-bold uppercase tracking-wider">
-                  Modo de Apenas Visualização
+                  Você está visualizando os palpites de{" "}
+                  <span className="text-blue-600">
+                    {targetUserInfo?.name || "Usuário"}
+                  </span>
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {tournament.status === 'upcoming' ||
-        tournament.status === 'draft' ||
-        tournament.status === 'STANDBY' ||
-        tournament.status === 'UPCOMING' ||
+        {tournament.status === "upcoming" ||
+        tournament.status === "draft" ||
+        tournament.status === "STANDBY" ||
+        tournament.status === "UPCOMING" ||
         matches.length === 0 ? (
           <div className="text-center py-24 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm px-6">
-            <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">Você chegou cedo!</h3>
+            <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">
+              Você chegou cedo!
+            </h3>
             <p className="text-slate-500 text-lg font-medium max-w-2xl mx-auto">
               As chaves de simples masculino ainda não estão disponíveis.
-            </p>{' '}
-            <p className="text-slate-500 text-lg font-medium max-w-2xl mx-auto mb-4">Volte aqui por volta de:</p>
+            </p>{" "}
+            <p className="text-slate-500 text-lg font-medium max-w-2xl mx-auto mb-4">
+              Volte aqui por volta de:
+            </p>
             <p className="text-slate-500 text-xl font-bold max-w-2xl mx-auto capitalize">
-              {twoDaysBefore.toLocaleDateString('pt-BR', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
+              {twoDaysBefore.toLocaleDateString("pt-BR", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric",
               })}
             </p>
           </div>

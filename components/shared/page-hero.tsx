@@ -13,6 +13,16 @@ const HERO_IMAGES = [
   "https://images.unsplash.com/photo-1555160679-b1b58488f476?q=80&w=1632&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1572452734990-62a82b486fcf?q=80&w=1471&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1641543678408-f0479974f438?q=80&w=1470&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?q=80&w=1470&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1545151414-8a948e1ea54f?q=80&w=1470&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1542144582-1ba00456b5e3?q=80&w=1470&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1620742820748-87c09249a72a?q=80&w=1470&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1545809074-59472b3f5ecc?q=80&w=1470&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1499510318569-1a3d67dc3976?q=80&w=1470&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?q=80&w=1470&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1530915365347-e35b749a0381?q=80&w=1470&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1541744573515-478c959628a0?q=80&w=1470&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1595435742656-5272d0b3fa82?q=80&w=1470&auto=format&fit=crop",
 ];
 
 export function PageHero({
@@ -38,13 +48,13 @@ export function PageHero({
         />
 
         {/* Overlay forte + blur */}
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+        <div className="absolute inset-0 bg-black/60" />
 
         {/* Glow sutil (efeito premium) */}
         <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-transparent" />
 
         {/* Content */}
-        <div className="relative px-8 py-12 sm:px-12 sm:py-16 md:px-16 md:py-24">
+        <div className="relative px-8 py-12 sm:px-12 sm:py-16 md:px-16 md:py-33">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
             {/* Text block */}
             <div className="space-y-6 max-w-2xl">
