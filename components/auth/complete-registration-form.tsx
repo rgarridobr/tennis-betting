@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { updateProfile } from '@/lib/actions/profile';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { StateCitySelector } from '@/components/shared/state-city-selector';
 import { toast } from 'sonner';
 
@@ -45,16 +45,16 @@ export function CompleteRegistrationForm({ user }: CompleteRegistrationFormProps
   }
 
   return (
-    <Card className="border-0 shadow-xl">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold text-slate-900">Complete seu Cadastro</CardTitle>
-        <CardDescription>
-          Para continuarmos, precisamos que você informe seu estado e cidade.
-          Isso nos ajudará a organizar torneios regionais no futuro!
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form action={handleSubmit} className="space-y-6">
+    <Dialog open={true}>
+      <DialogContent showCloseButton={false} className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold text-slate-900">Complete seu Cadastro</DialogTitle>
+          <DialogDescription>
+            Para continuarmos, precisamos que você informe seu estado e cidade.
+            Isso nos ajudará a organizar torneios regionais no futuro!
+          </DialogDescription>
+        </DialogHeader>
+        <form action={handleSubmit} className="space-y-6 pt-4">
           <StateCitySelector
             selectedState={state}
             selectedCity={city}
@@ -65,7 +65,7 @@ export function CompleteRegistrationForm({ user }: CompleteRegistrationFormProps
 
           <SubmitButton />
         </form>
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   );
 }

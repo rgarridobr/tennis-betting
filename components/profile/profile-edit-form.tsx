@@ -82,100 +82,105 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
   return (
     <div>
       {/* Profile Info Form */}
-      <form action={handleProfileSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="name">Nome Completo (privado) *</Label>
-          <Input
-            id="name"
-            name="name"
-            value={name}
-            onChange={handleNameChange}
-            placeholder=""
-            required
-          />
-        </div>
+      <form action={handleProfileSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="name">Nome Completo (privado) *</Label>
+            <Input
+              id="name"
+              name="name"
+              value={name}
+              onChange={handleNameChange}
+              placeholder=""
+              required
+            />
+          </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="nickname">Apelido <span className="md:block hidden">(visível no site)</span></Label>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="first_name_only_profile"
-                checked={isFirstNameOnlyChecked}
-                onCheckedChange={handleFirstNameOnlyChange}
-              />
-              <label
-                htmlFor="first_name_only_profile"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Apenas o primeiro nome
-              </label>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email *</Label>
+            <Input
+              id="email"
+              name="email"
+              type="text"
+              defaultValue={user.email}
+              disabled
+              className="bg-slate-50 text-slate-500 cursor-not-allowed"
+            />
+            <p className="text-[10px] sm:text-xs text-slate-500 px-1">O email não pode ser alterado</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="nickname">Apelido (visível no site)</Label>
+            <Input
+              id="nickname"
+              name="nickname"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              readOnly={isFirstNameOnlyChecked}
+              className={isFirstNameOnlyChecked ? 'bg-slate-50 cursor-not-allowed' : ''}
+              placeholder=""
+            />
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-2 px-1">
+              <p className="text-[10px] sm:text-xs text-slate-500 flex-1">
+                Apenas o apelido será exibido publicamente
+              </p>
+              <div className="flex items-center space-x-2 shrink-0">
+                <Checkbox
+                  id="first_name_only_profile"
+                  checked={isFirstNameOnlyChecked}
+                  onCheckedChange={handleFirstNameOnlyChange}
+                />
+                <Label
+                  htmlFor="first_name_only_profile"
+                  className="text-[10px] sm:text-xs font-medium cursor-pointer"
+                >
+                  Usar 1º nome
+                </Label>
+              </div>
             </div>
           </div>
-          <Input
-            id="nickname"
-            name="nickname"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            readOnly={isFirstNameOnlyChecked}
-            className={isFirstNameOnlyChecked ? 'bg-slate-50 cursor-not-allowed' : ''}
-            placeholder=""
-          />
-          <p className="text-xs text-slate-500">
-            Seu nome real ficará privado, apenas este apelido será exibido publicamente
-          </p>
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="email">Email *</Label>
-          <Input
-            id="email"
-            name="email"
-            type="text"
-            defaultValue={user.email}
-            disabled
-            className="bg-slate-50 text-slate-500 cursor-not-allowed"
-          />
-          <p className="text-xs text-slate-500">O email não pode ser alterado</p>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="space-y-2">
             <Label htmlFor="tennis_club">Clube em que joga tênis *</Label>
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="no_club_profile" 
-                checked={isNoneChecked}
-                onCheckedChange={handleNoneChange}
-              />
-              <label
-                htmlFor="no_club_profile"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Nenhum
-              </label>
+            <Input
+              id="tennis_club"
+              name="tennis_club"
+              type="text"
+              placeholder=""
+              value={tennisClub}
+              onChange={(e) => setTennisClub(e.target.value)}
+              readOnly={isNoneChecked}
+              className={isNoneChecked ? 'bg-slate-50 cursor-not-allowed' : ''}
+              required
+            />
+            <div className="flex items-center justify-end px-1">
+              <div className="flex items-center space-x-2 shrink-0">
+                <Checkbox 
+                  id="no_club_profile" 
+                  checked={isNoneChecked}
+                  onCheckedChange={handleNoneChange}
+                />
+                <Label
+                  htmlFor="no_club_profile"
+                  className="text-[10px] sm:text-xs font-medium cursor-pointer"
+                >
+                  Não joga em nenhum clube
+                </Label>
+              </div>
             </div>
           </div>
-          <Input
-            id="tennis_club"
-            name="tennis_club"
-            type="text"
-            placeholder=""
-            value={tennisClub}
-            onChange={(e) => setTennisClub(e.target.value)}
-            readOnly={isNoneChecked}
-            className={isNoneChecked ? 'bg-slate-50 cursor-not-allowed' : ''}
-            required
-          />
-        </div>
 
-        <StateCitySelector
-          selectedState={state}
-          selectedCity={city}
-          onStateChange={setState}
-          onCityChange={setCity}
-          required
-        />
+          <div className="md:col-span-2">
+            <StateCitySelector
+              selectedState={state}
+              selectedCity={city}
+              onStateChange={setState}
+              onCityChange={setCity}
+              required
+              layout="grid"
+            />
+          </div>
+        </div>
 
         {message && (
           <div className={`flex items-center gap-2 p-3 rounded-lg text-sm ${

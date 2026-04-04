@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from "react";
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -11,13 +11,13 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command';
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { Label } from '@/components/ui/label';
+} from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
 
 interface State {
   id: number;
@@ -36,6 +36,7 @@ interface StateCitySelectorProps {
   onStateChange: (state: string) => void;
   onCityChange: (city: string) => void;
   required?: boolean;
+  layout?: "vertical" | "grid";
 }
 
 export function StateCitySelector({
@@ -44,6 +45,7 @@ export function StateCitySelector({
   onStateChange,
   onCityChange,
   required = false,
+  layout = "vertical",
 }: StateCitySelectorProps) {
   const [states, setStates] = useState<State[]>([]);
   const [cities, setCities] = useState<City[]>([]);
@@ -57,11 +59,16 @@ export function StateCitySelector({
     async function fetchStates() {
       setLoadingStates(true);
       try {
-        const response = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?ordenar=nome');
-        const data = await response.json();
-        setStates(data);
+        const response = await fetch(
+          "https://servicodados.ibge.gov.br/api/v1/localidades/estados",
+        );
+        const data: State[] = await response.json();
+        const sorted = data.sort((a, b) =>
+          a.nome.localeCompare(b.nome, "pt-BR"),
+        );
+        setStates(sorted);
       } catch (error) {
-        console.error('Error fetching states:', error);
+        console.error("Error fetching states:", error);
       } finally {
         setLoadingStates(false);
       }
@@ -80,12 +87,15 @@ export function StateCitySelector({
       setLoadingCities(true);
       try {
         const response = await fetch(
-          `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedState}/municipios?ordenar=nome`
+          `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedState}/municipios`,
         );
-        const data = await response.json();
-        setCities(data);
+        const data: City[] = await response.json();
+        const sorted = data.sort((a, b) =>
+          a.nome.localeCompare(b.nome, "pt-BR"),
+        );
+        setCities(sorted);
       } catch (error) {
-        console.error('Error fetching cities:', error);
+        console.error("Error fetching cities:", error);
       } finally {
         setLoadingCities(false);
       }
@@ -94,25 +104,33 @@ export function StateCitySelector({
   }, [selectedState]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div
+      className={
+        layout === "grid"
+          ? "grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6"
+          : "flex flex-col gap-4"
+      }
+    >
       <div className="space-y-2">
-        <Label htmlFor="state">Estado {required && '*'}</Label>
-        <Popover open={openState} onOpenChange={setOpenState}>
+        <Label htmlFor="state">Estado {required && "*"}</Label>
+        <Popover modal={true} open={openState} onOpenChange={setOpenState}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               role="combobox"
               aria-expanded={openState}
-              className="w-full justify-between"
+              className="w-full justify-between overflow-hidden"
               disabled={loadingStates}
             >
-              {loadingStates ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : selectedState ? (
-                states.find((state) => state.sigla === selectedState)?.nome
-              ) : (
-                "Selecione o estado..."
-              )}
+              <span className="truncate flex-1 text-left">
+                {loadingStates ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin inline" />
+                ) : selectedState ? (
+                  states.find((state) => state.sigla === selectedState)?.nome
+                ) : (
+                  "Selecione o estado..."
+                )}
+              </span>
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
@@ -128,14 +146,16 @@ export function StateCitySelector({
                       value={state.nome}
                       onSelect={() => {
                         onStateChange(state.sigla);
-                        onCityChange(''); // Reset city when state changes
+                        onCityChange(""); // Reset city when state changes
                         setOpenState(false);
                       }}
                     >
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          selectedState === state.sigla ? "opacity-100" : "opacity-0"
+                          selectedState === state.sigla
+                            ? "opacity-100"
+                            : "opacity-0",
                         )}
                       />
                       {state.nome}
@@ -146,29 +166,37 @@ export function StateCitySelector({
             </Command>
           </PopoverContent>
         </Popover>
-        <input type="hidden" name="state" value={selectedState} required={required} />
+        <input
+          type="hidden"
+          name="state"
+          value={selectedState}
+          required={required}
+        />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="city">Cidade {required && '*'}</Label>
-        <Popover open={openCity} onOpenChange={setOpenCity}>
+        <Label htmlFor="city">Cidade {required && "*"}</Label>
+        <Popover modal={true} open={openCity} onOpenChange={setOpenCity}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               role="combobox"
               aria-expanded={openCity}
-              className="w-full justify-between"
+              className="w-full justify-between overflow-hidden"
               disabled={!selectedState || loadingCities}
             >
-              {loadingCities ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : selectedCity ? (
-                cities.find((city) => city.nome === selectedCity)?.nome || selectedCity
-              ) : !selectedState ? (
-                "Selecione um estado primeiro"
-              ) : (
-                "Selecione a cidade..."
-              )}
+              <span className="truncate flex-1 text-left">
+                {loadingCities ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin inline" />
+                ) : selectedCity ? (
+                  cities.find((city) => city.nome === selectedCity)?.nome ||
+                  selectedCity
+                ) : !selectedState ? (
+                  "Selecione um estado"
+                ) : (
+                  "Selecione a cidade..."
+                )}
+              </span>
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
@@ -177,7 +205,7 @@ export function StateCitySelector({
               <CommandInput placeholder="Buscar cidade..." />
               <CommandList>
                 <CommandEmpty>Nenhuma cidade encontrada.</CommandEmpty>
-                <CommandGroup className="max-h-[300px] overflow-y-auto">
+                <CommandGroup>
                   {cities.map((city) => (
                     <CommandItem
                       key={city.id}
@@ -191,7 +219,9 @@ export function StateCitySelector({
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          selectedCity === city.nome ? "opacity-100" : "opacity-0"
+                          selectedCity === city.nome
+                            ? "opacity-100"
+                            : "opacity-0",
                         )}
                       />
                       {city.nome}
@@ -202,7 +232,12 @@ export function StateCitySelector({
             </Command>
           </PopoverContent>
         </Popover>
-        <input type="hidden" name="city" value={selectedCity} required={required} />
+        <input
+          type="hidden"
+          name="city"
+          value={selectedCity}
+          required={required}
+        />
       </div>
     </div>
   );

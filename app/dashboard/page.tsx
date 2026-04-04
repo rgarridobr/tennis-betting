@@ -16,10 +16,7 @@ export default async function DashboardPage() {
   if (!user) redirect('/login');
   if (user.is_admin) redirect('/admin');
 
-  // Mandatory profile completion for state and city
-  if (!user.state || !user.city) {
-    redirect('/completar-cadastro');
-  }
+
 
   const [tournaments, stats, ranking, activeTournament] = await Promise.all([
     getAllVisibleTournaments(4),

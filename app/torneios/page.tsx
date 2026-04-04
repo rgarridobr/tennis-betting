@@ -25,10 +25,7 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
   if (!user) redirect('/login');
   if (user.is_admin) redirect('/admin');
 
-  // Mandatory profile completion for state and city
-  if (!user.state || !user.city) {
-    redirect('/completar-cadastro');
-  }
+
 
   const { status, search, category, page } = await searchParams;
   const currentPage = page ? parseInt(page) : 1;
