@@ -9,6 +9,8 @@ export interface User {
   nickname?: string;
   whatsapp?: string;
   tennis_club?: string;
+  state?: string;
+  city?: string;
   is_admin: boolean;
   is_active: boolean;
   created_at: string;
@@ -54,7 +56,7 @@ export async function getSession(): Promise<User | null> {
   if (!token) return null;
 
   const sessions = await sql`
-    SELECT u.id, u.name, u.email, u.nickname, u.whatsapp, u.tennis_club, u.is_admin, u.is_active, u.created_at
+    SELECT u.id, u.name, u.email, u.nickname, u.whatsapp, u.tennis_club, u.state, u.city, u.is_admin, u.is_active, u.created_at
     FROM sessions s
     JOIN users u ON s.user_id = u.id
     WHERE s.token = ${token}
@@ -88,13 +90,15 @@ export async function registerUser(
   whatsapp?: string,
   tennis_club?: string,
   nickname?: string,
+  state?: string,
+  city?: string,
 ): Promise<User> {
   const hashedPassword = await hashPassword(password);
 
   const users = await sql`
-    INSERT INTO users (name, email, whatsapp, tennis_club, nickname, password_hash)
-    VALUES (${name}, ${email}, ${whatsapp}, ${tennis_club}, ${nickname || null}, ${hashedPassword})
-    RETURNING id, name, email, nickname, whatsapp, tennis_club, is_admin, created_at
+    INSERT INTO users (name, email, whatsapp, tennis_club, nickname, password_hash, state, city)
+    VALUES (${name}, ${email}, ${whatsapp}, ${tennis_club}, ${nickname || null}, ${hashedPassword}, ${state || null}, ${city || null})
+    RETURNING id, name, email, nickname, whatsapp, tennis_club, state, city, is_admin, created_at
   `;
 
   return users[0] as User;
@@ -102,7 +106,7 @@ export async function registerUser(
 
 export async function loginUser(email: string, password: string): Promise<User | null> {
   const users = await sql`
-    SELECT id, name, email, nickname, whatsapp, tennis_club, password_hash, is_admin, is_active, created_at
+    SELECT id, name, email, nickname, whatsapp, tennis_club, state, city, password_hash, is_admin, is_active, created_at
     FROM users WHERE email = ${email}
     AND (is_deleted IS FALSE OR is_deleted IS NULL)
   `;
@@ -121,6 +125,8 @@ export async function loginUser(email: string, password: string): Promise<User |
     nickname: user.nickname as string,
     whatsapp: user.whatsapp as string,
     tennis_club: user.tennis_club as string,
+    state: user.state as string,
+    city: user.city as string,
     is_admin: user.is_admin as boolean,
     is_active: user.is_active as boolean,
     created_at: user.created_at as string,

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
+import { StateCitySelector } from '@/components/shared/state-city-selector'
 import { updateProfile } from '@/lib/actions/profile'
 import { Loader2, Check, AlertCircle } from 'lucide-react'
 
@@ -16,6 +17,8 @@ interface ProfileEditFormProps {
     email: string
     nickname?: string
     tennis_club?: string
+    state?: string
+    city?: string
   }
 }
 
@@ -25,6 +28,8 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
   const [name, setName] = useState(user.name)
   const [nickname, setNickname] = useState(user.nickname || '')
   const [tennisClub, setTennisClub] = useState(user.tennis_club || '')
+  const [state, setState] = useState(user.state || '')
+  const [city, setCity] = useState(user.city || '')
   const [isNoneChecked, setIsNoneChecked] = useState(user.tennis_club === 'Nenhum')
   const [isFirstNameOnlyChecked, setIsFirstNameOnlyChecked] = useState(false)
 
@@ -163,6 +168,14 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
             required
           />
         </div>
+
+        <StateCitySelector
+          selectedState={state}
+          selectedCity={city}
+          onStateChange={setState}
+          onCityChange={setCity}
+          required
+        />
 
         {message && (
           <div className={`flex items-center gap-2 p-3 rounded-lg text-sm ${
