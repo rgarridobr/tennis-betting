@@ -72,7 +72,7 @@ export default async function HomePage() {
       <main>
         {/* Hero Section */}
         <div className="container mx-auto px-4 md:px-32 py-8">
-          <div className="relative overflow-hidden rounded-[2.5rem] shadow-2xl">
+          <div className="relative overflow-hidden rounded-[2.5rem]">
             {/* Background */}
             <div
               className="absolute inset-0 bg-cover bg-center brightness-75 scale-105"

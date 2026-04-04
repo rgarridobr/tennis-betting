@@ -93,14 +93,14 @@ export function TournamentCard({ tournament, href }: TournamentCardProps) {
       href={href || `/torneios/${tournament.id}`}
       className="block h-full outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-[2rem]"
     >
-      <Card className="overflow-hidden border border-slate-200/60 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.12)] transition-all duration-500 group hover:-translate-y-1.5 h-full flex flex-col rounded-[2rem]">
+      <Card className="pt-0 overflow-hidden border border-slate-200/60 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.12)] transition-all duration-500 group hover:-translate-y-1.5 h-full flex flex-col rounded-[2rem]">
+        {" "}
         <div className="relative h-60 shrink-0 overflow-hidden">
           <img
             src={imageUrl || "/placeholder.svg"}
             alt={tournament.name}
-            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            className="w-full h-full object-cover rounded-t-[2rem] transition-transform duration-700 ease-out group-hover:scale-105"
           />
-
           <div className="absolute top-4 right-4 flex gap-2">
             <Badge
               variant="outline"
@@ -127,7 +127,6 @@ export function TournamentCard({ tournament, href }: TournamentCardProps) {
             </h3>
           </div>
         </div>
-
         <CardContent className="p-0 flex-1 flex flex-col justify-between bg-white relative overflow-hidden">
           <div className="absolute -right-6 -bottom-6 opacity-[0.02] transform rotate-12 transition-transform duration-700 group-hover:rotate-0 group-hover:scale-110 pointer-events-none text-slate-900">
             <Trophy size={140} strokeWidth={1} />
@@ -135,7 +134,7 @@ export function TournamentCard({ tournament, href }: TournamentCardProps) {
           {/* Decorative background element */}
 
           <div className="flex flex-col text-sm font-medium text-slate-600 relative z-10 w-full">
-            <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50/80 transition-colors duration-300 group-hover:bg-emerald-50/50 border border-slate-100/50">
+            <div className="flex items-center gap-3 p-2.5 rounded-xl">
               <div className="p-2 rounded-lg bg-emerald-100/80 text-emerald-600 shadow-sm shrink-0">
                 <Icon iconNode={tennisBall} className="w-4 h-4" />
               </div>
@@ -144,7 +143,7 @@ export function TournamentCard({ tournament, href }: TournamentCardProps) {
               </span>
             </div>
 
-            <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50/80 transition-colors duration-300 group-hover:bg-blue-50/50 border border-slate-100/50">
+            <div className="flex items-center gap-3 p-2.5 rounded-xl">
               <div className="p-2 rounded-lg bg-blue-100/80 text-blue-600 shadow-sm shrink-0">
                 <MapPin className="w-4 h-4" />
               </div>
@@ -153,7 +152,7 @@ export function TournamentCard({ tournament, href }: TournamentCardProps) {
               </span>
             </div>
 
-            <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50/80 transition-colors duration-300 group-hover:bg-amber-50/50 border border-slate-100/50">
+            <div className="flex items-center gap-3 p-2.5 rounded-xl">
               <div className="p-2 rounded-lg bg-amber-100/80 text-amber-600 shadow-sm shrink-0">
                 <Calendar className="w-4 h-4" />
               </div>
