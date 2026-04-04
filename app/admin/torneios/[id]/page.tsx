@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getTournamentById, getBracketMatches, getPlayers } from '@/lib/data';
+import { getTournamentById, getBracketMatches, getPlayers, getTournamentRanking } from '@/lib/data';
 import { getDynamicRoundNames } from '@/lib/utils';
 import { isRound1Complete } from '@/lib/admin';
 import { PageHero } from '@/components/shared/page-hero';
@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { ptBR } from 'date-fns/locale';
 import { format } from 'date-fns';
 import { EditTournamentDateModal } from '@/components/admin/edit-tournament-date-modal';
+import { TournamentPodium } from '@/components/tournament/tournament-podium';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -32,11 +33,14 @@ export default async function ManageTournamentPage({ params }: Props) {
   const tournament = await getTournamentById(tournamentId);
   if (!tournament) notFound();
 
-  const [matches, players, round1Complete] = await Promise.all([
+  const [matches, players, round1Complete, ranking] = await Promise.all([
     getBracketMatches(tournamentId),
     getPlayers(),
     isRound1Complete(tournamentId),
+    getTournamentRanking(tournamentId, 3),
   ]);
+
+  const isFinished = tournament.status === 'finished' || tournament.status === 'FINISHED' || tournament.status === 'completed';
 
   const assignedPlayerIds = new Set<number>();
   matches.forEach((m) => {
@@ -112,6 +116,9 @@ export default async function ManageTournamentPage({ params }: Props) {
             </Badge>
           </div>
         </div>
+
+        {/* Podium / Winners */}
+        <TournamentPodium ranking={ranking} isFinished={isFinished} />
 
         {/* Gerenciar Jogadores */}
         <div className="mb-8">

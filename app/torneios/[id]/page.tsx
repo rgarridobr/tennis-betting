@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { TournamentBracket } from '@/components/tournament/tournament-bracket';
 import { EnrollmentBanner } from '@/components/tournament/enrollment-banner';
 import { TournamentRanking } from '@/components/tournament/tournament-ranking';
+import { TournamentPodium } from '@/components/tournament/tournament-podium';
 
 interface TournamentPageProps {
   params: Promise<{ id: string }>;
@@ -53,6 +54,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
     tournamentPlayers,
     targetUserInfo,
     activeTournament,
+    ranking,
   ] = await Promise.all([
     getBracketMatches(tournamentId),
     getUserPredictions(targetUserId, tournamentId),
@@ -61,7 +63,10 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
     getTournamentPlayers(tournamentId),
     isViewingOthers ? getUserPublicInfo(targetUserId) : null,
     getActiveTournament(),
+    getTournamentRanking(tournamentId, 3),
   ]);
+
+  const isFinished = tournament.status === 'finished' || tournament.status === 'FINISHED' || tournament.status === 'completed';
 
   const enrolled = !!enrollment;
 
@@ -93,6 +98,10 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
 
       <main className="container mx-auto px-4 md:px-32 py-12">
         {!enrolled && !started && <EnrollmentBanner tournament={tournament} />}
+    
+        {ranking && ranking.length > 0 && !isViewingOthers && (
+          <TournamentPodium ranking={ranking} isFinished={isFinished} />
+        )}
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div className="flex flex-col md:flex-row md:items-end gap-4">
