@@ -6,6 +6,7 @@ import { PageHero } from '@/components/shared/page-hero';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PlayerManager } from '@/components/admin/player-manager';
+import { SyncTournamentBracketButton } from '@/components/admin/sync-tournament-bracket-button';
 import { PublishBracketButton } from '@/components/admin/publish-bracket-button';
 import { TournamentStatusTransition } from '@/components/admin/tournament-status-transition';
 import { TournamentBracket } from '@/components/tournament/tournament-bracket';
@@ -173,8 +174,11 @@ export default async function ManageTournamentPage({ params }: Props) {
         {/* Rodadas do Chaveamento */}
         <div className="space-y-6 pb-2">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
               <h2 className="text-2xl font-black text-slate-900 tracking-tight">Chaveamento</h2>
+            {(tournament.status === 'STANDBY' || tournament.status === 'upcoming' || tournament.status === 'UPCOMING') && (
+              <SyncTournamentBracketButton tournamentId={tournamentId} />
+            )}
               {tournament.status !== 'draft' && (
                 <Badge className="bg-emerald-600 text-white font-black px-4 py-1.5 rounded-full">CHAVE FIXA</Badge>
               )}

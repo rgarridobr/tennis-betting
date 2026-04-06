@@ -1,6 +1,8 @@
 'use server'
 
 import { getSession, registerUser } from '@/lib/auth'
+import { sql } from '@/lib/db'
+import { fetchAtpDraw } from '@/lib/services/atp-draw'
 import {
   createTournament,
   updateTournamentStatus,
@@ -25,6 +27,7 @@ import {
   updatePlaceholderPlayer,
   deleteTournament,
   isRound1Complete,
+  getBracketMatches,
   updateUser,
   toggleUserStatus,
   softDeleteUser,
@@ -414,6 +417,132 @@ export async function deleteUserAction(userId: number) {
   await softDeleteUser(userId)
   revalidatePath('/admin/usuarios')
   return { success: true }
+}
+
+// ==================== ATP DRAW SYNC ====================
+
+function extractFullNameFromHref(href: string | null, fallback: string): string {
+  if (!href) return fallback
+  const parts = href.split('/')
+  const playersIdx = parts.indexOf('players')
+  if (playersIdx === -1 || playersIdx >= parts.length - 1) return fallback
+
+  const slug = parts[playersIdx + 1] // e.g. carlos-alcaraz
+  return slug
+    .split('-')
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+    .join(' ')
+}
+
+export async function syncTournamentBracketAction(tournamentId: number) {
+  await requireAdmin()
+
+  const tournament = await sql`
+    SELECT api_id, year, slug FROM tournaments WHERE id = ${tournamentId}
+  `
+
+  if (tournament.length === 0) {
+    return { success: false, error: 'Torneio não encontrado' }
+  }
+
+  const { api_id, year, slug } = tournament[0]
+
+  if (!api_id) {
+    return { success: false, error: 'ID da API ATP não configurado para este torneio' }
+  }
+
+  // Remove o ano do final do slug para obter o slug da ATP (ex: basel-2024 -> basel, roland-garros-2024 -> roland-garros)
+  const atpSlug = slug.replace(new RegExp(`-${year}$`), '')
+
+  try {
+    const drawMatches = await fetchAtpDraw(api_id, year, atpSlug)
+
+    if (drawMatches.length === 0) {
+      return { success: false, error: 'Nenhuma partida encontrada no chaveamento da ATP' }
+    }
+
+    // Buscar partidas da primeira rodada do nosso banco
+    const ourMatches = await sql`
+      SELECT id, position FROM bracket_matches
+      WHERE tournament_id = ${tournamentId} AND round = 1
+      ORDER BY position ASC
+    `
+
+    if (ourMatches.length === 0) {
+      return { success: false, error: 'Chaveamento ainda não foi gerado no sistema' }
+    }
+
+    let updatedCount = 0
+
+    // Mapear cada partida da ATP para a nossa partida correspondente na Rodada 1
+    // drawMatches costumam ser retornadas na ordem de exibição (topo para baixo)
+    for (let i = 0; i < ourMatches.length; i++) {
+      const ourMatch = ourMatches[i]
+      const atpMatch = drawMatches[i]
+
+      if (!atpMatch) break
+
+      const playersToUpdate = []
+
+      for (let pIdx = 0; pIdx < 2; pIdx++) {
+        const atpPlayer = atpMatch.players[pIdx]
+        if (!atpPlayer) {
+          playersToUpdate.push({ id: null, type: 'PLAYER', seed: null })
+          continue
+        }
+
+        if (atpPlayer.type === 'BYE') {
+          playersToUpdate.push({ id: null, type: 'BYE', seed: null })
+          continue
+        }
+
+        // Tentar encontrar ou criar o jogador no banco
+        const fullName = extractFullNameFromHref(atpPlayer.href, atpPlayer.name)
+
+        // Match por nome (case insensitive)
+        let playerRecord = await sql`
+          SELECT id FROM players WHERE name ILIKE ${fullName} OR name ILIKE ${atpPlayer.name}
+        `
+
+        let playerId: number
+        if (playerRecord.length === 0) {
+          const newPlayer = await sql`
+            INSERT INTO players (name, country, display_name)
+            VALUES (${fullName}, ${atpPlayer.country || null}, ${atpPlayer.name})
+            RETURNING id
+          `
+          playerId = newPlayer[0].id
+        } else {
+          playerId = playerRecord[0].id
+          // Atualizar país se disponível e não cadastrado
+          if (atpPlayer.country) {
+            await sql`UPDATE players SET country = ${atpPlayer.country} WHERE id = ${playerId} AND country IS NULL`
+          }
+        }
+
+        playersToUpdate.push({
+          id: playerId,
+          type: atpPlayer.type === 'SEED' ? 'PLAYER' : atpPlayer.type, // No nosso sistema SEED é PLAYER com seed
+          seed: atpPlayer.seed ? parseInt(atpPlayer.seed, 10) : null
+        })
+      }
+
+      // Atualizar a partida no banco
+      await setMatchPlayers(
+        ourMatch.id,
+        playersToUpdate[0],
+        playersToUpdate[1],
+        tournamentId
+      )
+      updatedCount++
+    }
+
+    revalidatePath(`/admin/torneios/${tournamentId}`)
+    return { success: true, updatedCount }
+  } catch (error: any) {
+    console.error('Error syncing bracket:', error)
+    return { success: false, error: 'Erro ao sincronizar chaveamento: ' + error.message }
+  }
 }
 
 // ==================== METADATA ====================
