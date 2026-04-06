@@ -1,112 +1,121 @@
-import { chromium } from 'playwright'
+import { chromium } from "playwright";
 
 export interface AtpMatchPlayer {
-  name: string
-  href: string | null
-  seed: string | null
-  country: string | null
-  type: 'PLAYER' | 'SEED' | 'QUALIFIER' | 'WILD_CARD' | 'LUCKY_LOSER' | 'BYE'
+  name: string;
+  href: string | null;
+  seed: string | null;
+  country: string | null;
+  type: "PLAYER" | "SEED" | "QUALIFIER" | "WILD_CARD" | "LUCKY_LOSER" | "BYE";
 }
 
 export interface AtpMatch {
-  matchIndex: number
-  players: AtpMatchPlayer[]
+  matchIndex: number;
+  players: AtpMatchPlayer[];
 }
 
-export async function fetchAtpDraw(atpId: string, year: number, slug: string): Promise<AtpMatch[]> {
-  const browser = await chromium.launch({ headless: true })
+export async function fetchAtpDraw(
+  atpId: string,
+  year: number,
+  slug: string,
+): Promise<AtpMatch[]> {
+  const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  })
-
-  page.on('console', msg => console.log('BROWSER CONSOLE:', msg.text()))
+    userAgent:
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  });
 
   try {
     // Attempt current year draws first
-    const currentUrl = `https://www.atptour.com/en/scores/current/${slug}/${atpId}/draws`
-    const archiveUrl = `https://www.atptour.com/en/scores/archive/${slug}/${atpId}/${year}/draws`
-    
-    console.log(`Attempting to fetch ATP draw from: ${currentUrl}`)
+    const currentUrl = `https://www.atptour.com/en/scores/current/${slug}/${atpId}/draws`;
+    const archiveUrl = `https://www.atptour.com/en/scores/archive/${slug}/${atpId}/${year}/draws`;
+
     let response;
     try {
-      response = await page.goto(currentUrl, { waitUntil: 'domcontentloaded', timeout: 30000 })
+      response = await page.goto(currentUrl, {
+        waitUntil: "domcontentloaded",
+        timeout: 30000,
+      });
     } catch (e) {
-      console.log(`Current draw timeout or error, trying archive...`)
+      console.log(`Current draw timeout or error, trying archive...`);
     }
-    
+
     // If not found or redirected to a non-draw page, try archive
-    if (!response || response.status() >= 400 || !page.url().includes('/draws')) {
-      console.log(`Current draw not found or error, attempting archive: ${archiveUrl}`)
-      await page.goto(archiveUrl, { waitUntil: 'domcontentloaded', timeout: 30000 })
+    if (
+      !response ||
+      response.status() >= 400 ||
+      !page.url().includes("/draws")
+    ) {
+      console.log(
+        `Current draw not found or error, attempting archive: ${archiveUrl}`,
+      );
+      await page.goto(archiveUrl, {
+        waitUntil: "domcontentloaded",
+        timeout: 30000,
+      });
     }
 
     const drawData = await page.evaluate(() => {
-        const matches: any[] = []
-        const items = document.querySelectorAll('.draw-round-wrapper:first-child .draw-item, .draw-items-wrapper:first-child .draw-item, div.draw-item')
-        
-        console.log(`Found ${items.length} items`)
-        
-        items.forEach((item, index) => {
-            const players: any[] = []
-            const playerInfos = item.querySelectorAll('.player-info, .draw-player-content')
-            
-            playerInfos.forEach(pInfo => {
-                const link = pInfo.querySelector('a[href*="/en/players/"]')
-                const name = link?.textContent?.trim()
-                const href = link?.getAttribute('href')
-                
-                // Tenta buscar a seed/wc na classe .seed tradicional ou no span dentro de .name
-                const rawSeedText = pInfo.querySelector('.seed')?.textContent 
-                                 || pInfo.querySelector('.name span')?.textContent
-                
-                console.log(`Parsing player: ${name}, raw seed text: "${rawSeedText}"`)
-                const seed = rawSeedText?.trim().replace(/[()]/g, '')
-                const country = pInfo.querySelector('.draw-country-flag img')?.getAttribute('alt')?.trim()
-                
-                const isBye = pInfo.textContent?.toLowerCase().includes('bye')
-                
-                let type = 'PLAYER'
-                if (isBye) type = 'BYE'
-                else if (seed === 'Q') type = 'QUALIFIER'
-                else if (seed === 'WC') type = 'WILDCARD'
-                else if (seed === 'LL') type = 'LUCKY_LOSER'
-                else if (seed && !isNaN(parseInt(seed))) type = 'SEED'
+      const matches: any[] = [];
+      const items = document.querySelectorAll(
+        ".draw-round-wrapper:first-child .draw-item, .draw-items-wrapper:first-child .draw-item, div.draw-item",
+      );
 
-                let playerName = isBye ? 'BYE' : (name || pInfo.textContent?.trim());
+      items.forEach((item, index) => {
+        const players: any[] = [];
+        const playerInfos = item.querySelectorAll(
+          ".player-info, .draw-player-content",
+        );
 
-                players.push({
-                    name: playerName,
-                    href: isBye ? null : href,
-                    seed: isBye ? null : (seed || null),
-                    country: isBye ? null : (country || null),
-                    type
-                })
-            })
-            
-            if (players.length > 0) {
-                matches.push({
-                    matchIndex: index,
-                    players
-                })
-            }
-        })
-        return matches
-    })
+        playerInfos.forEach((pInfo) => {
+          const link = pInfo.querySelector('a[href*="/en/players/"]');
+          const name = link?.textContent?.trim();
+          const href = link?.getAttribute("href");
 
-    console.log("==== DEBUG ATP DRAW DATA ====")
-    drawData.forEach(match => {
-      console.log(`Match ${match.matchIndex}:`)
-      match.players.forEach((p: any) => {
-        console.log(`  - name: "${p.name}", seed: "${p.seed}", type: "${p.type}"`)
-      })
-    })
-    console.log("=============================")
+          const rawSeedText =
+            pInfo.querySelector(".seed")?.textContent ||
+            pInfo.querySelector(".name span")?.textContent;
 
-    return drawData as AtpMatch[]
+          const seed = rawSeedText?.trim().replace(/[()]/g, "");
+          const country = pInfo
+            .querySelector(".draw-country-flag img")
+            ?.getAttribute("alt")
+            ?.trim();
+
+          const isBye = pInfo.textContent?.toLowerCase().includes("bye");
+
+          let type = "PLAYER";
+          if (isBye) type = "BYE";
+          else if (seed === "Q") type = "QUALIFIER";
+          else if (seed === "WC") type = "WILDCARD";
+          else if (seed === "LL") type = "LUCKY_LOSER";
+          else if (seed && !isNaN(parseInt(seed))) type = "SEED";
+
+          let playerName = isBye ? "BYE" : name || pInfo.textContent?.trim();
+
+          players.push({
+            name: playerName,
+            href: isBye ? null : href,
+            seed: isBye ? null : seed || null,
+            country: isBye ? null : country || null,
+            type,
+          });
+        });
+
+        if (players.length > 0) {
+          matches.push({
+            matchIndex: index,
+            players,
+          });
+        }
+      });
+      return matches;
+    });
+
+    return drawData as AtpMatch[];
   } catch (err) {
-    console.error('Failed to fetch ATP draw:', err)
-    throw err
+    console.error("Failed to fetch ATP draw:", err);
+    throw err;
   } finally {
-    await browser.close()
+    await browser.close();
   }
 }
