@@ -856,7 +856,7 @@ function PlayerRow({
             const isSetWinner = parseInt(setScore) > parseInt(opponentScore);
 
             return (
-              setScore !== undefined && (
+              setScore !== undefined && setScore !== "BYE" && (
                 <React.Fragment key={i}>
                   <div
                     className={cn(

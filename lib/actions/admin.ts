@@ -26,8 +26,6 @@ import {
   randomizeFirstRound,
   updatePlaceholderPlayer,
   deleteTournament,
-  isRound1Complete,
-  getBracketMatches,
   updateUser,
   toggleUserStatus,
   softDeleteUser,
@@ -463,7 +461,7 @@ export async function syncTournamentBracketAction(tournamentId: number) {
 
     // Buscar partidas da primeira rodada do nosso banco
     const ourMatches = await sql`
-      SELECT id, position FROM bracket_matches
+      SELECT id, position FROM bracket_matches 
       WHERE tournament_id = ${tournamentId} AND round = 1
       ORDER BY position ASC
     `
@@ -497,34 +495,60 @@ export async function syncTournamentBracketAction(tournamentId: number) {
         }
 
         // Tentar encontrar ou criar o jogador no banco
-        const fullName = extractFullNameFromHref(atpPlayer.href, atpPlayer.name)
+        const fullName = extractFullNameFromHref(atpPlayer.href, atpPlayer.name);
+        const displayName = atpPlayer.name;
 
-        // Match por nome (case insensitive)
+        // Matching logic improvement:
+        // 1. Try full name match (slug-based)
+        // 2. Try display name match
+        // 3. Try partial matches for common patterns (e.g., "Z. Zhang" matches "Zhizhen Zhang")
         let playerRecord = await sql`
-          SELECT id FROM players WHERE name ILIKE ${fullName} OR name ILIKE ${atpPlayer.name}
-        `
+          SELECT id, name, display_name FROM players 
+          WHERE name ILIKE ${fullName} 
+             OR display_name ILIKE ${displayName}
+             OR name ILIKE ${displayName}
+             OR display_name ILIKE ${fullName}
+        `;
 
-        let playerId: number
+        // If no direct match, try a more relaxed search for short names like "Z. Zhang"
+        if (playerRecord.length === 0 && displayName.includes('. ')) {
+          const [initial, lastName] = displayName.split('. ');
+          if (lastName) {
+            const searchPattern = `${initial.charAt(0)}% ${lastName}`;
+            playerRecord = await sql`
+              SELECT id, name, display_name FROM players 
+              WHERE name ILIKE ${searchPattern} OR display_name ILIKE ${searchPattern}
+            `;
+          }
+        }
+
+        let playerId: number;
         if (playerRecord.length === 0) {
           const newPlayer = await sql`
             INSERT INTO players (name, country, display_name)
-            VALUES (${fullName}, ${atpPlayer.country || null}, ${atpPlayer.name})
+            VALUES (${fullName}, ${atpPlayer.country || null}, ${displayName})
             RETURNING id
-          `
-          playerId = newPlayer[0].id
+          `;
+          playerId = newPlayer[0].id;
         } else {
-          playerId = playerRecord[0].id
-          // Atualizar país se disponível e não cadastrado
-          if (atpPlayer.country) {
-            await sql`UPDATE players SET country = ${atpPlayer.country} WHERE id = ${playerId} AND country IS NULL`
+          playerId = playerRecord[0].id;
+          // Update country and always update display_name to reflect current seed structure
+          if (atpPlayer.country || displayName) {
+            await sql`
+              UPDATE players 
+              SET 
+                country = COALESCE(country, ${atpPlayer.country || null}),
+                display_name = ${displayName}
+              WHERE id = ${playerId}
+            `;
           }
         }
 
         playersToUpdate.push({
           id: playerId,
-          type: atpPlayer.type === 'SEED' ? 'PLAYER' : atpPlayer.type, // No nosso sistema SEED é PLAYER com seed
-          seed: atpPlayer.seed ? parseInt(atpPlayer.seed, 10) : null
-        })
+          type: atpPlayer.type,
+          seed: atpPlayer.seed && !isNaN(parseInt(atpPlayer.seed, 10)) ? parseInt(atpPlayer.seed, 10) : null,
+        });
       }
 
       // Atualizar a partida no banco
