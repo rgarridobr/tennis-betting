@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PlayerManager } from '@/components/admin/player-manager';
 import { SyncTournamentBracketButton } from '@/components/admin/sync-tournament-bracket-button';
+import { SyncTournamentBracketButton } from '@/components/admin/sync-tournament-bracket-button';
 import { PublishBracketButton } from '@/components/admin/publish-bracket-button';
 import { TournamentStatusTransition } from '@/components/admin/tournament-status-transition';
 import { TournamentBracket } from '@/components/tournament/tournament-bracket';
