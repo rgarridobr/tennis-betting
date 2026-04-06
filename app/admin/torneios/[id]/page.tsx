@@ -119,7 +119,7 @@ export default async function ManageTournamentPage({ params }: Props) {
         </div>
 
         {/* Podium / Winners */}
-        <TournamentPodium ranking={ranking} isFinished={isFinished} />
+        {ranking.length > 0 && (tournament.status === 'IN_PROGRESS' || tournament.status === 'FINISHED') && <TournamentPodium ranking={ranking} isFinished={isFinished} />}
 
         {/* Gerenciar Jogadores */}
         <div className="mb-8">

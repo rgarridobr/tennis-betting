@@ -25,34 +25,13 @@ export async function fetchAtpDraw(
   });
 
   try {
-    // Attempt current year draws first
-    const currentUrl = `https://www.atptour.com/en/scores/current/${slug}/${atpId}/draws`;
     const archiveUrl = `https://www.atptour.com/en/scores/archive/${slug}/${atpId}/${year}/draws`;
 
-    let response;
-    try {
-      response = await page.goto(currentUrl, {
-        waitUntil: "domcontentloaded",
-        timeout: 30000,
-      });
-    } catch (e) {
-      console.log(`Current draw timeout or error, trying archive...`);
-    }
-
-    // If not found or redirected to a non-draw page, try archive
-    if (
-      !response ||
-      response.status() >= 400 ||
-      !page.url().includes("/draws")
-    ) {
-      console.log(
-        `Current draw not found or error, attempting archive: ${archiveUrl}`,
-      );
-      await page.goto(archiveUrl, {
-        waitUntil: "domcontentloaded",
-        timeout: 30000,
-      });
-    }
+    console.log(`Attempting to fetch ATP draw from: ${archiveUrl}`);
+    await page.goto(archiveUrl, {
+      waitUntil: "domcontentloaded",
+      timeout: 30000,
+    });
 
     const drawData = await page.evaluate(() => {
       const matches: any[] = [];
