@@ -1,5 +1,3 @@
-import { chromium } from "playwright";
-
 export interface AtpMatchPlayer {
   name: string;
   href: string | null;
@@ -18,7 +16,26 @@ export async function fetchAtpDraw(
   year: number,
   slug: string,
 ): Promise<AtpMatch[]> {
-  const browser = await chromium.launch({ headless: true });
+  let browser;
+
+  if (process.env.VERCEL || process.env.NODE_ENV === "production") {
+    const playwrightCore = require("playwright-core");
+    const setupChromium = require("@sparticuz/chromium-min");
+    
+    // We download the chromium pack dynamically in serverless environments to bypass size limits.
+    const executablePath = await setupChromium.default.executablePath("https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar");
+
+    browser = await playwrightCore.chromium.launch({
+      args: setupChromium.default.args,
+      executablePath: executablePath,
+      headless: setupChromium.default.headless,
+    });
+  } else {
+    // In local development, we can just use the standard playwright package
+    const { chromium } = require("playwright");
+    browser = await chromium.launch({ headless: true });
+  }
+
   const page = await browser.newPage({
     userAgent:
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
