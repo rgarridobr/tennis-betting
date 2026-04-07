@@ -23,12 +23,12 @@ export async function fetchAtpDraw(
     const setupChromium = require("@sparticuz/chromium-min");
     
     // We download the chromium pack dynamically in serverless environments to bypass size limits.
-    const executablePath = await setupChromium.default.executablePath("https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar");
+    const executablePath = await setupChromium.executablePath("https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar");
 
     browser = await playwrightCore.chromium.launch({
-      args: setupChromium.default.args,
+      args: setupChromium.args,
       executablePath: executablePath,
-      headless: setupChromium.default.headless,
+      headless: setupChromium.headless,
     });
   } else {
     // In local development, we can just use the standard playwright package
