@@ -3,12 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "next build",
+    "build": "PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install chromium && next build",
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start",
-    "sync-atp": "tsx scripts/sync-atp-calendar.ts",
-    "postinstall": "npx playwright install --with-deps chromium"
+    "sync-atp": "tsx scripts/sync-atp-calendar.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
