@@ -170,6 +170,8 @@ export function SetPlayersDialog({
   trigger,
   assignedPlayerIds,
   onSuccess,
+  open: externalOpen,
+  onOpenChange: externalOnOpenChange,
 }: {
   match: BracketMatch;
   players: Player[];
@@ -177,8 +179,12 @@ export function SetPlayersDialog({
   trigger?: React.ReactNode;
   assignedPlayerIds?: number[];
   onSuccess?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = externalOnOpenChange || setInternalOpen;
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -252,7 +258,9 @@ export function SetPlayersDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {trigger || (
+        {trigger ? (
+          trigger
+        ) : (
           <Button
             variant="outline"
             size="sm"
@@ -313,14 +321,22 @@ export function ReplaceMatchPlayerDialog({
   tournamentId,
   assignedPlayerIds,
   onSuccess,
+  trigger,
+  open: externalOpen,
+  onOpenChange: externalOnOpenChange,
 }: {
   match: BracketMatch;
   players: Player[];
   tournamentId: number;
   assignedPlayerIds?: number[];
   onSuccess?: () => void;
+  trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = externalOnOpenChange || setInternalOpen;
   const [isPending, startTransition] = useTransition();
   const [selectedSlot, setSelectedSlot] = useState<1 | 2 | null>(null);
   const [playerId, setPlayerId] = useState<string>('');
@@ -375,13 +391,17 @@ export function ReplaceMatchPlayerDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider border-2 border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 hover:text-rose-800"
-        >
-          <RefreshCw className="w-3 h-3 mr-1.5" /> Substituir / LL / Definir Q
-        </Button>
+        {trigger ? (
+          trigger
+        ) : (
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider border-2 border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 hover:text-rose-800"
+          >
+            <RefreshCw className="w-3 h-3 mr-1.5" /> Substituir / LL / Definir Q
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="rounded-[2rem] max-w-lg">
         <DialogHeader>
@@ -476,13 +496,21 @@ export function SetResultDialog({
   tournamentId,
   isFinalRound,
   onSuccess,
+  trigger,
+  open: externalOpen,
+  onOpenChange: externalOnOpenChange,
 }: {
   match: BracketMatch;
   tournamentId: number;
   isFinalRound?: boolean;
   onSuccess?: () => void;
+  trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = externalOnOpenChange || setInternalOpen;
   const [showConfirmFinish, setShowConfirmFinish] = useState(false);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [showConfirmCancelPoints, setShowConfirmCancelPoints] = useState(false);
@@ -583,13 +611,17 @@ export function SetResultDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="default"
-          size="sm"
-          className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-100"
-        >
-          <Trophy className="w-3 h-3 mr-1.5" /> {match.status === 'completed' ? 'Alterar' : 'Resultado'}
-        </Button>
+        {trigger ? (
+          trigger
+        ) : (
+          <Button
+            variant="default"
+            size="sm"
+            className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-100"
+          >
+            <Trophy className="w-3 h-3 mr-1.5" /> {match.status === 'completed' ? 'Alterar' : 'Resultado'}
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="rounded-[2rem] max-w-lg" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
