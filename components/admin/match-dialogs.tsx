@@ -678,6 +678,7 @@ export function SetResultDialog({
               onChange={(e) => setScore(e.target.value)}
               placeholder=""
               required
+              autoFocus={false}
               className="h-14 rounded-2xl border-2 border-slate-100 focus:border-emerald-500 text-lg font-black tracking-widest"
             />
             <div className="flex flex-wrap gap-2">
