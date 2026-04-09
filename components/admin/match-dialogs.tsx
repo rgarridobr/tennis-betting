@@ -591,7 +591,7 @@ export function SetResultDialog({
           <Trophy className="w-3 h-3 mr-1.5" /> {match.status === 'completed' ? 'Alterar' : 'Resultado'}
         </Button>
       </DialogTrigger>
-      <DialogContent className="rounded-[2rem] max-w-lg">
+      <DialogContent className="rounded-[2rem] max-w-lg" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="text-2xl font-black">
             {match.status === 'completed' ? 'Alterar Resultado' : 'Registrar Resultado'}
