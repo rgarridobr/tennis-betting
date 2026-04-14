@@ -6,7 +6,6 @@ import { StatsCards } from '@/components/dashboard/stats-cards';
 import { TournamentCard } from '@/components/dashboard/tournament-card';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { RankingSection } from '@/components/dashboard/ranking-section';
-import { DateBR } from '@/lib/utils';
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';

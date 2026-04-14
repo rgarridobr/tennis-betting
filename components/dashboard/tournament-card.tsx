@@ -4,7 +4,6 @@ import { Calendar, Icon, MapPin, Trophy } from "lucide-react";
 import Link from "next/link";
 import type { Tournament } from "@/lib/data";
 import { tennisBall } from "@lucide/lab";
-import { DateBR } from "@/lib/utils";
 
 interface TournamentCardProps {
   tournament: Tournament;
@@ -36,7 +35,8 @@ function formatDate(dateString: string): string {
 }
 
 export function TournamentCard({ tournament, href }: TournamentCardProps) {
-  const isLockedByDate = new Date(tournament.start_date) <= DateBR();
+  const isLockedByDate = new Date(tournament.start_date) <= new Date();
+  
   const isFinished =
     tournament.status === "finished" ||
     tournament.status === "FINISHED" ||
