@@ -216,7 +216,7 @@ async function syncTournamentStatuses(): Promise<void> {
 export async function getTournamentsActive(): Promise<Tournament[]> {
   await syncTournamentStatuses();
   const rows = await sql`
-    SELECT id, name, surface, location, start_date - INTERVAL '3 hours' as start_date, end_date - INTERVAL '3 hours' as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
     FROM tournaments 
     WHERE is_visible = TRUE 
     AND status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS') 
@@ -228,7 +228,7 @@ export async function getTournamentsActive(): Promise<Tournament[]> {
 export async function getTournamentsActiveThisMonth(): Promise<Tournament[]> {
   await syncTournamentStatuses();
   const rows = await sql`
-    SELECT id, name, surface, location, start_date - INTERVAL '3 hours' as start_date, end_date - INTERVAL '3 hours' as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
     FROM tournaments
     WHERE is_visible = TRUE
       AND status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS')
@@ -242,7 +242,7 @@ export async function getTournamentsActiveThisMonth(): Promise<Tournament[]> {
 export async function getTournamentsByYear(year: number): Promise<Tournament[]> {
   await syncTournamentStatuses();
   const rows = await sql`
-    SELECT id, name, surface, location, start_date - INTERVAL '3 hours' as start_date, end_date - INTERVAL '3 hours' as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
     FROM tournaments
     WHERE is_visible = TRUE
       AND EXTRACT(YEAR FROM start_date) = ${year}
@@ -254,7 +254,7 @@ export async function getTournamentsByYear(year: number): Promise<Tournament[]> 
 export async function getTournaments(): Promise<Tournament[]> {
   await syncTournamentStatuses();
   const rows = await sql`
-    SELECT id, name, surface, location, start_date - INTERVAL '3 hours' as start_date, end_date - INTERVAL '3 hours' as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
     FROM tournaments 
     ORDER BY start_date ASC
   `;
@@ -264,7 +264,7 @@ export async function getTournaments(): Promise<Tournament[]> {
 export async function getTournamentsByYearAndMonth(year: number, month: number): Promise<Tournament[]> {
   await syncTournamentStatuses();
   const rows = await sql`
-    SELECT id, name, surface, location, start_date - INTERVAL '3 hours' as start_date, end_date - INTERVAL '3 hours' as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
     FROM tournaments 
     WHERE is_visible = TRUE
     AND EXTRACT(YEAR FROM start_date) = ${year}
@@ -279,7 +279,7 @@ export async function getAllVisibleTournaments(limit?: number): Promise<Tourname
 
   if (limit) {
     const rows = await sql`
-      SELECT id, name, surface, location, start_date - INTERVAL '3 hours' as start_date, end_date - INTERVAL '3 hours' as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+      SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
       FROM tournaments
       WHERE is_visible = TRUE
       ORDER BY
@@ -295,7 +295,7 @@ export async function getAllVisibleTournaments(limit?: number): Promise<Tourname
   }
 
   const rows = await sql`
-    SELECT id, name, surface, location, start_date - INTERVAL '3 hours' as start_date, end_date - INTERVAL '3 hours' as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
     FROM tournaments
     WHERE is_visible = TRUE
     ORDER BY
@@ -335,14 +335,14 @@ export async function getTournamentById(id: number): Promise<Tournament | null> 
       )
   `;
 
-  const rows = await sql`SELECT id, name, surface, location, start_date - INTERVAL '3 hours' as start_date, end_date - INTERVAL '3 hours' as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id FROM tournaments WHERE id = ${id}`;
+  const rows = await sql`SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id FROM tournaments WHERE id = ${id}`;
   return rows.length > 0 ? (rows[0] as Tournament) : null;
 }
 
 export async function getActiveTournament(): Promise<Tournament | null> {
   await syncTournamentStatuses();
   const rows = await sql`
-    SELECT id, name, surface, location, start_date - INTERVAL '3 hours' as start_date, end_date - INTERVAL '3 hours' as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
     FROM tournaments
     WHERE is_visible = TRUE
       AND status IN ('OPEN', 'LOCKED', 'IN_PROGRESS')
@@ -682,14 +682,5 @@ export async function hasTournamentStarted(tournamentId: number): Promise<boolea
   ) {
     return true;
   }
-
-  const result = await sql`
-    SELECT COUNT(*) as count
-    FROM bracket_matches
-    WHERE tournament_id = ${tournamentId}
-      AND status = 'completed'
-      AND score != 'BYE'
-  `;
-
-  return Number(result[0]?.count || 0) > 0;
+  return false;
 }
