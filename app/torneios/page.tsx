@@ -59,7 +59,6 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedTournaments = filteredTournaments.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  console.log(filteredTournaments)
 
   const availableCount = allTournaments.filter((t) =>
     ['active', 'published', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS'].includes(t.status),
