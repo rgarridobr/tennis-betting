@@ -342,7 +342,7 @@ export function TournamentBracket({
           <div
             key={selectedRound}
             className={cn(
-              'flex gap-24 relative pb-20 min-w-max justify-center animate-in fade-in duration-500 p-8 md:p-12 pt-0',
+              'flex gap-24 relative pb-20 min-w-max md:min-w-max justify-center animate-in fade-in duration-500 p-2 md:p-12 pt-0',
               direction === 'right'
                 ? 'slide-in-from-right-8'
                 : direction === 'left'
@@ -363,7 +363,13 @@ export function TournamentBracket({
                 const paddingTop = multiplier === 1 ? 0 : ((multiplier - 1) * (CARD_HEIGHT + BASE_GAP)) / 2;
 
                 return (
-                  <div key={round} className="flex flex-col w-[300px] relative z-10">
+                  <div
+                    key={round}
+                    className={cn(
+                      'flex flex-col w-[300px] relative z-10',
+                      round !== selectedRound && 'hidden md:flex'
+                    )}
+                  >
                     <div className="sticky top-0 md:pt-3 pt-10 z-30 flex flex-col items-center gap-2 m-auto">
                       <h3 className="text-sm font-black uppercase tracking-[0.3em] text-emerald-600 bg-emerald-50 inline-block px-6 py-2 rounded-full border border-emerald-100 shadow-sm">
                         {roundNames[round] === 'F'
@@ -438,26 +444,32 @@ export function TournamentBracket({
                             // But fallback to official player if user hasn't predicted yet (e.g. BYE or partial bracket)
                             if (pred1) {
                               p1 = { id: pred1, ...playersById[pred1] };
-                            } else if (match.player1_id) {
+                            } else if (match.player1_id && (m1?.player1_type === 'BYE' || m1?.player2_type === 'BYE')) {
                               p1 = {
                                 id: match.player1_id,
                                 name: match.player1_name,
+                                display_name: match.player1_display_name,
                                 seed: match.player1_seed,
                                 type: match.player1_type,
                                 country: match.player1_country,
                               };
+                            } else {
+                              p1 = { isNotPredicted: true };
                             }
 
                             if (pred2) {
                               p2 = { id: pred2, ...playersById[pred2] };
-                            } else if (match.player2_id) {
+                            } else if (match.player2_id && (m2?.player1_type === 'BYE' || m2?.player2_type === 'BYE')) {
                               p2 = {
                                 id: match.player2_id,
                                 name: match.player2_name,
+                                display_name: match.player2_display_name,
                                 seed: match.player2_seed,
                                 type: match.player2_type,
                                 country: match.player2_country,
                               };
+                            } else {
+                              p2 = { isNotPredicted: true };
                             }
                           }
                         } else {
@@ -512,7 +524,7 @@ export function TournamentBracket({
 
                             {relativeIdx === 0 && hasNextVisibleRound && (
                               <div
-                                className="absolute -right-24 top-1/2 w-24 pointer-events-none"
+                                className="absolute -right-24 top-1/2 w-24 pointer-events-none hidden md:block"
                                 style={{
                                   height: `${verticalGap / 2 + CARD_HEIGHT / 2}px`,
                                   top: matchIdx % 2 === 0 ? '50%' : 'auto',
@@ -627,11 +639,12 @@ function BracketMatchCard({
         canPredict={!!canPredict}
         score={match.score}
         isP1={true}
-        isPlaceholder={(!p1?.id && p1?.type !== 'BYE' && p1?.type !== 'PLAYER') || p1?.isAwaiting}
+        isPlaceholder={(!p1?.id && p1?.type !== 'BYE' && p1?.type !== 'PLAYER') || p1?.isAwaiting || p1?.isNotPredicted}
         pointsCancelled={match.points_cancelled}
         isAwaiting={p1?.isAwaiting}
         viewMode={viewMode}
         isForceIncorrect={isP1Incorrect}
+        isNotPredicted={p1?.isNotPredicted}
         isAdmin={isAdmin}
         isFinishedTournament={isFinishedTournament}
       />
@@ -652,11 +665,12 @@ function BracketMatchCard({
         canPredict={!!canPredict}
         score={match.score}
         isP1={false}
-        isPlaceholder={(!p2?.id && p2?.type !== 'BYE' && p2?.type !== 'PLAYER') || p2?.isAwaiting}
+        isPlaceholder={(!p2?.id && p2?.type !== 'BYE' && p2?.type !== 'PLAYER') || p2?.isAwaiting || p2?.isNotPredicted}
         pointsCancelled={match.points_cancelled}
         isAwaiting={p2?.isAwaiting}
         viewMode={viewMode}
         isForceIncorrect={isP2Incorrect}
+        isNotPredicted={p2?.isNotPredicted}
         isAdmin={isAdmin}
         isFinishedTournament={isFinishedTournament}
       />
@@ -718,6 +732,7 @@ function PlayerRow({
   viewMode = 'predictions',
   isForceIncorrect = false,
   country = null,
+  isNotPredicted,
   isFinishedTournament = false,
 }: {
   name: string | null;
@@ -739,11 +754,14 @@ function PlayerRow({
   isAwaiting?: boolean;
   viewMode?: 'official' | 'predictions';
   isForceIncorrect?: boolean;
+  isNotPredicted?: boolean;
   isFinishedTournament?: boolean;
 }) {
   const displayName = isAwaiting
     ? 'Aguardando resultados'
-    : name ||
+    : isNotPredicted
+      ? 'Não palpitado'
+      : name ||
       (type === 'QUALIFIER'
         ? 'Qualifier'
         : type === 'WILDCARD'
@@ -764,9 +782,12 @@ function PlayerRow({
         className={cn(
           'flex items-center justify-between px-4 py-3 min-h-[48px]',
           isAdmin && 'hover:bg-slate-50 transition-colors',
+          viewMode === 'predictions' && 'text-red-400/70',
         )}
       >
-        <span className="text-[10px] font-bold text-slate-300 italic uppercase tracking-widest">A definir</span>
+        <span className="text-[10px] font-bold italic uppercase tracking-widest">
+          {viewMode === 'predictions' ? 'Não palpitado' : 'A definir'}
+        </span>
       </div>
     );
   }
@@ -804,6 +825,7 @@ function PlayerRow({
         showPredictionResult && viewMode === 'predictions' && (predictionCorrect ? 'bg-emerald-50/80' : 'bg-red-50/80'),
         isAdmin && !isFinishedTournament && 'hover:bg-slate-50',
         isPlaceholder && 'text-amber-600 italic font-bold',
+        isNotPredicted && 'text-red-400 font-bold opacity-70',
         isAwaiting && 'opacity-60',
       )}
     >
