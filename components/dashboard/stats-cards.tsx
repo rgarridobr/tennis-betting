@@ -78,12 +78,6 @@ export function StatsCards({ stats }: StatsCardsProps) {
                       </span>
                     </div>
                   ))}
-                  <div className="pt-1 mt-1 border-t border-slate-100 flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">Total</span>
-                    <p className={`text-lg font-black ${card.valueColor}`}>
-                      {card.value}
-                    </p>
-                  </div>
                 </div>
               ) : (
                 <div className="flex items-baseline gap-1.5">

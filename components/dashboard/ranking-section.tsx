@@ -38,7 +38,7 @@ export function RankingSection({ ranking, currentUserId }: RankingSectionProps) 
                 <div
                   key={entry.user_id}
                   className={`group flex items-center justify-between px-6 py-4 transition-all hover:bg-slate-50/80 ${
-                    isCurrentUser ? 'bg-emerald-50/50 border-l-4 border-emerald-500 shadow-sm relative z-10' : 'border-l-4 border-transparent'
+                    isCurrentUser ? 'bg-emerald-50/50 shadow-sm relative z-10' : ''
                   }`}
                 >
                   <div className="flex items-center gap-5">
