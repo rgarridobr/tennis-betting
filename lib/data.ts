@@ -80,6 +80,15 @@ export interface Prediction {
   created_at: string;
 }
 
+export interface TournamentStats {
+  tournament_id: number;
+  tournament_name: string;
+  points: number;
+  correct_predictions: number;
+  total_predictions: number;
+  accuracy: number;
+}
+
 export interface UserStats {
   total_points: number;
   correct_predictions: number;
@@ -87,6 +96,7 @@ export interface UserStats {
   total_predictions: number;
   accuracy: number;
   active_tournaments: number;
+  tournament_stats?: TournamentStats[];
 }
 
 export interface RankingEntry {
@@ -430,6 +440,26 @@ export async function getUserStats(userId: number): Promise<UserStats> {
       AND t.status IN ('IN_PROGRESS')
   `;
 
+  const tournamentBreakdown = await sql`
+    SELECT 
+      t.id as tournament_id,
+      t.name as tournament_name,
+      COALESCE(SUM(p.points_earned), 0) as points,
+      COUNT(CASE WHEN p.is_correct = true THEN 1 END) as correct_predictions,
+      COUNT(CASE WHEN p.is_correct = false THEN 1 END) as wrong_predictions,
+      COUNT(p.id) as total_predictions
+    FROM predictions p
+    JOIN bracket_matches m ON m.id = p.bracket_match_id
+    JOIN tournaments t ON t.id = m.tournament_id
+    WHERE 
+      p.user_id = ${userId}
+      AND p.is_correct IS NOT NULL
+      AND t.status IN ('IN_PROGRESS')
+    GROUP BY t.id, t.name
+    HAVING COUNT(p.id) > 0
+    ORDER BY points DESC
+  `;
+
   const activeTournaments = await sql`
     SELECT COUNT(DISTINCT ut.tournament_id) as count
     FROM user_tournaments ut
@@ -451,6 +481,19 @@ export async function getUserStats(userId: number): Promise<UserStats> {
     total_predictions: total,
     accuracy: resolved > 0 ? Math.round((correct / resolved) * 100) : 0,
     active_tournaments: Number(activeTournaments[0]?.count || 0),
+    tournament_stats: tournamentBreakdown.map(tb => {
+      const tbCorrect = Number(tb.correct_predictions || 0);
+      const tbWrong = Number(tb.wrong_predictions || 0);
+      const tbResolved = tbCorrect + tbWrong;
+      return {
+        tournament_id: Number(tb.tournament_id),
+        tournament_name: String(tb.tournament_name),
+        points: Number(tb.points || 0),
+        correct_predictions: tbCorrect,
+        total_predictions: Number(tb.total_predictions || 0),
+        accuracy: tbResolved > 0 ? Math.round((tbCorrect / tbResolved) * 100) : 0,
+      };
+    }),
   };
 }
 
