@@ -190,25 +190,46 @@ export function getMatchPoints(category: string, round: number, totalRounds: num
 // ==================== TOURNAMENTS ====================
 
 async function syncTournamentStatuses(): Promise<void> {
+  // Update to IN_PROGRESS if started (Brasilia time offset -3h)
   await sql`
     UPDATE tournaments
     SET status = 'IN_PROGRESS', updated_at = NOW()
     WHERE status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING')
       AND start_date <= (NOW() - INTERVAL '3 hours')
   `;
+
+  // Update back to OPEN if moved to future and no matches completed
+  await sql`
+    UPDATE tournaments
+    SET status = 'OPEN', updated_at = NOW()
+    WHERE status = 'IN_PROGRESS'
+      AND start_date > (NOW() - INTERVAL '3 hours')
+      AND NOT EXISTS (
+        SELECT 1 FROM bracket_matches 
+        WHERE tournament_id = tournaments.id 
+          AND status = 'completed'
+          AND score != 'BYE'
+      )
+  `;
 }
 
 export async function getTournamentsActive(): Promise<Tournament[]> {
   await syncTournamentStatuses();
-  const rows =
-    await sql`SELECT * FROM tournaments WHERE is_visible = TRUE AND status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS') ORDER BY start_date ASC`;
+  const rows = await sql`
+    SELECT id, name, surface, location, start_date - INTERVAL '3 hours' as start_date, end_date - INTERVAL '3 hours' as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    FROM tournaments 
+    WHERE is_visible = TRUE 
+    AND status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS') 
+    ORDER BY start_date ASC
+  `;
   return rows as Tournament[];
 }
 
 export async function getTournamentsActiveThisMonth(): Promise<Tournament[]> {
   await syncTournamentStatuses();
   const rows = await sql`
-    SELECT * FROM tournaments
+    SELECT id, name, surface, location, start_date - INTERVAL '3 hours' as start_date, end_date - INTERVAL '3 hours' as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    FROM tournaments
     WHERE is_visible = TRUE
       AND status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS')
       AND start_date >= DATE_TRUNC('month', CURRENT_DATE)
@@ -221,7 +242,8 @@ export async function getTournamentsActiveThisMonth(): Promise<Tournament[]> {
 export async function getTournamentsByYear(year: number): Promise<Tournament[]> {
   await syncTournamentStatuses();
   const rows = await sql`
-    SELECT * FROM tournaments
+    SELECT id, name, surface, location, start_date - INTERVAL '3 hours' as start_date, end_date - INTERVAL '3 hours' as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    FROM tournaments
     WHERE is_visible = TRUE
       AND EXTRACT(YEAR FROM start_date) = ${year}
     ORDER BY start_date DESC
@@ -231,14 +253,19 @@ export async function getTournamentsByYear(year: number): Promise<Tournament[]> 
 
 export async function getTournaments(): Promise<Tournament[]> {
   await syncTournamentStatuses();
-  const rows = await sql`SELECT * FROM tournaments ORDER BY start_date ASC`;
+  const rows = await sql`
+    SELECT id, name, surface, location, start_date - INTERVAL '3 hours' as start_date, end_date - INTERVAL '3 hours' as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    FROM tournaments 
+    ORDER BY start_date ASC
+  `;
   return rows as Tournament[];
 }
 
 export async function getTournamentsByYearAndMonth(year: number, month: number): Promise<Tournament[]> {
   await syncTournamentStatuses();
   const rows = await sql`
-    SELECT * FROM tournaments 
+    SELECT id, name, surface, location, start_date - INTERVAL '3 hours' as start_date, end_date - INTERVAL '3 hours' as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    FROM tournaments 
     WHERE is_visible = TRUE
     AND EXTRACT(YEAR FROM start_date) = ${year}
     AND EXTRACT(MONTH FROM start_date) = ${month}
@@ -252,7 +279,8 @@ export async function getAllVisibleTournaments(limit?: number): Promise<Tourname
 
   if (limit) {
     const rows = await sql`
-      SELECT * FROM tournaments
+      SELECT id, name, surface, location, start_date - INTERVAL '3 hours' as start_date, end_date - INTERVAL '3 hours' as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+      FROM tournaments
       WHERE is_visible = TRUE
       ORDER BY
         CASE
@@ -267,7 +295,8 @@ export async function getAllVisibleTournaments(limit?: number): Promise<Tourname
   }
 
   const rows = await sql`
-    SELECT * FROM tournaments
+    SELECT id, name, surface, location, start_date - INTERVAL '3 hours' as start_date, end_date - INTERVAL '3 hours' as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    FROM tournaments
     WHERE is_visible = TRUE
     ORDER BY
       CASE
@@ -282,7 +311,7 @@ export async function getAllVisibleTournaments(limit?: number): Promise<Tourname
 }
 
 export async function getTournamentById(id: number): Promise<Tournament | null> {
-  // Auto-update status if started
+  // Auto-update status if started (Brasilia time offset -3h)
   await sql`
     UPDATE tournaments
     SET status = 'IN_PROGRESS', updated_at = NOW()
@@ -291,14 +320,30 @@ export async function getTournamentById(id: number): Promise<Tournament | null> 
       AND start_date <= (NOW() - INTERVAL '3 hours')
   `;
 
-  const rows = await sql`SELECT * FROM tournaments WHERE id = ${id}`;
+  // Auto-update back to OPEN if moved to future and no matches completed
+  await sql`
+    UPDATE tournaments
+    SET status = 'OPEN', updated_at = NOW()
+    WHERE id = ${id}
+      AND status = 'IN_PROGRESS'
+      AND start_date > (NOW() - INTERVAL '3 hours')
+      AND NOT EXISTS (
+        SELECT 1 FROM bracket_matches 
+        WHERE tournament_id = ${id}
+          AND status = 'completed'
+          AND score != 'BYE'
+      )
+  `;
+
+  const rows = await sql`SELECT id, name, surface, location, start_date - INTERVAL '3 hours' as start_date, end_date - INTERVAL '3 hours' as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id FROM tournaments WHERE id = ${id}`;
   return rows.length > 0 ? (rows[0] as Tournament) : null;
 }
 
 export async function getActiveTournament(): Promise<Tournament | null> {
   await syncTournamentStatuses();
   const rows = await sql`
-    SELECT * FROM tournaments
+    SELECT id, name, surface, location, start_date - INTERVAL '3 hours' as start_date, end_date - INTERVAL '3 hours' as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    FROM tournaments
     WHERE is_visible = TRUE
       AND status IN ('OPEN', 'LOCKED', 'IN_PROGRESS')
       AND start_date <= (NOW() - INTERVAL '3 hours')
@@ -438,6 +483,7 @@ export async function getUserStats(userId: number): Promise<UserStats> {
       p.user_id = ${userId}
       AND p.is_correct IS NOT NULL
       AND t.status IN ('IN_PROGRESS')
+      AND m.points_cancelled IS NOT TRUE
   `;
 
   const tournamentBreakdown = await sql`
@@ -455,6 +501,7 @@ export async function getUserStats(userId: number): Promise<UserStats> {
       p.user_id = ${userId}
       AND p.is_correct IS NOT NULL
       AND t.status IN ('IN_PROGRESS')
+      AND m.points_cancelled IS NOT TRUE
     GROUP BY t.id, t.name
     HAVING COUNT(p.id) > 0
     ORDER BY points DESC
@@ -504,9 +551,9 @@ export async function getGlobalRanking(limit: number = 50): Promise<RankingEntry
       SELECT 
         u.id as user_id,
         COALESCE(NULLIF(u.nickname, ''), u.name) as user_name,
-        (SELECT COUNT(*) FROM predictions WHERE user_id = u.id AND is_correct = true) as correct_predictions,
-        (SELECT COUNT(*) FROM predictions WHERE user_id = u.id AND is_correct IS NOT NULL) as total_predictions,
-        COALESCE((SELECT SUM(points_earned) FROM predictions WHERE user_id = u.id), 0) as total_points
+        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct = true AND bm.points_cancelled IS NOT TRUE) as correct_predictions,
+        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct IS NOT NULL AND bm.points_cancelled IS NOT TRUE) as total_predictions,
+        COALESCE((SELECT SUM(p.points_earned) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.points_cancelled IS NOT TRUE), 0) as total_points
       FROM users u
       WHERE u.is_admin = false AND u.is_deleted = false
     ) r
@@ -548,6 +595,7 @@ export async function getTournamentRanking(tournamentId: number, limit: number =
         AND u.is_admin = false 
         AND u.is_deleted = false
         AND bm.status = 'completed'
+        AND bm.points_cancelled IS NOT TRUE
       GROUP BY u.id, u.name, u.nickname
     )
     SELECT * FROM tournament_stats
