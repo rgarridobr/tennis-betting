@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Trophy, MapPin, ChevronRight, Award } from 'lucide-react';
 import Link from 'next/link';
 import type { Tournament } from '@/lib/data';
+import { DateBR } from '@/lib/utils';
 
 interface TournamentRankingCardProps {
   tournament: Tournament;
@@ -44,7 +45,7 @@ export function TournamentRankingCard({ tournament, href }: TournamentRankingCar
         return category;
     }
   };
-  const isLockedByDate = new Date(tournament.start_date) <= new Date();
+  const isLockedByDate = new Date(tournament.start_date) <= DateBR();
 
   const isFinished =
     tournament.status === 'finished' || tournament.status === 'FINISHED' || tournament.status === 'completed';

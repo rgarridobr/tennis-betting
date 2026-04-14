@@ -4,7 +4,7 @@ import type { Tournament } from '@/lib/data';
 import { PageHero } from '../shared/page-hero';
 import { Card, CardContent } from '../ui/card';
 import { tennisBall } from '@lucide/lab';
-import { getCategory } from '@/lib/utils';
+import { getCategory, DateBR } from '@/lib/utils';
 
 interface TournamentHeaderProps {
   tournament: Tournament;
@@ -35,7 +35,7 @@ function formatDate(dateString: string): string {
 }
 
 export function TournamentHeader({ tournament, participants = 0 }: TournamentHeaderProps) {
-  const isLockedByDate = new Date(tournament.start_date) <= new Date();
+  const isLockedByDate = new Date(tournament.start_date) <= DateBR();
   const isFinished =
     tournament.status === 'finished' || tournament.status === 'FINISHED' || tournament.status === 'completed';
 
