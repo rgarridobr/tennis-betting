@@ -859,6 +859,90 @@ export async function updatePlaceholderPlayer(
   }
 }
 
+async function recalculateMatchPoints(matchId: number): Promise<void> {
+  const matchData = await sql`
+    SELECT bm.*, t.size, t.category
+    FROM bracket_matches bm
+    JOIN tournaments t ON bm.tournament_id = t.id
+    WHERE bm.id = ${matchId}
+  `;
+  if (matchData.length === 0 || matchData[0].status !== 'completed') return;
+
+  const m = matchData[0];
+  const round = m.round as number;
+  const tournamentId = m.tournament_id as number;
+  const category = m.category || 'GRAND_SLAM';
+  const winnerId = m.winner_id;
+  const score = m.score;
+  const totalRounds = Math.ceil(Math.log2(m.size as number));
+  const isBye = score === 'BYE';
+  const points = isBye ? 0 : getMatchPoints(category, round, totalRounds);
+
+  if (round < totalRounds) {
+    // Regular rounds: Recalculate based on winner
+    await sql`
+      UPDATE predictions
+      SET points_earned = CASE
+            WHEN predicted_winner_id = ${winnerId} THEN ${points}
+            ELSE 0
+          END
+      WHERE bracket_match_id = ${matchId}
+    `;
+  } else {
+    // Final round: Recalculate champion and runner-up points
+    const runnerUpId = m.player1_id === winnerId ? m.player2_id : m.player1_id;
+    const catConfig = POINTS_CONFIG[category] || POINTS_CONFIG.GRAND_SLAM;
+    const championPoints = catConfig.rounds[catConfig.rounds.length - 1];
+    const runnerUpPoints = catConfig.runnerUp;
+
+    const semiMatches = await sql`
+      SELECT id, round, position FROM bracket_matches
+      WHERE tournament_id = ${tournamentId} AND round = ${totalRounds - 1}
+    `;
+
+    const userPredictions = await sql`
+      SELECT p.user_id, p.bracket_match_id, p.predicted_winner_id
+      FROM predictions p
+      JOIN bracket_matches bm ON p.bracket_match_id = bm.id
+      WHERE bm.tournament_id = ${tournamentId} AND bm.round IN (${totalRounds}, ${totalRounds - 1})
+    `;
+
+    const byUser: Record<number, any> = {};
+    for (const p of userPredictions) {
+      if (!byUser[p.user_id]) byUser[p.user_id] = {};
+      byUser[p.user_id][p.bracket_match_id] = { winner_id: p.predicted_winner_id };
+    }
+
+    const semi1Id = semiMatches.find((s) => s.position === 1)?.id;
+    const semi2Id = semiMatches.find((s) => s.position === 2)?.id;
+
+    for (const userId of Object.keys(byUser)) {
+      const uId = parseInt(userId);
+      const preds = byUser[uId];
+      const finalPred = preds[matchId];
+
+      const semi1Winner = preds[semi1Id!]?.winner_id;
+      const semi2Winner = preds[semi2Id!]?.winner_id;
+
+      const predictedChampion = finalPred?.winner_id;
+      const predictedRunnerUp = predictedChampion === semi1Winner ? semi2Winner : semi1Winner;
+
+      let finalPoints = 0;
+      if (predictedChampion === winnerId) {
+        finalPoints = championPoints;
+      } else if (predictedRunnerUp === runnerUpId) {
+        finalPoints = runnerUpPoints;
+      }
+
+      await sql`
+        UPDATE predictions
+        SET points_earned = ${finalPoints}
+        WHERE bracket_match_id = ${matchId} AND user_id = ${uId}
+      `;
+    }
+  }
+}
+
 export async function cancelMatchPoints(matchId: number, cancelled: boolean): Promise<void> {
   await sql`UPDATE bracket_matches SET points_cancelled = ${cancelled}, updated_at = NOW() WHERE id = ${matchId}`;
 
@@ -866,9 +950,8 @@ export async function cancelMatchPoints(matchId: number, cancelled: boolean): Pr
     // If cancelling, reset points for this match in all predictions
     await sql`UPDATE predictions SET points_earned = 0 WHERE bracket_match_id = ${matchId}`;
   } else {
-    // If un-cancelling, we might need to re-calculate points.
-    // For simplicity, let's just let the admin re-save the result or handle it manually if needed.
-    // Re-calculating correctly would require knowing the category and round again.
+    // If un-cancelling, re-calculate points.
+    await recalculateMatchPoints(matchId);
   }
 }
 
