@@ -161,20 +161,20 @@ export const ROUND_POINTS: Record<number, number> = {
 
 export const POINTS_CONFIG: Record<string, { rounds: number[]; runnerUp: number }> = {
   GRAND_SLAM: {
-    rounds: [10, 45, 90, 180, 360, 720, 2000],
-    runnerUp: 1200,
+    rounds: [10, 50, 100, 200, 400, 800, 1300, 2000],
+    runnerUp: 0,
   },
   MASTERS_1000: {
-    rounds: [10, 30, 50, 100, 200, 400, 1000],
-    runnerUp: 650,
+    rounds: [10, 30, 50, 100, 200, 400, 650, 1000],
+    runnerUp: 0,
   },
   ATP_500: {
-    rounds: [25, 50, 100, 200, 500],
-    runnerUp: 330,
+    rounds: [0, 25, 50, 100, 200, 330, 500],
+    runnerUp: 0,
   },
   ATP_250: {
-    rounds: [10, 20, 45, 90, 250],
-    runnerUp: 150,
+    rounds: [0, 25, 50, 100, 165, 250],
+    runnerUp: 0,
   },
 };
 
@@ -184,7 +184,7 @@ export function getMatchPoints(category: string, round: number, totalRounds: num
   const distance = totalRounds - round;
   // Index in rounds array (from end)
   const index = config.rounds.length - 1 - distance;
-  return config.rounds[index] || config.rounds[0] || 10;
+  return config.rounds[index] ?? config.rounds[0] ?? 10;
 }
 
 // ==================== TOURNAMENTS ====================
@@ -335,7 +335,8 @@ export async function getTournamentById(id: number): Promise<Tournament | null> 
       )
   `;
 
-  const rows = await sql`SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id FROM tournaments WHERE id = ${id}`;
+  const rows =
+    await sql`SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id FROM tournaments WHERE id = ${id}`;
   return rows.length > 0 ? (rows[0] as Tournament) : null;
 }
 
@@ -528,7 +529,7 @@ export async function getUserStats(userId: number): Promise<UserStats> {
     total_predictions: total,
     accuracy: resolved > 0 ? Math.round((correct / resolved) * 100) : 0,
     active_tournaments: Number(activeTournaments[0]?.count || 0),
-    tournament_stats: tournamentBreakdown.map(tb => {
+    tournament_stats: tournamentBreakdown.map((tb) => {
       const tbCorrect = Number(tb.correct_predictions || 0);
       const tbWrong = Number(tb.wrong_predictions || 0);
       const tbResolved = tbCorrect + tbWrong;

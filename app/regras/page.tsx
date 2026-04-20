@@ -109,21 +109,19 @@ export default async function RulesPage() {
                       )}
                     >
                       {config.rounds.map((points, idx) => {
-                        const isLast = idx === config.rounds.length - 1;
-                        const roundName = getRoundName(idx + 1, config.rounds.length);
+                        const isCampeao = idx === config.rounds.length - 1;
+                        const isFinal = idx === config.rounds.length - 2;
+                        const roundName = getRoundName(idx + 1, config.rounds.length - 1);
+
+                        let displayTitle = roundName;
+                        if (isCampeao) displayTitle = 'Campeão';
+                        if (isFinal) displayTitle = 'Final';
 
                         return (
                           <React.Fragment key={idx}>
-                            {isLast && (
-                              <div className="text-center">
-                                <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Vice-campeão</p>
-                                <p className="text-xl font-black text-emerald-600 py-3">{config.runnerUp}</p>
-                                <p className="text-[10px] text-slate-500">pontos</p>
-                              </div>
-                            )}
                             <div className="text-center">
                               <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">
-                                {roundName === 'F' ? 'CAMPEÃO e/ou CAMPEÃO e VICE' : roundName}
+                                {displayTitle}
                               </p>
                               <p className="text-xl font-black text-emerald-600 py-3">{points}</p>
                               <p className="text-[10px] text-slate-500">pontos</p>
