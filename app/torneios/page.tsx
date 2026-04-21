@@ -37,11 +37,12 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
   const activeStatuses = ['active', 'published', 'OPEN', 'LOCKED', 'IN_PROGRESS'];
   // Apply filters
   let filteredTournaments = allTournaments;
-
-  if (status === 'active') {
-    filteredTournaments = filteredTournaments.filter((t) => activeStatuses.includes(t.status));
-  } else if (status === 'finished') {
+  if (status === 'finished') {
     filteredTournaments = filteredTournaments.filter((t) => ['finished', 'FINISHED', 'completed'].includes(t.status));
+  } else if (status === 'upcoming') {
+    filteredTournaments = filteredTournaments.filter((t) => ['upcoming', 'UPCOMING'].includes(t.status));
+  } else {
+    filteredTournaments = filteredTournaments.filter((t) => activeStatuses.includes(t.status));
   }
 
   if (search) {

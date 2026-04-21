@@ -22,7 +22,7 @@ export function TournamentFilters() {
 
   const [search, setSearch] = useState(searchParams.get('search') || '');
 
-  const currentStatus = searchParams.get('status') || 'all';
+  const currentStatus = searchParams.get('status') || 'active';
   const currentCategory = searchParams.get('category') || 'all';
 
   useEffect(() => {
@@ -113,16 +113,16 @@ export function TournamentFilters() {
         >
           <TabsList className="bg-slate-100 p-1 rounded-2xl h-12 w-full sm:w-auto">
             <TabsTrigger 
-              value="all" 
-              className="rounded-xl px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm"
-            >
-              Todos
-            </TabsTrigger>
-            <TabsTrigger 
               value="active" 
               className="rounded-xl px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm"
             >
               Ativos
+            </TabsTrigger>
+            <TabsTrigger 
+              value="upcoming" 
+              className="rounded-xl px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm"
+            >
+              O que vem por aí
             </TabsTrigger>
             <TabsTrigger 
               value="finished" 

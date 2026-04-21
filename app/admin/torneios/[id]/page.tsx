@@ -53,9 +53,9 @@ export default async function ManageTournamentPage({ params }: Props) {
   const dynamicRoundNames = getDynamicRoundNames(maxRound);
 
   const statusLabels: Record<string, string> = {
-    STANDBY: 'Standby (Interno)',
+    STANDBY: 'Standby',
     draft: 'Rascunho',
-    UPCOMING: 'Em breve (Visível)',
+    UPCOMING: 'Em breve',
     OPEN: 'Apostas Abertas',
     LOCKED: 'Apostas Fechadas',
     IN_PROGRESS: 'Em Andamento',

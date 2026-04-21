@@ -61,9 +61,9 @@ export const getCategory = (category: string) => {
 };
 
 export const getStatusLabels: Record<string, string> = {
-  STANDBY: 'Standby (Interno)',
+  STANDBY: 'Standby',
   draft: 'Rascunho',
-  UPCOMING: 'Em breve (Visível)',
+  UPCOMING: 'Em breve',
   upcoming: 'Em breve',
   OPEN: 'Apostas Abertas',
   active: 'Ativo',
