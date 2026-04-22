@@ -159,32 +159,121 @@ export const ROUND_POINTS: Record<number, number> = {
   7: 2000,
 };
 
-export const POINTS_CONFIG: Record<string, { rounds: number[]; runnerUp: number }> = {
+export type PointsConfig = {
+  rounds: Array<number | null>;
+  runnerUp: number;
+};
+
+export type PointsVariant = PointsConfig & {
+  id: string;
+  name: string;
+  description: string;
+};
+
+export const POINTS_CONFIG: Record<string, PointsConfig> = {
   GRAND_SLAM: {
-    rounds: [50, 100, 200, 400, 800, 1300, 2000],
+    rounds: [0, 50, 100, 200, 400, 800, 1300, 2000],
     runnerUp: 0,
   },
   MASTERS_1000: {
-    rounds: [30, 50, 100, 200, 400, 650, 1000],
+    rounds: [0, 30, 50, 100, 200, 400, 650, 1000],
     runnerUp: 0,
   },
   ATP_500: {
-    rounds: [25, 50, 100, 200, 330, 500],
+    rounds: [null, 0, 25, 50, 100, 200, 330, 500],
     runnerUp: 0,
   },
   ATP_250: {
-    rounds: [0, 25, 50, 100, 165, 250],
+    rounds: [null, 0, 13, 25, 50, 100, 165, 250],
     runnerUp: 0,
   },
 };
 
-export function getMatchPoints(category: string, round: number, totalRounds: number): number {
-  const config = POINTS_CONFIG[category] || POINTS_CONFIG.GRAND_SLAM;
-  // Distance from final: 0 for final, 1 for semi, etc.
-  const distance = totalRounds - round;
-  // Index in rounds array (from end)
-  const index = config.rounds.length - 1 - distance;
-  return config.rounds[index] ?? config.rounds[0] ?? 10;
+export const POINTS_VARIANTS: PointsVariant[] = [
+  {
+    id: 'GRAND_SLAM',
+    name: 'Grand Slam',
+    description: 'Australian Open, Roland Garros, Wimbledon, US Open',
+    rounds: [0, 50, 100, 200, 400, 800, 1300, 2000],
+    runnerUp: 0,
+  },
+  {
+    id: 'MASTERS_1000_96',
+    name: 'Masters 1000 (96)',
+    description: 'Indian Wells, Miami, Madrid, Rome, etc.',
+    rounds: [0, 30, 50, 100, 200, 400, 650, 1000],
+    runnerUp: 0,
+  },
+  {
+    id: 'MASTERS_1000_48_56',
+    name: 'Masters 1000 (48/56)',
+    description: 'Masters 1000 com chave de 48 ou 56 jogadores',
+    rounds: [null, 0, 50, 100, 200, 400, 650, 1000],
+    runnerUp: 0,
+  },
+  {
+    id: 'ATP_500_48',
+    name: 'ATP 500 (48)',
+    description: 'ATP 500 com chave de 48 jogadores',
+    rounds: [null, 0, 25, 50, 100, 200, 330, 500],
+    runnerUp: 0,
+  },
+  {
+    id: 'ATP_500_32',
+    name: 'ATP 500 (32)',
+    description: 'ATP 500 com chave de 32 jogadores',
+    rounds: [null, null, 0, 25, 50, 100, 165, 250],
+    runnerUp: 0,
+  },
+  {
+    id: 'ATP_250_48',
+    name: 'ATP 250 (48)',
+    description: 'ATP 250 com chave de 48 jogadores',
+    rounds: [null, 0, 13, 25, 50, 100, 165, 250],
+    runnerUp: 0,
+  },
+  {
+    id: 'ATP_250_32',
+    name: 'ATP 250 (32)',
+    description: 'ATP 250 com chave de 32 jogadores',
+    rounds: [null, null, 0, 25, 50, 100, 165, 250],
+    runnerUp: 0,
+  },
+];
+
+export function getPointsConfig(category: string, size: number): PointsConfig {
+  if (category === 'MASTERS_1000') {
+    const variant =
+      size >= 96
+        ? POINTS_VARIANTS.find((c) => c.id === 'MASTERS_1000_96')
+        : POINTS_VARIANTS.find((c) => c.id === 'MASTERS_1000_48_56');
+    return variant || POINTS_CONFIG.MASTERS_1000;
+  }
+
+  if (category === 'ATP_500') {
+    const variant =
+      size === 32
+        ? POINTS_VARIANTS.find((c) => c.id === 'ATP_500_32')
+        : POINTS_VARIANTS.find((c) => c.id === 'ATP_500_48');
+    return variant || POINTS_CONFIG.ATP_500;
+  }
+
+  if (category === 'ATP_250') {
+    const variant =
+      size === 32
+        ? POINTS_VARIANTS.find((c) => c.id === 'ATP_250_32')
+        : POINTS_VARIANTS.find((c) => c.id === 'ATP_250_48');
+    return variant || POINTS_CONFIG.ATP_250;
+  }
+
+  return POINTS_CONFIG[category] || POINTS_CONFIG.GRAND_SLAM;
+}
+
+export function getMatchPoints(category: string, round: number, totalRounds: number, size: number): number {
+  const config = getPointsConfig(category, size);
+  const offset = config.rounds.length - 1 - totalRounds;
+  const index = offset + (round - 1);
+  return config.rounds[index] ?? 0;
 }
 
 // ==================== TOURNAMENTS ====================

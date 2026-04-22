@@ -1,5 +1,5 @@
 import { sql } from './db';
-import { ROUND_POINTS, getMatchPoints, POINTS_CONFIG } from './data';
+import { ROUND_POINTS, getMatchPoints, getPointsConfig } from './data';
 
 function normalizeString(str: string): string {
   return str
@@ -93,7 +93,7 @@ export async function updateTournament(
     has_byes: boolean;
     image_url?: string;
     status?: string;
-  }>
+  }>,
 ): Promise<void> {
   // If updating start_date, check if we need to revert status to OPEN
   if (data.start_date) {
@@ -117,9 +117,7 @@ export async function updateTournament(
 
   if (entries.length === 0) return;
 
-  const setClause = entries
-    .map(([key], i) => `${key} = $${i + 1}`)
-    .join(", ");
+  const setClause = entries.map(([key], i) => `${key} = $${i + 1}`).join(', ');
 
   const values = entries.map(([_, value]) => value);
 
@@ -127,7 +125,7 @@ export async function updateTournament(
     `UPDATE tournaments 
      SET ${setClause}, updated_at = NOW()
      WHERE id = $${entries.length + 1}`,
-    [...values, tournamentId]
+    [...values, tournamentId],
   );
 }
 
@@ -522,7 +520,7 @@ export async function setMatchResult(
     // }
 
     const isBye = score === 'BYE';
-    const points = (pointsCancelled || isBye) ? 0 : getMatchPoints(category, round, totalRounds);
+    const points = pointsCancelled || isBye ? 0 : getMatchPoints(category, round, totalRounds, m.size as number);
 
     // Update match result
     await sql`
@@ -555,7 +553,7 @@ export async function setMatchResult(
       `;
 
       // Special scoring for final
-      const catConfig = POINTS_CONFIG[category] || POINTS_CONFIG.GRAND_SLAM;
+      const catConfig = getPointsConfig(category, m.size as number);
       const championPoints = catConfig.rounds[catConfig.rounds.length - 1];
       const runnerUpPoints = catConfig.runnerUp;
       const actualSetScore = calculateSetScore(score);
@@ -876,7 +874,7 @@ async function recalculateMatchPoints(matchId: number): Promise<void> {
   const score = m.score;
   const totalRounds = Math.ceil(Math.log2(m.size as number));
   const isBye = score === 'BYE';
-  const points = isBye ? 0 : getMatchPoints(category, round, totalRounds);
+  const points = isBye ? 0 : getMatchPoints(category, round, totalRounds, m.size as number);
 
   if (round < totalRounds) {
     // Regular rounds: Recalculate based on winner
@@ -891,7 +889,7 @@ async function recalculateMatchPoints(matchId: number): Promise<void> {
   } else {
     // Final round: Recalculate champion and runner-up points
     const runnerUpId = m.player1_id === winnerId ? m.player2_id : m.player1_id;
-    const catConfig = POINTS_CONFIG[category] || POINTS_CONFIG.GRAND_SLAM;
+    const catConfig = getPointsConfig(category, m.size as number);
     const championPoints = catConfig.rounds[catConfig.rounds.length - 1];
     const runnerUpPoints = catConfig.runnerUp;
 

@@ -2,7 +2,7 @@ import { getSession } from '@/lib/auth';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { PageHero } from '@/components/shared/page-hero';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { POINTS_CONFIG, getActiveTournament } from '@/lib/data';
+import { POINTS_VARIANTS, getActiveTournament } from '@/lib/data';
 import { getRoundName, cn } from '@/lib/utils';
 import { Info, HelpCircle, Trophy, Clock, Edit3, Target, AlertTriangle } from 'lucide-react';
 import { redirect } from 'next/navigation';
@@ -21,12 +21,7 @@ export default async function RulesPage() {
 
   const [activeTournament] = await Promise.all([getActiveTournament()]);
 
-  const categories = [
-    { id: 'GRAND_SLAM', name: 'Grand Slam', description: 'Australian Open, Roland Garros, Wimbledon, US Open' },
-    { id: 'MASTERS_1000', name: 'Masters 1000', description: 'Indian Wells, Miami, Madrid, Rome, etc.' },
-    { id: 'ATP_500', name: 'ATP 500', description: 'Rio Open, Barcelona, Tokyo, etc.' },
-    { id: 'ATP_250', name: 'ATP 250', description: 'Buenos Aires, Bastad, Doha, etc.' },
-  ];
+  const categories = POINTS_VARIANTS;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -91,9 +86,7 @@ export default async function RulesPage() {
 
           <div className="grid gap-6">
             {categories.map((cat) => {
-              const config = POINTS_CONFIG[cat.id];
-              if (!config) return null;
-
+              const config = cat;
               return (
                 <Card key={cat.id} className="border-0 shadow-md overflow-hidden">
                   <div className="bg-slate-900 px-6 py-4">
@@ -101,12 +94,7 @@ export default async function RulesPage() {
                     <p className="text-slate-400 text-xs">{cat.description}</p>
                   </div>
                   <CardContent className="p-0">
-                    <div
-                      className={cn(
-                        'grid grid-cols-2 sm:grid-cols-4 divide-x divide-y divide-slate-100',
-                        config.rounds.length > 5 ? 'md:grid-cols-8' : 'md:grid-cols-6',
-                      )}
-                    >
+                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 divide-x divide-y divide-slate-100">
                       {config.rounds.map((points, idx) => {
                         const isCampeao = idx === config.rounds.length - 1;
                         const isFinal = idx === config.rounds.length - 2;
@@ -122,7 +110,9 @@ export default async function RulesPage() {
                               <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">
                                 {displayTitle}
                               </p>
-                              <p className="text-xl font-black text-emerald-600 py-3">{points}</p>
+                              <p className="text-xl font-black text-emerald-600 py-3">
+                                {points === null ? '-' : points}
+                              </p>
                               <p className="text-[10px] text-slate-500">pontos</p>
                             </div>
                           </React.Fragment>
