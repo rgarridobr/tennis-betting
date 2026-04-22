@@ -44,10 +44,10 @@ export function TournamentCard({ tournament, href }: TournamentCardProps) {
 
   const statusLabel = isFinished
     ? "Finalizado"
-    : isLockedByDate
-      ? "Em Andamento"
-      : tournament.status === "active" || tournament.status === "OPEN"
-        ? "Apostas Abertas"
+    : tournament.status === "active" || tournament.status === "OPEN"
+      ? "Apostas Abertas"
+      : isLockedByDate
+        ? "Em Andamento"
         : tournament.status === "STANDBY"
           ? "Agendado"
           : tournament.status === "UPCOMING"
@@ -56,10 +56,10 @@ export function TournamentCard({ tournament, href }: TournamentCardProps) {
 
   const statusColor = isFinished
     ? "bg-slate-600/95 text-white border-slate-500/50"
-    : isLockedByDate
-      ? "bg-blue-600/95 text-white border-blue-500/50"
-      : tournament.status === "active" || tournament.status === "OPEN"
-        ? "bg-emerald-600/95 text-white border-emerald-500/50"
+    : tournament.status === "active" || tournament.status === "OPEN"
+      ? "bg-emerald-600/95 text-white border-emerald-500/50"
+      : isLockedByDate
+        ? "bg-blue-600/95 text-white border-blue-500/50"
         : tournament.status === "STANDBY"
           ? "bg-amber-500/95 text-white border-amber-400/50"
           : "bg-purple-600/95 text-white border-purple-500/50";
