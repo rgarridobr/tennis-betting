@@ -6,7 +6,6 @@ import { getFlagUrl } from '@/lib/countries';
 import { saveFullBracketAction } from '@/lib/actions/predictions';
 import { Check, Trophy, X, Pencil, AlertCircle, Layout, User as UserIcon, ArrowRight, Clock, LogOut, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SetPredictionScoreDialog } from './set-prediction-score-dialog';
 import { useRouter } from 'next/navigation';
 import { AdminMatchActions } from '@/components/admin/admin-match-actions';
 import { Label } from '@/components/ui/label';
@@ -111,16 +110,7 @@ export function TournamentBracket({
   );
   const router = useRouter();
 
-  // Dialog state for prediction score (Final)
-  const [isScoreDialogOpen, setIsScoreDialogOpen] = useState(false);
-  const [scoreDialogData, setScoreDialogData] = useState<{
-    matchId: number;
-    winnerId: number;
-    p1: any;
-    p2: any;
-  } | null>(null);
-
-  const isFinalPredicted = localPredictions[matches.find((m) => m.round === maxRound)?.id || -1]?.score;
+  const isFinalPredicted = !!localPredictions[matches.find((m) => m.round === maxRound)?.id || -1]?.winnerId;
 
   // Track officially eliminated players and the round they lost to highlight incorrect predictions early
   const playerEliminatedInRound = new Map<number, number>();
@@ -195,12 +185,6 @@ export function TournamentBracket({
 
   function handlePrediction(matchId: number, winnerId: number, score?: string, isFinal?: boolean, p1?: any, p2?: any) {
     if (!canMakePredictions) return;
-
-    if (isFinal && !score) {
-      setScoreDialogData({ matchId, winnerId, p1, p2 });
-      setIsScoreDialogOpen(true);
-      return;
-    }
 
     setLocalPredictions((prev) => {
       const next = { ...prev };
@@ -313,20 +297,7 @@ export function TournamentBracket({
         )}
       </div>
 
-      <SetPredictionScoreDialog
-        isOpen={isScoreDialogOpen}
-        onOpenChange={setIsScoreDialogOpen}
-        p1={scoreDialogData?.p1}
-        p2={scoreDialogData?.p2}
-        winnerId={scoreDialogData?.winnerId || 0}
-        initialScore={localPredictions[scoreDialogData?.matchId || 0]?.score}
-        category={tournamentCategory}
-        onSave={(winnerId, score) => {
-          if (scoreDialogData) {
-            handlePrediction(scoreDialogData.matchId, winnerId, score, true);
-          }
-        }}
-      />
+
 
       <div className="w-full bg-[#f8fafc] rounded-[2.5rem] border border-slate-200 shadow-xl relative overflow-hidden">
         <div

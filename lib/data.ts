@@ -161,15 +161,15 @@ export const ROUND_POINTS: Record<number, number> = {
 
 export const POINTS_CONFIG: Record<string, { rounds: number[]; runnerUp: number }> = {
   GRAND_SLAM: {
-    rounds: [10, 50, 100, 200, 400, 800, 1300, 2000],
+    rounds: [50, 100, 200, 400, 800, 1300, 2000],
     runnerUp: 0,
   },
   MASTERS_1000: {
-    rounds: [10, 30, 50, 100, 200, 400, 650, 1000],
+    rounds: [30, 50, 100, 200, 400, 650, 1000],
     runnerUp: 0,
   },
   ATP_500: {
-    rounds: [0, 25, 50, 100, 200, 330, 500],
+    rounds: [25, 50, 100, 200, 330, 500],
     runnerUp: 0,
   },
   ATP_250: {
