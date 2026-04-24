@@ -135,7 +135,7 @@ export default async function RulesPage() {
             <div>
               <h3 className="text-amber-900 font-black text-lg mb-1 uppercase tracking-tight">Observação Importante</h3>
               <p className="text-amber-800 font-medium leading-relaxed">
-                Sempre que um tenista com o status de Lucky Loser(LL) vencer uma partida, não haverá pontuação.
+                Sempre que um tenista com o status de Lucky Loser(LL) vencer uma partida, ou em caso de vitória por W/O (Walkover), não haverá pontuação.
               </p>
             </div>
           </div>

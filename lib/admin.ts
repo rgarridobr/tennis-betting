@@ -520,12 +520,17 @@ export async function setMatchResult(
     // }
 
     const isBye = score === 'BYE';
-    const points = pointsCancelled || isBye ? 0 : getMatchPoints(category, round, totalRounds, m.size as number);
+    const isWalkover = score.toUpperCase() === 'W/O' || score.toUpperCase() === 'WALKOVER' || options?.isWalkover;
+    const points = pointsCancelled || isBye || isWalkover ? 0 : getMatchPoints(category, round, totalRounds, m.size as number);
 
     // Update match result
     await sql`
       UPDATE bracket_matches 
-      SET winner_id = ${winnerId}, score = ${score}, status = 'completed', updated_at = NOW()
+      SET winner_id = ${winnerId}, 
+          score = ${score}, 
+          status = 'completed', 
+          points_cancelled = CASE WHEN ${isWalkover} THEN TRUE ELSE points_cancelled END,
+          updated_at = NOW()
       WHERE id = ${matchId}
     `;
 
@@ -602,13 +607,13 @@ export async function setMatchResult(
         let isRunnerUpCorrect = false;
 
         if (predictedChampion === winnerId) {
-          finalPoints = pointsCancelled ? 0 : championPoints;
+          finalPoints = pointsCancelled || isBye || isWalkover ? 0 : (championPoints ?? 0);
 
           if (predictedRunnerUp === runnerUpId) {
             isRunnerUpCorrect = true;
           }
         } else if (predictedRunnerUp === runnerUpId) {
-          finalPoints = pointsCancelled ? 0 : runnerUpPoints;
+          finalPoints = pointsCancelled || isBye || isWalkover ? 0 : runnerUpPoints;
           isRunnerUpCorrect = true;
         }
 
@@ -927,7 +932,7 @@ async function recalculateMatchPoints(matchId: number): Promise<void> {
 
       let finalPoints = 0;
       if (predictedChampion === winnerId) {
-        finalPoints = championPoints;
+        finalPoints = championPoints ?? 0;
       } else if (predictedRunnerUp === runnerUpId) {
         finalPoints = runnerUpPoints;
       }
