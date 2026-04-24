@@ -89,7 +89,7 @@ export default async function TournamentRankingListPage({ searchParams }: PagePr
       </PageHero>
 
       <main className="container mx-auto px-4 md:px-32 py-12">
-        <TournamentFilters />
+        <TournamentFilters hideUpcoming={true} />
 
         {paginatedTournaments.length > 0 ? (
           <section className="mb-12">

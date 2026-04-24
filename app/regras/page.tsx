@@ -88,7 +88,7 @@ export default async function RulesPage() {
             {categories.map((cat) => {
               const config = cat;
               return (
-                <Card key={cat.id} className="border-0 shadow-md overflow-hidden">
+                <Card key={cat.id} className="border-0 shadow-md overflow-hidden pt-0">
                   <div className="bg-slate-900 px-6 py-4">
                     <h3 className="text-white font-bold text-lg">{cat.name}</h3>
                     <p className="text-slate-400 text-xs">{cat.description}</p>
@@ -106,7 +106,7 @@ export default async function RulesPage() {
 
                         return (
                           <React.Fragment key={idx}>
-                            <div className="text-center">
+                            <div className="text-center border-1 border-slate-200 rounded-lg mx-2 py-1">
                               <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">
                                 {displayTitle}
                               </p>

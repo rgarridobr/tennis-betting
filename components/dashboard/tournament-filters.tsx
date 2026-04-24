@@ -14,7 +14,11 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTransition, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 
-export function TournamentFilters() {
+interface TournamentFiltersProps {
+  hideUpcoming?: boolean;
+}
+
+export function TournamentFilters({ hideUpcoming }: TournamentFiltersProps = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -118,12 +122,14 @@ export function TournamentFilters() {
             >
               Ativos
             </TabsTrigger>
-            <TabsTrigger 
-              value="upcoming" 
-              className="rounded-xl px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm"
-            >
-              O que vem por aí
-            </TabsTrigger>
+            {!hideUpcoming && (
+              <TabsTrigger 
+                value="upcoming" 
+                className="rounded-xl px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm"
+              >
+                O que vem por aí
+              </TabsTrigger>
+            )}
             <TabsTrigger 
               value="finished" 
               className="rounded-xl px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm"

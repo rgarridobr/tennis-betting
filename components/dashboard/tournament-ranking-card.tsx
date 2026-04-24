@@ -62,10 +62,10 @@ export function TournamentRankingCard({ tournament, href }: TournamentRankingCar
             : '';
 
   return (
-    <Link href={href}>
-      <Card className="overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1 rounded-[2rem] bg-white py-1 gap-3">
+    <Link href={href} className="block h-full">
+      <Card className="overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 group hover:-translate-y-1 rounded-[2rem] bg-white py-0 gap-3 flex flex-col h-full">
         <div
-          className={`h-32 relative flex items-center justify-center overflow-hidden bg-gradient-to-br ${categoryGradient}`}
+          className={`h-42 relative flex items-center justify-center overflow-hidden bg-gradient-to-br ${categoryGradient} shrink-0`}
         >
           {/* Decorative Pattern */}
           <div className="absolute inset-0 opacity-10 flex items-center justify-center pointer-events-none">
@@ -90,26 +90,26 @@ export function TournamentRankingCard({ tournament, href }: TournamentRankingCar
           </div>
         </div>
 
-        <CardContent className="px-6 py-4">
+        <CardContent className="px-6 py-4 flex flex-col flex-1">
           <div className="mb-4">
-            <h3 className="font-black text-slate-900 text-xl leading-tight group-hover:text-emerald-600 transition-colors">
+            <h3 className="font-black text-slate-900 text-xl leading-tight group-hover:text-emerald-600 transition-colors line-clamp-2">
               {tournament.name}
             </h3>
             <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1 flex items-center gap-1">
-              <MapPin className="w-3 h-3" /> {tournament.location} •{' '}
+              <MapPin className="w-3 h-3 shrink-0" /> {tournament.location} •{' '}
               {surfaceLabels[tournament.surface] || tournament.surface}
             </p>
           </div>
 
-          <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-100">
+          <div className="flex items-center justify-between mt-auto pt-2">
             <div className="flex items-center gap-2 text-slate-500 text-sm font-bold">
-              <Calendar className="w-4 h-4" />
-              <span>
+              <Calendar className="w-4 h-4 shrink-0" />
+              <span className="truncate">
                 {formatDate(tournament.start_date)} - {formatDate(tournament.end_date)}
               </span>
             </div>
 
-            <div className="flex items-center gap-1 text-emerald-600 font-black text-sm group-hover:gap-2 transition-all">
+            <div className="flex items-center gap-1 text-emerald-600 font-black text-sm group-hover:gap-2 transition-all shrink-0">
               RANKING <ChevronRight className="w-4 h-4" />
             </div>
           </div>
