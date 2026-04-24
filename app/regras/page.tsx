@@ -94,7 +94,7 @@ export default async function RulesPage() {
                     <p className="text-slate-400 text-xs">{cat.description}</p>
                   </div>
                   <CardContent className="p-0">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 divide-x divide-y divide-slate-100">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
                       {config.rounds.map((points, idx) => {
                         const isCampeao = idx === config.rounds.length - 1;
                         const isFinal = idx === config.rounds.length - 2;

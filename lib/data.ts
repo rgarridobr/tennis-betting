@@ -271,7 +271,7 @@ export function getPointsConfig(category: string, size: number): PointsConfig {
 
 export function getMatchPoints(category: string, round: number, totalRounds: number, size: number): number {
   const config = getPointsConfig(category, size);
-  const offset = config.rounds.length - 1 - totalRounds;
+  const offset = config.rounds.length - totalRounds;
   const index = offset + (round - 1);
   return config.rounds[index] ?? 0;
 }
