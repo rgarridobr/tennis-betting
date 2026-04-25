@@ -335,6 +335,10 @@ export async function getTournamentsByYear(year: number): Promise<Tournament[]> 
     FROM tournaments
     WHERE is_visible = TRUE
       AND EXTRACT(YEAR FROM start_date) = ${year}
+      AND (
+        status NOT IN ('finished', 'FINISHED', 'completed')
+        OR EXISTS (SELECT 1 FROM bracket_matches bm WHERE bm.tournament_id = tournaments.id)
+      )
     ORDER BY start_date DESC
   `;
   return rows as Tournament[];
@@ -358,6 +362,10 @@ export async function getTournamentsByYearAndMonth(year: number, month: number):
     WHERE is_visible = TRUE
     AND EXTRACT(YEAR FROM start_date) = ${year}
     AND EXTRACT(MONTH FROM start_date) = ${month}
+    AND (
+      status NOT IN ('finished', 'FINISHED', 'completed')
+      OR EXISTS (SELECT 1 FROM bracket_matches bm WHERE bm.tournament_id = tournaments.id)
+    )
     ORDER BY start_date ASC
   `;
   return rows as Tournament[];
@@ -371,6 +379,10 @@ export async function getAllVisibleTournaments(limit?: number): Promise<Tourname
       SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
       FROM tournaments
       WHERE is_visible = TRUE
+      AND (
+        status NOT IN ('finished', 'FINISHED', 'completed')
+        OR EXISTS (SELECT 1 FROM bracket_matches bm WHERE bm.tournament_id = tournaments.id)
+      )
       ORDER BY
         CASE
           WHEN status IN ('IN_PROGRESS', 'LOCKED', 'active') THEN 1
@@ -387,6 +399,10 @@ export async function getAllVisibleTournaments(limit?: number): Promise<Tourname
     SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
     FROM tournaments
     WHERE is_visible = TRUE
+    AND (
+      status NOT IN ('finished', 'FINISHED', 'completed')
+      OR EXISTS (SELECT 1 FROM bracket_matches bm WHERE bm.tournament_id = tournaments.id)
+    )
     ORDER BY
       CASE
         WHEN status IN ('IN_PROGRESS', 'LOCKED', 'active') THEN 1
