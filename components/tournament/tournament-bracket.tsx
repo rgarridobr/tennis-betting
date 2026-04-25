@@ -127,16 +127,27 @@ export function TournamentBracket({
   }
 
   const handleRoundSelect = (round: number) => {
+    // Determine scroll direction for CSS animation
     const currentIndex = rounds.indexOf(selectedRound);
-    const nextIndex = rounds.indexOf(round);
+    const newIndex = rounds.indexOf(round);
 
-    if (nextIndex > currentIndex) {
+    if (newIndex > currentIndex) {
       setDirection('right');
-    } else if (nextIndex < currentIndex) {
+    } else if (newIndex < currentIndex) {
       setDirection('left');
     }
 
     setSelectedRound(round);
+
+    // Reset scroll to left instantly so the CSS animation starts cleanly from the edge
+    // and remove native horizontal scrolling completely
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.scrollTo({
+        left: 0,
+        behavior: 'instant',
+      });
+    }
   };
 
   const handleFinalize = async () => {
@@ -308,26 +319,31 @@ export function TournamentBracket({
         />
         <div
           ref={scrollContainerRef}
-          className="overflow-x-auto overflow-y-auto relative scrollbar-hide max-h-[70vh] md:max-h-[75vh]"
+          className="overflow-x-hidden overflow-y-auto relative scrollbar-hide max-h-[80vh] scroll-smooth"
         >
           <div
             key={selectedRound}
             className={cn(
-              'flex gap-24 relative pb-20 min-w-max md:min-w-max justify-center animate-in fade-in duration-500 p-2 md:p-12 pt-0',
+              'flex gap-12 md:gap-24 relative pb-20 min-w-max md:min-w-max justify-center animate-in fade-in duration-500 p-2 px-8 md:p-12 pt-0',
               direction === 'right'
-                ? 'slide-in-from-right-8'
+                ? 'slide-in-from-right-48'
                 : direction === 'left'
-                  ? 'slide-in-from-left-8'
+                  ? 'slide-in-from-left-48'
                   : 'slide-in-from-bottom-4',
             )}
           >
             {rounds
-              .filter((r) => r === selectedRound || r === rounds[rounds.indexOf(selectedRound) + 1])
+              .filter((r, idx) => {
+                const selectedIdx = rounds.indexOf(selectedRound);
+                return idx >= selectedIdx;
+              })
               .map((round) => {
                 const roundIdx = rounds.indexOf(round);
                 const isFinalRound = roundIdx === rounds.length - 1;
-                const relativeIdx = roundIdx - rounds.indexOf(selectedRound);
-                const hasNextVisibleRound = rounds.indexOf(selectedRound) + 1 < rounds.length;
+                
+                // The selected round is the root, ensuring compact vertical spacing
+                const selectedIdx = rounds.indexOf(selectedRound);
+                const relativeIdx = roundIdx - selectedIdx;
 
                 const multiplier = Math.pow(2, relativeIdx);
                 const verticalGap = multiplier === 1 ? BASE_GAP : multiplier * (CARD_HEIGHT + BASE_GAP) - CARD_HEIGHT;
@@ -335,10 +351,9 @@ export function TournamentBracket({
 
                 return (
                   <div
-                    key={round}
+                    data-round={round}
                     className={cn(
-                      'flex flex-col w-[300px] relative z-10',
-                      round !== selectedRound && 'hidden md:flex'
+                      'flex flex-col w-[265px] md:w-[300px] relative z-10 shrink-0 snap-center transition-all duration-500 ease-in-out'
                     )}
                   >
                     <div className="sticky top-0 md:pt-3 pt-10 z-30 flex flex-col items-center gap-2 m-auto">
@@ -415,7 +430,7 @@ export function TournamentBracket({
                             // But fallback to official player if user hasn't predicted yet (e.g. BYE or partial bracket)
                             if (pred1) {
                               p1 = { id: pred1, ...playersById[pred1] };
-                            } else if (match.player1_id && (m1?.player1_type === 'BYE' || m1?.player2_type === 'BYE')) {
+                            } else if (match.player1_id) {
                               p1 = {
                                 id: match.player1_id,
                                 name: match.player1_name,
@@ -430,7 +445,7 @@ export function TournamentBracket({
 
                             if (pred2) {
                               p2 = { id: pred2, ...playersById[pred2] };
-                            } else if (match.player2_id && (m2?.player1_type === 'BYE' || m2?.player2_type === 'BYE')) {
+                            } else if (match.player2_id) {
                               p2 = {
                                 id: match.player2_id,
                                 name: match.player2_name,
@@ -473,6 +488,10 @@ export function TournamentBracket({
                             className="relative flex items-center"
                             style={{ height: `${CARD_HEIGHT}px` }}
                           >
+                             {/* Incoming stub from previous round extended to the edge of the component */}
+                             {round === selectedRound && roundIdx > 0 && (
+                               <div className="absolute right-full top-1/2 w-[100vw] h-[2px] bg-slate-200 pointer-events-none" />
+                             )}
                             <BracketMatchCard
                               match={match}
                               p1={p1}
@@ -493,9 +512,9 @@ export function TournamentBracket({
                               allOfficialPlayerIds={allOfficialPlayerIds}
                             />
 
-                            {relativeIdx === 0 && hasNextVisibleRound && (
+                            {!isFinalRound && (
                               <div
-                                className="absolute -right-24 top-1/2 w-24 pointer-events-none hidden md:block"
+                                className="absolute -right-12 md:-right-24 top-1/2 w-12 md:w-24 pointer-events-none block"
                                 style={{
                                   height: `${verticalGap / 2 + CARD_HEIGHT / 2}px`,
                                   top: matchIdx % 2 === 0 ? '50%' : 'auto',
