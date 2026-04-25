@@ -231,6 +231,36 @@ export function TournamentBracket({
   const CARD_HEIGHT = 110;
   const BASE_GAP = 24;
 
+  // Swipe support for mobile navigation
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe || isRightSwipe) {
+      const currentIndex = rounds.indexOf(selectedRound);
+      if (isLeftSwipe && currentIndex < rounds.length - 1) {
+        handleRoundSelect(rounds[currentIndex + 1]);
+      } else if (isRightSwipe && currentIndex > 0) {
+        handleRoundSelect(rounds[currentIndex - 1]);
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6">
       {/* Sticky Header with Toggles and Filters */}
@@ -322,11 +352,14 @@ export function TournamentBracket({
         <div
           ref={scrollContainerRef}
           className="overflow-x-hidden overflow-y-auto relative scrollbar-hide max-h-[80vh] scroll-smooth"
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
         >
           <div
             key={selectedRound}
             className={cn(
-              'flex gap-12 md:gap-24 relative pb-20 min-w-max md:min-w-max justify-center animate-in fade-in duration-500 p-2 px-8 md:p-12 pt-0',
+              'flex gap-12 md:gap-24 relative pb-20 min-w-max md:min-w-max animate-in fade-in duration-500 p-2 px-8 md:p-12 pt-0',
               direction === 'right'
                 ? 'slide-in-from-right-48'
                 : direction === 'left'
@@ -490,9 +523,18 @@ export function TournamentBracket({
                             className="relative flex items-center"
                             style={{ height: `${CARD_HEIGHT}px` }}
                           >
-                             {/* Incoming stub from previous round extended to the edge of the component */}
+                             {/* Incoming bracket connection perfectly aligned to the left edge of the screen */}
                              {round === selectedRound && roundIdx > 0 && (
-                               <div className="absolute right-full top-1/2 w-[100vw] h-[2px] bg-slate-200 pointer-events-none" />
+                               <div className="absolute right-full top-1/2 -translate-y-1/2 w-8 md:w-12 h-[64px] pointer-events-none">
+                                 {/* Vertical line near the edge of the screen */}
+                                 <div className="absolute left-2 top-0 bottom-0 w-[2px] bg-slate-200" />
+                                 {/* Top left branch touching the edge of the screen */}
+                                 <div className="absolute left-0 top-0 w-2 h-[2px] bg-slate-200" />
+                                 {/* Bottom left branch touching the edge of the screen */}
+                                 <div className="absolute left-0 bottom-0 w-2 h-[2px] bg-slate-200" />
+                                 {/* Middle horizontal line connecting the fork to the card */}
+                                 <div className="absolute left-2 right-0 top-1/2 -translate-y-1/2 h-[2px] bg-slate-200" />
+                               </div>
                              )}
                             <BracketMatchCard
                               match={match}
