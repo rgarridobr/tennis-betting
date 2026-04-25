@@ -264,21 +264,23 @@ export function TournamentBracket({
         <div className="h-[1px] w-full bg-slate-200 md:hidden" />
 
         {/* Round Filter */}
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide max-w-full py-5 px-5 z-50">
-          {rounds.map((round) => (
-            <button
-              key={round}
-              onClick={() => handleRoundSelect(round)}
-              className={cn(
-                'px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all shrink-0',
-                selectedRound === round
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-white text-slate-500 hover:text-emerald-600 border border-slate-200 hover:border-emerald-200',
-              )}
-            >
-              {roundNames[round] || `R${round}`}
-            </button>
-          ))}
+        <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide max-w-full py-5 px-5 z-50">
+          <div className="flex items-center gap-3">
+            {rounds.map((round) => (
+              <button
+                key={round}
+                onClick={() => handleRoundSelect(round)}
+                className={cn(
+                  'w-12 h-12 flex items-center justify-center rounded-full text-[10px] font-black uppercase tracking-tighter transition-all shrink-0 border-2',
+                  selectedRound === round
+                    ? 'border-emerald-600 text-emerald-600 bg-emerald-50/50 shadow-sm'
+                    : 'border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-200 bg-white'
+                )}
+              >
+                {roundNames[round] || `R${round}`}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Finalizar Button */}
