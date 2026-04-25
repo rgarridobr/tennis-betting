@@ -57,6 +57,13 @@ export function TournamentBracket({
 
   // Debounce saving predictions
   useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [selectedRound, layoutMode]);
+
+  // Debounce saving predictions
+  useEffect(() => {
     if (isInitialMount) {
       setIsInitialMount(false);
       return;
@@ -103,11 +110,12 @@ export function TournamentBracket({
   const isFinishedTournament =
     tournamentStatus === 'FINISHED' || tournamentStatus === 'finished' || tournamentStatus === 'completed';
 
-  const [selectedRound, setSelectedRound] = useState<number>(isFinishedTournament ? maxRound : rounds[0] || 1);
+  const [selectedRound, setSelectedRound] = useState<number | 'all'>(isFinishedTournament ? maxRound : rounds[0] || 1);
   const [direction, setDirection] = useState<'left' | 'right' | null>(null);
   const [viewMode, setViewMode] = useState<'official' | 'predictions'>(
     isViewingOthers ? 'predictions' : (hasStarted || !isEnrolled ? 'official' : 'predictions')
   );
+  const [layoutMode, setLayoutMode] = useState<'zoom' | 'full'>('zoom');
   const router = useRouter();
 
   const isFinalPredicted = !!localPredictions[matches.find((m) => m.round === maxRound)?.id || -1]?.winnerId;
@@ -126,8 +134,15 @@ export function TournamentBracket({
     }
   }
 
-  const handleRoundSelect = (round: number) => {
-    const currentIndex = rounds.indexOf(selectedRound);
+  const handleRoundSelect = (round: number | 'all') => {
+    if (round === 'all') {
+      setLayoutMode('full');
+      setSelectedRound('all');
+      return;
+    }
+
+    setLayoutMode('zoom');
+    const currentIndex = selectedRound === 'all' ? -1 : rounds.indexOf(selectedRound);
     const nextIndex = rounds.indexOf(round);
 
     if (nextIndex > currentIndex) {
@@ -253,21 +268,35 @@ export function TournamentBracket({
         <div className="h-[1px] w-full bg-slate-200 md:hidden" />
 
         {/* Round Filter */}
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide max-w-full py-5 px-5 z-50">
-          {rounds.map((round) => (
-            <button
-              key={round}
-              onClick={() => handleRoundSelect(round)}
-              className={cn(
-                'px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all shrink-0',
-                selectedRound === round
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-white text-slate-500 hover:text-emerald-600 border border-slate-200 hover:border-emerald-200',
-              )}
-            >
-              {roundNames[round] || `R${round}`}
-            </button>
-          ))}
+        <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide max-w-full py-5 px-5 z-50">
+          <button
+            onClick={() => handleRoundSelect('all')}
+            className={cn(
+              'px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shrink-0 border',
+              selectedRound === 'all'
+                ? 'bg-slate-900 text-white border-slate-900 shadow-md'
+                : 'bg-white text-slate-500 hover:text-emerald-600 border-slate-200 hover:border-emerald-200'
+            )}
+          >
+            Ver Tudo
+          </button>
+          <div className="w-[1px] h-6 bg-slate-200 shrink-0" />
+          <div className="flex items-center gap-3">
+            {rounds.map((round) => (
+              <button
+                key={round}
+                onClick={() => handleRoundSelect(round)}
+                className={cn(
+                  'w-12 h-12 flex items-center justify-center rounded-full text-[10px] font-black uppercase tracking-tighter transition-all shrink-0 border-2',
+                  selectedRound === round
+                    ? 'border-emerald-600 text-emerald-600 bg-emerald-50/50 shadow-sm'
+                    : 'border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-200 bg-white'
+                )}
+              >
+                {roundNames[round] || `R${round}`}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Finalizar Button */}
@@ -308,12 +337,16 @@ export function TournamentBracket({
         />
         <div
           ref={scrollContainerRef}
-          className="overflow-x-auto overflow-y-auto relative scrollbar-hide max-h-[70vh] md:max-h-[75vh]"
+          className={cn(
+            "overflow-y-auto relative scrollbar-hide max-h-[70vh] md:max-h-[75vh]",
+            layoutMode === 'full' ? "overflow-x-auto" : "overflow-x-hidden"
+          )}
         >
           <div
             key={selectedRound}
             className={cn(
-              'flex gap-24 relative pb-20 min-w-max md:min-w-max justify-center animate-in fade-in duration-500 p-2 md:p-12 pt-0',
+              'flex relative pb-20 justify-center animate-in fade-in duration-500 p-1 md:p-12 pt-0 transition-all',
+              layoutMode === 'full' ? 'gap-12 md:gap-24 min-w-max' : 'gap-4 md:gap-12 w-full max-w-7xl mx-auto px-4',
               direction === 'right'
                 ? 'slide-in-from-right-8'
                 : direction === 'left'
@@ -322,23 +355,30 @@ export function TournamentBracket({
             )}
           >
             {rounds
-              .filter((r) => r === selectedRound || r === rounds[rounds.indexOf(selectedRound) + 1])
+              .filter((r) => {
+                if (layoutMode === 'full') return true;
+                const selIdx = rounds.indexOf(selectedRound as number);
+                const rIdx = rounds.indexOf(r);
+                return rIdx === selIdx || rIdx === selIdx + 1;
+              })
               .map((round) => {
                 const roundIdx = rounds.indexOf(round);
                 const isFinalRound = roundIdx === rounds.length - 1;
-                const relativeIdx = roundIdx - rounds.indexOf(selectedRound);
-                const hasNextVisibleRound = rounds.indexOf(selectedRound) + 1 < rounds.length;
 
+                const isZoom = layoutMode === 'zoom';
+                const relativeIdx = layoutMode === 'full' ? roundIdx : roundIdx - rounds.indexOf(selectedRound as number);
+
+                const baseGap = isZoom ? 64 : BASE_GAP;
                 const multiplier = Math.pow(2, relativeIdx);
-                const verticalGap = multiplier === 1 ? BASE_GAP : multiplier * (CARD_HEIGHT + BASE_GAP) - CARD_HEIGHT;
-                const paddingTop = multiplier === 1 ? 0 : ((multiplier - 1) * (CARD_HEIGHT + BASE_GAP)) / 2;
+                const verticalGap = multiplier === 1 ? baseGap : multiplier * (CARD_HEIGHT + baseGap) - CARD_HEIGHT;
+                const paddingTop = multiplier === 1 ? 0 : ((multiplier - 1) * (CARD_HEIGHT + baseGap)) / 2;
 
                 return (
                   <div
                     key={round}
                     className={cn(
-                      'flex flex-col w-[300px] relative z-10',
-                      round !== selectedRound && 'hidden md:flex'
+                      'flex flex-col relative z-10 transition-all duration-500',
+                      layoutMode === 'full' ? 'w-[280px] md:w-[300px]' : 'w-[280px] md:w-[320px] shrink-0',
                     )}
                   >
                     <div className="sticky top-0 md:pt-3 pt-10 z-30 flex flex-col items-center gap-2 m-auto">
@@ -493,9 +533,23 @@ export function TournamentBracket({
                               allOfficialPlayerIds={allOfficialPlayerIds}
                             />
 
-                            {relativeIdx === 0 && hasNextVisibleRound && (
+                            {/* Left incoming lines (Alças) - only for the first visible column in zoom mode, or first round in full mode */}
+                            {((layoutMode === 'zoom' && relativeIdx === 0 && round !== rounds[0]) || (layoutMode === 'full' && round === rounds[0])) && (
+                              <div className="absolute -left-8 md:-left-14 top-0 bottom-0 w-8 md:w-14 pointer-events-none">
+                                <div className="absolute left-1 md:left-4 top-[15%] bottom-[15%] w-[2px] bg-slate-200/60" />
+                                <div className="absolute left-1 md:left-4 top-[15%] w-3 md:w-4 h-[2px] bg-slate-200/60" />
+                                <div className="absolute left-1 md:left-4 bottom-[15%] w-3 md:w-4 h-[2px] bg-slate-200/60" />
+                                <div className="absolute left-4 md:left-8 top-1/2 w-4 md:w-6 h-[2px] bg-slate-200/60 -translate-y-1/2" />
+                              </div>
+                            )}
+
+                            {/* Connection lines to next round */}
+                            {((layoutMode === 'full' && !isFinalRound) || (layoutMode === 'zoom' && relativeIdx === 0 && !isFinalRound)) && (
                               <div
-                                className="absolute -right-24 top-1/2 w-24 pointer-events-none hidden md:block"
+                                className={cn(
+                                  "absolute top-1/2 pointer-events-none",
+                                  layoutMode === 'full' ? "-right-12 md:-right-24 w-12 md:w-24" : "-right-8 md:-right-20 w-8 md:w-20"
+                                )}
                                 style={{
                                   height: `${verticalGap / 2 + CARD_HEIGHT / 2}px`,
                                   top: matchIdx % 2 === 0 ? '50%' : 'auto',
@@ -516,6 +570,22 @@ export function TournamentBracket({
                                 {/* Horizontal line from center of gap to next match */}
                                 {matchIdx % 2 === 0 && (
                                   <div className="absolute w-1/2 h-[2px] bg-slate-200 right-0 bottom-0" />
+                                )}
+                              </div>
+                            )}
+
+                            {/* Outgoing "alça" for the last visible column in zoom mode if it's not the final */}
+                            {layoutMode === 'zoom' && relativeIdx === 1 && !isFinalRound && (
+                              <div className="absolute -right-8 md:-right-14 top-0 bottom-0 w-8 md:w-14 pointer-events-none">
+                                <div className="absolute right-4 md:right-8 top-1/2 w-4 md:w-6 h-[2px] bg-slate-200/60 -translate-y-1/2" />
+                                <div
+                                  className={cn(
+                                    "absolute right-4 md:right-8 w-[2px] bg-slate-200/60",
+                                    matchIdx % 2 === 0 ? "top-1/2 h-[calc(50%+32px)]" : "bottom-1/2 h-[calc(50%+32px)]"
+                                  )}
+                                />
+                                {matchIdx % 2 === 0 && (
+                                  <div className="absolute right-0 bottom-[-32px] w-4 md:w-8 h-[2px] bg-slate-200/60" />
                                 )}
                               </div>
                             )}
