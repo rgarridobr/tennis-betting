@@ -7,8 +7,669 @@
    - Network:       http://192.168.0.2:3000
 
  ✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
 [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
- ✓ Ready in 1384ms
- ○ Compiling /admin/torneios ...
- GET /admin/torneios 307 in 7.5s (compile: 5.8s, render: 1673ms)
- GET /login 200 in 1722ms (compile: 1437ms, render: 285ms)
+ ✓ Ready in 791ms
+ ○ Compiling /login ...
+ GET /login 200 in 7.6s (compile: 6.9s, render: 647ms)
+ GET /boloes 307 in 2.0s (compile: 1674ms, render: 333ms)
+ GET /login 200 in 120ms (compile: 6ms, render: 114ms)
+ GET /cadastro 200 in 990ms (compile: 806ms, render: 184ms)
+ GET /boloes 307 in 186ms (compile: 5ms, render: 181ms)
+ GET /login 200 in 93ms (compile: 4ms, render: 89ms)
+ ⨯ ./lib/actions/pools.ts:5:10
+Ecmascript file had an error
+[0m [90m 3 |[39m [36mimport[39m { sql } [36mfrom[39m [32m'../db'[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m { getSession[33m,[39m hashPassword[33m,[39m verifyPassword } [36mfrom[39m [32m'../auth'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 5 |[39m [36mimport[39m { revalidatePath } [36mfrom[39m [32m'next/cache'[39m[33m;[39m
+ [90m   |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 6 |[39m [36mimport[39m { redirect } [36mfrom[39m [32m'next/navigation'[39m[33m;[39m
+ [90m 7 |[39m
+ [90m 8 |[39m [36mexport[39m [36masync[39m [36mfunction[39m createPoolAction(formData[33m:[39m [33mFormData[39m) {[0m
+
+You're importing a component that needs "revalidatePath". That only works in a Server Component which is not supported in the pages/ directory. Read more: https://nextjs.org/docs/app/building-your-application/rendering/server-components
+
+
+
+Import traces:
+  Client Component Browser:
+    ./lib/actions/pools.ts [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./lib/actions/pools.ts [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+
+
+./lib/auth.ts:2:1
+Ecmascript file had an error
+[0m [90m 1 |[39m [36mimport[39m { sql } [36mfrom[39m [32m'./db'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 2 |[39m [36mimport[39m { cookies } [36mfrom[39m [32m'next/headers'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 3 |[39m [36mimport[39m bcrypt [36mfrom[39m [32m'bcryptjs'[39m[33m;[39m
+ [90m 4 |[39m
+ [90m 5 |[39m [36mexport[39m [36minterface[39m [33mUser[39m {[0m
+
+You're importing a component that needs "next/headers". That only works in a Server Component which is not supported in the pages/ directory. Read more: https://nextjs.org/docs/app/building-your-application/rendering/server-components
+
+
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/auth.ts
+    ./app/boloes/novo/page.tsx
+
+  #2 [Server Component]:
+    ./lib/auth.ts
+    ./lib/actions/profile.ts
+
+  #3 [Client Component Browser]:
+    ./lib/auth.ts [Client Component Browser]
+    ./lib/actions/pools.ts [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+  #4 [Client Component SSR]:
+    ./lib/auth.ts [Client Component SSR]
+    ./lib/actions/pools.ts [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+
+
+./components/pools/create-pool-form.tsx:13:1
+Module not found: Can't resolve '@/components/ui/alert'
+[0m [90m 11 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mCardContent[39m[33m,[39m [33mCardHeader[39m[33m,[39m [33mCardTitle[39m[33m,[39m [33mCardDescription[39m } [36mfrom[39m [32m"@/components/ui/card"[39m[33m;[39m
+ [90m 12 |[39m [36mimport[39m { [33mLock[39m[33m,[39m [33mTrophy[39m[33m,[39m [33mUsers[39m[33m,[39m [33mAlertCircle[39m } [36mfrom[39m [32m"lucide-react"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 13 |[39m [36mimport[39m { [33mAlert[39m[33m,[39m [33mAlertDescription[39m } [36mfrom[39m [32m"@/components/ui/alert"[39m[33m;[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 14 |[39m
+ [90m 15 |[39m [36mexport[39m [36mfunction[39m [33mCreatePoolForm[39m({ isAdmin }[33m:[39m { isAdmin[33m:[39m boolean }) {
+ [90m 16 |[39m   [36mconst[39m router [33m=[39m useRouter()[33m;[39m[0m
+
+Import map: aliased to relative './components/ui/alert' inside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./components/pools/create-pool-form.tsx
+    ./app/boloes/novo/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET /boloes/novo 500 in 3.4s (compile: 3.2s, render: 183ms)
+ GET /cadastro 200 in 121ms (compile: 7ms, render: 113ms)
+ GET /cadastro 200 in 103ms (compile: 6ms, render: 97ms)
+ GET /boloes 200 in 603ms (compile: 7ms, render: 596ms)
+ ⨯ ./lib/actions/pools.ts:5:10
+Ecmascript file had an error
+[0m [90m 3 |[39m [36mimport[39m { sql } [36mfrom[39m [32m'../db'[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m { getSession[33m,[39m hashPassword[33m,[39m verifyPassword } [36mfrom[39m [32m'../auth'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 5 |[39m [36mimport[39m { revalidatePath } [36mfrom[39m [32m'next/cache'[39m[33m;[39m
+ [90m   |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 6 |[39m [36mimport[39m { redirect } [36mfrom[39m [32m'next/navigation'[39m[33m;[39m
+ [90m 7 |[39m
+ [90m 8 |[39m [36mexport[39m [36masync[39m [36mfunction[39m createPoolAction(formData[33m:[39m [33mFormData[39m) {[0m
+
+You're importing a component that needs "revalidatePath". That only works in a Server Component which is not supported in the pages/ directory. Read more: https://nextjs.org/docs/app/building-your-application/rendering/server-components
+
+
+
+Import traces:
+  Client Component Browser:
+    ./lib/actions/pools.ts [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./lib/actions/pools.ts [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+
+
+./lib/auth.ts:2:1
+Ecmascript file had an error
+[0m [90m 1 |[39m [36mimport[39m { sql } [36mfrom[39m [32m'./db'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 2 |[39m [36mimport[39m { cookies } [36mfrom[39m [32m'next/headers'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 3 |[39m [36mimport[39m bcrypt [36mfrom[39m [32m'bcryptjs'[39m[33m;[39m
+ [90m 4 |[39m
+ [90m 5 |[39m [36mexport[39m [36minterface[39m [33mUser[39m {[0m
+
+You're importing a component that needs "next/headers". That only works in a Server Component which is not supported in the pages/ directory. Read more: https://nextjs.org/docs/app/building-your-application/rendering/server-components
+
+
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/auth.ts
+    ./app/boloes/novo/page.tsx
+
+  #2 [Server Component]:
+    ./lib/auth.ts
+    ./lib/actions/profile.ts
+
+  #3 [Client Component Browser]:
+    ./lib/auth.ts [Client Component Browser]
+    ./lib/actions/pools.ts [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+  #4 [Client Component SSR]:
+    ./lib/auth.ts [Client Component SSR]
+    ./lib/actions/pools.ts [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+
+
+./components/pools/create-pool-form.tsx:13:1
+Module not found: Can't resolve '@/components/ui/alert'
+[0m [90m 11 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mCardContent[39m[33m,[39m [33mCardHeader[39m[33m,[39m [33mCardTitle[39m[33m,[39m [33mCardDescription[39m } [36mfrom[39m [32m"@/components/ui/card"[39m[33m;[39m
+ [90m 12 |[39m [36mimport[39m { [33mLock[39m[33m,[39m [33mTrophy[39m[33m,[39m [33mUsers[39m[33m,[39m [33mAlertCircle[39m } [36mfrom[39m [32m"lucide-react"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 13 |[39m [36mimport[39m { [33mAlert[39m[33m,[39m [33mAlertDescription[39m } [36mfrom[39m [32m"@/components/ui/alert"[39m[33m;[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 14 |[39m
+ [90m 15 |[39m [36mexport[39m [36mfunction[39m [33mCreatePoolForm[39m({ isAdmin }[33m:[39m { isAdmin[33m:[39m boolean }) {
+ [90m 16 |[39m   [36mconst[39m router [33m=[39m useRouter()[33m;[39m[0m
+
+Import map: aliased to relative './components/ui/alert' inside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./components/pools/create-pool-form.tsx
+    ./app/boloes/novo/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET /boloes/novo 500 in 43ms (compile: 28ms, render: 15ms)
+ GET /boloes 200 in 499ms (compile: 6ms, render: 493ms)
+ ⨯ ./lib/actions/pools.ts:5:10
+Ecmascript file had an error
+[0m [90m 3 |[39m [36mimport[39m { sql } [36mfrom[39m [32m'../db'[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m { getSession[33m,[39m hashPassword[33m,[39m verifyPassword } [36mfrom[39m [32m'../auth'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 5 |[39m [36mimport[39m { revalidatePath } [36mfrom[39m [32m'next/cache'[39m[33m;[39m
+ [90m   |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 6 |[39m [36mimport[39m { redirect } [36mfrom[39m [32m'next/navigation'[39m[33m;[39m
+ [90m 7 |[39m
+ [90m 8 |[39m [36mexport[39m [36masync[39m [36mfunction[39m createPoolAction(formData[33m:[39m [33mFormData[39m) {[0m
+
+You're importing a component that needs "revalidatePath". That only works in a Server Component which is not supported in the pages/ directory. Read more: https://nextjs.org/docs/app/building-your-application/rendering/server-components
+
+
+
+Import traces:
+  Client Component Browser:
+    ./lib/actions/pools.ts [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./lib/actions/pools.ts [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+
+
+./lib/auth.ts:2:1
+Ecmascript file had an error
+[0m [90m 1 |[39m [36mimport[39m { sql } [36mfrom[39m [32m'./db'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 2 |[39m [36mimport[39m { cookies } [36mfrom[39m [32m'next/headers'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 3 |[39m [36mimport[39m bcrypt [36mfrom[39m [32m'bcryptjs'[39m[33m;[39m
+ [90m 4 |[39m
+ [90m 5 |[39m [36mexport[39m [36minterface[39m [33mUser[39m {[0m
+
+You're importing a component that needs "next/headers". That only works in a Server Component which is not supported in the pages/ directory. Read more: https://nextjs.org/docs/app/building-your-application/rendering/server-components
+
+
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/auth.ts
+    ./app/boloes/novo/page.tsx
+
+  #2 [Server Component]:
+    ./lib/auth.ts
+    ./lib/actions/profile.ts
+
+  #3 [Client Component Browser]:
+    ./lib/auth.ts [Client Component Browser]
+    ./lib/actions/pools.ts [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+  #4 [Client Component SSR]:
+    ./lib/auth.ts [Client Component SSR]
+    ./lib/actions/pools.ts [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+
+
+./components/pools/create-pool-form.tsx:13:1
+Module not found: Can't resolve '@/components/ui/alert'
+[0m [90m 11 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mCardContent[39m[33m,[39m [33mCardHeader[39m[33m,[39m [33mCardTitle[39m[33m,[39m [33mCardDescription[39m } [36mfrom[39m [32m"@/components/ui/card"[39m[33m;[39m
+ [90m 12 |[39m [36mimport[39m { [33mLock[39m[33m,[39m [33mTrophy[39m[33m,[39m [33mUsers[39m[33m,[39m [33mAlertCircle[39m } [36mfrom[39m [32m"lucide-react"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 13 |[39m [36mimport[39m { [33mAlert[39m[33m,[39m [33mAlertDescription[39m } [36mfrom[39m [32m"@/components/ui/alert"[39m[33m;[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 14 |[39m
+ [90m 15 |[39m [36mexport[39m [36mfunction[39m [33mCreatePoolForm[39m({ isAdmin }[33m:[39m { isAdmin[33m:[39m boolean }) {
+ [90m 16 |[39m   [36mconst[39m router [33m=[39m useRouter()[33m;[39m[0m
+
+Import map: aliased to relative './components/ui/alert' inside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./components/pools/create-pool-form.tsx
+    ./app/boloes/novo/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET /boloes/novo 500 in 37ms (compile: 21ms, render: 16ms)
+ GET /boloes 200 in 578ms (compile: 7ms, render: 571ms)
+ ⨯ ./lib/actions/pools.ts:5:10
+Ecmascript file had an error
+[0m [90m 3 |[39m [36mimport[39m { sql } [36mfrom[39m [32m'../db'[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m { getSession[33m,[39m hashPassword[33m,[39m verifyPassword } [36mfrom[39m [32m'../auth'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 5 |[39m [36mimport[39m { revalidatePath } [36mfrom[39m [32m'next/cache'[39m[33m;[39m
+ [90m   |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 6 |[39m [36mimport[39m { redirect } [36mfrom[39m [32m'next/navigation'[39m[33m;[39m
+ [90m 7 |[39m
+ [90m 8 |[39m [36mexport[39m [36masync[39m [36mfunction[39m createPoolAction(formData[33m:[39m [33mFormData[39m) {[0m
+
+You're importing a component that needs "revalidatePath". That only works in a Server Component which is not supported in the pages/ directory. Read more: https://nextjs.org/docs/app/building-your-application/rendering/server-components
+
+
+
+Import traces:
+  Client Component Browser:
+    ./lib/actions/pools.ts [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./lib/actions/pools.ts [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+
+
+./lib/auth.ts:2:1
+Ecmascript file had an error
+[0m [90m 1 |[39m [36mimport[39m { sql } [36mfrom[39m [32m'./db'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 2 |[39m [36mimport[39m { cookies } [36mfrom[39m [32m'next/headers'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 3 |[39m [36mimport[39m bcrypt [36mfrom[39m [32m'bcryptjs'[39m[33m;[39m
+ [90m 4 |[39m
+ [90m 5 |[39m [36mexport[39m [36minterface[39m [33mUser[39m {[0m
+
+You're importing a component that needs "next/headers". That only works in a Server Component which is not supported in the pages/ directory. Read more: https://nextjs.org/docs/app/building-your-application/rendering/server-components
+
+
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/auth.ts
+    ./app/boloes/novo/page.tsx
+
+  #2 [Server Component]:
+    ./lib/auth.ts
+    ./lib/actions/profile.ts
+
+  #3 [Client Component Browser]:
+    ./lib/auth.ts [Client Component Browser]
+    ./lib/actions/pools.ts [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+  #4 [Client Component SSR]:
+    ./lib/auth.ts [Client Component SSR]
+    ./lib/actions/pools.ts [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+
+
+./components/pools/create-pool-form.tsx:13:1
+Module not found: Can't resolve '@/components/ui/alert'
+[0m [90m 11 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mCardContent[39m[33m,[39m [33mCardHeader[39m[33m,[39m [33mCardTitle[39m[33m,[39m [33mCardDescription[39m } [36mfrom[39m [32m"@/components/ui/card"[39m[33m;[39m
+ [90m 12 |[39m [36mimport[39m { [33mLock[39m[33m,[39m [33mTrophy[39m[33m,[39m [33mUsers[39m[33m,[39m [33mAlertCircle[39m } [36mfrom[39m [32m"lucide-react"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 13 |[39m [36mimport[39m { [33mAlert[39m[33m,[39m [33mAlertDescription[39m } [36mfrom[39m [32m"@/components/ui/alert"[39m[33m;[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 14 |[39m
+ [90m 15 |[39m [36mexport[39m [36mfunction[39m [33mCreatePoolForm[39m({ isAdmin }[33m:[39m { isAdmin[33m:[39m boolean }) {
+ [90m 16 |[39m   [36mconst[39m router [33m=[39m useRouter()[33m;[39m[0m
+
+Import map: aliased to relative './components/ui/alert' inside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./components/pools/create-pool-form.tsx
+    ./app/boloes/novo/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET /boloes/novo 500 in 33ms (compile: 21ms, render: 12ms)
+ ⨯ ./components/pools/create-pool-form.tsx:13:1
+Module not found: Can't resolve '@/components/ui/alert'
+[0m [90m 11 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mCardContent[39m[33m,[39m [33mCardHeader[39m[33m,[39m [33mCardTitle[39m[33m,[39m [33mCardDescription[39m } [36mfrom[39m [32m"@/components/ui/card"[39m[33m;[39m
+ [90m 12 |[39m [36mimport[39m { [33mLock[39m[33m,[39m [33mTrophy[39m[33m,[39m [33mUsers[39m[33m,[39m [33mAlertCircle[39m } [36mfrom[39m [32m"lucide-react"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 13 |[39m [36mimport[39m { [33mAlert[39m[33m,[39m [33mAlertDescription[39m } [36mfrom[39m [32m"@/components/ui/alert"[39m[33m;[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 14 |[39m
+ [90m 15 |[39m [36mexport[39m [36mfunction[39m [33mCreatePoolForm[39m({ isAdmin }[33m:[39m { isAdmin[33m:[39m boolean }) {
+ [90m 16 |[39m   [36mconst[39m router [33m=[39m useRouter()[33m;[39m[0m
+
+Import map: aliased to relative './components/ui/alert' inside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./components/pools/create-pool-form.tsx
+    ./app/boloes/novo/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./components/pools/create-pool-form.tsx:13:1
+Module not found: Can't resolve '@/components/ui/alert'
+[0m [90m 11 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mCardContent[39m[33m,[39m [33mCardHeader[39m[33m,[39m [33mCardTitle[39m[33m,[39m [33mCardDescription[39m } [36mfrom[39m [32m"@/components/ui/card"[39m[33m;[39m
+ [90m 12 |[39m [36mimport[39m { [33mLock[39m[33m,[39m [33mTrophy[39m[33m,[39m [33mUsers[39m[33m,[39m [33mAlertCircle[39m } [36mfrom[39m [32m"lucide-react"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 13 |[39m [36mimport[39m { [33mAlert[39m[33m,[39m [33mAlertDescription[39m } [36mfrom[39m [32m"@/components/ui/alert"[39m[33m;[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 14 |[39m
+ [90m 15 |[39m [36mexport[39m [36mfunction[39m [33mCreatePoolForm[39m({ isAdmin }[33m:[39m { isAdmin[33m:[39m boolean }) {
+ [90m 16 |[39m   [36mconst[39m router [33m=[39m useRouter()[33m;[39m[0m
+
+Import map: aliased to relative './components/ui/alert' inside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./components/pools/create-pool-form.tsx
+    ./app/boloes/novo/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./components/pools/create-pool-form.tsx:13:1
+Module not found: Can't resolve '@/components/ui/alert'
+[0m [90m 11 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mCardContent[39m[33m,[39m [33mCardHeader[39m[33m,[39m [33mCardTitle[39m[33m,[39m [33mCardDescription[39m } [36mfrom[39m [32m"@/components/ui/card"[39m[33m;[39m
+ [90m 12 |[39m [36mimport[39m { [33mLock[39m[33m,[39m [33mTrophy[39m[33m,[39m [33mUsers[39m[33m,[39m [33mAlertCircle[39m } [36mfrom[39m [32m"lucide-react"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 13 |[39m [36mimport[39m { [33mAlert[39m[33m,[39m [33mAlertDescription[39m } [36mfrom[39m [32m"@/components/ui/alert"[39m[33m;[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 14 |[39m
+ [90m 15 |[39m [36mexport[39m [36mfunction[39m [33mCreatePoolForm[39m({ isAdmin }[33m:[39m { isAdmin[33m:[39m boolean }) {
+ [90m 16 |[39m   [36mconst[39m router [33m=[39m useRouter()[33m;[39m[0m
+
+Import map: aliased to relative './components/ui/alert' inside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./components/pools/create-pool-form.tsx
+    ./app/boloes/novo/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./components/pools/create-pool-form.tsx:13:1
+Module not found: Can't resolve '@/components/ui/alert'
+[0m [90m 11 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mCardContent[39m[33m,[39m [33mCardHeader[39m[33m,[39m [33mCardTitle[39m[33m,[39m [33mCardDescription[39m } [36mfrom[39m [32m"@/components/ui/card"[39m[33m;[39m
+ [90m 12 |[39m [36mimport[39m { [33mLock[39m[33m,[39m [33mTrophy[39m[33m,[39m [33mUsers[39m[33m,[39m [33mAlertCircle[39m } [36mfrom[39m [32m"lucide-react"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 13 |[39m [36mimport[39m { [33mAlert[39m[33m,[39m [33mAlertDescription[39m } [36mfrom[39m [32m"@/components/ui/alert"[39m[33m;[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 14 |[39m
+ [90m 15 |[39m [36mexport[39m [36mfunction[39m [33mCreatePoolForm[39m({ isAdmin }[33m:[39m { isAdmin[33m:[39m boolean }) {
+ [90m 16 |[39m   [36mconst[39m router [33m=[39m useRouter()[33m;[39m[0m
+
+Import map: aliased to relative './components/ui/alert' inside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./components/pools/create-pool-form.tsx
+    ./app/boloes/novo/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./components/pools/create-pool-form.tsx:13:1
+Module not found: Can't resolve '@/components/ui/alert'
+[0m [90m 11 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mCardContent[39m[33m,[39m [33mCardHeader[39m[33m,[39m [33mCardTitle[39m[33m,[39m [33mCardDescription[39m } [36mfrom[39m [32m"@/components/ui/card"[39m[33m;[39m
+ [90m 12 |[39m [36mimport[39m { [33mLock[39m[33m,[39m [33mTrophy[39m[33m,[39m [33mUsers[39m[33m,[39m [33mAlertCircle[39m } [36mfrom[39m [32m"lucide-react"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 13 |[39m [36mimport[39m { [33mAlert[39m[33m,[39m [33mAlertDescription[39m } [36mfrom[39m [32m"@/components/ui/alert"[39m[33m;[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 14 |[39m
+ [90m 15 |[39m [36mexport[39m [36mfunction[39m [33mCreatePoolForm[39m({ isAdmin }[33m:[39m { isAdmin[33m:[39m boolean }) {
+ [90m 16 |[39m   [36mconst[39m router [33m=[39m useRouter()[33m;[39m[0m
+
+Import map: aliased to relative './components/ui/alert' inside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./components/pools/create-pool-form.tsx
+    ./app/boloes/novo/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./components/pools/create-pool-form.tsx:13:1
+Module not found: Can't resolve '@/components/ui/alert'
+[0m [90m 11 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mCardContent[39m[33m,[39m [33mCardHeader[39m[33m,[39m [33mCardTitle[39m[33m,[39m [33mCardDescription[39m } [36mfrom[39m [32m"@/components/ui/card"[39m[33m;[39m
+ [90m 12 |[39m [36mimport[39m { [33mLock[39m[33m,[39m [33mTrophy[39m[33m,[39m [33mUsers[39m[33m,[39m [33mAlertCircle[39m } [36mfrom[39m [32m"lucide-react"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 13 |[39m [36mimport[39m { [33mAlert[39m[33m,[39m [33mAlertDescription[39m } [36mfrom[39m [32m"@/components/ui/alert"[39m[33m;[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 14 |[39m
+ [90m 15 |[39m [36mexport[39m [36mfunction[39m [33mCreatePoolForm[39m({ isAdmin }[33m:[39m { isAdmin[33m:[39m boolean }) {
+ [90m 16 |[39m   [36mconst[39m router [33m=[39m useRouter()[33m;[39m[0m
+
+Import map: aliased to relative './components/ui/alert' inside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./components/pools/create-pool-form.tsx
+    ./app/boloes/novo/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET /boloes 200 in 530ms (compile: 4ms, render: 527ms)
+ ⨯ ./components/pools/create-pool-form.tsx:13:1
+Module not found: Can't resolve '@/components/ui/alert'
+[0m [90m 11 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mCardContent[39m[33m,[39m [33mCardHeader[39m[33m,[39m [33mCardTitle[39m[33m,[39m [33mCardDescription[39m } [36mfrom[39m [32m"@/components/ui/card"[39m[33m;[39m
+ [90m 12 |[39m [36mimport[39m { [33mLock[39m[33m,[39m [33mTrophy[39m[33m,[39m [33mUsers[39m[33m,[39m [33mAlertCircle[39m } [36mfrom[39m [32m"lucide-react"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 13 |[39m [36mimport[39m { [33mAlert[39m[33m,[39m [33mAlertDescription[39m } [36mfrom[39m [32m"@/components/ui/alert"[39m[33m;[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 14 |[39m
+ [90m 15 |[39m [36mexport[39m [36mfunction[39m [33mCreatePoolForm[39m({ isAdmin }[33m:[39m { isAdmin[33m:[39m boolean }) {
+ [90m 16 |[39m   [36mconst[39m router [33m=[39m useRouter()[33m;[39m[0m
+
+Import map: aliased to relative './components/ui/alert' inside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./components/pools/create-pool-form.tsx
+    ./app/boloes/novo/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET /boloes/novo 500 in 120ms (compile: 107ms, render: 14ms)
+ GET /boloes 200 in 485ms (compile: 17ms, render: 468ms)
+ ⨯ ./components/ui/alert.tsx:30:5
+Parsing ecmascript source code failed
+[0m [90m 28 |[39m     role[33m=[39m[32m"alert"[39m
+ [90m 29 |[39m     className[33m=[39m{cn(alertVariants({ variant })[33m,[39m className)}
+[31m[1m>[22m[39m[90m 30 |[39m     [33m...[39mprops
+ [90m    |[39m     [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 31 |[39m   [33m/[39m[33m>[39m
+ [90m 32 |[39m ))
+ [90m 33 |[39m [33mAlert[39m[33m.[39mdisplayName [33m=[39m [32m"Alert"[39m[0m
+
+Unexpected token `...`. Expected jsx identifier
+
+Import traces:
+  Client Component Browser:
+    ./components/ui/alert.tsx [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/ui/alert.tsx [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+
+ GET /boloes/novo 500 in 65ms (compile: 49ms, render: 17ms)
+ GET /boloes 200 in 457ms (compile: 4ms, render: 453ms)
+ ⨯ ./components/ui/alert.tsx:30:5
+Parsing ecmascript source code failed
+[0m [90m 28 |[39m     role[33m=[39m[32m"alert"[39m
+ [90m 29 |[39m     className[33m=[39m{cn(alertVariants({ variant })[33m,[39m className)}
+[31m[1m>[22m[39m[90m 30 |[39m     [33m...[39mprops
+ [90m    |[39m     [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 31 |[39m   [33m/[39m[33m>[39m
+ [90m 32 |[39m ))
+ [90m 33 |[39m [33mAlert[39m[33m.[39mdisplayName [33m=[39m [32m"Alert"[39m[0m
+
+Unexpected token `...`. Expected jsx identifier
+
+Import traces:
+  Client Component Browser:
+    ./components/ui/alert.tsx [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Client Component Browser]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/ui/alert.tsx [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Client Component SSR]
+    ./components/pools/create-pool-form.tsx [Server Component]
+    ./app/boloes/novo/page.tsx [Server Component]
+
+
+ GET /boloes/novo 500 in 42ms (compile: 14ms, render: 28ms)
+ ✓ Compiled in 79ms
+ GET /boloes 200 in 457ms (compile: 4ms, render: 453ms)
+ GET /boloes/novo 200 in 1038ms (compile: 190ms, render: 848ms)
+ GET /boloes 200 in 461ms (compile: 5ms, render: 456ms)
+ GET /boloes/novo 200 in 280ms (compile: 3ms, render: 276ms)
+ POST /boloes/novo 200 in 355ms (compile: 4ms, render: 351ms)
+ ⨯ ./components/pools/pool-ranking.tsx:5:1
+Module not found: Can't resolve '@/components/ui/table'
+[0m [90m  3 |[39m [36mimport[39m { useState } [36mfrom[39m [32m"react"[39m[33m;[39m
+ [90m  4 |[39m [36mimport[39m { [33mRankingEntry[39m } [36mfrom[39m [32m"@/lib/data"[39m[33m;[39m
+[31m[1m>[22m[39m[90m  5 |[39m [36mimport[39m {
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m>[22m[39m[90m  6 |[39m   [33mTable[39m[33m,[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m>[22m[39m[90m  7 |[39m   [33mTableBody[39m[33m,[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m>[22m[39m[90m  8 |[39m   [33mTableCell[39m[33m,[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m>[22m[39m[90m  9 |[39m   [33mTableHead[39m[33m,[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m>[22m[39m[90m 10 |[39m   [33mTableHeader[39m[33m,[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m>[22m[39m[90m 11 |[39m   [33mTableRow[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m>[22m[39m[90m 12 |[39m } [36mfrom[39m [32m"@/components/ui/table"[39m[33m;[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 13 |[39m [36mimport[39m { [33mTrophy[39m[33m,[39m [33mMedal[39m[33m,[39m [33mStar[39m } [36mfrom[39m [32m"lucide-react"[39m[33m;[39m
+ [90m 14 |[39m
+ [90m 15 |[39m [36minterface[39m [33mPoolRankingProps[39m {[0m
+
+Import map: aliased to relative './components/ui/table' inside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./components/pools/pool-ranking.tsx
+    ./app/boloes/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET /boloes/1 500 in 662ms (compile: 647ms, render: 15ms)
+ ⨯ ./components/pools/pool-ranking.tsx:5:1
+Module not found: Can't resolve '@/components/ui/table'
+[0m [90m  3 |[39m [36mimport[39m { useState } [36mfrom[39m [32m"react"[39m[33m;[39m
+ [90m  4 |[39m [36mimport[39m { [33mRankingEntry[39m } [36mfrom[39m [32m"@/lib/data"[39m[33m;[39m
+[31m[1m>[22m[39m[90m  5 |[39m [36mimport[39m {
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m>[22m[39m[90m  6 |[39m   [33mTable[39m[33m,[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m>[22m[39m[90m  7 |[39m   [33mTableBody[39m[33m,[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m>[22m[39m[90m  8 |[39m   [33mTableCell[39m[33m,[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m>[22m[39m[90m  9 |[39m   [33mTableHead[39m[33m,[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m>[22m[39m[90m 10 |[39m   [33mTableHeader[39m[33m,[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m>[22m[39m[90m 11 |[39m   [33mTableRow[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m>[22m[39m[90m 12 |[39m } [36mfrom[39m [32m"@/components/ui/table"[39m[33m;[39m
+ [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 13 |[39m [36mimport[39m { [33mTrophy[39m[33m,[39m [33mMedal[39m[33m,[39m [33mStar[39m } [36mfrom[39m [32m"lucide-react"[39m[33m;[39m
+ [90m 14 |[39m
+ [90m 15 |[39m [36minterface[39m [33mPoolRankingProps[39m {[0m
+
+Import map: aliased to relative './components/ui/table' inside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./components/pools/pool-ranking.tsx
+    ./app/boloes/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET /boloes/1 500 in 34ms (compile: 19ms, render: 15ms)
+ ✓ Compiled in 165ms
+ GET /boloes 200 in 514ms (compile: 20ms, render: 494ms)
+ GET /boloes/novo 200 in 278ms (compile: 14ms, render: 264ms)
+ POST /boloes/novo 200 in 568ms (compile: 6ms, render: 563ms)
+ GET /boloes/2 200 in 1334ms (compile: 914ms, render: 420ms)
+ ✓ Compiled in 72ms
+ ✓ Compiled in 63ms
+ ✓ Compiled in 58ms
