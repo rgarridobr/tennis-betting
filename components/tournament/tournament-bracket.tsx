@@ -231,35 +231,7 @@ export function TournamentBracket({
   const CARD_HEIGHT = 110;
   const BASE_GAP = 24;
 
-  // Swipe support for mobile navigation
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const minSwipeDistance = 50;
 
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe || isRightSwipe) {
-      const currentIndex = rounds.indexOf(selectedRound);
-      if (isLeftSwipe && currentIndex < rounds.length - 1) {
-        handleRoundSelect(rounds[currentIndex + 1]);
-      } else if (isRightSwipe && currentIndex > 0) {
-        handleRoundSelect(rounds[currentIndex - 1]);
-      }
-    }
-  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -352,9 +324,7 @@ export function TournamentBracket({
         <div
           ref={scrollContainerRef}
           className="overflow-x-hidden overflow-y-auto relative scrollbar-hide max-h-[80vh] scroll-smooth"
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
+
         >
           <div
             key={selectedRound}
@@ -386,6 +356,7 @@ export function TournamentBracket({
 
                 return (
                   <div
+                    key={`round-${round}`}
                     data-round={round}
                     className={cn(
                       'flex flex-col w-[265px] md:w-[300px] relative z-10 shrink-0 snap-center transition-all duration-500 ease-in-out'

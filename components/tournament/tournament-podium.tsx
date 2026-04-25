@@ -95,31 +95,32 @@ export function TournamentPodium({ ranking, isFinished, title }: TournamentPodiu
             : 'bg-gradient-to-br from-orange-300 to-orange-500 border-orange-400 text-orange-950 shadow-orange-500/20';
 
           const orderClass = isFirst ? 'md:order-2' : isSecond ? 'md:order-1' : 'md:order-3';
-          const heightClass = isFirst ? 'md:min-h-[16.5rem]' : isSecond ? 'md:min-h-[15rem]' : 'md:min-h-[14rem]';
+          const heightClass = 'min-h-[6rem]';
 
           return (
-            <Card key={user.user_id} className={`relative overflow-hidden border-2 shadow-xl transition-all hover:scale-[1.02] ${colors} ${orderClass} ${heightClass} flex flex-col justify-between rounded-xl sm:h-auto sm:min-h-[10rem]`}>
-              <div className="absolute -bottom-8 -right-4 opacity-[0.15] pointer-events-none select-none overflow-hidden">
-                <span className="font-black text-[12rem] leading-none tracking-tighter" style={{ WebkitTextStroke: '2px currentColor', color: 'transparent' }}>
+            <Card key={user.user_id} className={`relative overflow-hidden border-2 shadow-xl transition-all hover:scale-[1.02] ${colors} ${orderClass} ${heightClass} rounded-2xl`}>
+              <div className="absolute -bottom-6 -right-4 opacity-[0.1] pointer-events-none select-none overflow-hidden">
+                <span className="font-black text-8xl leading-none tracking-tighter" style={{ WebkitTextStroke: '1px currentColor', color: 'transparent' }}>
                   {index + 1}
                 </span>
               </div>
-              <CardContent className="p-5 flex flex-col h-full justify-between relative z-10 gap-4">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
+              <CardContent className="p-4 relative z-10">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
                     <PodiumMedal place={(index + 1) as 1 | 2 | 3} />
+                    <h3 className="text-lg font-black line-clamp-1 leading-tight">{user.user_name}</h3>
                   </div>
-                  <h3 className="text-xl font-black line-clamp-1">{user.user_name}</h3>
-                </div>
-                
-                <div className="flex items-center justify-between mt-auto">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">Pontos</span>
-                    <span className="text-2xl font-black drop-shadow-sm">{user.total_points}</span>
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">Acertos</span>
-                    <span className="text-lg font-bold">{user.correct_predictions}/{user.total_predictions}</span>
+                  
+                  <div className="flex items-center gap-4 shrink-0">
+                    <div className="flex flex-col items-end">
+                      <span className="text-[10px] font-bold uppercase tracking-wider opacity-70 leading-none">Pontos</span>
+                      <span className="text-xl font-black drop-shadow-sm leading-tight">{user.total_points}</span>
+                    </div>
+                    <div className="w-[1px] h-8 bg-current opacity-10" />
+                    <div className="flex flex-col items-end">
+                      <span className="text-[10px] font-bold uppercase tracking-wider opacity-70 leading-none">Acertos</span>
+                      <span className="text-sm font-bold leading-tight">{user.correct_predictions}/{user.total_predictions}</span>
+                    </div>
                   </div>
                 </div>
               </CardContent>

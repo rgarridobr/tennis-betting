@@ -660,6 +660,37 @@ export async function getGlobalRanking(limit: number = 50): Promise<RankingEntry
   }));
 }
 
+export async function getStateRanking(state: string, limit: number = 100): Promise<RankingEntry[]> {
+  const ranking = await sql`
+    SELECT *
+    FROM (
+      SELECT 
+        u.id as user_id,
+        COALESCE(NULLIF(u.nickname, ''), u.name) as user_name,
+        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct = true AND bm.points_cancelled IS NOT TRUE) as correct_predictions,
+        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct IS NOT NULL AND bm.points_cancelled IS NOT TRUE) as total_predictions,
+        COALESCE((SELECT SUM(p.points_earned) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.points_cancelled IS NOT TRUE), 0) as total_points
+      FROM users u
+      WHERE u.state = ${state} AND u.is_admin = false AND u.is_deleted = false
+    ) r
+    ORDER BY r.total_points DESC, r.correct_predictions DESC, r.user_name ASC
+    LIMIT ${limit}`;
+
+  return ranking.map((r, i) => ({
+    user_id: r.user_id as number,
+    user_name: r.user_name as string,
+    correct_predictions: Number(r.correct_predictions || 0),
+    total_predictions: Number(r.total_predictions || 0),
+    total_points: Number(r.total_points || 0),
+    rank: i + 1,
+  }));
+}
+
+export async function getStateMemberCount(state: string): Promise<number> {
+  const rows = await sql`SELECT COUNT(*) as count FROM users WHERE state = ${state} AND is_admin = false AND is_deleted = false`;
+  return Number(rows[0]?.count || 0);
+}
+
 export async function getTournamentRanking(tournamentId: number, limit: number = 100): Promise<RankingEntry[]> {
   const ranking = await sql`
     WITH tournament_stats AS (
@@ -718,6 +749,124 @@ export interface Enrollment {
   user_id: number;
   tournament_id: number;
   bracket_submitted: boolean;
+}
+
+// ==================== POOLS ====================
+
+export interface Pool {
+  id: number | string;
+  name: string;
+  description: string | null;
+  creator_id: number | null;
+  is_general: boolean;
+  password_hash: string | null;
+  created_at: string;
+  member_count?: number;
+  is_member?: boolean;
+  is_state_pool?: boolean;
+}
+
+export interface PoolMember {
+  pool_id: number;
+  user_id: number;
+  joined_at: string;
+}
+
+export async function getPools(search?: string): Promise<Pool[]> {
+  let query;
+  if (search) {
+    const searchPattern = `%${search}%`;
+    query = sql`
+      SELECT p.*, COUNT(pm.user_id)::int as member_count
+      FROM pools p
+      LEFT JOIN pool_members pm ON p.id = pm.pool_id
+      WHERE p.is_general = FALSE AND p.name ILIKE ${searchPattern}
+      GROUP BY p.id
+      ORDER BY p.name ASC
+    `;
+  } else {
+    query = sql`
+      SELECT p.*, COUNT(pm.user_id)::int as member_count
+      FROM pools p
+      LEFT JOIN pool_members pm ON p.id = pm.pool_id
+      WHERE p.is_general = FALSE
+      GROUP BY p.id
+      ORDER BY p.created_at DESC
+      LIMIT 20
+    `;
+  }
+  const rows = await query;
+  return rows as Pool[];
+}
+
+export async function getGeneralPools(): Promise<Pool[]> {
+  const rows = await sql`
+    SELECT p.*, COUNT(pm.user_id)::int as member_count
+    FROM pools p
+    LEFT JOIN pool_members pm ON p.id = pm.pool_id
+    WHERE p.is_general = TRUE
+    GROUP BY p.id
+    ORDER BY p.name ASC
+  `;
+  return rows as Pool[];
+}
+
+export async function getUserPools(userId: number): Promise<Pool[]> {
+  const rows = await sql`
+    SELECT p.*, COUNT(pm2.user_id)::int as member_count
+    FROM pools p
+    JOIN pool_members pm ON p.id = pm.pool_id
+    LEFT JOIN pool_members pm2 ON p.id = pm2.pool_id
+    WHERE pm.user_id = ${userId}
+    GROUP BY p.id
+    ORDER BY p.is_general DESC, p.name ASC
+  `;
+  return rows as Pool[];
+}
+
+export async function getPoolById(id: number): Promise<Pool | null> {
+  const rows = await sql`
+    SELECT p.*, COUNT(pm.user_id)::int as member_count
+    FROM pools p
+    LEFT JOIN pool_members pm ON p.id = pm.pool_id
+    WHERE p.id = ${id}
+    GROUP BY p.id
+  `;
+  return rows.length > 0 ? (rows[0] as Pool) : null;
+}
+
+export async function isUserPoolMember(userId: number, poolId: number): Promise<boolean> {
+  const rows = await sql`
+    SELECT 1 FROM pool_members WHERE user_id = ${userId} AND pool_id = ${poolId}
+  `;
+  return rows.length > 0;
+}
+
+export async function getPoolRanking(poolId: number, limit: number = 100): Promise<RankingEntry[]> {
+  const ranking = await sql`
+    SELECT *
+    FROM (
+      SELECT 
+        u.id as user_id,
+        COALESCE(NULLIF(u.nickname, ''), u.name) as user_name,
+        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct = true AND bm.points_cancelled IS NOT TRUE) as correct_predictions,
+        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct IS NOT NULL AND bm.points_cancelled IS NOT TRUE) as total_predictions,
+        COALESCE((SELECT SUM(p.points_earned) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.points_cancelled IS NOT TRUE), 0) as total_points
+      FROM users u
+      JOIN pool_members pm ON u.id = pm.user_id
+      WHERE pm.pool_id = ${poolId} AND u.is_admin = false AND u.is_deleted = false
+    ) r
+    ORDER BY r.total_points DESC, r.correct_predictions DESC, r.user_name ASC
+    LIMIT ${limit}`;
+
+  return ranking.map((r, i) => ({
+    user_id: r.user_id as number,
+    user_name: r.user_name as string,
+    correct_predictions: Number(r.correct_predictions || 0),
+    total_predictions: Number(r.total_predictions || 0),
+    total_points: Number(r.total_points || 0),
+    rank: i + 1,
+  }));
 }
 
 export async function getEnrollment(userId: number, tournamentId: number): Promise<Enrollment | null> {

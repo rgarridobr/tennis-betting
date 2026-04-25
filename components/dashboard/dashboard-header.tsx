@@ -39,7 +39,7 @@ export function DashboardHeader({
 
   const navItems = [
     { href: "/torneios", label: "Torneios", icon: Trophy },
-    // { href: '/meus-palpites', label: 'Meus Palpites', icon: Target, authRequired: true },
+    { href: "/boloes", label: "Bolões", icon: Target },
     { href: "/ranking", label: "Ranking", icon: Medal, isRanking: true },
     { href: "/regras", label: "Regras", icon: FileText },
   ];
