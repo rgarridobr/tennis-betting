@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import { 
   getStateRanking, 
   getStateMemberCount,
-  getActiveTournament 
+  getActiveTournament,
+  getTournamentsWithBrackets
 } from "@/lib/data";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { PageHero } from "@/components/shared/page-hero";
@@ -11,19 +12,25 @@ import { PoolRanking } from "@/components/pools/pool-ranking";
 import { Users, Shield, Trophy, MapPin } from "lucide-react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { TournamentFilter } from "@/components/pools/tournament-filter";
 
-export default async function StatePoolPage() {
+export default async function StatePoolPage({ searchParams }: { searchParams: Promise<{ tournamentId?: string }> }) {
   const user = await getSession();
   if (!user) redirect("/login");
 
   // Se o usuário não tiver estado, redireciona para a página de bolões
   if (!user.state) redirect("/boloes");
 
-  const [ranking, memberCount, activeTournament] = await Promise.all([
-    getStateRanking(user.state),
+  const { tournamentId } = await searchParams;
+  const selectedTournamentId = tournamentId ? parseInt(tournamentId, 10) : undefined;
+
+  const [memberCount, activeTournament, tournaments] = await Promise.all([
     getStateMemberCount(user.state),
-    getActiveTournament()
+    getActiveTournament(),
+    getTournamentsWithBrackets()
   ]);
+
+  const ranking = await getStateRanking(user.state, selectedTournamentId);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -62,6 +69,7 @@ export default async function StatePoolPage() {
               <Trophy className="w-7 h-7 text-amber-500" />
               Ranking do Estado ({user.state})
             </h2>
+            <TournamentFilter tournaments={tournaments} currentTournamentId={selectedTournamentId} />
           </div>
 
           <PoolRanking ranking={ranking} currentUserId={user.id} />

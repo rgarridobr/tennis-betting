@@ -11,8 +11,10 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Lock, Trophy, Users, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import type { Tournament } from "@/lib/data";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export function CreatePoolForm({ isAdmin }: { isAdmin: boolean }) {
+export function CreatePoolForm({ isAdmin, tournaments = [], onCancel }: { isAdmin: boolean; tournaments?: Tournament[]; onCancel?: () => void }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,15 +37,30 @@ export function CreatePoolForm({ isAdmin }: { isAdmin: boolean }) {
   };
 
   return (
-    <Card className="max-w-2xl mx-auto rounded-3xl shadow-lg border-0">
-      <CardContent className="p-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="w-full mx-auto pt-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <Alert variant="destructive" className="rounded-xl">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
+
+          <div className="space-y-2">
+            <Label htmlFor="tournament_id" className="text-sm font-bold text-slate-700">Torneio</Label>
+            <Select name="tournament_id" required>
+              <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white text-slate-700 font-medium">
+                <SelectValue placeholder="Selecione um torneio" />
+              </SelectTrigger>
+              <SelectContent>
+                {tournaments.map((t) => (
+                  <SelectItem key={t.id} value={String(t.id)}>
+                    {t.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-bold text-slate-700">Nome do Bolão</Label>
@@ -117,7 +134,7 @@ export function CreatePoolForm({ isAdmin }: { isAdmin: boolean }) {
               type="button"
               variant="outline"
               className="w-full md:w-auto md:flex-1 h-12 rounded-xl font-bold"
-              onClick={() => router.back()}
+              onClick={onCancel || (() => router.back())}
             >
               Cancelar
             </Button>
@@ -130,7 +147,6 @@ export function CreatePoolForm({ isAdmin }: { isAdmin: boolean }) {
             </Button>
           </div>
         </form>
-      </CardContent>
-    </Card>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { getUserPools, getGeneralPools, getPools, getActiveTournament, getStateMemberCount } from "@/lib/data";
+import { getUserPools, getGeneralPools, getPools, getActiveTournament, getStateMemberCount, getTournamentsActive } from "@/lib/data";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { PageHero } from "@/components/shared/page-hero";
 import { PoolList } from "@/components/pools/pool-list";
@@ -15,11 +15,12 @@ export default async function PoolsPage({ searchParams }: PoolsPageProps) {
 
   const { q } = await searchParams;
 
-  const [myPools, generalPools, searchResults, activeTournament] = await Promise.all([
+  const [myPools, generalPools, searchResults, activeTournament, tournaments] = await Promise.all([
     getUserPools(user.id),
     getGeneralPools(),
     q ? getPools(q) : Promise.resolve([]),
-    getActiveTournament()
+    getActiveTournament(),
+    getTournamentsActive()
   ]);
 
   if (user.state) {
@@ -54,6 +55,8 @@ export default async function PoolsPage({ searchParams }: PoolsPageProps) {
           myPools={myPools} 
           generalPools={generalPools} 
           initialSearchResults={searchResults}
+          tournaments={tournaments}
+          isAdmin={user.is_admin}
         />
       </main>
     </div>

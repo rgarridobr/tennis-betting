@@ -12,20 +12,27 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 import { joinPoolAction, leavePoolAction } from "@/lib/actions/pools";
-import { Lock, LogOut, Users, Share2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Lock, LogOut, Users, Share2, CheckCircle2, AlertCircle, Edit } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
+import { EditPoolDialog } from "./edit-pool-dialog";
+import type { Pool, Tournament } from "@/lib/data";
 
 interface PoolActionsProps {
-  poolId: number;
-  poolName: string;
+  pool: Pool;
+  tournaments: Tournament[];
   isMember: boolean;
-  needsPassword?: boolean;
+  isCreator: boolean;
 }
 
-export function PoolActions({ poolId, poolName, isMember, needsPassword }: PoolActionsProps) {
+export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActionsProps) {
+  const poolId = Number(pool.id);
+  const poolName = pool.name;
+  const needsPassword = !!pool.password_hash;
+
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -78,6 +85,16 @@ export function PoolActions({ poolId, poolName, isMember, needsPassword }: PoolA
     <>
       {isMember ? (
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+          {isCreator && (
+            <Button 
+              variant="outline" 
+              className="rounded-xl font-bold border-emerald-200 text-emerald-700 hover:bg-emerald-50 w-full sm:w-auto"
+              onClick={() => setShowEditDialog(true)}
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Editar Bolão
+            </Button>
+          )}
           <Button 
             variant="outline" 
             className="rounded-xl font-bold border-slate-200 w-full sm:w-auto"
@@ -182,6 +199,12 @@ export function PoolActions({ poolId, poolName, isMember, needsPassword }: PoolA
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <EditPoolDialog 
+        pool={pool} 
+        tournaments={tournaments} 
+        open={showEditDialog} 
+        onOpenChange={setShowEditDialog} 
+      />
     </>
   );
 }

@@ -5,19 +5,30 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Lock, Users, ArrowRight, Trophy, Shield, MapPin } from 'lucide-react';
 import Link from 'next/link';
-import type { Pool } from '@/lib/data';
+import type { Pool, Tournament } from '@/lib/data';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { CreatePoolForm } from './create-pool-form';
 
 interface PoolListProps {
   myPools: Pool[];
   generalPools: Pool[];
   initialSearchResults: Pool[];
+  tournaments?: Tournament[];
+  isAdmin?: boolean;
 }
 
-export function PoolList({ myPools, generalPools, initialSearchResults: searchResults }: PoolListProps) {
+export function PoolList({
+  myPools,
+  generalPools,
+  initialSearchResults: searchResults,
+  tournaments = [],
+  isAdmin = false,
+}: PoolListProps) {
   const [search, setSearch] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const router = useRouter();
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -32,17 +43,13 @@ export function PoolList({ myPools, generalPools, initialSearchResults: searchRe
   return (
     <div className="space-y-16">
       {/* Search Section */}
-      <section className="bg-white rounded-[2rem] p-6 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/60 relative overflow-hidden">
-        <div className="absolute -right-12 -top-12 opacity-[0.03] transform rotate-12 pointer-events-none">
-          <Search size={200} strokeWidth={1} />
-        </div>
-
+      <section className="relative overflow-hidden">
         <div className="relative z-10 max-w-2xl">
-          <h2 className="text-2xl font-black text-slate-800 mb-2 flex items-center gap-3 tracking-tight">
-            <div className="p-2.5 bg-emerald-100 rounded-xl text-emerald-600">
-              <Search className="w-5 h-5" />
+          <h2 className="text-3xl font-black text-slate-800 flex items-center gap-3 tracking-tight">
+            <div className="p-3 bg-emerald-100 rounded-2xl text-emerald-500 shadow-inner">
+              <Search className="w-7 h-7" />
             </div>
-            Encontrar um Bolão Privado
+            Encontrar bolões
           </h2>
           <p className="text-slate-500 mb-8 font-medium">
             Busque pelo nome do bolão para encontrar competições criadas por seus amigos.
@@ -95,10 +102,10 @@ export function PoolList({ myPools, generalPools, initialSearchResults: searchRe
             <p className="text-slate-500 mt-2 font-medium ml-1">Grupos que você já participa.</p>
           </div>
           <Button
-            asChild
-            className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold uppercase tracking-widest text-xs px-6 py-6 shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/30"
+            onClick={() => setShowCreateDialog(true)}
+            className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold uppercase tracking-widest text-xs px-6 py-6 shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/30 cursor-pointer"
           >
-            <Link href="/boloes/novo">Criar Novo Bolão</Link>
+            Criar Novo Bolão
           </Button>
         </div>
 
@@ -141,6 +148,18 @@ export function PoolList({ myPools, generalPools, initialSearchResults: searchRe
           </div>
         </section>
       )}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="sm:max-w-[500px] rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-slate-800 tracking-tight">Criar Bolão</DialogTitle>
+            <DialogDescription className="text-slate-500">
+              Personalize seu grupo e convide amigos para competir.
+            </DialogDescription>
+          </DialogHeader>
+
+          <CreatePoolForm isAdmin={isAdmin} tournaments={tournaments} onCancel={() => setShowCreateDialog(false)} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -157,7 +176,13 @@ function PoolCard({ pool, isMember }: { pool: Pool; isMember?: boolean }) {
       <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.12)] border border-slate-200/60 transition-all duration-500 group hover:-translate-y-1.5 h-full flex flex-col relative overflow-hidden">
         {/* Decorative background element */}
         <div className="absolute -right-6 -bottom-6 opacity-[0.03] transform rotate-12 transition-transform duration-700 group-hover:rotate-0 group-hover:scale-110 pointer-events-none text-slate-900 z-0">
-          {isStatePool ? <MapPin size={140} strokeWidth={1} /> : isGeneral ? <Trophy size={140} strokeWidth={1} /> : <Users size={140} strokeWidth={1} />}
+          {isStatePool ? (
+            <MapPin size={140} strokeWidth={1} />
+          ) : isGeneral ? (
+            <Trophy size={140} strokeWidth={1} />
+          ) : (
+            <Users size={140} strokeWidth={1} />
+          )}
         </div>
 
         {/* Card Header (Gradient) */}
@@ -182,9 +207,15 @@ function PoolCard({ pool, isMember }: { pool: Pool; isMember?: boolean }) {
 
           <div className="px-6 py-6 flex items-center gap-4 relative z-10">
             <div className="w-14 h-14 rounded-2xl bg-white shadow-lg flex items-center justify-center shrink-0 transform transition-transform duration-500 group-hover:scale-110">
-              {isStatePool ? <MapPin className="w-7 h-7 text-blue-500" /> : isGeneral ? <Trophy className="w-7 h-7 text-amber-500" /> : <Users className="w-7 h-7 text-emerald-500" />}
+              {isStatePool ? (
+                <MapPin className="w-7 h-7 text-blue-500" />
+              ) : isGeneral ? (
+                <Trophy className="w-7 h-7 text-amber-500" />
+              ) : (
+                <Users className="w-7 h-7 text-emerald-500" />
+              )}
             </div>
-            
+
             <div className="flex-1 min-w-0">
               <h3 className="font-black text-lg md:text-xl text-white line-clamp-2 leading-tight tracking-tight">
                 {pool.name}
@@ -203,7 +234,6 @@ function PoolCard({ pool, isMember }: { pool: Pool; isMember?: boolean }) {
         </div>
 
         <div className="px-6 pt-4 relative z-10 flex-1 flex flex-col">
-
           <p className="text-slate-500 font-medium text-sm line-clamp-2 mb-6 flex-1">
             {pool.description || 'Sem descrição disponível para este bolão.'}
           </p>

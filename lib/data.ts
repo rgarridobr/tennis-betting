@@ -1,5 +1,8 @@
 import { sql } from './db';
 
+// Migration: Add tournament_id to pools
+sql`ALTER TABLE pools ADD COLUMN IF NOT EXISTS tournament_id INTEGER REFERENCES tournaments(id)`.catch(console.error);
+
 // ==================== INTERFACES ====================
 
 export interface Tournament {
@@ -354,6 +357,18 @@ export async function getTournaments(): Promise<Tournament[]> {
   return rows as Tournament[];
 }
 
+export async function getTournamentsWithBrackets(): Promise<Tournament[]> {
+  await syncTournamentStatuses();
+  const rows = await sql`
+    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    FROM tournaments 
+    WHERE is_visible = TRUE 
+      AND EXISTS (SELECT 1 FROM bracket_matches bm WHERE bm.tournament_id = tournaments.id)
+    ORDER BY start_date DESC
+  `;
+  return rows as Tournament[];
+}
+
 export async function getTournamentsByYearAndMonth(year: number, month: number): Promise<Tournament[]> {
   await syncTournamentStatuses();
   const rows = await sql`
@@ -676,16 +691,16 @@ export async function getGlobalRanking(limit: number = 50): Promise<RankingEntry
   }));
 }
 
-export async function getStateRanking(state: string, limit: number = 100): Promise<RankingEntry[]> {
+export async function getStateRanking(state: string, tournamentId?: number | null, limit: number = 100): Promise<RankingEntry[]> {
   const ranking = await sql`
     SELECT *
     FROM (
       SELECT 
         u.id as user_id,
         COALESCE(NULLIF(u.nickname, ''), u.name) as user_name,
-        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct = true AND bm.points_cancelled IS NOT TRUE) as correct_predictions,
-        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct IS NOT NULL AND bm.points_cancelled IS NOT TRUE) as total_predictions,
-        COALESCE((SELECT SUM(p.points_earned) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.points_cancelled IS NOT TRUE), 0) as total_points
+        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct = true AND bm.points_cancelled IS NOT TRUE AND (${tournamentId}::integer IS NULL OR bm.tournament_id = ${tournamentId})) as correct_predictions,
+        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct IS NOT NULL AND bm.points_cancelled IS NOT TRUE AND (${tournamentId}::integer IS NULL OR bm.tournament_id = ${tournamentId})) as total_predictions,
+        COALESCE((SELECT SUM(p.points_earned) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.points_cancelled IS NOT TRUE AND (${tournamentId}::integer IS NULL OR bm.tournament_id = ${tournamentId})), 0) as total_points
       FROM users u
       WHERE u.state = ${state} AND u.is_admin = false AND u.is_deleted = false
     ) r
@@ -777,6 +792,7 @@ export interface Pool {
   is_general: boolean;
   password_hash: string | null;
   created_at: string;
+  tournament_id?: number | null;
   member_count?: number;
   is_member?: boolean;
   is_state_pool?: boolean;
@@ -859,15 +875,18 @@ export async function isUserPoolMember(userId: number, poolId: number): Promise<
 }
 
 export async function getPoolRanking(poolId: number, limit: number = 100): Promise<RankingEntry[]> {
+  const pool = await getPoolById(poolId);
+  const tournamentId = pool?.tournament_id || null;
+
   const ranking = await sql`
     SELECT *
     FROM (
       SELECT 
         u.id as user_id,
         COALESCE(NULLIF(u.nickname, ''), u.name) as user_name,
-        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct = true AND bm.points_cancelled IS NOT TRUE) as correct_predictions,
-        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct IS NOT NULL AND bm.points_cancelled IS NOT TRUE) as total_predictions,
-        COALESCE((SELECT SUM(p.points_earned) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.points_cancelled IS NOT TRUE), 0) as total_points
+        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct = true AND bm.points_cancelled IS NOT TRUE AND (${tournamentId}::integer IS NULL OR bm.tournament_id = ${tournamentId})) as correct_predictions,
+        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct IS NOT NULL AND bm.points_cancelled IS NOT TRUE AND (${tournamentId}::integer IS NULL OR bm.tournament_id = ${tournamentId})) as total_predictions,
+        COALESCE((SELECT SUM(p.points_earned) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.points_cancelled IS NOT TRUE AND (${tournamentId}::integer IS NULL OR bm.tournament_id = ${tournamentId})), 0) as total_points
       FROM users u
       JOIN pool_members pm ON u.id = pm.user_id
       WHERE pm.pool_id = ${poolId} AND u.is_admin = false AND u.is_deleted = false
