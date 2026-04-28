@@ -42,6 +42,31 @@ export async function requestPasswordResetAction(formData: FormData) {
     return { success: true, message: 'Se o e-mail estiver cadastrado, você receberá um código em instantes.' };
   }
 
+  const results = await sql`
+    SELECT email, code, expires_at, attempts FROM password_resets WHERE email = ${email}
+  `;
+
+  if (results.length > 0) {
+    const record = results[0];
+    const now = new Date();
+    const expires = new Date(record.expires_at);
+
+    if (now < expires) {
+      if (record.attempts >= 5) {
+        const remainingMs = expires.getTime() - now.getTime();
+        const remainingMins = Math.ceil(remainingMs / (60 * 1000));
+        return { 
+          error: `Limite de tentativas excedido. Aguarde ${remainingMins} minuto(s) para solicitar um novo código.` 
+        };
+      }
+      
+      return { 
+        success: true, 
+        message: 'Um código já foi enviado e ainda é válido. Verifique sua caixa de entrada.' 
+      };
+    }
+  }
+
   const code = generateCode();
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
@@ -85,13 +110,11 @@ export async function verifyResetCodeAction(email: string, code: string) {
 
   // Check expiration
   if (new Date(record.expires_at) < new Date()) {
-    await sql`DELETE FROM password_resets WHERE email = ${email}`;
     return { error: 'O código expirou. Solicite um novo.' };
   }
 
   // Check attempts
   if (record.attempts >= 5) {
-    await sql`DELETE FROM password_resets WHERE email = ${email}`;
     return { error: 'Limite de tentativas excedido. O código foi invalidado.' };
   }
 
@@ -99,14 +122,14 @@ export async function verifyResetCodeAction(email: string, code: string) {
   if (record.code !== normalizedCode) {
     const newAttempts = record.attempts + 1;
 
-    if (newAttempts >= 5) {
-      await sql`DELETE FROM password_resets WHERE email = ${email}`;
-      return { error: 'Limite de tentativas excedido. O código foi invalidado.' };
-    }
-
     await sql`
       UPDATE password_resets SET attempts = ${newAttempts} WHERE email = ${email}
     `;
+
+    if (newAttempts >= 5) {
+      return { error: 'Limite de tentativas excedido. O código foi invalidado.' };
+    }
+
     const remaining = 5 - newAttempts;
     return { error: `Código incorreto. Você tem mais ${remaining} tentativa(s).` };
   }
