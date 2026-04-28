@@ -154,6 +154,7 @@ export function ResetPasswordDialog({ open, onOpenChange }: { open: boolean, onO
                 value={code}
                 onChange={setCode}
                 pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
+                inputMode="text"
                 onComplete={() => handleVerifyCode()}
             >
               <InputOTPGroup>

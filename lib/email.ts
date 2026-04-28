@@ -22,7 +22,7 @@ export async function sendResetCodeEmail(email: string, code: string) {
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #041a16;">Recuperação de Senha</h2>
-        <p>Você solicitou a recuperação de sua senha no Tenis Pool.</p>
+        <p>Você solicitou a recuperação de sua senha no TennisPool.</p>
         <p>Seu código de 5 dígitos é:</p>
         <div style="background-color: #f1f5f9; padding: 20px; text-align: center; border-radius: 8px;">
           <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #D32D18;">${code}</span>

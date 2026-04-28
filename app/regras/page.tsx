@@ -42,7 +42,7 @@ export default async function RulesPage() {
             <CardContent>
               <p className="text-slate-600 text-sm leading-relaxed">
                 As inscrições nos torneios ficam disponíveis assim que eles entram no status “O que vem por aí”. Já os
-                palpites podem ser enviados a partir da publicação da chave no TennisPool, até o horário de início da
+                palpites podem ser enviados a partir da publicação da chave no TennisPool até o horário de início da
                 primeira partida da chave principal.
               </p>
             </CardContent>

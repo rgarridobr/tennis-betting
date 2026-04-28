@@ -177,7 +177,7 @@ export default async function TournamentPage({
         matches.length === 0 ? (
           <div className="text-center py-24 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm px-6">
             <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">
-              {enrolled ? "Inscrição confirmada com sucesso !" : "Você chegou cedo!"}
+              {enrolled ? "Inscrição confirmada !" : "Você chegou cedo!"}
             </h3>
             <p className="text-slate-500 text-lg font-medium max-w-2xl mx-auto mb-4">
               Aguardando divulgação do chaveamento por parte da ATP.
@@ -185,7 +185,7 @@ export default async function TournamentPage({
             
             <div className="mb-6 inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-sm font-bold border border-emerald-100">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              {participants} {participants === 1 ? "inscrito" : "inscritos"} já nesta etapa
+              {participants} {participants === 1 ? "inscrito" : "inscritos"} no Torneio
             </div>
 
             <p className="text-slate-500 text-base font-medium max-w-2xl mx-auto mb-2">
