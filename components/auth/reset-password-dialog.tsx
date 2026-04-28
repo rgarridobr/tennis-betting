@@ -12,6 +12,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp"
+import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp"
 
 export function ResetPasswordDialog({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) {
   const [step, setStep] = useState<'email' | 'code' | 'new-password'>('email')
@@ -152,6 +153,7 @@ export function ResetPasswordDialog({ open, onOpenChange }: { open: boolean, onO
                 maxLength={5}
                 value={code}
                 onChange={setCode}
+                pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
                 onComplete={() => handleVerifyCode()}
             >
               <InputOTPGroup>

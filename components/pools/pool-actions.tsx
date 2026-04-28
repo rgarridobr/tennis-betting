@@ -77,10 +77,10 @@ export function PoolActions({ poolId, poolName, isMember, needsPassword }: PoolA
   return (
     <>
       {isMember ? (
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
           <Button 
             variant="outline" 
-            className="rounded-xl font-bold border-slate-200"
+            className="rounded-xl font-bold border-slate-200 w-full sm:w-auto"
             onClick={handleShare}
           >
             <Share2 className="w-4 h-4 mr-2" />
@@ -88,17 +88,17 @@ export function PoolActions({ poolId, poolName, isMember, needsPassword }: PoolA
           </Button>
           <Button 
             variant="ghost" 
-            className="rounded-xl font-bold text-red-500 hover:text-red-600 hover:bg-red-50"
+            className="rounded-xl font-bold text-slate-500 hover:text-red-600 hover:bg-slate-50 transition-colors w-full sm:w-auto"
             onClick={handleLeave}
             disabled={isLoading}
           >
             <LogOut className="w-4 h-4 mr-2" />
-            Sair
+            Sair do Grupo
           </Button>
         </div>
       ) : (
         <Button 
-          className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold px-8 h-12"
+          className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold px-8 h-12 w-full sm:w-auto"
           onClick={handleJoin}
           disabled={isLoading}
         >

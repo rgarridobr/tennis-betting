@@ -41,8 +41,9 @@ export default async function RulesPage() {
             </CardHeader>
             <CardContent>
               <p className="text-slate-600 text-sm leading-relaxed">
-                As inscrições e palpites abrem assim que a chave do torneio é sorteada e publicada. Você pode realizar
-                seus palpites até o horário de início da primeira partida do torneio.
+                As inscrições nos torneios ficam disponíveis assim que eles entram no status “O que vem por aí”. Já os
+                palpites podem ser enviados a partir da publicação da chave no TennisPool, até o horário de início da
+                primeira partida da chave principal.
               </p>
             </CardContent>
           </Card>
@@ -71,7 +72,8 @@ export default async function RulesPage() {
             </CardHeader>
             <CardContent>
               <p className="text-slate-600 text-sm leading-relaxed">
-                Você ganha pontos a cada acerto de vencedor. A pontuação é progressiva: rodadas finais valem mais. A última partida (Final) premia exclusivamente quem acerta o Campeão do torneio.
+                Você ganha pontos a cada acerto de vencedor. A pontuação é progressiva: rodadas finais valem mais. A
+                última partida (Final) premia exclusivamente quem acerta o Campeão do torneio.
               </p>
             </CardContent>
           </Card>
@@ -107,9 +109,7 @@ export default async function RulesPage() {
                         return (
                           <React.Fragment key={idx}>
                             <div className="text-center border-1 border-slate-200 rounded-lg mx-2 py-1">
-                              <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">
-                                {displayTitle}
-                              </p>
+                              <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">{displayTitle}</p>
                               <p className="text-xl font-black text-emerald-600 py-3">
                                 {points === null ? '-' : points}
                               </p>
@@ -135,7 +135,8 @@ export default async function RulesPage() {
             <div>
               <h3 className="text-amber-900 font-black text-lg mb-1 uppercase tracking-tight">Observação Importante</h3>
               <p className="text-amber-800 font-medium leading-relaxed">
-                Sempre que um tenista com o status de Lucky Loser(LL) vencer uma partida, ou em caso de vitória por W/O (Walkover), não haverá pontuação.
+                Sempre que um tenista com o status de Lucky Loser(LL) vencer uma partida, ou em caso de vitória por W/O
+                (Walkover), não haverá pontuação.
               </p>
             </div>
           </div>

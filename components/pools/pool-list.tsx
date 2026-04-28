@@ -163,7 +163,7 @@ function PoolCard({ pool, isMember }: { pool: Pool; isMember?: boolean }) {
         {/* Card Header (Gradient) */}
         <div
           className={cn(
-            'h-24 relative overflow-hidden shrink-0',
+            'relative overflow-hidden shrink-0',
             isStatePool
               ? 'bg-gradient-to-br from-blue-500 to-indigo-700'
               : isGeneral
@@ -180,10 +180,20 @@ function PoolCard({ pool, isMember }: { pool: Pool; isMember?: boolean }) {
             }}
           />
 
-          <div className="absolute top-4 right-4 flex gap-2">
+          <div className="px-6 py-6 flex items-center gap-4 relative z-10">
+            <div className="w-14 h-14 rounded-2xl bg-white shadow-lg flex items-center justify-center shrink-0 transform transition-transform duration-500 group-hover:scale-110">
+              {isStatePool ? <MapPin className="w-7 h-7 text-blue-500" /> : isGeneral ? <Trophy className="w-7 h-7 text-amber-500" /> : <Users className="w-7 h-7 text-emerald-500" />}
+            </div>
+            
+            <div className="flex-1 min-w-0">
+              <h3 className="font-black text-lg md:text-xl text-white line-clamp-2 leading-tight tracking-tight">
+                {pool.name}
+              </h3>
+            </div>
+
             {pool.password_hash && !isGeneral && (
               <div
-                className="bg-white/20 backdrop-blur-md text-white p-2 rounded-xl shadow-sm border border-white/10"
+                className="bg-white/20 backdrop-blur-md text-white p-2 rounded-xl shadow-sm border border-white/10 shrink-0 self-start"
                 title="Requer senha"
               >
                 <Lock className="w-4 h-4" />
@@ -192,15 +202,7 @@ function PoolCard({ pool, isMember }: { pool: Pool; isMember?: boolean }) {
           </div>
         </div>
 
-        {/* Avatar/Icon Overlapping Header */}
-        <div className="px-6 relative z-10 flex-1 flex flex-col">
-          <div className="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center -mt-8 mb-4 border border-slate-100 shrink-0 transform transition-transform duration-500 group-hover:scale-110">
-            {isStatePool ? <MapPin className="w-8 h-8 text-blue-500" /> : isGeneral ? <Trophy className="w-8 h-8 text-amber-500" /> : <Users className="w-8 h-8 text-emerald-500" />}
-          </div>
-
-          <h3 className="font-black text-xl text-slate-800 mb-2 group-hover:text-emerald-600 transition-colors line-clamp-2 leading-tight tracking-tight">
-            {pool.name}
-          </h3>
+        <div className="px-6 pt-4 relative z-10 flex-1 flex flex-col">
 
           <p className="text-slate-500 font-medium text-sm line-clamp-2 mb-6 flex-1">
             {pool.description || 'Sem descrição disponível para este bolão.'}

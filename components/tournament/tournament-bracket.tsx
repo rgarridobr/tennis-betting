@@ -236,7 +236,7 @@ export function TournamentBracket({
   return (
     <div className="flex flex-col gap-6">
       {/* Sticky Header with Toggles and Filters */}
-      <div className="sticky top-20 z-40 bg-slate-50/80 backdrop-blur-md py-1 rounded-[2rem] border border-slate-200/50 shadow-sm px-6 flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
+      <div className="sticky top-20 z-40 bg-slate-50/80 backdrop-blur-md py-1 rounded-[2rem] border border-slate-200/50 shadow-sm px-6 flex flex-col md:flex-row items-center justify-between md:gap-4 gap-2 mb-8">
         {/* View Mode Toggle */}
         {!isAdmin && (isEnrolled || isViewingOthers) && (
           <div className="bg-white p-1 rounded-2xl border border-slate-200 shadow-sm flex gap-1 shrink-0">
@@ -263,10 +263,8 @@ export function TournamentBracket({
           </div>
         )}
 
-        <div className="h-[1px] w-full bg-slate-200 md:hidden" />
-
         {/* Round Filter */}
-        <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide max-w-full py-5 px-5 z-50">
+        <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide max-w-full md:py-5 md:px-5 py-1 z-50">
           <div className="flex items-center gap-3">
             {rounds.map((round) => (
               <button
