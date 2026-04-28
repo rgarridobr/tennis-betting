@@ -152,17 +152,18 @@ export function ResetPasswordDialog({ open, onOpenChange }: { open: boolean, onO
             <InputOTP
                 maxLength={5}
                 value={code}
-                onChange={setCode}
+                onChange={(val) => setCode(val.toUpperCase())}
                 pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
                 inputMode="text"
+                autoCapitalize="characters"
                 onComplete={() => handleVerifyCode()}
             >
               <InputOTPGroup>
-                <InputOTPSlot index={0} className="w-12 h-14 text-lg font-black" />
-                <InputOTPSlot index={1} className="w-12 h-14 text-lg font-black" />
-                <InputOTPSlot index={2} className="w-12 h-14 text-lg font-black" />
-                <InputOTPSlot index={3} className="w-12 h-14 text-lg font-black" />
-                <InputOTPSlot index={4} className="w-12 h-14 text-lg font-black" />
+                <InputOTPSlot index={0} className="w-12 h-14 text-lg font-black uppercase" />
+                <InputOTPSlot index={1} className="w-12 h-14 text-lg font-black uppercase" />
+                <InputOTPSlot index={2} className="w-12 h-14 text-lg font-black uppercase" />
+                <InputOTPSlot index={3} className="w-12 h-14 text-lg font-black uppercase" />
+                <InputOTPSlot index={4} className="w-12 h-14 text-lg font-black uppercase" />
               </InputOTPGroup>
             </InputOTP>
 
