@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Tournament } from "@/lib/data";
 
@@ -12,6 +12,7 @@ interface TournamentFilterProps {
 export function TournamentFilter({ tournaments, currentTournamentId }: TournamentFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   const handleValueChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -20,7 +21,7 @@ export function TournamentFilter({ tournaments, currentTournamentId }: Tournamen
     } else {
       params.set("tournamentId", value);
     }
-    router.push(`/boloes/estadual?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   return (

@@ -31,7 +31,12 @@ export async function registerAction(formData: FormData) {
     return { error: 'Erro ao criar conta. Tente novamente.' };
   }
 
-  redirect('/dashboard');
+  const redirectTo = formData.get('redirectTo') as string;
+  if (redirectTo) {
+    redirect(redirectTo);
+  } else {
+    redirect('/dashboard');
+  }
 }
 
 export async function loginAction(formData: FormData) {
@@ -53,7 +58,11 @@ export async function loginAction(formData: FormData) {
   }
 
   await createSession(user.id);
-  if (user.is_admin) {
+  const redirectTo = formData.get('redirectTo') as string;
+  
+  if (redirectTo) {
+    redirect(redirectTo);
+  } else if (user.is_admin) {
     redirect('/admin');
   } else {
     redirect('/dashboard');

@@ -874,9 +874,9 @@ export async function isUserPoolMember(userId: number, poolId: number): Promise<
   return rows.length > 0;
 }
 
-export async function getPoolRanking(poolId: number, limit: number = 100): Promise<RankingEntry[]> {
+export async function getPoolRanking(poolId: number, tournamentIdOverride?: number | null, limit: number = 100): Promise<RankingEntry[]> {
   const pool = await getPoolById(poolId);
-  const tournamentId = pool?.tournament_id || null;
+  const tournamentId = tournamentIdOverride !== undefined ? tournamentIdOverride : (pool?.tournament_id || null);
 
   const ranking = await sql`
     SELECT *

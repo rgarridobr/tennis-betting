@@ -55,7 +55,7 @@ export function PoolList({
             Busque pelo nome do bolão para encontrar competições criadas por seus amigos.
           </p>
 
-          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
+          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4 p-1">
             <div className="relative flex-1 group">
               <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />

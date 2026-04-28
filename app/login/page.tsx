@@ -6,10 +6,17 @@ import Link from 'next/link';
 import { ArrowLeft, Trophy } from 'lucide-react';
 import { RotatingQuote } from '@/components/auth/rotating-quote';
 
-export default async function LoginPage() {
+interface Props {
+  searchParams: Promise<{ redirectTo?: string }>;
+}
+
+export default async function LoginPage({ searchParams }: Props) {
+  const { redirectTo } = await searchParams;
   const user = await getSession();
   if (user) {
-    if (user.is_admin) {
+    if (redirectTo) {
+      redirect(redirectTo);
+    } else if (user.is_admin) {
       redirect('/admin');
     } else {
       redirect('/dashboard');
@@ -50,7 +57,10 @@ export default async function LoginPage() {
 
           <p className="text-center text-slate-500 font-medium">
             Ainda não tem um Perfil?{' '}
-            <Link href="/cadastro" className="text-emerald-600 font-black hover:underline underline-offset-4">
+            <Link 
+              href={redirectTo ? `/cadastro?redirectTo=${encodeURIComponent(redirectTo)}` : "/cadastro"} 
+              className="text-emerald-600 font-black hover:underline underline-offset-4"
+            >
               Cadastre-se
             </Link>
           </p>

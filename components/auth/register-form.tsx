@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { formatBrazilianPhoneNumber } from '@/lib/utils';
 import { StateCitySelector } from '@/components/shared/state-city-selector';
 import { toast } from 'sonner';
+import { useSearchParams } from 'next/navigation';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -22,6 +23,8 @@ function SubmitButton() {
 }
 
 export function RegisterForm() {
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirectTo') || '';
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [nickname, setNickname] = useState('');
@@ -112,6 +115,7 @@ export function RegisterForm() {
     <Card>
       <CardContent className="pt-6">
         <form action={handleSubmit} className="space-y-4">
+          {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} />}
           <div className="space-y-2">
             <Label htmlFor="name">Nome Completo (privado) *</Label>
             <Input id="name" name="name" type="text" placeholder="" required value={name} onChange={handleNameChange} />

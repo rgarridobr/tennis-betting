@@ -6,6 +6,7 @@ import {
   isUserPoolMember, 
   getActiveTournament,
   getTournamentsActive,
+  getTournamentsWithBrackets,
   isUserEnrolled,
   getUserPredictions,
   hasTournamentStarted
@@ -15,6 +16,8 @@ import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { PageHero } from "@/components/shared/page-hero";
 import { PoolRanking } from "@/components/pools/pool-ranking";
 import { PoolActions } from "@/components/pools/pool-actions";
+import { TournamentFilter } from "@/components/pools/tournament-filter";
+import { JoinPrivatePoolGate } from "@/components/pools/join-private-pool-gate";
 import { Users, Shield, Trophy, AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
@@ -22,26 +25,38 @@ import { Button } from "@/components/ui/button";
 
 interface PoolPageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ tournamentId?: string }>;
 }
 
-export default async function PoolPage({ params }: PoolPageProps) {
-  const user = await getSession();
-  if (!user) redirect("/login");
-
+export default async function PoolPage({ params, searchParams }: PoolPageProps) {
   const { id } = await params;
   const poolId = parseInt(id, 10);
   if (isNaN(poolId)) notFound();
 
-  const [pool, isMember, activeTournament, tournaments] = await Promise.all([
-    getPoolById(poolId),
-    isUserPoolMember(user.id, poolId),
-    getActiveTournament(),
-    getTournamentsActive()
-  ]);
+  const user = await getSession();
+  if (!user) redirect(`/login?redirectTo=/boloes/${poolId}`);
 
+  const pool = await getPoolById(poolId);
   if (!pool) notFound();
 
-  const ranking = await getPoolRanking(poolId);
+  const { tournamentId } = await searchParams;
+  const selectedTournamentId = tournamentId ? parseInt(tournamentId, 10) : undefined;
+
+  const [isMember, activeTournament, tournaments, ranking] = await Promise.all([
+    isUserPoolMember(user.id, poolId),
+    getActiveTournament(),
+    pool.tournament_id ? getTournamentsActive() : getTournamentsWithBrackets(),
+    getPoolRanking(poolId, selectedTournamentId)
+  ]);
+
+  if (!isMember && pool.password_hash && !user.is_admin) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <DashboardHeader user={user} activeTournamentId={activeTournament?.id} />
+        <JoinPrivatePoolGate poolId={poolId} poolName={pool.name} />
+      </div>
+    );
+  }
 
   let linkedTournament = null;
   let linkedTournamentName = null;
@@ -126,12 +141,21 @@ export default async function PoolPage({ params }: PoolPageProps) {
               Ranking do Bolão
             </h2>
             
-            <PoolActions 
-              pool={pool}
-              tournaments={tournaments}
-              isMember={isMember}
-              isCreator={pool.creator_id === user.id}
-            />
+            <div className="flex flex-wrap items-center gap-4">
+              {!pool.tournament_id && (
+                <TournamentFilter 
+                  tournaments={tournaments} 
+                  currentTournamentId={selectedTournamentId} 
+                />
+              )}
+              
+              <PoolActions 
+                pool={pool}
+                tournaments={tournaments}
+                isMember={isMember}
+                isCreator={pool.creator_id === user.id}
+              />
+            </div>
           </div>
 
           <PoolRanking ranking={ranking} currentUserId={user.id} />

@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { ResetPasswordDialog } from './reset-password-dialog';
 
+import { useSearchParams } from 'next/navigation';
+
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
@@ -19,6 +21,8 @@ function SubmitButton() {
 }
 
 export function LoginForm() {
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirectTo') || '';
   const [error, setError] = useState<string | null>(null);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
 
@@ -34,6 +38,7 @@ export function LoginForm() {
     <Card>
       <CardContent className="pt-2">
         <form action={handleSubmit} className="space-y-4">
+          {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} />}
           {error && <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg">{error}</div>}
 
           <div className="space-y-2">
