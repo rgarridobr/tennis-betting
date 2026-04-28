@@ -2,42 +2,94 @@ import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import {
   getGlobalRanking,
+  getStateRanking,
   getUserStats,
   getActiveTournament,
+  getTournamentsWithBrackets,
+  RankingEntry,
 } from "@/lib/data";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { PageHero } from "@/components/shared/page-hero";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Target, TrendingUp, Crown, Medal, Award, Trophy } from "lucide-react";
+import { Target, TrendingUp, Trophy } from "lucide-react";
 import { TournamentPodium } from "@/components/tournament/tournament-podium";
+import { TournamentFilter } from "@/components/pools/tournament-filter";
+import Link from "next/link";
 
-export default async function RankingPage() {
+export default async function RankingPage({ 
+  searchParams 
+}: { 
+  searchParams: Promise<{ tab?: string; tournamentId?: string }> 
+}) {
   const user = await getSession();
   if (!user) redirect("/login");
   if (user.is_admin) redirect("/admin");
 
-  const [ranking, userStats, activeTournament] = await Promise.all([
-    getGlobalRanking(100),
+  const params = await searchParams;
+  const tab = params.tab || "nacional";
+  const selectedTournamentId = params.tournamentId ? parseInt(params.tournamentId, 10) : undefined;
+
+  const [userStats, activeTournament, tournaments] = await Promise.all([
     getUserStats(user.id),
     getActiveTournament(),
+    getTournamentsWithBrackets(),
   ]);
 
-  // Find current user's position
-  const userRankEntry = ranking.find((r) => r.user_id === user.id);
-  const userPosition = userRankEntry?.rank || "-";
+  let ranking: RankingEntry[] = [];
+  if (tab === "estadual") {
+    if (user.state) {
+      ranking = await getStateRanking(user.state, selectedTournamentId);
+    }
+  } else {
+    ranking = await getGlobalRanking(100);
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
       <DashboardHeader user={user} activeTournamentId={activeTournament?.id} />
 
-      {/* Header */}
       <PageHero
-        title="Ranking Geral"
-        subtitle="Veja quem está liderando a temporada atual"
+        title={tab === "estadual" ? `Ranking Estadual - ${user.state || 'N/A'}` : "Ranking Nacional"}
+        subtitle={tab === "estadual" ? `Veja os líderes do estado ${user.state || ''}` : "Veja quem está liderando a temporada nacional"}
       />
 
       <main className="container mx-auto px-4 md:px-32 py-8">
+        {/* Tab Switcher */}
+        <div className="flex gap-2 p-1 bg-slate-100/80 backdrop-blur-sm rounded-xl max-w-[300px] mx-auto mb-8 ring-1 ring-slate-200/50">
+          <Link
+            href="/ranking?tab=nacional"
+            className={`flex-1 text-center py-2 rounded-lg font-bold text-sm transition-all ${
+              tab === "nacional"
+                ? "bg-white text-emerald-700 shadow-sm"
+                : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            Nacional
+          </Link>
+          <Link
+            href="/ranking?tab=estadual"
+            className={`flex-1 text-center py-2 rounded-lg font-bold text-sm transition-all ${
+              tab === "estadual"
+                ? "bg-white text-emerald-700 shadow-sm"
+                : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            Estadual
+          </Link>
+        </div>
+
+        {tab === "estadual" && user.state && (
+          <div className="flex justify-end mb-6">
+            <TournamentFilter tournaments={tournaments} currentTournamentId={selectedTournamentId} />
+          </div>
+        )}
+
+        {tab === "estadual" && !user.state && (
+          <div className="text-center py-8 text-slate-500 font-medium">
+            Você precisa definir seu estado no seu perfil para visualizar o Ranking Estadual.
+          </div>
+        )}
         {ranking.length === 0 ? (
           <Card className="border-0 shadow-md">
             <CardContent className="py-16 text-center">
@@ -65,7 +117,6 @@ export default async function RankingPage() {
             <Card className="border-0 shadow-lg overflow-hidden pt-0 bg-white/80 backdrop-blur-sm rounded-2xl ring-1 ring-slate-200/50">
               <div className="bg-gradient-to-r from-slate-50 to-white px-6 py-5 border-b flex justify-between items-center">
                 <h2 className="font-bold text-slate-900 flex items-center gap-2 text-lg">
-                  <Trophy className="w-5 h-5 text-emerald-600" />
                   Classificação Completa
                 </h2>
                 <Badge

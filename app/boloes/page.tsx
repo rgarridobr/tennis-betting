@@ -23,23 +23,7 @@ export default async function PoolsPage({ searchParams }: PoolsPageProps) {
     getTournamentsActive()
   ]);
 
-  if (user.state) {
-    const stateMemberCount = await getStateMemberCount(user.state);
-    
-    // Injecting dynamic state pool
-    generalPools.unshift({
-      id: "estadual",
-      name: `Bolão Estadual - ${user.state}`,
-      description: `Ranking exclusivo para os jogadores do estado ${user.state}`,
-      creator_id: null,
-      is_general: true,
-      password_hash: null,
-      created_at: new Date().toISOString(),
-      member_count: stateMemberCount,
-      is_member: true,
-      is_state_pool: true
-    });
-  }
+
 
   return (
     <div className="min-h-screen bg-slate-50">
