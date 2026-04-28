@@ -51,7 +51,7 @@ export function PoolList({
             </div>
             Encontrar bolões
           </h2>
-          <p className="text-slate-500 mb-8 font-medium">
+          <p className="text-slate-500 mt-2 font-medium ml-1">
             Busque pelo nome do bolão para encontrar competições criadas por seus amigos.
           </p>
 
