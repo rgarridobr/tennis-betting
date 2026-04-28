@@ -1113,3 +1113,34 @@ export async function isRound1Complete(tournamentId: number): Promise<boolean> {
     return true;
   });
 }
+
+export interface AdminPoolEntry {
+  id: number | string;
+  name: string;
+  description: string | null;
+  creator_id: number | null;
+  creator_name: string | null;
+  is_general: boolean;
+  is_state_pool?: boolean;
+  tournament_id: number | null;
+  tournament_name: string | null;
+  member_count: number;
+  created_at: string;
+}
+
+export async function getAllPoolsAdmin(): Promise<AdminPoolEntry[]> {
+  const rows = await sql`
+    SELECT 
+      p.*, 
+      u.name as creator_name,
+      t.name as tournament_name,
+      COUNT(pm.user_id)::int as member_count
+    FROM pools p
+    LEFT JOIN users u ON p.creator_id = u.id
+    LEFT JOIN tournaments t ON p.tournament_id = t.id
+    LEFT JOIN pool_members pm ON p.id = pm.pool_id
+    GROUP BY p.id, u.name, t.name
+    ORDER BY p.is_general DESC, p.created_at DESC
+  `;
+  return rows as unknown as AdminPoolEntry[];
+}

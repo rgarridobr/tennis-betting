@@ -12,7 +12,7 @@ export async function createPoolAction(formData: FormData) {
   const description = formData.get('description') as string;
   const password = formData.get('password') as string;
   const isGeneral = user.is_admin && formData.get('is_general') === 'on';
-  const tournamentId = formData.get('tournament_id') ? Number(formData.get('tournament_id')) : null;
+  const tournamentId = formData.get('tournament_id') && formData.get('tournament_id') !== 'all' ? Number(formData.get('tournament_id')) : null;
 
   if (!name) return { error: 'O nome do bolão é obrigatório' };
 
@@ -103,7 +103,7 @@ export async function updatePoolAction(poolId: number, formData: FormData) {
   const name = formData.get('name') as string;
   const description = formData.get('description') as string;
   const password = formData.get('password') as string;
-  const tournamentId = formData.get('tournament_id') ? Number(formData.get('tournament_id')) : null;
+  const tournamentId = formData.get('tournament_id') && formData.get('tournament_id') !== 'all' ? Number(formData.get('tournament_id')) : null;
 
   if (!name) return { error: 'O nome do bolão é obrigatório' };
 
@@ -131,5 +131,43 @@ export async function updatePoolAction(poolId: number, formData: FormData) {
   } catch (error) {
     console.error('Erro ao atualizar bolão:', error);
     return { error: 'Ocorreu um erro ao atualizar o bolão' };
+  }
+}
+
+export async function deletePoolAction(poolId: number) {
+  const user = await getSession();
+  if (!user || !user.is_admin) throw new Error('Não autorizado');
+
+  try {
+    await sql`DELETE FROM pool_members WHERE pool_id = ${poolId}`;
+    await sql`DELETE FROM pools WHERE id = ${poolId}`;
+    revalidatePath('/boloes');
+    return { success: true };
+  } catch (error) {
+    console.error('Erro ao excluir bolão:', error);
+    return { error: 'Ocorreu um erro ao excluir o bolão' };
+  }
+}
+
+export async function getPoolMembersAction(poolId: number) {
+  const user = await getSession();
+  if (!user || !user.is_admin) throw new Error('Não autorizado');
+  
+  try {
+    const rows = await sql`
+      SELECT 
+        u.id as user_id,
+        u.name as user_name,
+        u.email as user_email,
+        pm.joined_at
+      FROM pool_members pm
+      JOIN users u ON pm.user_id = u.id
+      WHERE pm.pool_id = ${poolId}
+      ORDER BY pm.joined_at ASC
+    `;
+    return { success: true, members: rows };
+  } catch (error) {
+    console.error('Erro ao buscar membros:', error);
+    return { error: 'Ocorreu um erro ao buscar membros' };
   }
 }

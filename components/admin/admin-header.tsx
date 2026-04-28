@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Trophy, Home, Users, LogOut } from 'lucide-react';
+import { Trophy, Home, Users, LogOut, ClipboardList } from 'lucide-react';
 import { logoutAction } from '@/lib/actions/auth';
 import type { User } from '@/lib/auth';
 
@@ -33,6 +33,7 @@ export function AdminHeader({ user }: AdminHeaderProps) {
     { href: '/admin', label: 'Home', icon: Home },
     { href: '/admin/torneios', label: 'Torneios', icon: Trophy },
     { href: '/admin/usuarios', label: 'Usuários', icon: Users },
+    { href: '/admin/boloes', label: 'Bolões', icon: ClipboardList },
   ];
 
   return (

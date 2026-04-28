@@ -19,6 +19,7 @@ export function CreatePoolForm({ isAdmin, tournaments = [], onCancel }: { isAdmi
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
+  const [isGeneral, setIsGeneral] = useState(isAdmin);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -48,16 +49,21 @@ export function CreatePoolForm({ isAdmin, tournaments = [], onCancel }: { isAdmi
 
           <div className="space-y-2">
             <Label htmlFor="tournament_id" className="text-sm font-bold text-slate-700">Torneio</Label>
-            <Select name="tournament_id" required>
+            <Select name="tournament_id" defaultValue="all" required>
               <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white text-slate-700 font-medium">
                 <SelectValue placeholder="Selecione um torneio" />
               </SelectTrigger>
               <SelectContent>
-                {tournaments.map((t) => (
-                  <SelectItem key={t.id} value={String(t.id)}>
-                    {t.name}
-                  </SelectItem>
-                ))}
+                <SelectItem value="all">Todos os Torneios (Geral)</SelectItem>
+                {tournaments
+                  .filter((t) => 
+                    ['active', 'OPEN', 'IN_PROGRESS', 'LOCKED', 'upcoming', 'published', 'UPCOMING'].includes(t.status)
+                  )
+                  .map((t) => (
+                    <SelectItem key={t.id} value={String(t.id)}>
+                      {t.name}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>
@@ -95,7 +101,10 @@ export function CreatePoolForm({ isAdmin, tournaments = [], onCancel }: { isAdmi
             </div>
             <Switch 
               checked={isPrivate} 
-              onCheckedChange={setIsPrivate}
+              onCheckedChange={(checked) => {
+                setIsPrivate(checked);
+                if (isAdmin) setIsGeneral(!checked);
+              }}
               className="data-[state=checked]:bg-amber-500"
             />
           </div>
@@ -125,7 +134,15 @@ export function CreatePoolForm({ isAdmin, tournaments = [], onCancel }: { isAdmi
                   <p className="text-xs text-slate-500">Visível para todos os usuários</p>
                 </div>
               </div>
-              <Switch name="is_general" className="data-[state=checked]:bg-emerald-500" />
+              <Switch 
+                checked={isGeneral} 
+                onCheckedChange={(checked) => {
+                  setIsGeneral(checked);
+                  setIsPrivate(!checked);
+                }}
+                className="data-[state=checked]:bg-emerald-500" 
+              />
+              <input type="hidden" name="is_general" value={isGeneral ? "on" : "off"} />
             </div>
           )}
 

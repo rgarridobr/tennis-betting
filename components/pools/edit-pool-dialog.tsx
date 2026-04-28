@@ -60,11 +60,12 @@ export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPo
 
           <div className="space-y-2">
             <Label htmlFor="tournament_id" className="text-sm font-bold text-slate-700">Torneio Vinculado</Label>
-            <Select name="tournament_id" defaultValue={pool.tournament_id ? String(pool.tournament_id) : undefined} required>
+            <Select name="tournament_id" defaultValue={pool.tournament_id ? String(pool.tournament_id) : "all"} required>
               <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white text-slate-700 font-medium">
                 <SelectValue placeholder="Selecione um torneio" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">Todos os Torneios (Geral)</SelectItem>
                 {tournaments.map((t) => (
                   <SelectItem key={t.id} value={String(t.id)}>
                     {t.name}
@@ -95,16 +96,18 @@ export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPo
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password" title="Altere a senha" className="text-sm font-bold text-slate-700">Nova Senha (Opcional)</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="Deixe em branco para manter a senha atual"
-              className="h-12 rounded-xl border-slate-200"
-            />
-          </div>
+          {!pool.is_general && (
+            <div className="space-y-2">
+              <Label htmlFor="password" title="Altere a senha" className="text-sm font-bold text-slate-700">Nova Senha (Opcional)</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Deixe em branco para manter a senha atual"
+                className="h-12 rounded-xl border-slate-200"
+              />
+            </div>
+          )}
 
           <DialogFooter className="pt-4 flex flex-col sm:flex-row gap-3">
             <Button
