@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { CreatePoolForm } from "@/components/pools/create-pool-form";
 import { EditPoolDialog } from "@/components/pools/edit-pool-dialog";
 import { deletePoolAction, getPoolMembersAction } from "@/lib/actions/pools";
 import { Shield, Users, Trophy, Lock, Plus, Trash2, Edit3, Eye } from "lucide-react";
 import type { AdminPoolEntry } from "@/lib/admin";
 import type { Tournament } from "@/lib/data";
+import { toast } from "sonner";
 
 interface AdminPoolManagerProps {
   pools: AdminPoolEntry[];
@@ -23,6 +24,7 @@ export function AdminPoolManager({ pools, tournaments }: AdminPoolManagerProps) 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingPool, setEditingPool] = useState<AdminPoolEntry | null>(null);
   const [viewingMembersPool, setViewingMembersPool] = useState<AdminPoolEntry | null>(null);
+  const [deletingPool, setDeletingPool] = useState<AdminPoolEntry | null>(null);
   const [members, setMembers] = useState<any[]>([]);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
   const [isDeleting, setIsDeleting] = useState<number | string | null>(null);
@@ -42,13 +44,17 @@ export function AdminPoolManager({ pools, tournaments }: AdminPoolManagerProps) 
     }
   };
 
-  const handleDelete = async (poolId: number) => {
-    if (!confirm("Tem certeza que deseja excluir este bolão?")) return;
-    setIsDeleting(poolId);
+  const confirmDelete = async () => {
+    if (!deletingPool) return;
+    setIsDeleting(deletingPool.id);
     try {
-      const result = await deletePoolAction(poolId);
+      const result = await deletePoolAction(Number(deletingPool.id));
       if (result.success) {
+        toast.success("Bolão excluído com sucesso!");
+        setDeletingPool(null);
         router.refresh();
+      } else {
+        toast.error("Erro ao excluir bolão.");
       }
     } catch (error) {
       console.error(error);
@@ -127,7 +133,7 @@ export function AdminPoolManager({ pools, tournaments }: AdminPoolManagerProps) 
                     variant="ghost"
                     size="sm"
                     disabled={isDeleting === pool.id}
-                    onClick={() => handleDelete(Number(pool.id))}
+                    onClick={() => setDeletingPool(pool)}
                     className="rounded-xl font-bold text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700 flex items-center gap-1.5 h-10 px-4"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -211,6 +217,36 @@ export function AdminPoolManager({ pools, tournaments }: AdminPoolManagerProps) 
               ))
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={!!deletingPool} onOpenChange={(open) => !open && setDeletingPool(null)}>
+        <DialogContent className="rounded-[2rem] border-none shadow-2xl max-w-sm">
+          <DialogHeader className="pt-4">
+            <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
+              <Trash2 className="w-8 h-8 text-rose-600" />
+            </div>
+            <DialogTitle className="text-2xl font-black text-center text-slate-900">Excluir Bolão?</DialogTitle>
+            <DialogDescription className="text-center text-slate-500 font-medium px-4 mt-2">
+              Tem certeza que deseja excluir o bolão <strong>{deletingPool?.name}</strong>? Esta ação é irreversível e removerá todos os participantes.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-col sm:flex-row gap-3 p-2 pt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setDeletingPool(null)}
+              className="flex-1 rounded-xl font-bold h-12 border-2"
+              disabled={isDeleting !== null}
+            >
+              Voltar
+            </Button>
+            <Button 
+              onClick={confirmDelete} 
+              className="flex-1 rounded-xl font-black h-12 bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-rose-100"
+              disabled={isDeleting !== null}
+            >
+              {isDeleting !== null ? "Excluindo..." : "Excluir"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
