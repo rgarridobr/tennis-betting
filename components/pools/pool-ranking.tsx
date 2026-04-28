@@ -30,9 +30,6 @@ export function PoolRanking({ ranking, currentUserId }: PoolRankingProps) {
           <h3 className="text-lg font-black text-slate-900 flex items-center gap-2 uppercase tracking-tight">
             Classificação Completa
           </h3>
-          <Badge variant="outline" className="font-bold">
-            {ranking.length} {ranking.length === 1 ? "participante" : "participantes"}
-          </Badge>
         </div>
         <CardContent className="p-0">
           <div className="divide-y divide-slate-50">
