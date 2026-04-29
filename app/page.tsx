@@ -176,7 +176,7 @@ export default async function HomePage() {
                   color: "bg-emerald-500",
                   title: "Escolha o torneio",
                   description:
-                    "Selecione o torneio ativo que deseja participar do bolão.",
+                    "Selecione o torneio ativo que deseja participar do bolão ou crie o seu próprio.",
                 },
                 {
                   icon: Target,
