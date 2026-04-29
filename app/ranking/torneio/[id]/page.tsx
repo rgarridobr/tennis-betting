@@ -12,17 +12,20 @@ import { PageHero } from '@/components/shared/page-hero';
 import { Card, CardContent } from '@/components/ui/card';
 import { Trophy } from 'lucide-react';
 import { TournamentRanking } from '@/components/tournament/tournament-ranking';
+import Link from 'next/link';
 
 interface TournamentRankingPageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }
 
-export default async function TournamentRankingPage({ params }: TournamentRankingPageProps) {
+export default async function TournamentRankingPage({ params, searchParams }: TournamentRankingPageProps) {
   const user = await getSession();
   if (!user) redirect('/login');
   if (user.is_admin) redirect('/admin');
 
   const { id } = await params;
+  const { tab = 'nacional' } = await searchParams;
   const tournamentId = parseInt(id, 10);
   if (isNaN(tournamentId)) notFound();
 
@@ -30,7 +33,9 @@ export default async function TournamentRankingPage({ params }: TournamentRankin
   if (!tournament) notFound();
 
   const [ranking, userStats, started, activeTournament] = await Promise.all([
-    getTournamentRanking(tournamentId),
+    tab === 'estadual' && user.state
+      ? getTournamentRanking(tournamentId, 100, user.state)
+      : getTournamentRanking(tournamentId),
     getUserStats(user.id),
     hasTournamentStarted(tournamentId),
     getActiveTournament()
@@ -72,12 +77,42 @@ export default async function TournamentRankingPage({ params }: TournamentRankin
       </PageHero>
 
       <main className="container mx-auto px-4 md:px-32 py-8">
-        <TournamentRanking
-          ranking={ranking}
-          currentUserId={user.id}
-          tournamentId={tournamentId}
-          hasStarted={started}
-        />
+        {/* Tab Switcher */}
+        <div className="flex gap-2 p-1 bg-slate-100/80 backdrop-blur-sm rounded-xl max-w-[300px] mx-auto mb-8 ring-1 ring-slate-200/50">
+          <Link
+            href={`/ranking/torneio/${tournamentId}?tab=nacional`}
+            className={`flex-1 text-center py-2 rounded-lg font-bold text-sm transition-all ${
+              tab === "nacional"
+                ? "bg-white text-emerald-700 shadow-sm"
+                : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            Nacional
+          </Link>
+          <Link
+            href={`/ranking/torneio/${tournamentId}?tab=estadual`}
+            className={`flex-1 text-center py-2 rounded-lg font-bold text-sm transition-all ${
+              tab === "estadual"
+                ? "bg-white text-emerald-700 shadow-sm"
+                : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            Estadual
+          </Link>
+        </div>
+
+        {tab === "estadual" && !user.state ? (
+          <div className="text-center py-8 text-slate-500 font-medium">
+            Você precisa definir seu estado no seu perfil para visualizar o Ranking Estadual.
+          </div>
+        ) : (
+          <TournamentRanking
+            ranking={ranking}
+            currentUserId={user.id}
+            tournamentId={tournamentId}
+            hasStarted={started}
+          />
+        )}
       </main>
     </div>
   );

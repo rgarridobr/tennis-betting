@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { getTournaments, getAllVisibleTournaments } from "@/lib/data";
 import { TournamentCard } from "@/components/dashboard/tournament-card";
+import { HeroCta } from "@/components/shared/hero-cta";
 
 export default async function HomePage() {
   const user = await getSession();
@@ -105,27 +106,7 @@ export default async function HomePage() {
               </div>
 
               {/* CTA */}
-              <div className="flex flex-col sm:flex-row gap-4 shrink-0">
-                <Button
-                  size="lg"
-                  className="bg-emerald-500 hover:bg-emerald-400 text-white text-lg h-16 px-10 rounded-2xl shadow-xl shadow-emerald-500/20 font-black transition-all hover:-translate-y-1"
-                  asChild
-                >
-                  <Link href="/cadastro">
-                    Criar minha conta
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Link>
-                </Button>
-
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-white/20 text-white hover:text-white hover:bg-white/10 text-lg h-16 px-10 rounded-2xl bg-white/5 backdrop-blur-md font-bold transition-all hover:-translate-y-1"
-                  asChild
-                >
-                  <Link href="/login">Fazer login</Link>
-                </Button>
-              </div>
+              <HeroCta />
             </div>
           </div>
         </div>
@@ -166,7 +147,7 @@ export default async function HomePage() {
         </section>
 
         {/* How it works */}
-        <section className="py-24 bg-[#f8fafc]">
+        <section id="como-funciona" className="py-24 bg-[#f8fafc]">
           <div className="container mx-auto px-4 md:px-32">
             <div className="text-center mb-16">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 mb-4 border border-emerald-100">

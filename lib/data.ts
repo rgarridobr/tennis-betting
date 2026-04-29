@@ -722,7 +722,7 @@ export async function getStateMemberCount(state: string): Promise<number> {
   return Number(rows[0]?.count || 0);
 }
 
-export async function getTournamentRanking(tournamentId: number, limit: number = 100): Promise<RankingEntry[]> {
+export async function getTournamentRanking(tournamentId: number, limit: number = 100, state?: string | null): Promise<RankingEntry[]> {
   const ranking = await sql`
     WITH tournament_stats AS (
       SELECT
@@ -748,6 +748,7 @@ export async function getTournamentRanking(tournamentId: number, limit: number =
         AND u.is_deleted = false
         AND bm.status = 'completed'
         AND bm.points_cancelled IS NOT TRUE
+        AND (${state || null}::text IS NULL OR u.state = ${state || null})
       GROUP BY u.id, u.name, u.nickname
     )
     SELECT * FROM tournament_stats

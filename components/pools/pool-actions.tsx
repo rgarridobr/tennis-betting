@@ -101,7 +101,7 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
             onClick={handleShare}
           >
             <Share2 className="w-4 h-4 mr-2" />
-            Compartilhar
+            Compartilhar Convite
           </Button>
           <Button 
             variant="ghost" 
