@@ -4,7 +4,7 @@ import { PageHero } from '@/components/shared/page-hero';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { POINTS_VARIANTS, getActiveTournament } from '@/lib/data';
 import { getRoundName, cn } from '@/lib/utils';
-import { Info, HelpCircle, Trophy, Clock, Edit3, Target, AlertTriangle } from 'lucide-react';
+import { Info, HelpCircle, Trophy, Clock, Edit3, Target, AlertTriangle, Users, Award } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import React from 'react';
 
@@ -77,6 +77,51 @@ export default async function RulesPage() {
               </p>
             </CardContent>
           </Card>
+
+          <Card className="border-0 shadow-sm">
+            <CardHeader className="flex flex-row items-center gap-4 space-y-0">
+              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                <Award className="w-5 h-5 text-purple-600" />
+              </div>
+              <CardTitle className="text-lg">Chaveamento e Ranking</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-slate-600 text-sm leading-relaxed">
+                Escolha quem avança em cada fase do torneio, palpitando no chaveamento até a partida final e conquiste
+                pontos progressivos para se destacar no Ranking.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-sm">
+            <CardHeader className="flex flex-row items-center gap-4 space-y-0">
+              <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center">
+                <Users className="w-5 h-5 text-rose-600" />
+              </div>
+              <CardTitle className="text-lg">Ver Adversários</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-slate-600 text-sm leading-relaxed">
+                Para visualizar os palpites dos adversários, basta clicar em “Ranking” e depois em “Ranking por
+                Torneio” e em seguida, no adversário de sua escolha.
+              </p>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section>
+          <div className="bg-amber-50 border-2 border-amber-200 rounded-[2rem] p-6 md:p-8 flex items-start gap-4 shadow-sm">
+            <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0 border border-amber-200">
+              <AlertTriangle className="w-6 h-6 text-amber-600" />
+            </div>
+            <div>
+              <h3 className="text-amber-900 font-black text-lg mb-1 uppercase tracking-tight">Observação Importante</h3>
+              <p className="text-amber-800 font-medium leading-relaxed">
+                Sempre que um tenista com o status de Lucky Loser(LL) vencer uma partida, ou em caso de vitória por W/O
+                (Walkover), não haverá pontuação.
+              </p>
+            </div>
+          </div>
         </section>
 
         {/* Scoring Table */}
@@ -123,22 +168,6 @@ export default async function RulesPage() {
                 </Card>
               );
             })}
-          </div>
-        </section>
-
-        {/* Lucky Loser Rule */}
-        <section>
-          <div className="bg-amber-50 border-2 border-amber-200 rounded-[2rem] p-6 md:p-8 flex items-start gap-4 shadow-sm">
-            <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0 border border-amber-200">
-              <AlertTriangle className="w-6 h-6 text-amber-600" />
-            </div>
-            <div>
-              <h3 className="text-amber-900 font-black text-lg mb-1 uppercase tracking-tight">Observação Importante</h3>
-              <p className="text-amber-800 font-medium leading-relaxed">
-                Sempre que um tenista com o status de Lucky Loser(LL) vencer uma partida, ou em caso de vitória por W/O
-                (Walkover), não haverá pontuação.
-              </p>
-            </div>
           </div>
         </section>
 

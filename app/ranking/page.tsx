@@ -55,35 +55,48 @@ export default async function RankingPage({
       />
 
       <main className="container mx-auto px-4 md:px-32 py-8">
-        {/* Tab Switcher */}
-        <div className="flex gap-2 p-1 bg-slate-100/80 backdrop-blur-sm rounded-xl max-w-[300px] mx-auto mb-8 ring-1 ring-slate-200/50">
-          <Link
-            href="/ranking?tab=nacional"
-            className={`flex-1 text-center py-2 rounded-lg font-bold text-sm transition-all ${
-              tab === "nacional"
-                ? "bg-white text-emerald-700 shadow-sm"
-                : "text-slate-500 hover:text-slate-800"
-            }`}
-          >
-            Nacional
-          </Link>
-          <Link
-            href="/ranking?tab=estadual"
-            className={`flex-1 text-center py-2 rounded-lg font-bold text-sm transition-all ${
-              tab === "estadual"
-                ? "bg-white text-emerald-700 shadow-sm"
-                : "text-slate-500 hover:text-slate-800"
-            }`}
-          >
-            Estadual
-          </Link>
-        </div>
-
-        {tab === "estadual" && user.state && (
-          <div className="flex justify-end mb-6">
-            <TournamentFilter tournaments={tournaments} currentTournamentId={selectedTournamentId} />
+        {/* Optimized Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10 border-b border-slate-200 pb-8">
+          <div className="flex items-center gap-3">
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+              Pódio {tab === "estadual" ? "Estadual" : "Geral"} Ranking
+            </h2>
+            <Badge className="bg-amber-100 text-amber-700 font-black px-4 py-1.5 rounded-full border-none">
+              RANKING
+            </Badge>
           </div>
-        )}
+
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            {/* Tab Switcher with Emphasis */}
+            <div className="flex gap-1 p-1.5 bg-slate-200/50 backdrop-blur-sm rounded-2xl w-full sm:w-[280px] ring-1 ring-slate-200/50 shadow-inner">
+              <Link
+                href="/ranking?tab=nacional"
+                className={`flex-1 text-center py-2.5 rounded-xl font-black text-sm transition-all duration-300 ${
+                  tab === "nacional"
+                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200 scale-[1.02]"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                Nacional
+              </Link>
+              <Link
+                href="/ranking?tab=estadual"
+                className={`flex-1 text-center py-2.5 rounded-xl font-black text-sm transition-all duration-300 ${
+                  tab === "estadual"
+                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200 scale-[1.02]"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                Estadual
+              </Link>
+            </div>
+
+            {/* Filter */}
+            {tab === "estadual" && user.state && (
+              <TournamentFilter tournaments={tournaments} currentTournamentId={selectedTournamentId} />
+            )}
+          </div>
+        </div>
 
         {tab === "estadual" && !user.state && (
           <div className="text-center py-8 text-slate-500 font-medium">
@@ -108,7 +121,7 @@ export default async function RankingPage({
               <div className="mx-auto">
                 <TournamentPodium
                   ranking={ranking.slice(0, 3)}
-                  title="Pódio Geral Ranking"
+                  hideTitle={true}
                 />
               </div>
             )}

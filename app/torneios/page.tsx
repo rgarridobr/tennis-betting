@@ -40,7 +40,7 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
   if (status === 'finished') {
     filteredTournaments = filteredTournaments.filter((t) => ['finished', 'FINISHED', 'completed'].includes(t.status));
   } else if (status === 'upcoming') {
-    filteredTournaments = filteredTournaments.filter((t) => ['upcoming', 'UPCOMING'].includes(t.status));
+    filteredTournaments = filteredTournaments.filter((t) => ['upcoming', 'UPCOMING', 'STANDBY'].includes(t.status));
   } else {
     filteredTournaments = filteredTournaments.filter((t) => activeStatuses.includes(t.status));
   }

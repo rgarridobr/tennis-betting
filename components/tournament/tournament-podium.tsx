@@ -66,21 +66,21 @@ interface TournamentPodiumProps {
   ranking: RankingEntry[];
   isFinished?: boolean;
   title?: string;
+  hideTitle?: boolean;
 }
 
-export function TournamentPodium({ ranking, isFinished, title }: TournamentPodiumProps) {
+export function TournamentPodium({ ranking, isFinished, title, hideTitle }: TournamentPodiumProps) {
   if (!ranking || ranking.length === 0) return null;
 
   return (
     <div className="mb-8">
-      <div className="flex items-center gap-3 mb-6">
-        <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-          {title || (isFinished ? 'Pódio do Torneio' : 'Liderança Atual')}
-        </h2>
-        <Badge className="bg-amber-100 text-amber-700 font-black px-4 py-1.5 rounded-full border-none">
-          RANKING
-        </Badge>
-      </div>
+      {!hideTitle && (
+        <div className="flex items-center gap-3 mb-6">
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+            {title || (isFinished ? 'Pódio do Torneio' : 'Liderança Atual')}
+          </h2>
+        </div>
+      )}
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 items-end pt-4">
         {ranking.map((user, index) => {
