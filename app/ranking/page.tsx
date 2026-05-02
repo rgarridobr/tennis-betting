@@ -61,9 +61,6 @@ export default async function RankingPage({
             <h2 className="text-3xl font-black text-slate-900 tracking-tight">
               Pódio {tab === "estadual" ? "Estadual" : "Geral"} Ranking
             </h2>
-            <Badge className="bg-amber-100 text-amber-700 font-black px-4 py-1.5 rounded-full border-none">
-              RANKING
-            </Badge>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -91,10 +88,7 @@ export default async function RankingPage({
               </Link>
             </div>
 
-            {/* Filter */}
-            {tab === "estadual" && user.state && (
-              <TournamentFilter tournaments={tournaments} currentTournamentId={selectedTournamentId} />
-            )}
+
           </div>
         </div>
 
