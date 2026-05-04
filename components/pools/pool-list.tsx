@@ -149,7 +149,7 @@ export function PoolList({
         </section>
       )}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="sm:max-w-[500px] rounded-3xl">
+        <DialogContent className="sm:max-w-[500px] rounded-3xl max-h-[95vh] overflow-y-auto p-6 sm:p-10">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black text-slate-800 tracking-tight">Criar Bolão</DialogTitle>
             <DialogDescription className="text-slate-500">

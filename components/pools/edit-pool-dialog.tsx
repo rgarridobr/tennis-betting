@@ -42,7 +42,7 @@ export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] rounded-3xl">
+      <DialogContent className="sm:max-w-[500px] rounded-3xl max-h-[95vh] overflow-y-auto p-6 sm:p-8">
         <DialogHeader>
           <DialogTitle className="text-2xl font-black text-slate-800 tracking-tight">Editar Bolão</DialogTitle>
           <DialogDescription className="text-slate-500">
@@ -66,11 +66,15 @@ export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPo
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os Torneios (Geral)</SelectItem>
-                {tournaments.map((t) => (
-                  <SelectItem key={t.id} value={String(t.id)}>
-                    {t.name}
-                  </SelectItem>
-                ))}
+                {tournaments
+                  .filter((t) => 
+                    ['active', 'OPEN', 'IN_PROGRESS', 'LOCKED', 'upcoming', 'published', 'UPCOMING'].includes(t.status) || t.id === pool.tournament_id
+                  )
+                  .map((t) => (
+                    <SelectItem key={t.id} value={String(t.id)}>
+                      {t.name}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>

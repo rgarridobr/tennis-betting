@@ -142,13 +142,6 @@ export default async function PoolPage({ params, searchParams }: PoolPageProps) 
             </h2>
             
             <div className="flex flex-wrap items-center gap-4">
-              {!pool.tournament_id && (
-                <TournamentFilter 
-                  tournaments={tournaments} 
-                  currentTournamentId={selectedTournamentId} 
-                />
-              )}
-              
               <PoolActions 
                 pool={pool}
                 tournaments={tournaments}

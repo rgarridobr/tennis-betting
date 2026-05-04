@@ -42,7 +42,7 @@ export default async function RankingPage({
       ranking = await getStateRanking(user.state, selectedTournamentId);
     }
   } else {
-    ranking = await getGlobalRanking(100);
+    ranking = await getGlobalRanking(100, selectedTournamentId);
   }
 
   return (
@@ -88,7 +88,10 @@ export default async function RankingPage({
               </Link>
             </div>
 
-
+            <TournamentFilter 
+              tournaments={tournaments} 
+              currentTournamentId={selectedTournamentId} 
+            />
           </div>
         </div>
 

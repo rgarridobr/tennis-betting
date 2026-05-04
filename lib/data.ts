@@ -665,16 +665,16 @@ export async function getUserStats(userId: number): Promise<UserStats> {
   };
 }
 
-export async function getGlobalRanking(limit: number = 50): Promise<RankingEntry[]> {
+export async function getGlobalRanking(limit: number = 50, tournamentId?: number | null): Promise<RankingEntry[]> {
   const ranking = await sql`
     SELECT *
     FROM (
       SELECT 
         u.id as user_id,
         COALESCE(NULLIF(u.nickname, ''), u.name) as user_name,
-        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct = true AND bm.points_cancelled IS NOT TRUE) as correct_predictions,
-        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct IS NOT NULL AND bm.points_cancelled IS NOT TRUE) as total_predictions,
-        COALESCE((SELECT SUM(p.points_earned) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.points_cancelled IS NOT TRUE), 0) as total_points
+        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct = true AND bm.points_cancelled IS NOT TRUE AND (${tournamentId}::integer IS NULL OR bm.tournament_id = ${tournamentId})) as correct_predictions,
+        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct IS NOT NULL AND bm.points_cancelled IS NOT TRUE AND (${tournamentId}::integer IS NULL OR bm.tournament_id = ${tournamentId})) as total_predictions,
+        COALESCE((SELECT SUM(p.points_earned) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.points_cancelled IS NOT TRUE AND (${tournamentId}::integer IS NULL OR bm.tournament_id = ${tournamentId})), 0) as total_points
       FROM users u
       WHERE u.is_admin = false AND u.is_deleted = false
     ) r
@@ -690,6 +690,7 @@ export async function getGlobalRanking(limit: number = 50): Promise<RankingEntry
     rank: i + 1,
   }));
 }
+
 
 export async function getStateRanking(state: string, tournamentId?: number | null, limit: number = 100): Promise<RankingEntry[]> {
   const ranking = await sql`
