@@ -321,7 +321,7 @@ export function TournamentBracket({
         />
         <div
           ref={scrollContainerRef}
-          className="overflow-x-hidden overflow-y-auto relative scrollbar-hide max-h-[80vh] scroll-smooth"
+          className="overflow-x-hidden overflow-y-auto relative custom-scrollbar max-h-[80vh] scroll-smooth"
 
         >
           <div
