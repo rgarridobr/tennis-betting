@@ -20,6 +20,7 @@ export function CreatePoolForm({ isAdmin, tournaments = [], onCancel }: { isAdmi
   const [isLoading, setIsLoading] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
   const [isGeneral, setIsGeneral] = useState(isAdmin);
+  const [hidePending, setHidePending] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -49,12 +50,11 @@ export function CreatePoolForm({ isAdmin, tournaments = [], onCancel }: { isAdmi
 
           <div className="space-y-2">
             <Label htmlFor="tournament_id" className="text-sm font-bold text-slate-700">Torneio</Label>
-            <Select name="tournament_id" defaultValue="all" required>
+            <Select name="tournament_id" required>
               <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white text-slate-700 font-medium">
                 <SelectValue placeholder="Selecione um torneio" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos os Torneios (Geral)</SelectItem>
                 {tournaments
                   .filter((t) => 
                     ['active', 'OPEN', 'IN_PROGRESS', 'LOCKED', 'upcoming', 'published', 'UPCOMING'].includes(t.status)
@@ -145,6 +145,24 @@ export function CreatePoolForm({ isAdmin, tournaments = [], onCancel }: { isAdmi
               <input type="hidden" name="is_general" value={isGeneral ? "on" : "off"} />
             </div>
           )}
+
+          <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center text-slate-600">
+                <Users className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="font-bold text-slate-800 text-sm">Ocultar sem palpites</p>
+                <p className="text-xs text-slate-500">Esconder participantes que não enviaram palpites</p>
+              </div>
+            </div>
+            <Switch 
+              checked={hidePending} 
+              onCheckedChange={setHidePending}
+              className="data-[state=checked]:bg-emerald-500" 
+            />
+            <input type="hidden" name="hide_pending" value={hidePending ? "on" : "off"} />
+          </div>
 
           <div className="pt-4 flex flex-col md:flex-row gap-3">
             <Button

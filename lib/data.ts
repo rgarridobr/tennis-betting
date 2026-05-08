@@ -1,7 +1,8 @@
 import { sql } from './db';
 
-// Migration: Add tournament_id to pools
+// Migration: Add tournament_id and hide_pending to pools
 sql`ALTER TABLE pools ADD COLUMN IF NOT EXISTS tournament_id INTEGER REFERENCES tournaments(id)`.catch(console.error);
+sql`ALTER TABLE pools ADD COLUMN IF NOT EXISTS hide_pending BOOLEAN DEFAULT TRUE`.catch(console.error);
 
 // ==================== INTERFACES ====================
 
@@ -798,6 +799,7 @@ export interface Pool {
   member_count?: number;
   is_member?: boolean;
   is_state_pool?: boolean;
+  hide_pending?: boolean;
 }
 
 export interface PoolMember {

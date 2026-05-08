@@ -9,7 +9,8 @@ import {
   getTournamentsWithBrackets,
   isUserEnrolled,
   getUserPredictions,
-  hasTournamentStarted
+  hasTournamentStarted,
+  getTournamentRanking
 } from "@/lib/data";
 import { EnrollmentBanner } from "@/components/tournament/enrollment-banner";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
@@ -46,7 +47,7 @@ export default async function PoolPage({ params, searchParams }: PoolPageProps) 
     isUserPoolMember(user.id, poolId),
     getActiveTournament(),
     pool.tournament_id ? getTournamentsActive() : getTournamentsWithBrackets(),
-    getPoolRanking(poolId, selectedTournamentId)
+    getTournamentRanking(poolId, selectedTournamentId)
   ]);
 
   if (!isMember && pool.password_hash && !user.is_admin) {
@@ -151,7 +152,11 @@ export default async function PoolPage({ params, searchParams }: PoolPageProps) 
             </div>
           </div>
 
-          <PoolRanking ranking={ranking} currentUserId={user.id} />
+          <PoolRanking 
+            ranking={ranking} 
+            currentUserId={user.id} 
+            initialHidePending={pool.hide_pending}
+          />
         </div>
       </main>
     </div>

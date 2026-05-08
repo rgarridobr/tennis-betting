@@ -1,16 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { updatePoolAction } from "@/lib/actions/pools";
+import { useEffect, useState } from "react";
+import { updatePoolAction, getPoolMembersWithPredictionsAction } from "@/lib/actions/pools";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Users } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { Pool, Tournament } from "@/lib/data";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Check, X } from "lucide-react";
+import { Switch } from "../ui/switch";
 
 interface EditPoolDialogProps {
   pool: Pool;
@@ -22,6 +26,23 @@ interface EditPoolDialogProps {
 export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPoolDialogProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [members, setMembers] = useState<any[]>([]);
+  const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+  const [hidePending, setHidePending] = useState(pool.hide_pending ?? true);
+
+  useEffect(() => {
+    if (open && pool.tournament_id) {
+      const loadMembers = async () => {
+        setIsLoadingMembers(true);
+        const result = await getPoolMembersWithPredictionsAction(Number(pool.id), pool.tournament_id!);
+        if (result.success) {
+          setMembers(result.members);
+        }
+        setIsLoadingMembers(false);
+      };
+      loadMembers();
+    }
+  }, [open, pool.id, pool.tournament_id]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -60,12 +81,11 @@ export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPo
 
           <div className="space-y-2">
             <Label htmlFor="tournament_id" className="text-sm font-bold text-slate-700">Torneio Vinculado</Label>
-            <Select name="tournament_id" defaultValue={pool.tournament_id ? String(pool.tournament_id) : "all"} required>
+            <Select name="tournament_id" defaultValue={pool.tournament_id ? String(pool.tournament_id) : undefined} required>
               <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white text-slate-700 font-medium">
                 <SelectValue placeholder="Selecione um torneio" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos os Torneios (Geral)</SelectItem>
                 {tournaments
                   .filter((t) => 
                     ['active', 'OPEN', 'IN_PROGRESS', 'LOCKED', 'upcoming', 'published', 'UPCOMING'].includes(t.status) || t.id === pool.tournament_id
@@ -112,6 +132,23 @@ export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPo
               />
             </div>
           )}
+          <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center text-slate-600">
+                <Users className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="font-bold text-slate-800 text-sm">Ocultar sem palpites</p>
+                <p className="text-xs text-slate-500">Esconder participantes que não enviaram palpites</p>
+              </div>
+            </div>
+            <Switch 
+              checked={hidePending} 
+              onCheckedChange={setHidePending}
+              className="data-[state=checked]:bg-emerald-500" 
+            />
+            <input type="hidden" name="hide_pending" value={hidePending ? "on" : "off"} />
+          </div>
 
           <DialogFooter className="pt-4 flex flex-col sm:flex-row gap-3">
             <Button

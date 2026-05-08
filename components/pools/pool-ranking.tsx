@@ -2,22 +2,37 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Target, TrendingUp } from "lucide-react";
+import { Trophy, Target, TrendingUp, Filter } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import type { RankingEntry } from "@/lib/data";
 
 interface PoolRankingProps {
   ranking: RankingEntry[];
   currentUserId: number;
+  initialHidePending?: boolean;
 }
 
-export function PoolRanking({ ranking, currentUserId }: PoolRankingProps) {
+import { useState, useEffect } from "react";
+
+export function PoolRanking({ ranking, currentUserId, initialHidePending = true }: PoolRankingProps) {
+  const [hidePending, setHidePending] = useState(initialHidePending);
+
+  // Sync state with props when database updates via server actions
+  useEffect(() => {
+    setHidePending(initialHidePending);
+  }, [initialHidePending]);
+
+  const filteredRanking = hidePending 
+    ? ranking.filter(entry => entry.total_predictions > 0) 
+    : ranking;
   if (ranking.length === 0) {
     return (
       <Card className="border-0 shadow-sm bg-white rounded-[2.5rem]">
         <CardContent className="py-16 text-center">
           <Trophy className="w-16 h-16 text-slate-200 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-slate-900 mb-2">Nenhum palpite ainda</h2>
-          <p className="text-slate-500">As classificações aparecerão assim que os resultados forem lançados.</p>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Nenhum participante ainda</h2>
+          <p className="text-slate-500">Convide amigos para começar a disputa!</p>
         </CardContent>
       </Card>
     );
@@ -26,20 +41,31 @@ export function PoolRanking({ ranking, currentUserId }: PoolRankingProps) {
   return (
     <div className="space-y-8">
       <Card className="border-0 shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
-        <div className="bg-slate-50 px-8 py-6 border-b border-slate-100 flex items-center justify-between">
+        <div className="bg-slate-50 px-8 py-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h3 className="text-lg font-black text-slate-900 flex items-center gap-2 uppercase tracking-tight">
             Classificação Completa
           </h3>
         </div>
         <CardContent className="p-0">
           <div className="divide-y divide-slate-50">
-            {ranking.map((entry) => (
-              <RankingRow
-                key={entry.user_id}
-                entry={entry}
-                isCurrentUser={entry.user_id === currentUserId}
-              />
-            ))}
+            {filteredRanking.length > 0 ? (
+              filteredRanking.map((entry) => (
+                <RankingRow
+                  key={entry.user_id}
+                  entry={entry}
+                  isCurrentUser={entry.user_id === currentUserId}
+                />
+              ))
+            ) : (
+              <div className="py-20 text-center flex flex-col items-center gap-3">
+                <Filter className="w-12 h-12 text-slate-200" />
+                <p className="text-slate-400 font-bold italic text-sm">
+                  {hidePending 
+                    ? "Nenhum palpite enviado ainda por nenhum participante." 
+                    : "Nenhum dado disponível."}
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
