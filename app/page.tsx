@@ -169,28 +169,28 @@ export default async function HomePage() {
                   iconColor: "text-emerald-500",
                   title: "Crie sua conta",
                   description:
-                    "Cadastre-se gratuitamente em menos de 1 minuto e entre no jogo.",
+                    "Cadastre-se gratuitamente e entre na disputa.",
                 },
                 {
                   icon: Trophy,
                   color: "bg-emerald-500",
                   title: "Escolha o torneio",
                   description:
-                    "Selecione o torneio ativo que deseja participar do bolão ou crie o seu próprio.",
+                    "Selecione um torneio ativo e se deseja participar de um bolão ou criar o seu próprio.",
                 },
                 {
                   icon: Target,
                   color: "bg-emerald-500",
                   title: "Faça seus palpites",
                   description:
-                    "Escolha o vencedor de cada partida e acumule pontos por acerto.",
+                    "Escolha, de uma vez, o vencedor de cada partida até o campeão e acumule pontos progressivos com seus acertos.",
                 },
                 {
                   icon: Medal,
                   color: "bg-emerald-500",
                   title: "Suba no Ranking",
                   description:
-                    "Dispute o topo do ranking global com outros participantes.",
+                    "Dispute o topo do ranking nacional e do seu estado com outros participantes",
                 },
               ].map((item, index) => (
                 <Card
