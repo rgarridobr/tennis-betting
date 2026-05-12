@@ -57,7 +57,7 @@ export function CreatePoolForm({ isAdmin, tournaments = [], onCancel }: { isAdmi
               <SelectContent>
                 {tournaments
                   .filter((t) => 
-                    ['active', 'OPEN', 'IN_PROGRESS', 'LOCKED', 'upcoming', 'published', 'UPCOMING'].includes(t.status)
+                    ['active', 'OPEN', 'IN_PROGRESS', 'LOCKED', 'upcoming', 'published', 'UPCOMING', 'STANDBY'].includes(t.status)
                   )
                   .map((t) => (
                     <SelectItem key={t.id} value={String(t.id)}>

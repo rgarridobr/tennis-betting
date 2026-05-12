@@ -115,24 +115,25 @@ export function TournamentFilters({ hideUpcoming }: TournamentFiltersProps = {})
           onValueChange={(value) => handleFilterChange('status', value)}
           className="w-full sm:w-auto"
         >
-          <TabsList className="bg-slate-100 p-1 rounded-2xl h-12 w-full sm:w-auto">
+          <TabsList className="bg-slate-100 p-1 rounded-2xl h-12 w-full sm:w-auto flex">
             <TabsTrigger 
               value="active" 
-              className="rounded-xl px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm"
+              className="flex-1 rounded-xl px-3 sm:px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm transition-all"
             >
               Ativos
             </TabsTrigger>
             {!hideUpcoming && (
               <TabsTrigger 
                 value="upcoming" 
-                className="rounded-xl px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm"
+                className="flex-1 rounded-xl px-3 sm:px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm transition-all"
               >
-                O que vem por aí
+                <span className="hidden sm:inline">O que vem por aí</span>
+                <span className="sm:hidden">Próximos</span>
               </TabsTrigger>
             )}
             <TabsTrigger 
               value="finished" 
-              className="rounded-xl px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm"
+              className="flex-1 rounded-xl px-3 sm:px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm transition-all"
             >
               Finalizados
             </TabsTrigger>

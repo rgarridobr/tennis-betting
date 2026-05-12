@@ -312,7 +312,7 @@ export async function getTournamentsActive(): Promise<Tournament[]> {
     SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
     FROM tournaments 
     WHERE is_visible = TRUE 
-    AND status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS') 
+    AND status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS', 'STANDBY') 
     ORDER BY start_date ASC
   `;
   return rows as Tournament[];
@@ -681,6 +681,22 @@ export async function getGlobalRanking(limit: number = 50, tournamentId?: number
         COALESCE((SELECT SUM(points_earned) FROM predictions WHERE user_id = u.id), 0) as global_points
       FROM users u
       WHERE u.is_admin = false AND u.is_deleted = false
+      AND (
+        (${tournamentId}::integer IS NOT NULL AND EXISTS (
+          SELECT 1 FROM predictions p_final
+          JOIN bracket_matches bm_final ON p_final.bracket_match_id = bm_final.id
+          WHERE p_final.user_id = u.id 
+          AND bm_final.tournament_id = ${tournamentId}
+          AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = ${tournamentId})
+        ))
+        OR
+        (${tournamentId}::integer IS NULL AND EXISTS (
+          SELECT 1 FROM predictions p_final
+          JOIN bracket_matches bm_final ON p_final.bracket_match_id = bm_final.id
+          WHERE p_final.user_id = u.id 
+          AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm_final.tournament_id)
+        ))
+      )
     ) r
     WHERE r.total_points > 0
     ORDER BY r.total_points DESC, r.hit_champion DESC, r.hit_both DESC, r.correct_predictions DESC, r.global_points DESC, r.user_name ASC
@@ -698,8 +714,11 @@ export async function getGlobalRanking(limit: number = 50, tournamentId?: number
   }));
 }
 
-
-export async function getStateRanking(state: string, tournamentId?: number | null, limit: number = 100): Promise<RankingEntry[]> {
+export async function getStateRanking(
+  state: string,
+  tournamentId?: number | null,
+  limit: number = 100,
+): Promise<RankingEntry[]> {
   const ranking = await sql`
     SELECT *
     FROM (
@@ -714,6 +733,22 @@ export async function getStateRanking(state: string, tournamentId?: number | nul
         COALESCE((SELECT SUM(points_earned) FROM predictions WHERE user_id = u.id), 0) as global_points
       FROM users u
       WHERE u.state = ${state} AND u.is_admin = false AND u.is_deleted = false
+      AND (
+        (${tournamentId}::integer IS NOT NULL AND EXISTS (
+          SELECT 1 FROM predictions p_final
+          JOIN bracket_matches bm_final ON p_final.bracket_match_id = bm_final.id
+          WHERE p_final.user_id = u.id 
+          AND bm_final.tournament_id = ${tournamentId}
+          AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = ${tournamentId})
+        ))
+        OR
+        (${tournamentId}::integer IS NULL AND EXISTS (
+          SELECT 1 FROM predictions p_final
+          JOIN bracket_matches bm_final ON p_final.bracket_match_id = bm_final.id
+          WHERE p_final.user_id = u.id 
+          AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm_final.tournament_id)
+        ))
+      )
     ) r
     ORDER BY r.total_points DESC, r.hit_champion DESC, r.hit_both DESC, r.correct_predictions DESC, r.global_points DESC, r.user_name ASC
     LIMIT ${limit}`;
@@ -732,11 +767,16 @@ export async function getStateRanking(state: string, tournamentId?: number | nul
 }
 
 export async function getStateMemberCount(state: string): Promise<number> {
-  const rows = await sql`SELECT COUNT(*) as count FROM users WHERE state = ${state} AND is_admin = false AND is_deleted = false`;
+  const rows =
+    await sql`SELECT COUNT(*) as count FROM users WHERE state = ${state} AND is_admin = false AND is_deleted = false`;
   return Number(rows[0]?.count || 0);
 }
 
-export async function getTournamentRanking(tournamentId: number, limit: number = 100, state?: string | null): Promise<RankingEntry[]> {
+export async function getTournamentRanking(
+  tournamentId: number,
+  limit: number = 100,
+  state?: string | null,
+): Promise<RankingEntry[]> {
   const ranking = await sql`
     WITH tournament_stats AS (
       SELECT
@@ -763,6 +803,13 @@ export async function getTournamentRanking(tournamentId: number, limit: number =
         AND bm.status = 'completed'
         AND bm.points_cancelled IS NOT TRUE
         AND (${state || null}::text IS NULL OR u.state = ${state || null})
+        AND EXISTS (
+          SELECT 1 FROM predictions p_final
+          JOIN bracket_matches bm_final ON p_final.bracket_match_id = bm_final.id
+          WHERE p_final.user_id = u.id 
+          AND bm_final.tournament_id = ${tournamentId}
+          AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = ${tournamentId})
+        )
       GROUP BY u.id, u.name, u.nickname
     )
     SELECT * FROM tournament_stats
@@ -890,9 +937,13 @@ export async function isUserPoolMember(userId: number, poolId: number): Promise<
   return rows.length > 0;
 }
 
-export async function getPoolRanking(poolId: number, tournamentIdOverride?: number | null, limit: number = 100): Promise<RankingEntry[]> {
+export async function getPoolRanking(
+  poolId: number,
+  tournamentIdOverride?: number | null,
+  limit: number = 100,
+): Promise<RankingEntry[]> {
   const pool = await getPoolById(poolId);
-  const tournamentId = tournamentIdOverride !== undefined ? tournamentIdOverride : (pool?.tournament_id || null);
+  const tournamentId = tournamentIdOverride !== undefined ? tournamentIdOverride : pool?.tournament_id || null;
 
   const ranking = await sql`
     SELECT *
@@ -909,6 +960,22 @@ export async function getPoolRanking(poolId: number, tournamentIdOverride?: numb
       FROM users u
       JOIN pool_members pm ON u.id = pm.user_id
       WHERE pm.pool_id = ${poolId} AND u.is_admin = false AND u.is_deleted = false
+      AND (
+        (${tournamentId}::integer IS NOT NULL AND EXISTS (
+          SELECT 1 FROM predictions p_final
+          JOIN bracket_matches bm_final ON p_final.bracket_match_id = bm_final.id
+          WHERE p_final.user_id = u.id 
+          AND bm_final.tournament_id = ${tournamentId}
+          AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = ${tournamentId})
+        ))
+        OR
+        (${tournamentId}::integer IS NULL AND EXISTS (
+          SELECT 1 FROM predictions p_final
+          JOIN bracket_matches bm_final ON p_final.bracket_match_id = bm_final.id
+          WHERE p_final.user_id = u.id 
+          AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm_final.tournament_id)
+        ))
+      )
     ) r
     ORDER BY r.total_points DESC, r.hit_champion DESC, r.hit_both DESC, r.correct_predictions DESC, r.global_points DESC, r.user_name ASC
     LIMIT ${limit}`;

@@ -88,7 +88,7 @@ export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPo
               <SelectContent>
                 {tournaments
                   .filter((t) => 
-                    ['active', 'OPEN', 'IN_PROGRESS', 'LOCKED', 'upcoming', 'published', 'UPCOMING'].includes(t.status) || t.id === pool.tournament_id
+                    ['active', 'OPEN', 'IN_PROGRESS', 'LOCKED', 'upcoming', 'published', 'UPCOMING', 'STANDBY'].includes(t.status) || t.id === pool.tournament_id
                   )
                   .map((t) => (
                     <SelectItem key={t.id} value={String(t.id)}>

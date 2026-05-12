@@ -31,7 +31,7 @@ export function PoolRanking({ ranking, currentUserId, initialHidePending = true 
       <Card className="border-0 shadow-sm bg-white rounded-[2.5rem]">
         <CardContent className="py-16 text-center">
           <Trophy className="w-16 h-16 text-slate-200 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-slate-900 mb-2">Nenhum participante ainda</h2>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Nenhum palpite foi enviado ainda</h2>
           <p className="text-slate-500">Convide amigos para começar a disputa!</p>
         </CardContent>
       </Card>

@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 import { Toaster } from 'sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 const _geist = Geist({ subsets: ['latin'] });
 const _geistMono = Geist_Mono({ subsets: ['latin'] });
@@ -85,7 +86,9 @@ export default function RootLayout({
             }),
           }}
         />
-        {children}
+        <TooltipProvider>
+          {children}
+        </TooltipProvider>
         <Analytics />
       </body>
     </html>

@@ -1,6 +1,6 @@
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { getAllVisibleTournaments, getActiveTournament } from '@/lib/data';
+import { getAllVisibleTournaments, getActiveTournament, getGlobalRanking } from '@/lib/data';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { TournamentCard } from '@/components/dashboard/tournament-card';
 import { PageHero } from '@/components/shared/page-hero';
@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Zap, Trophy, SearchX } from 'lucide-react';
 import { TournamentFilters } from '@/components/dashboard/tournament-filters';
 import { TournamentPagination } from '@/components/dashboard/tournament-pagination';
+import { RankingSection } from '@/components/dashboard/ranking-section';
 
 interface PageProps {
   searchParams: Promise<{
@@ -25,14 +26,13 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
   if (!user) redirect('/login');
   if (user.is_admin) redirect('/admin');
 
-
-
   const { status, search, category, page } = await searchParams;
   const currentPage = page ? parseInt(page) : 1;
 
-  const [allTournaments, activeTournament] = await Promise.all([
+  const [allTournaments, activeTournament, ranking] = await Promise.all([
     getAllVisibleTournaments(),
     getActiveTournament(),
+    getGlobalRanking(5),
   ]);
   const activeStatuses = ['active', 'published', 'OPEN', 'LOCKED', 'IN_PROGRESS'];
   // Apply filters
@@ -85,42 +85,51 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
         </div>
       </PageHero>
 
-      <main className="container mx-auto px-4 md:px-32 py-12">
-        <TournamentFilters />
+      <main className="container mx-auto px-4 md:px-12 lg:px-32 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+          <div className="lg:col-span-2 space-y-8">
+            <TournamentFilters />
 
-        {paginatedTournaments.length > 0 ? (
-          <section className="mb-12">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-2 h-8 bg-emerald-500 rounded-full" />
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-                {status === 'finished'
-                  ? 'Torneios Finalizados'
-                  : status === 'active'
-                    ? 'Torneios Ativos'
-                    : 'Torneios Futuros'}
-              </h2>
-              <span className="ml-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold">
-                {totalItems} {totalItems === 1 ? 'torneio' : 'torneios'}
-              </span>
-            </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {paginatedTournaments.map((t) => (
-                <TournamentCard key={t.id} tournament={t} />
-              ))}
-            </div>
+            {paginatedTournaments.length > 0 ? (
+              <section className="mb-12">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="w-2 h-8 bg-emerald-500 rounded-full" />
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+                    {status === 'finished'
+                      ? 'Torneios Finalizados'
+                      : status === 'active'
+                        ? 'Torneios Ativos'
+                        : 'Torneios Futuros'}
+                  </h2>
+                  <span className="ml-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold">
+                    {totalItems} {totalItems === 1 ? 'torneio' : 'torneios'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
+                  {paginatedTournaments.map((t) => (
+                    <TournamentCard key={t.id} tournament={t} />
+                  ))}
+                </div>
 
-            <TournamentPagination currentPage={currentPage} totalPages={totalPages} />
-          </section>
-        ) : (
-          <Card className="border-0 shadow-md rounded-[2rem]">
-            <CardContent className="py-20 text-center">
-              <SearchX className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-slate-900 mb-2">Nenhum torneio encontrado</h2>
-              <p className="text-slate-600 mb-6">Não encontramos torneios que correspondam aos filtros selecionados.</p>
-            </CardContent>
-          </Card>
-        )}
+                <TournamentPagination currentPage={currentPage} totalPages={totalPages} />
+              </section>
+            ) : (
+              <Card className="border-0 shadow-md rounded-[2rem]">
+                <CardContent className="py-20 text-center">
+                  <SearchX className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                  <h2 className="text-xl font-semibold text-slate-900 mb-2">Nenhum torneio encontrado</h2>
+                  <p className="text-slate-600 mb-6">Não encontramos torneios que correspondam aos filtros selecionados.</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          <div className="space-y-8">
+            <RankingSection ranking={ranking} currentUserId={user.id} />
+          </div>
+        </div>
       </main>
     </div>
   );
 }
+

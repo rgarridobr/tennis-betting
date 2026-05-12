@@ -77,6 +77,24 @@ export async function saveFullBracketAction(
     `;
   }
 
+  // 3. Update bracket_submitted flag if final is predicted
+  const hasFinal = await sql`
+    SELECT 1 FROM bracket_matches bm
+    JOIN predictions p ON bm.id = p.bracket_match_id
+    WHERE p.user_id = ${userId} 
+    AND bm.tournament_id = ${tournamentId}
+    AND bm.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = ${tournamentId})
+    LIMIT 1
+  `;
+
+  if (hasFinal.length > 0) {
+    await sql`
+      UPDATE user_tournaments 
+      SET bracket_submitted = true 
+      WHERE user_id = ${userId} AND tournament_id = ${tournamentId}
+    `;
+  }
+
   revalidatePath(`/torneios/${tournamentId}`);
   return { success: true };
 }

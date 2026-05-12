@@ -10,10 +10,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Medal, Target, Trophy, FileText } from "lucide-react";
+import { Medal, Target, Trophy, FileText, Users, Users2, UsersRound, UserSquare } from "lucide-react";
 import { logoutAction } from "@/lib/actions/auth";
 import type { User } from "@/lib/auth";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+import { getUserCount } from "@/lib/actions/users";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface DashboardHeaderProps {
   user: User | null;
@@ -27,6 +34,11 @@ export function DashboardHeader({
   activeTournamentId,
 }: DashboardHeaderProps) {
   const pathname = usePathname();
+  const [totalUsers, setTotalUsers] = useState<number | null>(null);
+
+  useEffect(() => {
+    getUserCount().then(setTotalUsers);
+  }, []);
 
   const displayName = user?.nickname || user?.name || "Visitante";
 
@@ -126,6 +138,18 @@ export function DashboardHeader({
                 </Link>
               );
             })}
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base font-medium rounded-lg transition-all flex items-center gap-2 text-white hover:text-gradient-to-br from-[#041a16] via-[#062c25] to-[#083a31] hover:bg-white/10 cursor-help hidden lg:block">
+                  <Users className="w-4 h-4" />
+                  {totalUsers !== null ? `${totalUsers}` : "..."}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Número de inscritos no site</p>
+              </TooltipContent>
+            </Tooltip>
           </nav>
 
           {/* User Avatar - Right */}

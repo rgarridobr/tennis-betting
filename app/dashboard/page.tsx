@@ -29,10 +29,10 @@ export default async function DashboardPage() {
       <DashboardHeader user={user} activeTournamentId={activeTournament?.id} />
       <HeroSection user={user} />
 
-      <main className="container mx-auto px-4 md:px-32 pb-12">
+      <main className="container mx-auto px-4 md:px-12 lg:px-32 pb-12">
         <StatsCards stats={stats} />
 
-        <div className="mt-12 grid lg:grid-cols-3 gap-12">
+        <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
           <div className="lg:col-span-2 space-y-12">
             {tournaments.length > 0 && (
               <section>
@@ -57,7 +57,7 @@ export default async function DashboardPage() {
                 </Link>
               </Button>
             </div>
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
                   {tournaments.map((t) => (
                     <TournamentCard key={t.id} tournament={t} />
                   ))}
