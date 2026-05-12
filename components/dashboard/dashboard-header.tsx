@@ -139,9 +139,9 @@ export function DashboardHeader({
               );
             })}
 
-            <Tooltip>
+            <Tooltip delayDuration={300}>
               <TooltipTrigger asChild>
-                <span className="px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base font-medium rounded-lg transition-all flex items-center gap-2 text-white hover:text-gradient-to-br from-[#041a16] via-[#062c25] to-[#083a31] hover:bg-white/10 cursor-help hidden lg:block">
+                <span className="px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base font-medium rounded-lg transition-all flex items-center gap-2 text-white hover:text-gradient-to-br from-[#041a16] via-[#062c25] to-[#083a31] hover:bg-white/10 cursor-help hidden lg:flex">
                   <Users className="w-4 h-4" />
                   {totalUsers !== null ? `${totalUsers}` : "..."}
                 </span>
