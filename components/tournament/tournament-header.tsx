@@ -55,7 +55,10 @@ export function TournamentHeader({ tournament, participants = 0 }: TournamentHea
         ? 'bg-emerald-500 text-white border-none'
         : 'bg-amber-500 text-white border-none';
 
-  const bgImage = surfaceImages[tournament.surface] || surfaceImages.Hard;
+  const isRolandGarros = tournament.name.toLowerCase().includes("roland garros");
+  const bgImage = isRolandGarros
+    ? "https://images.unsplash.com/photo-1560014130-9ba41ce9bcef?w=1920&q=80"
+    : surfaceImages[tournament.surface] || surfaceImages.Hard;
 
   return (
     <PageHero

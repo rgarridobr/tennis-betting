@@ -69,10 +69,13 @@ export function TournamentCard({ tournament, href }: TournamentCardProps) {
     tournament.status === "active" ||
     tournament.status === "OPEN";
 
-  const imageUrl =
-    tournament.image_url ||
-    surfaceImages[tournament.surface] ||
-    surfaceImages.Hard;
+  const isRolandGarros = tournament.name.toLowerCase().includes("roland garros");
+
+  const imageUrl = isRolandGarros
+    ? "https://images.unsplash.com/photo-1560014130-9ba41ce9bcef?w=800&q=80"
+    : tournament.image_url ||
+      surfaceImages[tournament.surface] ||
+      surfaceImages.Hard;
 
   const getCategory = (category: string) => {
     switch (category) {
