@@ -120,6 +120,17 @@ export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPo
             />
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="whatsapp_link" className="text-sm font-bold text-slate-700">Link do Grupo de WhatsApp (Opcional)</Label>
+            <Input
+              id="whatsapp_link"
+              name="whatsapp_link"
+              defaultValue={pool.whatsapp_link || ""}
+              placeholder="https://chat.whatsapp.com/..."
+              className="h-12 rounded-xl border-slate-200"
+            />
+          </div>
+
           {!pool.is_general && (
             <div className="space-y-2">
               <Label htmlFor="password" title="Altere a senha" className="text-sm font-bold text-slate-700">Nova Senha (Opcional)</Label>

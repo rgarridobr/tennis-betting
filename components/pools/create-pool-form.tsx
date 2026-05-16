@@ -89,6 +89,16 @@ export function CreatePoolForm({ isAdmin, tournaments = [], onCancel }: { isAdmi
             />
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="whatsapp_link" className="text-sm font-bold text-slate-700">Link do Grupo de WhatsApp (Opcional)</Label>
+            <Input
+              id="whatsapp_link"
+              name="whatsapp_link"
+              placeholder="https://chat.whatsapp.com/..."
+              className="h-12 rounded-xl border-slate-200"
+            />
+          </div>
+
           <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">

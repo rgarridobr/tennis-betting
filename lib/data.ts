@@ -1,8 +1,9 @@
 import { sql } from './db';
 
-// Migration: Add tournament_id and hide_pending to pools
+// Migration: Add tournament_id, hide_pending and whatsapp_link to pools
 sql`ALTER TABLE pools ADD COLUMN IF NOT EXISTS tournament_id INTEGER REFERENCES tournaments(id)`.catch(console.error);
 sql`ALTER TABLE pools ADD COLUMN IF NOT EXISTS hide_pending BOOLEAN DEFAULT TRUE`.catch(console.error);
+sql`ALTER TABLE pools ADD COLUMN IF NOT EXISTS whatsapp_link TEXT`.catch(console.error);
 
 // ==================== INTERFACES ====================
 
@@ -859,6 +860,7 @@ export interface Pool {
   is_member?: boolean;
   is_state_pool?: boolean;
   hide_pending?: boolean;
+  whatsapp_link?: string | null;
 }
 
 export interface PoolMember {

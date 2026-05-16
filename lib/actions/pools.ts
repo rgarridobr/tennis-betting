@@ -14,6 +14,7 @@ export async function createPoolAction(formData: FormData) {
   const isGeneral = user.is_admin && formData.get('is_general') === 'on';
   const hidePending = formData.get('hide_pending') === 'on';
   const tournamentId = formData.get('tournament_id') && formData.get('tournament_id') !== 'all' ? Number(formData.get('tournament_id')) : null;
+  const whatsappLink = formData.get('whatsapp_link') as string;
 
   if (!name) return { error: 'O nome do bolão é obrigatório' };
 
@@ -24,8 +25,8 @@ export async function createPoolAction(formData: FormData) {
 
   try {
     const result = await sql`
-      INSERT INTO pools (name, description, creator_id, password_hash, is_general, tournament_id, hide_pending)
-      VALUES (${name}, ${description}, ${user.id}, ${passwordHash}, ${isGeneral}, ${tournamentId}, ${hidePending})
+      INSERT INTO pools (name, description, creator_id, password_hash, is_general, tournament_id, hide_pending, whatsapp_link)
+      VALUES (${name}, ${description}, ${user.id}, ${passwordHash}, ${isGeneral}, ${tournamentId}, ${hidePending}, ${whatsappLink})
       RETURNING id
     `;
 
@@ -106,6 +107,7 @@ export async function updatePoolAction(poolId: number, formData: FormData) {
   const password = formData.get('password') as string;
   const hidePending = formData.get('hide_pending') === 'on';
   const tournamentId = formData.get('tournament_id') && formData.get('tournament_id') !== 'all' ? Number(formData.get('tournament_id')) : null;
+  const whatsappLink = formData.get('whatsapp_link') as string;
 
   if (!name) return { error: 'O nome do bolão é obrigatório' };
 
@@ -123,7 +125,7 @@ export async function updatePoolAction(poolId: number, formData: FormData) {
 
     await sql`
       UPDATE pools 
-      SET name = ${name}, description = ${description}, password_hash = ${passwordHash}, tournament_id = ${tournamentId}, hide_pending = ${hidePending}
+      SET name = ${name}, description = ${description}, password_hash = ${passwordHash}, tournament_id = ${tournamentId}, hide_pending = ${hidePending}, whatsapp_link = ${whatsappLink}
       WHERE id = ${poolId}
     `;
 
