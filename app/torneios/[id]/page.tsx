@@ -12,6 +12,7 @@ import {
   getTournamentRanking,
   getUserPublicInfo,
   getActiveTournament,
+  getGenericQualifierPlayer,
 } from '@/lib/data';
 import { getDynamicRoundNames } from '@/lib/utils';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
@@ -55,6 +56,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
     targetUserInfo,
     activeTournament,
     ranking,
+    genericQualifierPlayer,
   ] = await Promise.all([
     getBracketMatches(tournamentId),
     getUserPredictions(targetUserId, tournamentId),
@@ -64,6 +66,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
     isViewingOthers ? getUserPublicInfo(targetUserId) : null,
     getActiveTournament(),
     getTournamentRanking(tournamentId, 3),
+    getGenericQualifierPlayer(),
   ]);
 
   const isFinished =
@@ -219,6 +222,8 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
             tournamentCategory={tournament.category}
             isEnrolled={enrolled}
             isViewingOthers={isViewingOthers}
+            players={tournamentPlayers}
+            qualifierPlayerId={genericQualifierPlayer?.id}
           />
         )}
       </main>

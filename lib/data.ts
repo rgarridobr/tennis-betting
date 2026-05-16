@@ -1049,3 +1049,12 @@ export async function hasTournamentStarted(tournamentId: number): Promise<boolea
   }
   return false;
 }
+export async function getGenericQualifierPlayer(): Promise<Player | null> {
+  const players = await sql`
+    SELECT id, name, display_name, country, seed
+    FROM players
+    WHERE name = 'Qualifier'
+    LIMIT 1
+  `;
+  return players.length > 0 ? (players[0] as Player) : null;
+}

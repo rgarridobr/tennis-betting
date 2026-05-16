@@ -28,6 +28,7 @@ interface TournamentBracketProps {
   assignedPlayerIds?: number[];
   isEnrolled?: boolean;
   isViewingOthers?: boolean;
+  qualifierPlayerId?: number;
 }
 
 export function TournamentBracket({
@@ -46,6 +47,7 @@ export function TournamentBracket({
   assignedPlayerIds,
   isEnrolled = false,
   isViewingOthers = false,
+  qualifierPlayerId,
 }: TournamentBracketProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [localPredictions, setLocalPredictions] =
@@ -175,6 +177,31 @@ export function TournamentBracket({
     number,
     { name: string; display_name: string | null; seed: number | null; type: string; country: string | null }
   > = {};
+
+  // Initialize with players from the players prop
+  if (players && players.length > 0) {
+    for (const p of players) {
+      playersById[p.id] = {
+        name: p.name,
+        display_name: p.display_name,
+        seed: p.seed,
+        type: 'PLAYER',
+        country: p.country,
+      };
+    }
+  }
+
+  // Add the generic qualifier if provided
+  if (qualifierPlayerId && !playersById[qualifierPlayerId]) {
+    playersById[qualifierPlayerId] = {
+      name: 'Qualifier',
+      display_name: 'Qualifier',
+      seed: null,
+      type: 'QUALIFIER',
+      country: null,
+    };
+  }
+
   for (const m of matches) {
     if (m.player1_id)
       playersById[m.player1_id] = {
@@ -514,6 +541,9 @@ export function TournamentBracket({
                               currentPrediction={localPredictions[match.id]}
                               actualPrediction={predictions[match.id]}
                               canMakePredictions={canMakePredictions && viewMode === 'predictions'}
+                              isEnrolled={isEnrolled}
+                              isViewingOthers={isViewingOthers}
+                              qualifierPlayerId={qualifierPlayerId}
                               isAdmin={isAdmin}
                               players={players}
                               tournamentStatus={tournamentStatus}
@@ -583,6 +613,7 @@ function BracketMatchCard({
   viewMode = 'predictions',
   playerEliminatedInRound,
   allOfficialPlayerIds,
+  qualifierPlayerId,
 }: {
   match: BracketMatch;
   p1: any;
@@ -601,11 +632,12 @@ function BracketMatchCard({
   viewMode?: 'official' | 'predictions';
   playerEliminatedInRound: Map<number, number>;
   allOfficialPlayerIds: Set<number>;
+  qualifierPlayerId?: number;
 }) {
   const isCompleted = match.status === 'completed';
   const isFinishedTournament =
     tournamentStatus === 'FINISHED' || tournamentStatus === 'finished' || tournamentStatus === 'completed';
-  const canPredict = canMakePredictions && !isCompleted && p1?.id && p2?.id;
+  const canPredict = canMakePredictions && !isCompleted;
 
   const selectedWinnerId = currentPrediction?.winnerId;
 
@@ -616,7 +648,7 @@ function BracketMatchCard({
     ((match.player1_id && match.player1_id !== p1.id) ||
       (match.winner_id && match.winner_id !== p1.id && isCompleted) ||
       (playerEliminatedInRound.has(p1.id) && playerEliminatedInRound.get(p1.id)! <= match.round) ||
-      (!allOfficialPlayerIds.has(p1.id) && p1.type !== 'BYE'));
+      (!allOfficialPlayerIds.has(p1.id) && p1.type !== 'BYE' && p1.type !== 'QUALIFIER' && p1.id !== qualifierPlayerId));
 
   const isP2Incorrect =
     viewMode === 'predictions' &&
@@ -624,7 +656,7 @@ function BracketMatchCard({
     ((match.player2_id && match.player2_id !== p2.id) ||
       (match.winner_id && match.winner_id !== p2.id && isCompleted) ||
       (playerEliminatedInRound.has(p2.id) && playerEliminatedInRound.get(p2.id)! <= match.round) ||
-      (!allOfficialPlayerIds.has(p2.id) && p2.type !== 'BYE'));
+      (!allOfficialPlayerIds.has(p2.id) && p2.type !== 'BYE' && p2.type !== 'QUALIFIER' && p2.id !== qualifierPlayerId));
 
   const cardContent = (
     <>
@@ -635,14 +667,22 @@ function BracketMatchCard({
         type={p1?.type}
         country={p1?.country}
         isWinner={match.winner_id === p1?.id && isCompleted}
-        isSelected={selectedWinnerId === p1?.id}
-        isPredicted={selectedWinnerId === p1?.id}
+        isSelected={selectedWinnerId === p1?.id || (p1?.type === 'QUALIFIER' && (selectedWinnerId === qualifierPlayerId || (!!p1?.id && p1?.id === qualifierPlayerId && selectedWinnerId === p1.id)))}
+        isPredicted={selectedWinnerId === p1?.id || (p1?.type === 'QUALIFIER' && (selectedWinnerId === qualifierPlayerId || (!!p1?.id && p1?.id === qualifierPlayerId && selectedWinnerId === p1.id)))}
         isCompleted={isCompleted}
-        onSelect={() => p1?.id && onPredict(p1.id)}
-        canPredict={!!canPredict}
+        onSelect={() => {
+          if (p1?.id) {
+            onPredict(p1.id);
+          } else if (p1?.type === 'QUALIFIER' && qualifierPlayerId) {
+            onPredict(qualifierPlayerId);
+          } else if (p1?.type === 'QUALIFIER') {
+            toast.info('Aguardando definição do Qualifier pela organização.');
+          }
+        }}
+        canPredict={!!canPredict && (!!p1?.id || (p1?.type === 'QUALIFIER' && !!qualifierPlayerId))}
         score={match.score}
         isP1={true}
-        isPlaceholder={(!p1?.id && p1?.type !== 'BYE' && p1?.type !== 'PLAYER') || p1?.isAwaiting || p1?.isNotPredicted}
+        isPlaceholder={((!p1?.id || p1?.id === qualifierPlayerId) && p1?.type !== 'BYE' && p1?.type !== 'PLAYER') || p1?.isAwaiting || p1?.isNotPredicted}
         pointsCancelled={match.points_cancelled}
         isAwaiting={p1?.isAwaiting}
         viewMode={viewMode}
@@ -661,14 +701,22 @@ function BracketMatchCard({
         type={p2?.type}
         country={p2?.country}
         isWinner={match.winner_id === p2?.id && isCompleted}
-        isSelected={selectedWinnerId === p2?.id}
-        isPredicted={selectedWinnerId === p2?.id}
+        isSelected={selectedWinnerId === p2?.id || (p2?.type === 'QUALIFIER' && (selectedWinnerId === qualifierPlayerId || (!!p2?.id && p2?.id === qualifierPlayerId && selectedWinnerId === p2.id)))}
+        isPredicted={selectedWinnerId === p2?.id || (p2?.type === 'QUALIFIER' && (selectedWinnerId === qualifierPlayerId || (!!p2?.id && p2?.id === qualifierPlayerId && selectedWinnerId === p2.id)))}
         isCompleted={isCompleted}
-        onSelect={() => p2?.id && onPredict(p2.id)}
-        canPredict={!!canPredict}
+        onSelect={() => {
+          if (p2?.id) {
+            onPredict(p2.id);
+          } else if (p2?.type === 'QUALIFIER' && qualifierPlayerId) {
+            onPredict(qualifierPlayerId);
+          } else if (p2?.type === 'QUALIFIER') {
+            toast.info('Aguardando definição do Qualifier pela organização.');
+          }
+        }}
+        canPredict={!!canPredict && (!!p2?.id || (p2?.type === 'QUALIFIER' && !!qualifierPlayerId))}
         score={match.score}
         isP1={false}
-        isPlaceholder={(!p2?.id && p2?.type !== 'BYE' && p2?.type !== 'PLAYER') || p2?.isAwaiting || p2?.isNotPredicted}
+        isPlaceholder={((!p2?.id || p2?.id === qualifierPlayerId) && p2?.type !== 'BYE' && p2?.type !== 'PLAYER') || p2?.isAwaiting || p2?.isNotPredicted}
         pointsCancelled={match.points_cancelled}
         isAwaiting={p2?.isAwaiting}
         viewMode={viewMode}

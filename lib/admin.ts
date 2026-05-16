@@ -834,6 +834,25 @@ export async function updatePlaceholderPlayer(
     `;
   }
 
+  // Transfer predictions from generic Qualifier to the new player
+  // This ensures users who predicted "Qualifier" don't lose their prediction
+  // when the actual player is defined.
+  try {
+    const genericQualifiers = await sql`SELECT id FROM players WHERE name ILIKE 'Qualifier%'`;
+    const genericIds = genericQualifiers.map(q => q.id);
+    
+    if (genericIds.length > 0) {
+      await sql`
+        UPDATE predictions
+        SET predicted_winner_id = ${playerId}
+        WHERE bracket_match_id = ${matchId} 
+        AND predicted_winner_id IN (${genericIds})
+      `;
+    }
+  } catch (err) {
+    console.error("Error transferring qualifier predictions:", err);
+  }
+
   if (m.status === 'completed') {
     // Reset match result
     await sql`
