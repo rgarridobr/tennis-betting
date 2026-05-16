@@ -226,7 +226,7 @@ export const POINTS_VARIANTS: PointsVariant[] = [
     id: 'ATP_500_32',
     name: 'ATP 500 (32)',
     description: 'ATP 500 com chave de 32 jogadores',
-    rounds: [null, null, 0, 25, 50, 100, 165, 250],
+    rounds: [null, null, 0, 50, 100, 200, 330, 500],
     runnerUp: 0,
   },
   {
