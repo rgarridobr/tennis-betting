@@ -38,11 +38,17 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
   // Apply filters
   let filteredTournaments = allTournaments;
   if (status === 'finished') {
-    filteredTournaments = filteredTournaments.filter((t) => ['finished', 'FINISHED', 'completed'].includes(t.status));
+    filteredTournaments = filteredTournaments
+      .filter((t) => ['finished', 'FINISHED', 'completed'].includes(t.status))
+      .sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime());
   } else if (status === 'upcoming') {
-    filteredTournaments = filteredTournaments.filter((t) => ['upcoming', 'UPCOMING', 'STANDBY'].includes(t.status));
+    filteredTournaments = filteredTournaments
+      .filter((t) => ['upcoming', 'UPCOMING', 'STANDBY'].includes(t.status))
+      .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
   } else {
-    filteredTournaments = filteredTournaments.filter((t) => activeStatuses.includes(t.status));
+    filteredTournaments = filteredTournaments
+      .filter((t) => activeStatuses.includes(t.status))
+      .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
   }
 
   if (search) {
