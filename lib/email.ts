@@ -30,7 +30,7 @@ export async function sendResetCodeEmail(email: string, code: string) {
         <p style="margin-top: 20px;">Este código expira em 15 minutos.</p>
         <p>Se você não solicitou isso, por favor ignore este e-mail.</p>
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-        <p style="font-size: 12px; color: #64748b;">TenNis Pool - Todos os direitos reservados.</p>
+        <p style="font-size: 12px; color: #64748b;">TennisPool - Todos os direitos reservados.</p>
       </div>
     `,
   };
