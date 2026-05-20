@@ -54,8 +54,8 @@ export const metadata: Metadata = {
     creator: '@TennisPool',
   },
   icons: {
-    icon: '/favicon.ico?v=1',
-    apple: '/apple-icon.png?v=1',
+    icon: '/favicon.ico?v=2',
+    apple: '/apple-icon.png?v=2',
     other: [{ rel: 'manifest', url: '/site.webmanifest' }],
   },
 };
