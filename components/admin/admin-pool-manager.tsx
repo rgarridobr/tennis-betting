@@ -50,11 +50,11 @@ export function AdminPoolManager({ pools, tournaments }: AdminPoolManagerProps) 
     try {
       const result = await deletePoolAction(Number(deletingPool.id));
       if (result.success) {
-        toast.success("Bolão excluído com sucesso!");
+        toast.success("Grupo excluído com sucesso!");
         setDeletingPool(null);
         router.refresh();
       } else {
-        toast.error("Erro ao excluir bolão.");
+        toast.error("Erro ao excluir grupo.");
       }
     } catch (error) {
       console.error(error);
@@ -68,14 +68,14 @@ export function AdminPoolManager({ pools, tournaments }: AdminPoolManagerProps) 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-2 h-8 bg-emerald-500 rounded-full" />
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Todos os Bolões</h2>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Todos os Grupos</h2>
         </div>
         <Button 
           onClick={() => setIsCreateOpen(true)}
           className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl px-4 flex items-center gap-2 shadow-lg shadow-emerald-500/20"
         >
           <Plus className="w-5 h-5" />
-          Novo Bolão Geral
+          Novo Grupo Geral
         </Button>
       </div>
 
@@ -150,9 +150,9 @@ export function AdminPoolManager({ pools, tournaments }: AdminPoolManagerProps) 
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="sm:max-w-[500px] rounded-3xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-black text-slate-800 tracking-tight">Criar Novo Bolão</DialogTitle>
+            <DialogTitle className="text-2xl font-black text-slate-800 tracking-tight">Criar Novo Grupo</DialogTitle>
             <DialogDescription className="text-slate-500">
-              Crie um novo bolão com restrições customizadas.
+              Crie um novo grupo com restrições customizadas.
             </DialogDescription>
           </DialogHeader>
           <CreatePoolForm 
@@ -225,9 +225,9 @@ export function AdminPoolManager({ pools, tournaments }: AdminPoolManagerProps) 
             <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
               <Trash2 className="w-8 h-8 text-rose-600" />
             </div>
-            <DialogTitle className="text-2xl font-black text-center text-slate-900">Excluir Bolão?</DialogTitle>
+            <DialogTitle className="text-2xl font-black text-center text-slate-900">Excluir Grupo?</DialogTitle>
             <DialogDescription className="text-center text-slate-500 font-medium px-4 mt-2">
-              Tem certeza que deseja excluir o bolão <strong>{deletingPool?.name}</strong>? Esta ação é irreversível e removerá todos os participantes.
+              Tem certeza que deseja excluir o grupo <strong>{deletingPool?.name}</strong>? Esta ação é irreversível e removerá todos os participantes.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex flex-col sm:flex-row gap-3 p-2 pt-4">

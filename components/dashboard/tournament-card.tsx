@@ -25,8 +25,8 @@ const surfaceLabels: Record<string, string> = {
 const surfaceImages: Record<string, string> = {
   Clay: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=600&q=80",
   Grass:
-    "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=600&q=80",
-  Hard: "https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=600&q=80",
+    "https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=600&q=80",
+  Hard: "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=600&q=80",
 };
 
 function formatDate(dateString: string): string {
@@ -70,11 +70,17 @@ export function TournamentCard({ tournament, href }: TournamentCardProps) {
     tournament.status === "OPEN";
 
   const isRolandGarros = tournament.name.toLowerCase().includes("roland garros");
+  const isWimbledon = tournament.name.toLowerCase().includes("wimbledon");
+  const isUsOpen = tournament.name.toLowerCase().includes("us open");
 
   const imageUrl = isRolandGarros
     ? "https://images.unsplash.com/photo-1560014130-9ba41ce9bcef?w=800&q=80"
-    : tournament.image_url ||
-      surfaceImages[tournament.surface] ||
+    : isWimbledon
+      ? "https://worldtickets.hu/storage/2016/04/wimbledon-feature.jpg.webp?w=800&q=80"
+    : isUsOpen
+      ? "https://images.unsplash.com/photo-1568663469495-b09d5e3c2e07?q=80"
+      : tournament.image_url ||
+        surfaceImages[tournament.surface] ||
       surfaceImages.Hard;
 
   const getCategory = (category: string) => {

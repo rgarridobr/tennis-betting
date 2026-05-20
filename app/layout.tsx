@@ -13,13 +13,13 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://www.tennispool.com.br'),
   title: {
     template: '%s | TennisPool',
-    default: 'TennisPool – Bolão de Tênis Online',
+    default: 'TennisPool – Grupos de Tênis Online',
   },
   description:
-    'TennisPool: participe do bolão de tênis, faça palpites nos jogos e dispute no ranking com seus amigos.',
+    'TennisPool: participe de grupos de tênis, faça palpites nos jogos e dispute no ranking com seus amigos.',
   keywords: [
     'TennisPool',
-    'bolão de tênis',
+    'grupo de tênis',
     'palpites',
     'ranking',
     'torneios de tênis',
@@ -28,9 +28,9 @@ export const metadata: Metadata = {
     { name: 'TennisPool', url: 'https://www.tennispool.com.br' },
   ],
   openGraph: {
-    title: 'TennisPool – Bolão de Tênis Online',
+    title: 'TennisPool – Grupos de Tênis Online',
     description:
-      'Participe do bolão de tênis com pontos por palpites e dispute com seus amigos.',
+      'Participe de grupos de tênis com pontos por palpites e dispute com seus amigos.',
     url: 'https://www.tennispool.com.br/',
     siteName: 'TennisPool',
     type: 'website',
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'TennisPool – Bolão de Tênis',
+    title: 'TennisPool – Grupos de Tênis',
     description:
       'TennisPool: faça palpites, acumule pontos e veja seu nome no topo do ranking.',
     images: ['https://www.tennispool.com.br/twitter-image.png'],

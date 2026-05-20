@@ -30,7 +30,7 @@ export default async function PoolsPage({ searchParams }: PoolsPageProps) {
       <DashboardHeader user={user} activeTournamentId={activeTournament?.id} />
 
       <PageHero
-        title="Bolões"
+        title="Grupos"
         subtitle="Crie ou participe de grupos privados para competir com seus amigos."
       />
 

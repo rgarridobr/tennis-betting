@@ -75,7 +75,7 @@ export default async function AdminDashboardPage() {
     <div className="min-h-screen bg-slate-50">
       <PageHero
         title="Painel Administrativo"
-        subtitle="Gerencie torneios, jogadores e participantes do bolão com ferramentas exclusivas."
+        subtitle="Gerencie torneios, jogadores e participantes do grupo com ferramentas exclusivas."
       />
 
       <main className="container mx-auto px-4 md:px-32 pb-12">

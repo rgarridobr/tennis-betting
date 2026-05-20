@@ -55,10 +55,17 @@ export function TournamentHeader({ tournament, participants = 0 }: TournamentHea
         ? 'bg-emerald-500 text-white border-none'
         : 'bg-amber-500 text-white border-none';
 
-  const isRolandGarros = tournament.name.toLowerCase().includes("roland garros");
+  const isRolandGarros = tournament.name.toLowerCase().includes('roland garros');
+  const isWimbledon = tournament.name.toLowerCase().includes('wimbledon');
+  const isUsOpen = tournament.name.toLowerCase().includes('us open');
+
   const bgImage = isRolandGarros
-    ? "https://images.unsplash.com/photo-1560014130-9ba41ce9bcef?w=1920&q=80"
-    : surfaceImages[tournament.surface] || surfaceImages.Hard;
+    ? 'https://images.unsplash.com/photo-1560014130-9ba41ce9bcef?w=1920&q=80'
+    : isWimbledon
+      ? 'https://worldtickets.hu/storage/2016/04/wimbledon-feature.jpg.webp?w=800&q=80'
+      : isUsOpen
+        ? 'https://images.unsplash.com/photo-1568663469495-b09d5e3c2e07?q=80'
+        : surfaceImages[tournament.surface] || surfaceImages.Hard;
 
   return (
     <PageHero
@@ -73,13 +80,25 @@ export function TournamentHeader({ tournament, participants = 0 }: TournamentHea
     >
       <div className="flex items-center gap-4">
         <Card className="bg-white/10 border-none backdrop-blur-md rounded-2xl">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
-              <Icon iconNode={tennisBall} className="w-6 h-6 text-emerald-400" />
+          <CardContent className="p-4 block items-center">
+            <div className="flex gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
+                <Icon iconNode={tennisBall} className="w-6 h-6 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Categoria</p>
+                <p className="text-xl md:text-2xl font-black text-white">{getCategory(tournament.category)}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Categoria</p>
-              <p className="text-2xl font-black text-white">{getCategory(tournament.category)}</p>
+
+            <div className="flex gap-4 mt-4">
+              <div className="w-12 h-12 rounded-2xl bg-yellow-500/20 flex items-center justify-center border border-yellow-500/30">
+                <Users className="w-6 h-6 text-yellow-400" />
+              </div>
+              <div>
+                <p className="text-yellow-100/70 text-xs font-bold uppercase tracking-wider">Inscritos</p>
+                <p className="text-xl md:text-2xl font-black text-white">{participants}</p>
+              </div>{' '}
             </div>
           </CardContent>
         </Card>

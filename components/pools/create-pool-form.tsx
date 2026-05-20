@@ -34,7 +34,7 @@ export function CreatePoolForm({ isAdmin, tournaments = [], onCancel }: { isAdmi
       setError(result.error);
       setIsLoading(false);
     } else if (result.success) {
-      router.push(`/boloes/${result.poolId}`);
+      router.push(`/grupos/${result.poolId}`);
     }
   };
 
@@ -69,11 +69,11 @@ export function CreatePoolForm({ isAdmin, tournaments = [], onCancel }: { isAdmi
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-bold text-slate-700">Nome do Bolão</Label>
+            <Label htmlFor="name" className="text-sm font-bold text-slate-700">Nome do Grupo</Label>
             <Input
               id="name"
               name="name"
-              placeholder="Ex: Amigos do Tênis, Bolão da Firma..."
+              placeholder="Ex: Amigos do Tênis, Grupo da Firma..."
               required
               className="h-12 rounded-xl border-slate-200"
             />
@@ -84,7 +84,7 @@ export function CreatePoolForm({ isAdmin, tournaments = [], onCancel }: { isAdmi
             <Textarea
               id="description"
               name="description"
-              placeholder="Descreva o objetivo ou as regras do seu bolão..."
+              placeholder="Descreva o objetivo ou as regras do seu grupo..."
               className="min-h-[100px] rounded-xl border-slate-200 resize-none"
             />
           </div>
@@ -105,7 +105,7 @@ export function CreatePoolForm({ isAdmin, tournaments = [], onCancel }: { isAdmi
                 <Lock className="w-5 h-5 text-amber-600" />
               </div>
               <div>
-                <p className="font-bold text-slate-800 text-sm">Bolão Privado</p>
+                <p className="font-bold text-slate-800 text-sm">Grupo Privado</p>
                 <p className="text-xs text-slate-500">Exigir senha para novos membros</p>
               </div>
             </div>
@@ -140,7 +140,7 @@ export function CreatePoolForm({ isAdmin, tournaments = [], onCancel }: { isAdmi
                   <Trophy className="w-5 h-5 text-emerald-600" />
                 </div>
                 <div>
-                  <p className="font-bold text-slate-800 text-sm">Bolão Geral</p>
+                  <p className="font-bold text-slate-800 text-sm">Grupo Geral</p>
                   <p className="text-xs text-slate-500">Visível para todos os usuários</p>
                 </div>
               </div>
@@ -188,7 +188,7 @@ export function CreatePoolForm({ isAdmin, tournaments = [], onCancel }: { isAdmi
               className="w-full md:w-auto md:flex-[2] h-12 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold"
               disabled={isLoading}
             >
-              {isLoading ? "Criando..." : "Criar Bolão"}
+              {isLoading ? "Criando..." : "Criar Grupo"}
             </Button>
           </div>
         </form>

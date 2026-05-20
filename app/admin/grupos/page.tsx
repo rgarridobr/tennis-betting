@@ -18,8 +18,8 @@ export default async function AdminPoolsPage() {
   return (
     <>
       <PageHero 
-        title="Gerenciar Bolões" 
-        subtitle="Acompanhe, crie e edite os bolões da plataforma e seus participantes" 
+        title="Gerenciar Grupos" 
+        subtitle="Acompanhe, crie e edite os grupos da plataforma e seus participantes" 
       />
 
       <main className="container mx-auto px-4 md:px-32 py-8">

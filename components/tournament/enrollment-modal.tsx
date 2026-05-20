@@ -69,10 +69,10 @@ export function EnrollmentModal({ isOpen, onClose, tournament }: EnrollmentModal
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-amber-500" />
-                Participar do Bolão
+                Participar do Grupo
               </DialogTitle>
               <DialogDescription>
-                Inscreva-se no bolão de {tournament.name} e dispute com outros participantes!
+                Inscreva-se no grupo de {tournament.name} e dispute com outros participantes!
               </DialogDescription>
             </DialogHeader>
 
@@ -97,7 +97,7 @@ export function EnrollmentModal({ isOpen, onClose, tournament }: EnrollmentModal
                   </div>
                   <p>
                     Assim que os classificados no qualifying forem inseridos na chave principal do torneio, pode-se
-                    completar os palpites do bolão.
+                    completar os palpites do grupo.
                   </p>
                 </div>
 

@@ -39,7 +39,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
 
   return (
     <>
-      <PageHero title="Gerenciar Usuários" subtitle="Administre os participantes do bolão"/> 
+      <PageHero title="Gerenciar Usuários" subtitle="Administre os participantes do grupo"/> 
 
       <main className="container mx-auto px-4 lg:px-32 py-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
@@ -57,7 +57,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
             <CardContent className="py-16 text-center">
               <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-slate-900 mb-2">Nenhum usuário cadastrado</h2>
-              <p className="text-slate-500">Convide participantes para começar o bolão.</p>
+              <p className="text-slate-500">Convide participantes para começar o grupo.</p>
             </CardContent>
           </Card>
         ) : (

@@ -36,7 +36,7 @@ export function PoolList({
     if (!search.trim()) return;
 
     setIsSearching(true);
-    router.push(`/boloes?q=${encodeURIComponent(search)}`);
+    router.push(`/grupos?q=${encodeURIComponent(search)}`);
     setIsSearching(false);
   };
 
@@ -49,10 +49,10 @@ export function PoolList({
             <div className="p-3 bg-emerald-100 rounded-2xl text-emerald-500 shadow-inner">
               <Search className="w-7 h-7" />
             </div>
-            Encontrar bolões
+            Encontrar grupos
           </h2>
           <p className="text-slate-500 mt-2 font-medium ml-1">
-            Busque pelo nome do bolão para encontrar competições criadas por seus amigos.
+            Busque pelo nome do grupo para encontrar competições criadas por seus amigos.
           </p>
 
           <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4 p-1">
@@ -61,7 +61,7 @@ export function PoolList({
                 <Search className="h-5 w-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
               </div>
               <Input
-                placeholder="Ex: Bolão dos amigos..."
+                placeholder="Ex: Grupo dos amigos..."
                 className="pl-14 h-14 rounded-2xl border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:ring-emerald-500/20 transition-all text-base shadow-sm"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -97,7 +97,7 @@ export function PoolList({
               <div className="p-3 bg-blue-100 rounded-2xl text-blue-600 shadow-inner">
                 <Users className="w-7 h-7" />
               </div>
-              Meus Bolões
+              Meus Grupos
             </h2>
             <p className="text-slate-500 mt-2 font-medium ml-1">Grupos que você já participa.</p>
           </div>
@@ -105,7 +105,7 @@ export function PoolList({
             onClick={() => setShowCreateDialog(true)}
             className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold uppercase tracking-widest text-xs px-6 py-6 shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/30 cursor-pointer"
           >
-            Criar Novo Bolão
+            Criar Novo Grupo
           </Button>
         </div>
 
@@ -120,9 +120,9 @@ export function PoolList({
             <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
               <Shield className="w-10 h-10 text-slate-300" />
             </div>
-            <h3 className="text-xl font-bold text-slate-700 mb-2">Nenhum bolão ativo</h3>
+            <h3 className="text-xl font-bold text-slate-700 mb-2">Nenhum grupo ativo</h3>
             <p className="text-slate-500 font-medium max-w-sm mx-auto">
-              Você ainda não participa de nenhum grupo. Crie o seu próprio bolão ou busque por um bolão de amigos acima.
+              Você ainda não participa de nenhum grupo. Crie o seu próprio grupo ou busque por um grupo de amigos acima.
             </p>
           </div>
         )}
@@ -136,7 +136,7 @@ export function PoolList({
               <div className="p-3 bg-amber-100 rounded-2xl text-amber-500 shadow-inner">
                 <Trophy className="w-7 h-7" />
               </div>
-              Bolões Gerais
+              Grupos Gerais
             </h2>
             <p className="text-slate-500 mt-2 font-medium ml-1">Competições públicas abertas a todos os usuários.</p>
           </div>
@@ -151,7 +151,7 @@ export function PoolList({
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent className="sm:max-w-[500px] rounded-3xl max-h-[95vh] overflow-y-auto p-6 sm:p-10">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-black text-slate-800 tracking-tight">Criar Bolão</DialogTitle>
+            <DialogTitle className="text-2xl font-black text-slate-800 tracking-tight">Criar Grupo</DialogTitle>
             <DialogDescription className="text-slate-500">
               Personalize seu grupo e convide amigos para competir.
             </DialogDescription>
@@ -170,7 +170,7 @@ function PoolCard({ pool, isMember }: { pool: Pool; isMember?: boolean }) {
 
   return (
     <Link
-      href={`/boloes/${pool.id}`}
+      href={`/grupos/${pool.id}`}
       className="block h-full outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-[2rem]"
     >
       <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.12)] border border-slate-200/60 transition-all duration-500 group hover:-translate-y-1.5 h-full flex flex-col relative overflow-hidden">
@@ -235,7 +235,7 @@ function PoolCard({ pool, isMember }: { pool: Pool; isMember?: boolean }) {
 
         <div className="px-6 pt-4 relative z-10 flex-1 flex flex-col">
           <p className="text-slate-500 font-medium text-sm line-clamp-2 mb-6 flex-1">
-            {pool.description || 'Sem descrição disponível para este bolão.'}
+            {pool.description || 'Sem descrição disponível para este grupo.'}
           </p>
 
           <div className="flex items-center justify-between mt-auto py-5">

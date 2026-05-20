@@ -53,7 +53,7 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
       setIsLoading(false);
     } else {
       setShowPasswordDialog(false);
-      toast.success(`Você entrou no bolão ${poolName}.`);
+      toast.success(`Você entrou no grupo ${poolName}.`);
       setIsLoading(false);
     }
   };
@@ -67,10 +67,10 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
     const result = await leavePoolAction(poolId);
     
     if (result.success) {
-      toast.success(`Você não faz mais parte do bolão ${poolName}.`);
+      toast.success(`Você não faz mais parte do grupo ${poolName}.`);
       setShowLeaveDialog(false);
     } else {
-      toast.error("Ocorreu um erro ao sair do bolão.");
+      toast.error("Ocorreu um erro ao sair do grupo.");
     }
     setIsLoading(false);
   };
@@ -78,7 +78,7 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
   const handleShare = () => {
     const url = window.location.href;
     navigator.clipboard.writeText(url);
-    toast.success("O link deste bolão foi copiado para sua área de transferência.");
+    toast.success("O link deste grupo foi copiado para sua área de transferência.");
   };
 
   return (
@@ -92,7 +92,7 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
               onClick={() => setShowEditDialog(true)}
             >
               <Edit className="w-4 h-4 mr-2" />
-              Editar Bolão
+              Editar Grupo
             </Button>
           )}
           <Button 
@@ -120,7 +120,7 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
           disabled={isLoading}
         >
           <Users className="w-5 h-5 mr-2" />
-          {needsPassword ? "Entrar com Senha" : "Entrar no Bolão"}
+          {needsPassword ? "Entrar com Senha" : "Entrar no Grupo"}
         </Button>
       )}
 
@@ -132,7 +132,7 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
             </div>
             <DialogTitle className="text-2xl font-black text-center text-slate-900">Senha de Acesso</DialogTitle>
             <DialogDescription className="text-center text-slate-500 font-medium px-4">
-              Este bolão é privado. Digite a senha para entrar e participar do ranking.
+              Este grupo é privado. Digite a senha para entrar e participar do ranking.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 px-2 space-y-4">
@@ -176,7 +176,7 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
             <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
               <LogOut className="w-8 h-8 text-rose-600" />
             </div>
-            <DialogTitle className="text-2xl font-black text-center text-slate-900">Sair do Bolão?</DialogTitle>
+            <DialogTitle className="text-2xl font-black text-center text-slate-900">Sair do Grupo?</DialogTitle>
             <DialogDescription className="text-center text-slate-500 font-medium px-4">
               Tem certeza que deseja sair de <strong>{poolName}</strong>? Seu progresso no ranking deste grupo será perdido.
             </DialogDescription>

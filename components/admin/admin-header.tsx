@@ -33,7 +33,7 @@ export function AdminHeader({ user }: AdminHeaderProps) {
     { href: '/admin', label: 'Home', icon: Home },
     { href: '/admin/torneios', label: 'Torneios', icon: Trophy },
     { href: '/admin/usuarios', label: 'Usuários', icon: Users },
-    { href: '/admin/boloes', label: 'Bolões', icon: ClipboardList },
+    { href: '/admin/grupos', label: 'Grupos', icon: ClipboardList },
   ];
 
   return (

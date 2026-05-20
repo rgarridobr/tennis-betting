@@ -1,7 +1,7 @@
 {
   "name": "TennisPool",
   "short_name": "TennisPool",
-  "description": "Bolão de tênis online - faça palpites, acumule pontos e dispute no ranking.",
+  "description": "Grupos de tênis online - faça palpites, acumule pontos e dispute no ranking.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

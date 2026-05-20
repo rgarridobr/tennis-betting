@@ -129,7 +129,7 @@ export function CreateUserDialog() {
           </DialogTitle>
 
           <DialogDescription className="text-base font-medium text-slate-400 mt-1 text-left">
-            Cadastre um novo participante para o bolão.
+            Cadastre um novo participante para o grupo.
           </DialogDescription>
         </DialogHeader>
 

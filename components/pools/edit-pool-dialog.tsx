@@ -65,9 +65,9 @@ export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] rounded-3xl max-h-[95vh] overflow-y-auto p-6 sm:p-8">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-black text-slate-800 tracking-tight">Editar Bolão</DialogTitle>
+          <DialogTitle className="text-2xl font-black text-slate-800 tracking-tight">Editar Grupo</DialogTitle>
           <DialogDescription className="text-slate-500">
-            Altere as informações do seu bolão ou mude o torneio atual.
+            Altere as informações do seu grupo ou mude o torneio atual.
           </DialogDescription>
         </DialogHeader>
 
@@ -100,7 +100,7 @@ export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPo
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-bold text-slate-700">Nome do Bolão</Label>
+            <Label htmlFor="name" className="text-sm font-bold text-slate-700">Nome do Grupo</Label>
             <Input
               id="name"
               name="name"

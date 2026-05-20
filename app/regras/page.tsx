@@ -27,7 +27,7 @@ export default async function RulesPage() {
     <div className="min-h-screen bg-slate-50">
       <DashboardHeader user={user} activeTournamentId={activeTournament?.id} />
 
-      <PageHero title="Regras do Bolão" subtitle="Entenda como funciona a pontuação e as participações" />
+      <PageHero title="Regras do Grupo" subtitle="Entenda como funciona a pontuação e as participações" />
 
       <main className="container mx-auto px-4 md:px-32 py-8 space-y-8">
         {/* General Rules */}

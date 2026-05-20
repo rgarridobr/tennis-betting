@@ -16,7 +16,7 @@ export async function createPoolAction(formData: FormData) {
   const tournamentId = formData.get('tournament_id') && formData.get('tournament_id') !== 'all' ? Number(formData.get('tournament_id')) : null;
   const whatsappLink = formData.get('whatsapp_link') as string;
 
-  if (!name) return { error: 'O nome do bolão é obrigatório' };
+  if (!name) return { error: 'O nome do grupo é obrigatório' };
 
   let passwordHash = null;
   if (password) {
@@ -38,11 +38,11 @@ export async function createPoolAction(formData: FormData) {
       VALUES (${poolId}, ${user.id})
     `;
 
-    revalidatePath('/boloes');
+    revalidatePath('/grupos');
     return { success: true, poolId };
   } catch (error) {
-    console.error('Erro ao criar bolão:', error);
-    return { error: 'Ocorreu um erro ao criar o bolão' };
+    console.error('Erro ao criar grupo:', error);
+    return { error: 'Ocorreu um erro ao criar o grupo' };
   }
 }
 
@@ -52,13 +52,13 @@ export async function joinPoolAction(poolId: number, password?: string) {
 
   try {
     const pool = await sql`SELECT * FROM pools WHERE id = ${poolId}`;
-    if (pool.length === 0) return { error: 'Bolão não encontrado' };
+    if (pool.length === 0) return { error: 'Grupo não encontrado' };
 
     const poolData = pool[0];
 
     // Check password if private
     if (poolData.password_hash && !user.is_admin) {
-      if (!password) return { error: 'Este bolão requer senha', needsPassword: true };
+      if (!password) return { error: 'Este grupo requer senha', needsPassword: true };
       
       const isValid = await verifyPassword(password, poolData.password_hash);
       if (!isValid) return { error: 'Senha incorreta' };
@@ -70,12 +70,12 @@ export async function joinPoolAction(poolId: number, password?: string) {
       ON CONFLICT (pool_id, user_id) DO NOTHING
     `;
 
-    revalidatePath('/boloes');
-    revalidatePath(`/boloes/${poolId}`);
+    revalidatePath('/grupos');
+    revalidatePath(`/grupos/${poolId}`);
     return { success: true };
   } catch (error) {
-    console.error('Erro ao entrar no bolão:', error);
-    return { error: 'Ocorreu um erro ao entrar no bolão' };
+    console.error('Erro ao entrar no grupo:', error);
+    return { error: 'Ocorreu um erro ao entrar no grupo' };
   }
 }
 
@@ -89,12 +89,12 @@ export async function leavePoolAction(poolId: number) {
       WHERE pool_id = ${poolId} AND user_id = ${user.id}
     `;
 
-    revalidatePath('/boloes');
-    revalidatePath(`/boloes/${poolId}`);
+    revalidatePath('/grupos');
+    revalidatePath(`/grupos/${poolId}`);
     return { success: true };
   } catch (error) {
-    console.error('Erro ao sair do bolão:', error);
-    return { error: 'Ocorreu um erro ao sair do bolão' };
+    console.error('Erro ao sair do grupo:', error);
+    return { error: 'Ocorreu um erro ao sair do grupo' };
   }
 }
 
@@ -109,11 +109,11 @@ export async function updatePoolAction(poolId: number, formData: FormData) {
   const tournamentId = formData.get('tournament_id') && formData.get('tournament_id') !== 'all' ? Number(formData.get('tournament_id')) : null;
   const whatsappLink = formData.get('whatsapp_link') as string;
 
-  if (!name) return { error: 'O nome do bolão é obrigatório' };
+  if (!name) return { error: 'O nome do grupo é obrigatório' };
 
   try {
     const pool = await sql`SELECT creator_id, password_hash FROM pools WHERE id = ${poolId}`;
-    if (pool.length === 0) return { error: 'Bolão não encontrado' };
+    if (pool.length === 0) return { error: 'Grupo não encontrado' };
     if (pool[0].creator_id !== user.id && !user.is_admin) return { error: 'Não autorizado' };
 
     let passwordHash = pool[0].password_hash;
@@ -129,12 +129,12 @@ export async function updatePoolAction(poolId: number, formData: FormData) {
       WHERE id = ${poolId}
     `;
 
-    revalidatePath('/boloes');
-    revalidatePath(`/boloes/${poolId}`);
+    revalidatePath('/grupos');
+    revalidatePath(`/grupos/${poolId}`);
     return { success: true };
   } catch (error) {
-    console.error('Erro ao atualizar bolão:', error);
-    return { error: 'Ocorreu um erro ao atualizar o bolão' };
+    console.error('Erro ao atualizar grupo:', error);
+    return { error: 'Ocorreu um erro ao atualizar o grupo' };
   }
 }
 
@@ -145,11 +145,11 @@ export async function deletePoolAction(poolId: number) {
   try {
     await sql`DELETE FROM pool_members WHERE pool_id = ${poolId}`;
     await sql`DELETE FROM pools WHERE id = ${poolId}`;
-    revalidatePath('/boloes');
+    revalidatePath('/grupos');
     return { success: true };
   } catch (error) {
-    console.error('Erro ao excluir bolão:', error);
-    return { error: 'Ocorreu um erro ao excluir o bolão' };
+    console.error('Erro ao excluir grupo:', error);
+    return { error: 'Ocorreu um erro ao excluir o grupo' };
   }
 }
 
@@ -183,7 +183,7 @@ export async function getPoolMembersWithPredictionsAction(poolId: number, tourna
   try {
     // Check if user is admin or the creator of the pool
     const pool = await sql`SELECT creator_id FROM pools WHERE id = ${poolId}`;
-    if (pool.length === 0) throw new Error('Bolão não encontrado');
+    if (pool.length === 0) throw new Error('Grupo não encontrado');
     
     const isCreator = pool[0].creator_id === user.id;
     if (!user.is_admin && !isCreator) {

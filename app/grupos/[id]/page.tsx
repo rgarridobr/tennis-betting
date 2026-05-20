@@ -34,7 +34,7 @@ export default async function PoolPage({ params, searchParams }: PoolPageProps) 
   if (isNaN(poolId)) notFound();
 
   const user = await getSession();
-  if (!user) redirect(`/login?redirectTo=/boloes/${poolId}`);
+  if (!user) redirect(`/login?redirectTo=/grupos/${poolId}`);
 
   const pool = await getPoolById(poolId);
   if (!pool) notFound();
@@ -85,7 +85,7 @@ export default async function PoolPage({ params, searchParams }: PoolPageProps) 
 
       <PageHero
         title={pool.name}
-        subtitle={`${linkedTournamentName ? `🏆 Torneio: ${linkedTournamentName}\n` : ''}${pool.description || "Bolão para disputar com amigos"}`}
+        subtitle={`${linkedTournamentName ? `🏆 Torneio: ${linkedTournamentName}\n` : ''}${pool.description || "Grupo para disputar com amigos"}`}
       >
         <div className="flex flex-wrap items-center gap-4 mt-6">
           <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl border border-white/10">
@@ -96,7 +96,7 @@ export default async function PoolPage({ params, searchParams }: PoolPageProps) 
           {pool.is_general && (
             <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/20 backdrop-blur-sm rounded-xl border border-amber-500/20">
               <Shield className="w-4 h-4 text-amber-300" />
-              <span className="text-white font-bold">Bolão Oficial</span>
+              <span className="text-white font-bold">Grupo Oficial</span>
             </div>
           )}
 
@@ -152,7 +152,7 @@ export default async function PoolPage({ params, searchParams }: PoolPageProps) 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <h2 className="text-2xl font-black text-slate-800 flex items-center gap-3">
               <Trophy className="w-7 h-7 text-amber-500" />
-              Ranking do Bolão
+              Ranking do Grupo
             </h2>
             
             <div className="flex flex-wrap items-center gap-4">

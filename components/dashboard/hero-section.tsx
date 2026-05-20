@@ -43,7 +43,7 @@ export function HeroSection({ user }: HeroSectionProps) {
 
           {/* Subtitle */}
           <p className="mt-5 text-lg text-white font-medium max-w-2xl mx-auto leading-relaxed drop-shadow-lg">
-            Participe do bolão, dê seus palpites nos jogos e dispute com seus
+            Participe do grupo, dê seus palpites nos jogos e dispute com seus
             amigos no ranking
           </p>
 

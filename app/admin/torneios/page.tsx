@@ -87,7 +87,7 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
 
   return (
     <>
-      <PageHero title="Gerenciar Torneios" subtitle="Crie, edite e acompanhe seus campeonatos para o bolão de tênis" />
+      <PageHero title="Gerenciar Torneios" subtitle="Crie, edite e acompanhe seus campeonatos para o grupo de tênis" />
 
       <main className="container mx-auto px-4 md:px-32 py-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">

@@ -100,7 +100,7 @@ export default async function HomePage() {
                 </h1>
 
                 <p className="text-lg sm:text-xl text-white/95 leading-relaxed font-medium drop-shadow-lg">
-                  Participe do bolão, dê seus palpites nos maiores torneios de
+                  Participe do grupo, dê seus palpites nos maiores torneios de
                   tênis do mundo e dispute com seus amigos no ranking.
                 </p>
               </div>
@@ -176,7 +176,7 @@ export default async function HomePage() {
                   color: "bg-emerald-500",
                   title: "Escolha o torneio",
                   description:
-                    "Selecione um torneio ativo e se deseja participar de um bolão ou criar o seu próprio.",
+                    "Selecione um torneio ativo e se deseja participar de um grupo ou criar o seu próprio.",
                 },
                 {
                   icon: Target,
@@ -253,7 +253,7 @@ export default async function HomePage() {
                   name: "Pedro Santos",
                   role: "Participante desde 2026",
                   content:
-                    "Melhor bolão de tênis que já participei. Todo Grand Slam eu tô aqui firme e forte. Recomendo demais!",
+                    "Melhor grupo de tênis que já participei. Todo Grand Slam eu tô aqui firme e forte. Recomendo demais!",
                   avatar: "PS",
                 },
               ].map((testimonial) => (

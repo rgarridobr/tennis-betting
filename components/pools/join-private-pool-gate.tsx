@@ -50,10 +50,10 @@ export function JoinPrivatePoolGate({ poolId, poolName }: JoinPrivatePoolGatePro
         
         <CardHeader className="text-center pt-6">
           <CardTitle className="text-2xl font-black text-slate-800 tracking-tight">
-            Bolão Privado
+            Grupo Privado
           </CardTitle>
           <CardDescription className="text-slate-500 font-medium mt-2">
-            Este bolão é protegido. Digite a senha de acesso para participar de <span className="text-emerald-600 font-bold">{poolName}</span>.
+            Este grupo é protegido. Digite a senha de acesso para participar de <span className="text-emerald-600 font-bold">{poolName}</span>.
           </CardDescription>
         </CardHeader>
         
@@ -85,7 +85,7 @@ export function JoinPrivatePoolGate({ poolId, poolName }: JoinPrivatePoolGatePro
                 className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition-all duration-300"
                 disabled={isLoading}
               >
-                {isLoading ? "Entrando..." : "Participar do Bolão"}
+                {isLoading ? "Entrando..." : "Participar do Grupo"}
               </Button>
 
               <Button
@@ -93,7 +93,7 @@ export function JoinPrivatePoolGate({ poolId, poolName }: JoinPrivatePoolGatePro
                 variant="ghost"
                 className="w-full h-12 rounded-xl font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-all"
               >
-                <Link href="/boloes">
+                <Link href="/grupos">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Voltar
                 </Link>
