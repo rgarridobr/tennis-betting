@@ -432,7 +432,7 @@ export function TournamentBracket({
                         let p2 = null;
 
                         if (viewMode === 'predictions' || match.round === 1 || isAdmin) {
-                          if (match.round === 1 || isAdmin) {
+                          if (isAdmin) {
                             p1 = {
                               id: match.player1_id,
                               name: match.player1_name,
@@ -449,6 +449,81 @@ export function TournamentBracket({
                               type: match.player2_type,
                               country: match.player2_country,
                             };
+                          } else if (match.round === 1) {
+                            // Round 1 in predictions mode: show official players
+                            // BUT if the user predicted a player that was replaced (e.g. by LL),
+                            // show the predicted player instead so the user sees their original pick marked as incorrect
+                            const userPred = viewMode === 'predictions' ? localPredictions[match.id]?.winnerId : undefined;
+                            const predIsForReplacedPlayer = userPred && 
+                              userPred !== match.player1_id && 
+                              userPred !== match.player2_id;
+
+                            if (predIsForReplacedPlayer && playersById[userPred]) {
+                              // The user predicted a player that was replaced (LL scenario)
+                              // Show the predicted player in the slot of the player that replaced them
+                              const replacedSlot1 = match.player1_type === 'LUCKY_LOSER' || match.player1_type === 'WILDCARD';
+                              const replacedSlot2 = match.player2_type === 'LUCKY_LOSER' || match.player2_type === 'WILDCARD';
+
+                              if (replacedSlot1) {
+                                // Player 1 is the LL replacement - show predicted player there
+                                p1 = { id: userPred, ...playersById[userPred] };
+                                p2 = {
+                                  id: match.player2_id,
+                                  name: match.player2_name,
+                                  display_name: match.player2_display_name,
+                                  seed: match.player2_seed,
+                                  type: match.player2_type,
+                                  country: match.player2_country,
+                                };
+                              } else if (replacedSlot2) {
+                                // Player 2 is the LL replacement - show predicted player there
+                                p1 = {
+                                  id: match.player1_id,
+                                  name: match.player1_name,
+                                  display_name: match.player1_display_name,
+                                  seed: match.player1_seed,
+                                  type: match.player1_type,
+                                  country: match.player1_country,
+                                };
+                                p2 = { id: userPred, ...playersById[userPred] };
+                              } else {
+                                // Can't determine which slot was replaced, show official
+                                p1 = {
+                                  id: match.player1_id,
+                                  name: match.player1_name,
+                                  display_name: match.player1_display_name,
+                                  seed: match.player1_seed,
+                                  type: match.player1_type,
+                                  country: match.player1_country,
+                                };
+                                p2 = {
+                                  id: match.player2_id,
+                                  name: match.player2_name,
+                                  display_name: match.player2_display_name,
+                                  seed: match.player2_seed,
+                                  type: match.player2_type,
+                                  country: match.player2_country,
+                                };
+                              }
+                            } else {
+                              // Normal case: user predicted one of the current players, or hasn't predicted
+                              p1 = {
+                                id: match.player1_id,
+                                name: match.player1_name,
+                                display_name: match.player1_display_name,
+                                seed: match.player1_seed,
+                                type: match.player1_type,
+                                country: match.player1_country,
+                              };
+                              p2 = {
+                                id: match.player2_id,
+                                name: match.player2_name,
+                                display_name: match.player2_display_name,
+                                seed: match.player2_seed,
+                                type: match.player2_type,
+                                country: match.player2_country,
+                              };
+                            }
                           } else {
                             const prevRound = match.round - 1;
                             const m1 = matchesMap[`${prevRound}-${match.position * 2 - 1}`];

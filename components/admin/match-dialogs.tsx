@@ -472,7 +472,7 @@ export function ReplaceMatchPlayerDialog({
               {isLL && (
                 <p className="text-[10px] text-amber-600 font-bold bg-amber-50 p-3 rounded-xl border border-amber-100">
                   <AlertCircle className="w-3 h-3 inline mr-1" />
-                  Ao marcar como LL, a pontuação desta partida será automaticamente anulada para todos os usuários.
+                  Ao marcar como LL, a pontuação desta partida será anulada apenas se o Lucky Loser vencer. Se ele perder, a pontuação será creditada normalmente.
                 </p>
               )}
             </div>

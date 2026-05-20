@@ -1023,7 +1023,26 @@ export async function getTournamentParticipantCount(tournamentId: number): Promi
   return Number(result[0]?.count || 0);
 }
 
-export async function getTournamentPlayers(tournamentId: number): Promise<Player[]> {
+export async function getTournamentPlayers(tournamentId: number, includePredictedByUserId?: number): Promise<Player[]> {
+  if (includePredictedByUserId) {
+    // Include players that were predicted by the user but may no longer be in the bracket (e.g. replaced by LL)
+    const players = await sql`
+      SELECT DISTINCT p.id, p.name, p.display_name, p.country, p.seed
+      FROM players p
+      WHERE p.id IN (
+        SELECT bm.player1_id FROM bracket_matches bm WHERE bm.tournament_id = ${tournamentId} AND bm.player1_id IS NOT NULL
+        UNION
+        SELECT bm.player2_id FROM bracket_matches bm WHERE bm.tournament_id = ${tournamentId} AND bm.player2_id IS NOT NULL
+        UNION
+        SELECT pred.predicted_winner_id FROM predictions pred
+        JOIN bracket_matches bm2 ON pred.bracket_match_id = bm2.id
+        WHERE bm2.tournament_id = ${tournamentId} AND pred.user_id = ${includePredictedByUserId}
+      )
+      ORDER BY p.name ASC
+    `;
+    return players as Player[];
+  }
+
   const players = await sql`
     SELECT DISTINCT p.id, p.name, p.display_name, p.country, p.seed
     FROM players p

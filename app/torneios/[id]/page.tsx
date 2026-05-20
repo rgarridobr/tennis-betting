@@ -62,7 +62,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
     getUserPredictions(targetUserId, tournamentId),
     getEnrollment(user.id, tournamentId),
     getTournamentParticipantCount(tournamentId),
-    getTournamentPlayers(tournamentId),
+    getTournamentPlayers(tournamentId, targetUserId),
     isViewingOthers ? getUserPublicInfo(targetUserId) : null,
     getActiveTournament(),
     getTournamentRanking(tournamentId, 3),

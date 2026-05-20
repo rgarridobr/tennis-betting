@@ -360,7 +360,6 @@ export async function setMatchPlayers(
       player2_id = ${player2.id || null},
       player2_type = ${player2.type},
       player2_seed = ${player2.seed || null},
-      points_cancelled = CASE WHEN ${isLL} THEN TRUE ELSE points_cancelled END,
       status = 'pending',
       updated_at = NOW()
     WHERE id = ${matchId}
@@ -521,7 +520,15 @@ export async function setMatchResult(
 
     const isBye = score === 'BYE';
     const isWalkover = score.toUpperCase() === 'W/O' || score.toUpperCase() === 'WALKOVER' || options?.isWalkover;
-    const points = pointsCancelled || isBye || isWalkover ? 0 : getMatchPoints(category, round, totalRounds, m.size as number);
+
+    // LL rule: points are only cancelled if the Lucky Loser player WINS the match.
+    // If the LL player loses, scoring is credited normally.
+    const winnerIsLL =
+      (winnerId === m.player1_id && m.player1_type === 'LUCKY_LOSER') ||
+      (winnerId === m.player2_id && m.player2_type === 'LUCKY_LOSER');
+    const effectivePointsCancelled = pointsCancelled || winnerIsLL;
+
+    const points = effectivePointsCancelled || isBye || isWalkover ? 0 : getMatchPoints(category, round, totalRounds, m.size as number);
 
     // Update match result
     await sql`
@@ -529,7 +536,11 @@ export async function setMatchResult(
       SET winner_id = ${winnerId}, 
           score = ${score}, 
           status = 'completed', 
-          points_cancelled = CASE WHEN ${isWalkover} THEN TRUE ELSE points_cancelled END,
+          points_cancelled = CASE 
+            WHEN ${isWalkover} THEN TRUE 
+            WHEN ${winnerIsLL} THEN TRUE
+            ELSE points_cancelled 
+          END,
           updated_at = NOW()
       WHERE id = ${matchId}
     `;
@@ -540,7 +551,7 @@ export async function setMatchResult(
         UPDATE predictions
         SET is_correct = (predicted_winner_id = ${winnerId}),
             points_earned = CASE
-              WHEN ${pointsCancelled} THEN 0
+              WHEN ${effectivePointsCancelled} THEN 0
               WHEN predicted_winner_id = ${winnerId} THEN ${points}
               ELSE 0
             END
@@ -607,13 +618,13 @@ export async function setMatchResult(
         let isRunnerUpCorrect = false;
 
         if (predictedChampion === winnerId) {
-          finalPoints = pointsCancelled || isBye || isWalkover ? 0 : (championPoints ?? 0);
+          finalPoints = effectivePointsCancelled || isBye || isWalkover ? 0 : (championPoints ?? 0);
 
           if (predictedRunnerUp === runnerUpId) {
             isRunnerUpCorrect = true;
           }
         } else if (predictedRunnerUp === runnerUpId) {
-          finalPoints = pointsCancelled || isBye || isWalkover ? 0 : runnerUpPoints;
+          finalPoints = effectivePointsCancelled || isBye || isWalkover ? 0 : runnerUpPoints;
           isRunnerUpCorrect = true;
         }
 
@@ -819,7 +830,6 @@ export async function updatePlaceholderPlayer(
       UPDATE bracket_matches
       SET player1_id = ${playerId},
           player1_type = CASE WHEN ${isLL} THEN 'LUCKY_LOSER' ELSE player1_type END,
-          points_cancelled = CASE WHEN ${isLL} THEN TRUE ELSE points_cancelled END,
           updated_at = NOW()
       WHERE id = ${matchId}
     `;
@@ -828,7 +838,6 @@ export async function updatePlaceholderPlayer(
       UPDATE bracket_matches
       SET player2_id = ${playerId},
           player2_type = CASE WHEN ${isLL} THEN 'LUCKY_LOSER' ELSE player2_type END,
-          points_cancelled = CASE WHEN ${isLL} THEN TRUE ELSE points_cancelled END,
           updated_at = NOW()
       WHERE id = ${matchId}
     `;
