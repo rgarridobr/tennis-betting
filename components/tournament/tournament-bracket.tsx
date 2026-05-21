@@ -456,9 +456,29 @@ export function TournamentBracket({
                             const userPred = viewMode === 'predictions' ? localPredictions[match.id]?.winnerId : undefined;
                             const predIsForReplacedPlayer = userPred && 
                               userPred !== match.player1_id && 
-                              userPred !== match.player2_id;
+                              userPred !== match.player2_id &&
+                              userPred !== qualifierPlayerId;
 
-                            if (predIsForReplacedPlayer && playersById[userPred]) {
+                            if (userPred === qualifierPlayerId) {
+                              // User predicted the generic Qualifier - show official players normally
+                              // The highlight will resolve to the real player in the qualifier slot
+                              p1 = {
+                                id: match.player1_id,
+                                name: match.player1_name,
+                                display_name: match.player1_display_name,
+                                seed: match.player1_seed,
+                                type: match.player1_type,
+                                country: match.player1_country,
+                              };
+                              p2 = {
+                                id: match.player2_id,
+                                name: match.player2_name,
+                                display_name: match.player2_display_name,
+                                seed: match.player2_seed,
+                                type: match.player2_type,
+                                country: match.player2_country,
+                              };
+                            } else if (predIsForReplacedPlayer && playersById[userPred]) {
                               // The user predicted a player that was replaced (LL scenario)
                               // Show the predicted player in the slot of the player that replaced them
                               const replacedSlot1 = match.player1_type === 'LUCKY_LOSER' || match.player1_type === 'WILDCARD';
@@ -529,8 +549,30 @@ export function TournamentBracket({
                             const m1 = matchesMap[`${prevRound}-${match.position * 2 - 1}`];
                             const m2 = matchesMap[`${prevRound}-${match.position * 2}`];
 
-                            const pred1 = localPredictions[m1?.id]?.winnerId;
-                            const pred2 = localPredictions[m2?.id]?.winnerId;
+                            let pred1 = localPredictions[m1?.id]?.winnerId;
+                            let pred2 = localPredictions[m2?.id]?.winnerId;
+
+                            // Resolve qualifier predictions: if the user predicted "Qualifier" (generic ID)
+                            // but the actual player has been defined in that match, show the real player name
+                            if (pred1 && pred1 === qualifierPlayerId && m1) {
+                              // Find the real player that replaced the qualifier in the previous match
+                              const qSlotIsP1 = m1.player1_type === 'QUALIFIER' || m1.player1_type === 'LUCKY_LOSER';
+                              const qSlotIsP2 = m1.player2_type === 'QUALIFIER' || m1.player2_type === 'LUCKY_LOSER';
+                              if (qSlotIsP1 && m1.player1_id && m1.player1_id !== qualifierPlayerId) {
+                                pred1 = m1.player1_id;
+                              } else if (qSlotIsP2 && m1.player2_id && m1.player2_id !== qualifierPlayerId) {
+                                pred1 = m1.player2_id;
+                              }
+                            }
+                            if (pred2 && pred2 === qualifierPlayerId && m2) {
+                              const qSlotIsP1 = m2.player1_type === 'QUALIFIER' || m2.player1_type === 'LUCKY_LOSER';
+                              const qSlotIsP2 = m2.player2_type === 'QUALIFIER' || m2.player2_type === 'LUCKY_LOSER';
+                              if (qSlotIsP1 && m2.player1_id && m2.player1_id !== qualifierPlayerId) {
+                                pred2 = m2.player1_id;
+                              } else if (qSlotIsP2 && m2.player2_id && m2.player2_id !== qualifierPlayerId) {
+                                pred2 = m2.player2_id;
+                              }
+                            }
 
                             // In predictions mode, prioritize the user's prediction from previous round
                             // But fallback to official player if user hasn't predicted yet (e.g. BYE or partial bracket)
@@ -716,6 +758,18 @@ function BracketMatchCard({
 
   const selectedWinnerId = currentPrediction?.winnerId;
 
+  // If the prediction points to the generic Qualifier but the real player has been defined,
+  // resolve to the real player ID for correct highlighting
+  const resolvedSelectedWinnerId = (() => {
+    if (selectedWinnerId !== qualifierPlayerId || !qualifierPlayerId) return selectedWinnerId;
+    // The user predicted "Qualifier" - find which real player is in the qualifier slot
+    const isP1QualifierSlot = match.player1_type === 'QUALIFIER' || match.player1_type === 'LUCKY_LOSER';
+    const isP2QualifierSlot = match.player2_type === 'QUALIFIER' || match.player2_type === 'LUCKY_LOSER';
+    if (isP1QualifierSlot && p1?.id && p1.id !== qualifierPlayerId) return p1.id;
+    if (isP2QualifierSlot && p2?.id && p2.id !== qualifierPlayerId) return p2.id;
+    return selectedWinnerId;
+  })();
+
   // Logic to determine if a player in the user's bracket is "incorrect" based on official results
   const isP1Incorrect =
     viewMode === 'predictions' &&
@@ -733,6 +787,16 @@ function BracketMatchCard({
       (playerEliminatedInRound.has(p2.id) && playerEliminatedInRound.get(p2.id)! <= match.round) ||
       (!allOfficialPlayerIds.has(p2.id) && p2.type !== 'BYE' && p2.type !== 'QUALIFIER' && p2.id !== qualifierPlayerId));
 
+  // LL rule: points are only cancelled if the Lucky Loser player WON the match.
+  // If the match has no result yet or the LL lost, don't show as cancelled.
+  const hasLLPlayer = match.player1_type === 'LUCKY_LOSER' || match.player2_type === 'LUCKY_LOSER';
+  const winnerIsLL = isCompleted && match.winner_id && (
+    (match.winner_id === match.player1_id && match.player1_type === 'LUCKY_LOSER') ||
+    (match.winner_id === match.player2_id && match.player2_type === 'LUCKY_LOSER')
+  );
+  // Show cancelled only if: LL won, or walkover, or manually cancelled (non-LL reason)
+  const effectivePointsCancelled = !!(match.points_cancelled && (!hasLLPlayer || winnerIsLL));
+
   const cardContent = (
     <>
       <PlayerRow
@@ -742,8 +806,8 @@ function BracketMatchCard({
         type={p1?.type}
         country={p1?.country}
         isWinner={match.winner_id === p1?.id && isCompleted}
-        isSelected={selectedWinnerId === p1?.id || (p1?.type === 'QUALIFIER' && (selectedWinnerId === qualifierPlayerId || (!!p1?.id && p1?.id === qualifierPlayerId && selectedWinnerId === p1.id)))}
-        isPredicted={selectedWinnerId === p1?.id || (p1?.type === 'QUALIFIER' && (selectedWinnerId === qualifierPlayerId || (!!p1?.id && p1?.id === qualifierPlayerId && selectedWinnerId === p1.id)))}
+        isSelected={resolvedSelectedWinnerId === p1?.id || (p1?.type === 'QUALIFIER' && (resolvedSelectedWinnerId === qualifierPlayerId || (!!p1?.id && p1?.id === qualifierPlayerId && resolvedSelectedWinnerId === p1.id)))}
+        isPredicted={resolvedSelectedWinnerId === p1?.id || (p1?.type === 'QUALIFIER' && (resolvedSelectedWinnerId === qualifierPlayerId || (!!p1?.id && p1?.id === qualifierPlayerId && resolvedSelectedWinnerId === p1.id)))}
         isCompleted={isCompleted}
         onSelect={() => {
           if (p1?.id) {
@@ -758,7 +822,7 @@ function BracketMatchCard({
         score={match.score}
         isP1={true}
         isPlaceholder={((!p1?.id || p1?.id === qualifierPlayerId) && p1?.type !== 'BYE' && p1?.type !== 'PLAYER') || p1?.isAwaiting || p1?.isNotPredicted}
-        pointsCancelled={match.points_cancelled}
+        pointsCancelled={effectivePointsCancelled}
         isAwaiting={p1?.isAwaiting}
         viewMode={viewMode}
         isForceIncorrect={isP1Incorrect}
@@ -776,8 +840,8 @@ function BracketMatchCard({
         type={p2?.type}
         country={p2?.country}
         isWinner={match.winner_id === p2?.id && isCompleted}
-        isSelected={selectedWinnerId === p2?.id || (p2?.type === 'QUALIFIER' && (selectedWinnerId === qualifierPlayerId || (!!p2?.id && p2?.id === qualifierPlayerId && selectedWinnerId === p2.id)))}
-        isPredicted={selectedWinnerId === p2?.id || (p2?.type === 'QUALIFIER' && (selectedWinnerId === qualifierPlayerId || (!!p2?.id && p2?.id === qualifierPlayerId && selectedWinnerId === p2.id)))}
+        isSelected={resolvedSelectedWinnerId === p2?.id || (p2?.type === 'QUALIFIER' && (resolvedSelectedWinnerId === qualifierPlayerId || (!!p2?.id && p2?.id === qualifierPlayerId && resolvedSelectedWinnerId === p2.id)))}
+        isPredicted={resolvedSelectedWinnerId === p2?.id || (p2?.type === 'QUALIFIER' && (resolvedSelectedWinnerId === qualifierPlayerId || (!!p2?.id && p2?.id === qualifierPlayerId && resolvedSelectedWinnerId === p2.id)))}
         isCompleted={isCompleted}
         onSelect={() => {
           if (p2?.id) {
@@ -792,7 +856,7 @@ function BracketMatchCard({
         score={match.score}
         isP1={false}
         isPlaceholder={((!p2?.id || p2?.id === qualifierPlayerId) && p2?.type !== 'BYE' && p2?.type !== 'PLAYER') || p2?.isAwaiting || p2?.isNotPredicted}
-        pointsCancelled={match.points_cancelled}
+        pointsCancelled={effectivePointsCancelled}
         isAwaiting={p2?.isAwaiting}
         viewMode={viewMode}
         isForceIncorrect={isP2Incorrect}
@@ -988,7 +1052,7 @@ function PlayerRow({
           {display_name || displayName}
         </span>
         {indicator && <span className="text-[9px] font-black text-slate-400">{indicator}</span>}
-        {showPredictionResult && pointsCancelled && (
+        {showPredictionResult && pointsCancelled && viewMode === 'predictions' && (
           <div className="ml-2 bg-red-500 text-white text-[8px] font-black h-4 px-1 flex items-center rounded-sm">
             ANULADA
           </div>

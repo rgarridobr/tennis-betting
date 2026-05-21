@@ -494,6 +494,15 @@ export async function syncTournamentBracketAction(tournamentId: number) {
           continue
         }
 
+        // Detect qualifier placeholders: names like "Qualifier", "Qualifier1", "Qualifier Qualifier2", 
+        // "Q. Qualifier10", or any name containing "qualifier" as it comes from ATP placeholder slots
+        const nameIsQualifier = /qualifier/i.test(atpPlayer.name?.trim() || '') ||
+          /qualifier/i.test(extractFullNameFromHref(atpPlayer.href, ''));
+        if (atpPlayer.type === 'QUALIFIER' || nameIsQualifier) {
+          playersToUpdate.push({ id: null, type: 'QUALIFIER', seed: null })
+          continue
+        }
+
         // Tentar encontrar ou criar o jogador no banco
         const fullName = extractFullNameFromHref(atpPlayer.href, atpPlayer.name);
         const displayName = atpPlayer.name;

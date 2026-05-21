@@ -16,14 +16,14 @@ export async function fetchAtpDraw(
   year: number,
   slug: string,
 ): Promise<AtpMatch[]> {
+  const playwrightCore = require("playwright-core");
   let browser;
 
   if (process.env.VERCEL || process.env.NODE_ENV === "production") {
-    const playwrightCore = require("playwright-core");
     const setupChromium = require("@sparticuz/chromium-min");
     
     // We download the chromium pack dynamically in serverless environments to bypass size limits.
-    const executablePath = await setupChromium.executablePath("https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar");
+    const executablePath = await setupChromium.executablePath("https://github.com/Sparticuz/chromium/releases/download/v143.0.4/chromium-v143.0.4-pack.x64.tar");
 
     browser = await playwrightCore.chromium.launch({
       args: setupChromium.args,
@@ -31,9 +31,9 @@ export async function fetchAtpDraw(
       headless: setupChromium.headless,
     });
   } else {
-    // In local development, we can just use the standard playwright package
-    const { chromium } = require("playwright");
-    browser = await chromium.launch({ headless: true });
+    // In local development, use playwright-core with the locally installed chromium from playwright
+    // Run `npx playwright install chromium` locally once to set this up
+    browser = await playwrightCore.chromium.launch({ headless: true });
   }
 
   const page = await browser.newPage({
@@ -81,7 +81,7 @@ export async function fetchAtpDraw(
 
           let type = "PLAYER";
           if (isBye) type = "BYE";
-          else if (seed === "Q") type = "QUALIFIER";
+          else if (seed === "Q" || (seed && /^Q\d+$/i.test(seed))) type = "QUALIFIER";
           else if (seed === "WC") type = "WILDCARD";
           else if (seed === "LL") type = "LUCKY_LOSER";
           else if (seed && !isNaN(parseInt(seed))) type = "SEED";

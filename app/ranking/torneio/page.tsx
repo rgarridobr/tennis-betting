@@ -44,7 +44,7 @@ export default async function TournamentRankingListPage({ searchParams }: PagePr
   let filteredTournaments = allTournaments.filter(t => allowedStatuses.includes(t.status));
 
   // Apply filters from searchParams
-  if (status === 'active') {
+  if (status === 'active' || !status) {
     const activeStatuses = ['active', 'published', 'OPEN', 'LOCKED', 'IN_PROGRESS'];
     filteredTournaments = filteredTournaments.filter((t) => activeStatuses.includes(t.status));
   } else if (status === 'finished') {
@@ -98,9 +98,7 @@ export default async function TournamentRankingListPage({ searchParams }: PagePr
               <h2 className="text-2xl font-black text-slate-900 tracking-tight">
                 {status === 'finished'
                   ? 'Rankings: Finalizados'
-                  : status === 'active'
-                    ? 'Rankings: Ativos'
-                    : 'Todos os Rankings'}
+                  : 'Rankings: Ativos'}
               </h2>
               <span className="ml-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold">
                 {totalItems} {totalItems === 1 ? 'torneio' : 'torneios'}
