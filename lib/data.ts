@@ -593,6 +593,37 @@ export async function getUserPredictionsWithDetails(userId: number): Promise<Pre
 // ==================== STATS & RANKING ====================
 
 export async function getUserStats(userId: number): Promise<UserStats> {
+  // Get all tournaments with completed matches to apply point defense logic
+  const tournaments = await sql`
+    SELECT id, name, start_date
+    FROM tournaments
+    WHERE EXISTS (SELECT 1 FROM bracket_matches bm WHERE bm.tournament_id = tournaments.id AND bm.status = 'completed')
+    ORDER BY start_date DESC
+  `;
+
+  // Determine which tournament IDs count (only the latest edition per name)
+  const latestByName: Record<string, number> = {};
+  for (const t of tournaments) {
+    const name = (t.name as string).trim();
+    if (!latestByName[name]) {
+      latestByName[name] = t.id as number;
+    }
+  }
+  const activeIds = Object.values(latestByName);
+
+  // If no active tournaments, return empty stats
+  if (activeIds.length === 0) {
+    return {
+      total_points: 0,
+      correct_predictions: 0,
+      wrong_predictions: 0,
+      total_predictions: 0,
+      accuracy: 0,
+      active_tournaments: 0,
+      tournament_stats: [],
+    };
+  }
+
   const stats = await sql`
     SELECT 
       COALESCE(SUM(p.points_earned), 0) as total_points,
@@ -605,7 +636,7 @@ export async function getUserStats(userId: number): Promise<UserStats> {
     WHERE 
       p.user_id = ${userId}
       AND p.is_correct IS NOT NULL
-      AND t.status IN ('IN_PROGRESS')
+      AND m.tournament_id = ANY(${activeIds}::integer[])
       AND m.points_cancelled IS NOT TRUE
   `;
 
@@ -623,7 +654,7 @@ export async function getUserStats(userId: number): Promise<UserStats> {
     WHERE 
       p.user_id = ${userId}
       AND p.is_correct IS NOT NULL
-      AND t.status IN ('IN_PROGRESS')
+      AND m.tournament_id = ANY(${activeIds}::integer[])
       AND m.points_cancelled IS NOT TRUE
     GROUP BY t.id, t.name
     HAVING COUNT(p.id) > 0
@@ -668,40 +699,106 @@ export async function getUserStats(userId: number): Promise<UserStats> {
 }
 
 export async function getGlobalRanking(limit: number = 50, tournamentId?: number | null): Promise<RankingEntry[]> {
+  // When filtering by a specific tournament, use simple sum (no defense logic needed)
+  if (tournamentId) {
+    const ranking = await sql`
+      SELECT *
+      FROM (
+        SELECT 
+          u.id as user_id,
+          COALESCE(NULLIF(u.nickname, ''), u.name) as user_name,
+          (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct = true AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ${tournamentId}) as correct_predictions,
+          (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct IS NOT NULL AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ${tournamentId}) as total_predictions,
+          COALESCE((SELECT SUM(p.points_earned) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ${tournamentId}), 0) as total_points,
+          (SELECT MAX(CASE WHEN p.is_correct = true AND bm.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm.tournament_id) THEN 1 ELSE 0 END) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ${tournamentId}) as hit_champion,
+          (SELECT MAX(CASE WHEN p.is_runner_up_correct = true AND p.is_correct = true THEN 1 ELSE 0 END) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ${tournamentId}) as hit_both,
+          COALESCE((SELECT SUM(points_earned) FROM predictions WHERE user_id = u.id), 0) as global_points
+        FROM users u
+        WHERE u.is_admin = false AND u.is_deleted = false
+        AND EXISTS (
+          SELECT 1 FROM predictions p_final
+          JOIN bracket_matches bm_final ON p_final.bracket_match_id = bm_final.id
+          WHERE p_final.user_id = u.id 
+          AND bm_final.tournament_id = ${tournamentId}
+          AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = ${tournamentId})
+        )
+      ) r
+      WHERE r.total_points > 0
+      ORDER BY r.total_points DESC, r.hit_champion DESC, r.hit_both DESC, r.correct_predictions DESC, r.global_points DESC, r.user_name ASC
+      LIMIT ${limit}`;
+    return ranking.map((r, i) => ({
+      user_id: r.user_id as number,
+      user_name: r.user_name as string,
+      correct_predictions: Number(r.correct_predictions || 0),
+      total_predictions: Number(r.total_predictions || 0),
+      total_points: Number(r.total_points || 0),
+      hit_champion: Boolean(r.hit_champion),
+      hit_both: Boolean(r.hit_both),
+      global_points: Number(r.global_points || 0),
+      rank: i + 1,
+    }));
+  }
+
+  // Global ranking with point defense logic:
+  // For tournaments with the same name (recurring events), only the most recent edition counts.
+  // If a user didn't play the latest edition, they lose the points from the previous one.
+
+  // Step 1: Get all tournaments that have completed matches, ordered by start_date
+  const tournaments = await sql`
+    SELECT id, name, start_date
+    FROM tournaments
+    WHERE EXISTS (SELECT 1 FROM bracket_matches bm WHERE bm.tournament_id = tournaments.id AND bm.status = 'completed')
+    ORDER BY start_date DESC
+  `;
+
+  // Step 2: Determine which tournament ID is the "active" one for each tournament name
+  // (the most recent edition replaces older ones)
+  const latestByName: Record<string, number> = {};
+  const validTournamentIds: Set<number> = new Set();
+
+  for (const t of tournaments) {
+    const name = (t.name as string).trim();
+    if (!latestByName[name]) {
+      // This is the most recent edition of this tournament
+      latestByName[name] = t.id as number;
+    }
+    validTournamentIds.add(t.id as number);
+  }
+
+  // The set of tournament IDs that count for ranking (only the latest edition per name)
+  const activeIds = Object.values(latestByName);
+
+  if (activeIds.length === 0) {
+    return [];
+  }
+
+  // Step 3: Calculate ranking using only the latest edition of each recurring tournament
   const ranking = await sql`
     SELECT *
     FROM (
       SELECT 
         u.id as user_id,
         COALESCE(NULLIF(u.nickname, ''), u.name) as user_name,
-        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct = true AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND (${tournamentId}::integer IS NULL OR bm.tournament_id = ${tournamentId})) as correct_predictions,
-        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct IS NOT NULL AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND (${tournamentId}::integer IS NULL OR bm.tournament_id = ${tournamentId})) as total_predictions,
-        COALESCE((SELECT SUM(p.points_earned) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND (${tournamentId}::integer IS NULL OR bm.tournament_id = ${tournamentId})), 0) as total_points,
-        (SELECT MAX(CASE WHEN p.is_correct = true AND bm.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm.tournament_id) THEN 1 ELSE 0 END) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND (${tournamentId}::integer IS NULL OR bm.tournament_id = ${tournamentId})) as hit_champion,
-        (SELECT MAX(CASE WHEN p.is_runner_up_correct = true AND p.is_correct = true THEN 1 ELSE 0 END) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND (${tournamentId}::integer IS NULL OR bm.tournament_id = ${tournamentId})) as hit_both,
+        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct = true AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])) as correct_predictions,
+        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct IS NOT NULL AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])) as total_predictions,
+        COALESCE((SELECT SUM(p.points_earned) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])), 0) as total_points,
+        (SELECT MAX(CASE WHEN p.is_correct = true AND bm.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm.tournament_id) THEN 1 ELSE 0 END) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])) as hit_champion,
+        (SELECT MAX(CASE WHEN p.is_runner_up_correct = true AND p.is_correct = true THEN 1 ELSE 0 END) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])) as hit_both,
         COALESCE((SELECT SUM(points_earned) FROM predictions WHERE user_id = u.id), 0) as global_points
       FROM users u
       WHERE u.is_admin = false AND u.is_deleted = false
-      AND (
-        (${tournamentId}::integer IS NOT NULL AND EXISTS (
-          SELECT 1 FROM predictions p_final
-          JOIN bracket_matches bm_final ON p_final.bracket_match_id = bm_final.id
-          WHERE p_final.user_id = u.id 
-          AND bm_final.tournament_id = ${tournamentId}
-          AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = ${tournamentId})
-        ))
-        OR
-        (${tournamentId}::integer IS NULL AND EXISTS (
-          SELECT 1 FROM predictions p_final
-          JOIN bracket_matches bm_final ON p_final.bracket_match_id = bm_final.id
-          WHERE p_final.user_id = u.id 
-          AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm_final.tournament_id)
-        ))
+      AND EXISTS (
+        SELECT 1 FROM predictions p_final
+        JOIN bracket_matches bm_final ON p_final.bracket_match_id = bm_final.id
+        WHERE p_final.user_id = u.id 
+        AND bm_final.tournament_id = ANY(${activeIds}::integer[])
+        AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm_final.tournament_id)
       )
     ) r
     WHERE r.total_points > 0
     ORDER BY r.total_points DESC, r.hit_champion DESC, r.hit_both DESC, r.correct_predictions DESC, r.global_points DESC, r.user_name ASC
     LIMIT ${limit}`;
+
   return ranking.map((r, i) => ({
     user_id: r.user_id as number,
     user_name: r.user_name as string,
@@ -720,35 +817,88 @@ export async function getStateRanking(
   tournamentId?: number | null,
   limit: number = 100,
 ): Promise<RankingEntry[]> {
+  // When filtering by a specific tournament, use simple sum (no defense logic needed)
+  if (tournamentId) {
+    const ranking = await sql`
+      SELECT *
+      FROM (
+        SELECT 
+          u.id as user_id,
+          COALESCE(NULLIF(u.nickname, ''), u.name) as user_name,
+          (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct = true AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ${tournamentId}) as correct_predictions,
+          (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct IS NOT NULL AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ${tournamentId}) as total_predictions,
+          COALESCE((SELECT SUM(p.points_earned) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ${tournamentId}), 0) as total_points,
+          (SELECT MAX(CASE WHEN p.is_correct = true AND bm.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm.tournament_id) THEN 1 ELSE 0 END) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ${tournamentId}) as hit_champion,
+          (SELECT MAX(CASE WHEN p.is_runner_up_correct = true AND p.is_correct = true THEN 1 ELSE 0 END) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ${tournamentId}) as hit_both,
+          COALESCE((SELECT SUM(points_earned) FROM predictions WHERE user_id = u.id), 0) as global_points
+        FROM users u
+        WHERE u.state = ${state} AND u.is_admin = false AND u.is_deleted = false
+        AND EXISTS (
+          SELECT 1 FROM predictions p_final
+          JOIN bracket_matches bm_final ON p_final.bracket_match_id = bm_final.id
+          WHERE p_final.user_id = u.id 
+          AND bm_final.tournament_id = ${tournamentId}
+          AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = ${tournamentId})
+        )
+      ) r
+      ORDER BY r.total_points DESC, r.hit_champion DESC, r.hit_both DESC, r.correct_predictions DESC, r.global_points DESC, r.user_name ASC
+      LIMIT ${limit}`;
+
+    return ranking.map((r, i) => ({
+      user_id: r.user_id as number,
+      user_name: r.user_name as string,
+      correct_predictions: Number(r.correct_predictions || 0),
+      total_predictions: Number(r.total_predictions || 0),
+      total_points: Number(r.total_points || 0),
+      hit_champion: Boolean(r.hit_champion),
+      hit_both: Boolean(r.hit_both),
+      global_points: Number(r.global_points || 0),
+      rank: i + 1,
+    }));
+  }
+
+  // Global state ranking with point defense logic
+  const tournaments = await sql`
+    SELECT id, name, start_date
+    FROM tournaments
+    WHERE EXISTS (SELECT 1 FROM bracket_matches bm WHERE bm.tournament_id = tournaments.id AND bm.status = 'completed')
+    ORDER BY start_date DESC
+  `;
+
+  const latestByName: Record<string, number> = {};
+  for (const t of tournaments) {
+    const name = (t.name as string).trim();
+    if (!latestByName[name]) {
+      latestByName[name] = t.id as number;
+    }
+  }
+
+  const activeIds = Object.values(latestByName);
+
+  if (activeIds.length === 0) {
+    return [];
+  }
+
   const ranking = await sql`
     SELECT *
     FROM (
       SELECT 
         u.id as user_id,
         COALESCE(NULLIF(u.nickname, ''), u.name) as user_name,
-        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct = true AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND (${tournamentId}::integer IS NULL OR bm.tournament_id = ${tournamentId})) as correct_predictions,
-        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct IS NOT NULL AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND (${tournamentId}::integer IS NULL OR bm.tournament_id = ${tournamentId})) as total_predictions,
-        COALESCE((SELECT SUM(p.points_earned) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND (${tournamentId}::integer IS NULL OR bm.tournament_id = ${tournamentId})), 0) as total_points,
-        (SELECT MAX(CASE WHEN p.is_correct = true AND bm.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm.tournament_id) THEN 1 ELSE 0 END) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND (${tournamentId}::integer IS NULL OR bm.tournament_id = ${tournamentId})) as hit_champion,
-        (SELECT MAX(CASE WHEN p.is_runner_up_correct = true AND p.is_correct = true THEN 1 ELSE 0 END) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND (${tournamentId}::integer IS NULL OR bm.tournament_id = ${tournamentId})) as hit_both,
+        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct = true AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])) as correct_predictions,
+        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct IS NOT NULL AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])) as total_predictions,
+        COALESCE((SELECT SUM(p.points_earned) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])), 0) as total_points,
+        (SELECT MAX(CASE WHEN p.is_correct = true AND bm.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm.tournament_id) THEN 1 ELSE 0 END) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])) as hit_champion,
+        (SELECT MAX(CASE WHEN p.is_runner_up_correct = true AND p.is_correct = true THEN 1 ELSE 0 END) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])) as hit_both,
         COALESCE((SELECT SUM(points_earned) FROM predictions WHERE user_id = u.id), 0) as global_points
       FROM users u
       WHERE u.state = ${state} AND u.is_admin = false AND u.is_deleted = false
-      AND (
-        (${tournamentId}::integer IS NOT NULL AND EXISTS (
-          SELECT 1 FROM predictions p_final
-          JOIN bracket_matches bm_final ON p_final.bracket_match_id = bm_final.id
-          WHERE p_final.user_id = u.id 
-          AND bm_final.tournament_id = ${tournamentId}
-          AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = ${tournamentId})
-        ))
-        OR
-        (${tournamentId}::integer IS NULL AND EXISTS (
-          SELECT 1 FROM predictions p_final
-          JOIN bracket_matches bm_final ON p_final.bracket_match_id = bm_final.id
-          WHERE p_final.user_id = u.id 
-          AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm_final.tournament_id)
-        ))
+      AND EXISTS (
+        SELECT 1 FROM predictions p_final
+        JOIN bracket_matches bm_final ON p_final.bracket_match_id = bm_final.id
+        WHERE p_final.user_id = u.id 
+        AND bm_final.tournament_id = ANY(${activeIds}::integer[])
+        AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm_final.tournament_id)
       )
     ) r
     ORDER BY r.total_points DESC, r.hit_champion DESC, r.hit_both DESC, r.correct_predictions DESC, r.global_points DESC, r.user_name ASC
