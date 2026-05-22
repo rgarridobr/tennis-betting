@@ -103,7 +103,7 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight">
                     {status === 'finished'
                       ? 'Torneios Finalizados'
-                      : status === 'active'
+                      : status === 'active' || !status 
                         ? 'Torneios Ativos'
                         : 'Torneios Futuros'}
                   </h2>
