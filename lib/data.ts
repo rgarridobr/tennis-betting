@@ -593,12 +593,15 @@ export async function getUserPredictionsWithDetails(userId: number): Promise<Pre
 // ==================== STATS & RANKING ====================
 
 export async function getUserStats(userId: number): Promise<UserStats> {
-  // Get only active/in-progress tournaments (not finished)
+  const MAX_COUNTING_TOURNAMENTS = 22;
+
+  // Get tournaments with completed matches within the last 52 weeks (only finished tournaments count for ranking)
   const tournaments = await sql`
     SELECT id, name, start_date
     FROM tournaments
-    WHERE status IN ('active', 'published', 'OPEN', 'LOCKED', 'IN_PROGRESS')
-    AND EXISTS (SELECT 1 FROM bracket_matches bm WHERE bm.tournament_id = tournaments.id AND bm.status = 'completed')
+    WHERE EXISTS (SELECT 1 FROM bracket_matches bm WHERE bm.tournament_id = tournaments.id AND bm.status = 'completed')
+      AND start_date >= (NOW() - INTERVAL '52 weeks')
+      AND status IN ('FINISHED', 'finished', 'completed')
     ORDER BY start_date DESC
   `;
 
@@ -625,21 +628,7 @@ export async function getUserStats(userId: number): Promise<UserStats> {
     };
   }
 
-  const stats = await sql`
-    SELECT 
-      COALESCE(SUM(p.points_earned), 0) as total_points,
-      COUNT(CASE WHEN p.is_correct = true THEN 1 END) as correct_predictions,
-      COUNT(CASE WHEN p.is_correct = false THEN 1 END) as wrong_predictions,
-      COUNT(CASE WHEN p.is_correct IS NOT NULL THEN 1 END) as total_predictions
-    FROM predictions p
-    JOIN bracket_matches m ON m.id = p.bracket_match_id
-    WHERE 
-      p.user_id = ${userId}
-      AND m.status = 'completed'
-      AND m.tournament_id = ANY(${activeIds}::integer[])
-      AND m.points_cancelled IS NOT TRUE
-  `;
-
+  // Get per-tournament breakdown for this user
   const tournamentBreakdown = await sql`
     SELECT 
       t.id as tournament_id,
@@ -661,6 +650,33 @@ export async function getUserStats(userId: number): Promise<UserStats> {
     ORDER BY points DESC
   `;
 
+  // Apply "best 22" rule: sort by points and take top 22
+  const allTournamentStats = tournamentBreakdown.map((tb) => {
+    const tbCorrect = Number(tb.correct_predictions || 0);
+    const tbWrong = Number(tb.wrong_predictions || 0);
+    const tbResolved = tbCorrect + tbWrong;
+    return {
+      tournament_id: Number(tb.tournament_id),
+      tournament_name: String(tb.tournament_name),
+      points: Number(tb.points || 0),
+      correct_predictions: tbCorrect,
+      wrong_predictions: tbWrong,
+      total_predictions: Number(tb.total_predictions || 0),
+      accuracy: tbResolved > 0 ? Math.round((tbCorrect / tbResolved) * 100) : 0,
+    };
+  });
+
+  // Sort by points descending and take top 22
+  const sortedStats = allTournamentStats.sort((a, b) => b.points - a.points);
+  const countingStats = sortedStats.slice(0, MAX_COUNTING_TOURNAMENTS);
+
+  // Calculate totals from the top 22 only
+  const totalPoints = countingStats.reduce((sum, t) => sum + t.points, 0);
+  const correct = countingStats.reduce((sum, t) => sum + t.correct_predictions, 0);
+  const wrong = countingStats.reduce((sum, t) => sum + t.wrong_predictions, 0);
+  const total = countingStats.reduce((sum, t) => sum + t.total_predictions, 0);
+  const resolved = correct + wrong;
+
   const activeTournaments = await sql`
     SELECT COUNT(DISTINCT ut.tournament_id) as count
     FROM user_tournaments ut
@@ -669,11 +685,6 @@ export async function getUserStats(userId: number): Promise<UserStats> {
       ut.user_id = ${userId} 
       AND t.status IN ('upcoming', 'active', 'published', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS')
   `;
-  const totalPoints = Number(stats[0]?.total_points || 0);
-  const correct = Number(stats[0]?.correct_predictions || 0);
-  const wrong = Number(stats[0]?.wrong_predictions || 0);
-  const total = Number(stats[0]?.total_predictions || 0);
-  const resolved = correct + wrong;
 
   return {
     total_points: totalPoints,
@@ -682,19 +693,14 @@ export async function getUserStats(userId: number): Promise<UserStats> {
     total_predictions: total,
     accuracy: resolved > 0 ? Math.round((correct / resolved) * 100) : 0,
     active_tournaments: Number(activeTournaments[0]?.count || 0),
-    tournament_stats: tournamentBreakdown.map((tb) => {
-      const tbCorrect = Number(tb.correct_predictions || 0);
-      const tbWrong = Number(tb.wrong_predictions || 0);
-      const tbResolved = tbCorrect + tbWrong;
-      return {
-        tournament_id: Number(tb.tournament_id),
-        tournament_name: String(tb.tournament_name),
-        points: Number(tb.points || 0),
-        correct_predictions: tbCorrect,
-        total_predictions: Number(tb.total_predictions || 0),
-        accuracy: tbResolved > 0 ? Math.round((tbCorrect / tbResolved) * 100) : 0,
-      };
-    }),
+    tournament_stats: countingStats.map((ts) => ({
+      tournament_id: ts.tournament_id,
+      tournament_name: ts.tournament_name,
+      points: ts.points,
+      correct_predictions: ts.correct_predictions,
+      total_predictions: ts.total_predictions,
+      accuracy: ts.accuracy,
+    })),
   };
 }
 
@@ -739,75 +745,148 @@ export async function getGlobalRanking(limit: number = 50, tournamentId?: number
     }));
   }
 
-  // Global ranking with point defense logic:
-  // For tournaments with the same name (recurring events), only the most recent edition counts.
-  // If a user didn't play the latest edition, they lose the points from the previous one.
+  // Global ranking with:
+  // 1. Point defense: only the most recent edition of each recurring tournament counts
+  // 2. 52-week validity: only tournaments from the last 52 weeks count
+  // 3. Best 22 of 29: only the top 22 tournament scores per user count
 
-  // Step 1: Get all tournaments that have completed matches, ordered by start_date
+  const MAX_COUNTING_TOURNAMENTS = 22;
+
+  // Step 1: Get all tournaments with completed matches within the last 52 weeks (only finished tournaments)
   const tournaments = await sql`
     SELECT id, name, start_date
     FROM tournaments
     WHERE EXISTS (SELECT 1 FROM bracket_matches bm WHERE bm.tournament_id = tournaments.id AND bm.status = 'completed')
+      AND start_date >= (NOW() - INTERVAL '52 weeks')
+      AND status IN ('FINISHED', 'finished', 'completed')
     ORDER BY start_date DESC
   `;
 
   // Step 2: Determine which tournament ID is the "active" one for each tournament name
-  // (the most recent edition replaces older ones)
   const latestByName: Record<string, number> = {};
-  const validTournamentIds: Set<number> = new Set();
 
   for (const t of tournaments) {
     const name = (t.name as string).trim();
     if (!latestByName[name]) {
-      // This is the most recent edition of this tournament
       latestByName[name] = t.id as number;
     }
-    validTournamentIds.add(t.id as number);
   }
 
-  // The set of tournament IDs that count for ranking (only the latest edition per name)
   const activeIds = Object.values(latestByName);
 
   if (activeIds.length === 0) {
     return [];
   }
 
-  // Step 3: Calculate ranking using only the latest edition of each recurring tournament
-  const ranking = await sql`
-    SELECT *
-    FROM (
-      SELECT 
-        u.id as user_id,
-        COALESCE(NULLIF(u.nickname, ''), u.name) as user_name,
-        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct = true AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])) as correct_predictions,
-        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct IS NOT NULL AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])) as total_predictions,
-        COALESCE((SELECT SUM(p.points_earned) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])), 0) as total_points,
-        (SELECT MAX(CASE WHEN p.is_correct = true AND bm.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm.tournament_id) THEN 1 ELSE 0 END) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])) as hit_champion,
-        (SELECT MAX(CASE WHEN p.is_runner_up_correct = true AND p.is_correct = true THEN 1 ELSE 0 END) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])) as hit_both,
-        COALESCE((SELECT SUM(points_earned) FROM predictions WHERE user_id = u.id), 0) as global_points
-      FROM users u
-      WHERE u.is_admin = false AND u.is_deleted = false
+  // Step 3: Get per-user, per-tournament points for all valid tournaments
+  const perTournamentPoints = await sql`
+    SELECT 
+      p.user_id,
+      bm.tournament_id,
+      COALESCE(SUM(p.points_earned), 0) as tournament_points,
+      COUNT(CASE WHEN p.is_correct = true THEN 1 END) as correct_predictions,
+      COUNT(CASE WHEN p.is_correct IS NOT NULL THEN 1 END) as total_predictions,
+      MAX(CASE WHEN p.is_correct = true AND bm.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm.tournament_id) THEN 1 ELSE 0 END) as hit_champion,
+      MAX(CASE WHEN p.is_runner_up_correct = true AND p.is_correct = true THEN 1 ELSE 0 END) as hit_both
+    FROM predictions p
+    JOIN bracket_matches bm ON p.bracket_match_id = bm.id
+    JOIN users u ON u.id = p.user_id
+    WHERE bm.status = 'completed'
+      AND bm.points_cancelled IS NOT TRUE
+      AND bm.tournament_id = ANY(${activeIds}::integer[])
+      AND u.is_admin = false
+      AND u.is_deleted = false
       AND EXISTS (
         SELECT 1 FROM predictions p_final
         JOIN bracket_matches bm_final ON p_final.bracket_match_id = bm_final.id
-        WHERE p_final.user_id = u.id 
-        AND bm_final.tournament_id = ANY(${activeIds}::integer[])
-        AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm_final.tournament_id)
+        WHERE p_final.user_id = p.user_id 
+        AND bm_final.tournament_id = bm.tournament_id
+        AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm.tournament_id)
       )
-    ) r
-    WHERE r.total_points > 0
-    ORDER BY r.total_points DESC, r.hit_champion DESC, r.hit_both DESC, r.correct_predictions DESC, r.global_points DESC, r.user_name ASC
-    LIMIT ${limit}`;
+    GROUP BY p.user_id, bm.tournament_id
+  `;
 
-  return ranking.map((r, i) => ({
-    user_id: r.user_id as number,
-    user_name: r.user_name as string,
-    correct_predictions: Number(r.correct_predictions || 0),
-    total_predictions: Number(r.total_predictions || 0),
-    total_points: Number(r.total_points || 0),
-    hit_champion: Boolean(r.hit_champion),
-    hit_both: Boolean(r.hit_both),
-    global_points: Number(r.global_points || 0),
+  // Step 4: Get user names
+  const userNames = await sql`
+    SELECT id, COALESCE(NULLIF(nickname, ''), name) as user_name
+    FROM users
+    WHERE is_admin = false AND is_deleted = false
+  `;
+  const userNameMap: Record<number, string> = {};
+  for (const u of userNames) {
+    userNameMap[u.id as number] = u.user_name as string;
+  }
+
+  // Step 5: Group by user and apply "best 22" rule
+  const userTournaments: Record<number, Array<{
+    tournament_id: number;
+    points: number;
+    correct: number;
+    total: number;
+    hit_champion: boolean;
+    hit_both: boolean;
+  }>> = {};
+
+  for (const row of perTournamentPoints) {
+    const userId = row.user_id as number;
+    if (!userTournaments[userId]) {
+      userTournaments[userId] = [];
+    }
+    userTournaments[userId].push({
+      tournament_id: row.tournament_id as number,
+      points: Number(row.tournament_points || 0),
+      correct: Number(row.correct_predictions || 0),
+      total: Number(row.total_predictions || 0),
+      hit_champion: Boolean(Number(row.hit_champion)),
+      hit_both: Boolean(Number(row.hit_both)),
+    });
+  }
+
+  // Step 6: For each user, sort tournaments by points DESC and take only the top 22
+  const rankingEntries: RankingEntry[] = [];
+
+  for (const [userIdStr, tournamentScores] of Object.entries(userTournaments)) {
+    const userId = Number(userIdStr);
+    const userName = userNameMap[userId];
+    if (!userName) continue;
+
+    // Sort by points descending and take top 22
+    const sorted = tournamentScores.sort((a, b) => b.points - a.points);
+    const top = sorted.slice(0, MAX_COUNTING_TOURNAMENTS);
+
+    const totalPoints = top.reduce((sum, t) => sum + t.points, 0);
+    if (totalPoints <= 0) continue;
+
+    const correctPredictions = top.reduce((sum, t) => sum + t.correct, 0);
+    const totalPredictions = top.reduce((sum, t) => sum + t.total, 0);
+    const hitChampion = top.some((t) => t.hit_champion);
+    const hitBoth = top.some((t) => t.hit_both);
+
+    rankingEntries.push({
+      user_id: userId,
+      user_name: userName,
+      correct_predictions: correctPredictions,
+      total_predictions: totalPredictions,
+      total_points: totalPoints,
+      hit_champion: hitChampion,
+      hit_both: hitBoth,
+      global_points: totalPoints,
+      rank: 0,
+    });
+  }
+
+  // Step 7: Sort by ranking criteria and assign ranks
+  rankingEntries.sort((a, b) => {
+    if (b.total_points !== a.total_points) return b.total_points - a.total_points;
+    if (Number(b.hit_champion) !== Number(a.hit_champion)) return Number(b.hit_champion) - Number(a.hit_champion);
+    if (Number(b.hit_both) !== Number(a.hit_both)) return Number(b.hit_both) - Number(a.hit_both);
+    if (b.correct_predictions !== a.correct_predictions) return b.correct_predictions - a.correct_predictions;
+    if ((b.global_points || 0) !== (a.global_points || 0)) return (b.global_points || 0) - (a.global_points || 0);
+    return a.user_name.localeCompare(b.user_name);
+  });
+
+  return rankingEntries.slice(0, limit).map((entry, i) => ({
+    ...entry,
     rank: i + 1,
   }));
 }
@@ -857,11 +936,15 @@ export async function getStateRanking(
     }));
   }
 
-  // Global state ranking with point defense logic
+  // Global state ranking with point defense logic + 52-week validity + best 22 rule (only finished tournaments)
+  const MAX_COUNTING_TOURNAMENTS = 22;
+
   const tournaments = await sql`
     SELECT id, name, start_date
     FROM tournaments
     WHERE EXISTS (SELECT 1 FROM bracket_matches bm WHERE bm.tournament_id = tournaments.id AND bm.status = 'completed')
+      AND start_date >= (NOW() - INTERVAL '52 weeks')
+      AND status IN ('FINISHED', 'finished', 'completed')
     ORDER BY start_date DESC
   `;
 
@@ -879,40 +962,113 @@ export async function getStateRanking(
     return [];
   }
 
-  const ranking = await sql`
-    SELECT *
-    FROM (
-      SELECT 
-        u.id as user_id,
-        COALESCE(NULLIF(u.nickname, ''), u.name) as user_name,
-        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct = true AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])) as correct_predictions,
-        (SELECT COUNT(*) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND p.is_correct IS NOT NULL AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])) as total_predictions,
-        COALESCE((SELECT SUM(p.points_earned) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])), 0) as total_points,
-        (SELECT MAX(CASE WHEN p.is_correct = true AND bm.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm.tournament_id) THEN 1 ELSE 0 END) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])) as hit_champion,
-        (SELECT MAX(CASE WHEN p.is_runner_up_correct = true AND p.is_correct = true THEN 1 ELSE 0 END) FROM predictions p JOIN bracket_matches bm ON p.bracket_match_id = bm.id WHERE p.user_id = u.id AND bm.status = 'completed' AND bm.points_cancelled IS NOT TRUE AND bm.tournament_id = ANY(${activeIds}::integer[])) as hit_both,
-        COALESCE((SELECT SUM(points_earned) FROM predictions WHERE user_id = u.id), 0) as global_points
-      FROM users u
-      WHERE u.state = ${state} AND u.is_admin = false AND u.is_deleted = false
+  // Get per-user, per-tournament points for users in this state
+  const perTournamentPoints = await sql`
+    SELECT 
+      p.user_id,
+      bm.tournament_id,
+      COALESCE(SUM(p.points_earned), 0) as tournament_points,
+      COUNT(CASE WHEN p.is_correct = true THEN 1 END) as correct_predictions,
+      COUNT(CASE WHEN p.is_correct IS NOT NULL THEN 1 END) as total_predictions,
+      MAX(CASE WHEN p.is_correct = true AND bm.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm.tournament_id) THEN 1 ELSE 0 END) as hit_champion,
+      MAX(CASE WHEN p.is_runner_up_correct = true AND p.is_correct = true THEN 1 ELSE 0 END) as hit_both
+    FROM predictions p
+    JOIN bracket_matches bm ON p.bracket_match_id = bm.id
+    JOIN users u ON u.id = p.user_id
+    WHERE bm.status = 'completed'
+      AND bm.points_cancelled IS NOT TRUE
+      AND bm.tournament_id = ANY(${activeIds}::integer[])
+      AND u.state = ${state}
+      AND u.is_admin = false
+      AND u.is_deleted = false
       AND EXISTS (
         SELECT 1 FROM predictions p_final
         JOIN bracket_matches bm_final ON p_final.bracket_match_id = bm_final.id
-        WHERE p_final.user_id = u.id 
-        AND bm_final.tournament_id = ANY(${activeIds}::integer[])
-        AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm_final.tournament_id)
+        WHERE p_final.user_id = p.user_id 
+        AND bm_final.tournament_id = bm.tournament_id
+        AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = bm.tournament_id)
       )
-    ) r
-    ORDER BY r.total_points DESC, r.hit_champion DESC, r.hit_both DESC, r.correct_predictions DESC, r.global_points DESC, r.user_name ASC
-    LIMIT ${limit}`;
+    GROUP BY p.user_id, bm.tournament_id
+  `;
 
-  return ranking.map((r, i) => ({
-    user_id: r.user_id as number,
-    user_name: r.user_name as string,
-    correct_predictions: Number(r.correct_predictions || 0),
-    total_predictions: Number(r.total_predictions || 0),
-    total_points: Number(r.total_points || 0),
-    hit_champion: Boolean(r.hit_champion),
-    hit_both: Boolean(r.hit_both),
-    global_points: Number(r.global_points || 0),
+  // Get user names for this state
+  const userNames = await sql`
+    SELECT id, COALESCE(NULLIF(nickname, ''), name) as user_name
+    FROM users
+    WHERE state = ${state} AND is_admin = false AND is_deleted = false
+  `;
+  const userNameMap: Record<number, string> = {};
+  for (const u of userNames) {
+    userNameMap[u.id as number] = u.user_name as string;
+  }
+
+  // Group by user and apply "best 22" rule
+  const userTournaments: Record<number, Array<{
+    tournament_id: number;
+    points: number;
+    correct: number;
+    total: number;
+    hit_champion: boolean;
+    hit_both: boolean;
+  }>> = {};
+
+  for (const row of perTournamentPoints) {
+    const userId = row.user_id as number;
+    if (!userTournaments[userId]) {
+      userTournaments[userId] = [];
+    }
+    userTournaments[userId].push({
+      tournament_id: row.tournament_id as number,
+      points: Number(row.tournament_points || 0),
+      correct: Number(row.correct_predictions || 0),
+      total: Number(row.total_predictions || 0),
+      hit_champion: Boolean(Number(row.hit_champion)),
+      hit_both: Boolean(Number(row.hit_both)),
+    });
+  }
+
+  const rankingEntries: RankingEntry[] = [];
+
+  for (const [userIdStr, tournamentScores] of Object.entries(userTournaments)) {
+    const userId = Number(userIdStr);
+    const userName = userNameMap[userId];
+    if (!userName) continue;
+
+    const sorted = tournamentScores.sort((a, b) => b.points - a.points);
+    const top = sorted.slice(0, MAX_COUNTING_TOURNAMENTS);
+
+    const totalPoints = top.reduce((sum, t) => sum + t.points, 0);
+    if (totalPoints <= 0) continue;
+
+    const correctPredictions = top.reduce((sum, t) => sum + t.correct, 0);
+    const totalPredictions = top.reduce((sum, t) => sum + t.total, 0);
+    const hitChampion = top.some((t) => t.hit_champion);
+    const hitBoth = top.some((t) => t.hit_both);
+
+    rankingEntries.push({
+      user_id: userId,
+      user_name: userName,
+      correct_predictions: correctPredictions,
+      total_predictions: totalPredictions,
+      total_points: totalPoints,
+      hit_champion: hitChampion,
+      hit_both: hitBoth,
+      global_points: totalPoints,
+      rank: 0,
+    });
+  }
+
+  rankingEntries.sort((a, b) => {
+    if (b.total_points !== a.total_points) return b.total_points - a.total_points;
+    if (Number(b.hit_champion) !== Number(a.hit_champion)) return Number(b.hit_champion) - Number(a.hit_champion);
+    if (Number(b.hit_both) !== Number(a.hit_both)) return Number(b.hit_both) - Number(a.hit_both);
+    if (b.correct_predictions !== a.correct_predictions) return b.correct_predictions - a.correct_predictions;
+    if ((b.global_points || 0) !== (a.global_points || 0)) return (b.global_points || 0) - (a.global_points || 0);
+    return a.user_name.localeCompare(b.user_name);
+  });
+
+  return rankingEntries.slice(0, limit).map((entry, i) => ({
+    ...entry,
     rank: i + 1,
   }));
 }

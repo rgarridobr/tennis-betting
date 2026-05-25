@@ -188,6 +188,47 @@ export default async function RulesPage() {
             <li>Maior pontuação no Ranking Geral (pontuação acumulada nas etapas);</li>
           </ol>
         </section>
+
+        {/* Ranking Geral */}
+        <section className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm space-y-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Trophy className="w-6 h-6 text-emerald-600" />
+            <h2 className="text-xl font-bold text-slate-900">Regras do Ranking Geral</h2>
+          </div>
+
+          <div>
+            <p className="text-slate-600 mb-3">
+              O Ranking Geral será composto por <span className="font-bold text-slate-900">29 torneios oficiais</span>, distribuídos da seguinte forma:
+            </p>
+            <ul className="list-disc list-inside space-y-1 text-slate-700 font-medium ml-2">
+              <li>4 Grand Slams</li>
+              <li>9 Masters 1000</li>
+              <li>16 ATPs 500</li>
+            </ul>
+            <p className="text-slate-600 mt-3">
+              Totalizando <span className="font-bold text-slate-900">29 torneios válidos para pontuação</span>.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-bold text-slate-900 mb-3">Sistema de Pontuação</h3>
+            <ul className="list-disc list-inside space-y-2 text-slate-700 ml-2">
+              <li>Em cada torneio disputado, o participante acumulará pontos de acordo com seu desempenho.</li>
+              <li>O ranking geral será calculado com base nas <span className="font-bold text-slate-900">22 melhores pontuações</span> obtidas entre os 29 torneios disponíveis.</li>
+              <li>A contagem dos pontos seguirá o sistema de <span className="font-bold text-slate-900">52 semanas (12 meses corridos)</span>.</li>
+              <li>O ranking geral será atualizado somente ao término de cada torneio.</li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-bold text-slate-900 mb-3">Validade dos Pontos</h3>
+            <ul className="list-disc list-inside space-y-2 text-slate-700 ml-2">
+              <li>Toda pontuação conquistada em um torneio terá validade de <span className="font-bold text-slate-900">52 semanas</span> a partir da data da competição.</li>
+              <li>Após este período, os pontos referentes ao torneio serão automaticamente zerados e deixarão de contar para o ranking.</li>
+              <li>O sistema atualizará continuamente o ranking, sempre considerando as <span className="font-bold text-slate-900">22 maiores pontuações válidas</span> dentro do período vigente.</li>
+            </ul>
+          </div>
+        </section>
       </main>
     </div>
   );
