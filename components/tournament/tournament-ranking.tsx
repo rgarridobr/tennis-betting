@@ -97,9 +97,9 @@ function RankingRow({
               <Badge className="bg-emerald-500 text-white border-none font-bold text-[9px] h-4">VOCÊ</Badge>
             )}
             {entry.hit_champion && (
-              <div title={entry.hit_both ? "Acertou Campeão e Vice" : "Acertou o Campeão"}>
+              <span title={entry.hit_both ? "Acertou Campeão e Vice" : "Acertou o Campeão"}>
                 <Trophy className={`w-4 h-4 ${entry.hit_both ? 'text-amber-500' : 'text-emerald-500'}`} />
-              </div>
+              </span>
             )}
           </p>
           <div className="flex items-center gap-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">

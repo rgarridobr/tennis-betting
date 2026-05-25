@@ -531,14 +531,14 @@ export async function setMatchResult(
     const points = effectivePointsCancelled || isBye || isWalkover ? 0 : getMatchPoints(category, round, totalRounds, m.size as number);
 
     // Update match result
+    const shouldCancelPoints = isWalkover || winnerIsLL;
     await sql`
       UPDATE bracket_matches 
       SET winner_id = ${winnerId}, 
           score = ${score}, 
           status = 'completed', 
           points_cancelled = CASE 
-            WHEN ${isWalkover} THEN TRUE 
-            WHEN ${winnerIsLL} THEN TRUE
+            WHEN ${shouldCancelPoints}::boolean THEN TRUE 
             ELSE points_cancelled 
           END,
           updated_at = NOW()

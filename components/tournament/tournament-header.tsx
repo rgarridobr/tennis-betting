@@ -5,29 +5,18 @@ import { PageHero } from '../shared/page-hero';
 import { Card, CardContent } from '../ui/card';
 import { tennisBall } from '@lucide/lab';
 import { getCategory } from '@/lib/utils';
+import {
+  surfaceColors,
+  surfaceLabels,
+  surfaceImages,
+  getTournamentImage,
+  getTournamentStatus,
+} from '@/lib/tournament';
 
 interface TournamentHeaderProps {
   tournament: Tournament;
   participants?: number;
 }
-
-const surfaceColors: Record<string, string> = {
-  Hard: 'bg-blue-500 text-white',
-  Clay: 'bg-orange-500 text-white',
-  Grass: 'bg-emerald-600 text-white',
-};
-
-const surfaceLabels: Record<string, string> = {
-  Hard: 'Hard Court',
-  Clay: 'Saibro',
-  Grass: 'Grama',
-};
-
-const surfaceImages: Record<string, string> = {
-  Clay: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=1920&q=80',
-  Grass: 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=1920&q=80',
-  Hard: 'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=1920&q=80',
-};
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
@@ -35,37 +24,8 @@ function formatDate(dateString: string): string {
 }
 
 export function TournamentHeader({ tournament, participants = 0 }: TournamentHeaderProps) {
-  const isLockedByDate = new Date(tournament.start_date) <= new Date();
-  const isFinished =
-    tournament.status === 'finished' || tournament.status === 'FINISHED' || tournament.status === 'completed';
-
-  const statusLabel = isFinished
-    ? 'Finalizado'
-    : isLockedByDate
-      ? 'Em Andamento'
-      : tournament.status === 'active' || tournament.status === 'OPEN'
-        ? 'Apostas Abertas'
-        : 'Em breve';
-
-  const statusColor = isFinished
-    ? 'bg-slate-500 text-white border-none'
-    : isLockedByDate
-      ? 'bg-blue-500 text-white border-none'
-      : tournament.status === 'active' || tournament.status === 'OPEN'
-        ? 'bg-emerald-500 text-white border-none'
-        : 'bg-amber-500 text-white border-none';
-
-  const isRolandGarros = tournament.name.toLowerCase().includes('roland garros');
-  const isWimbledon = tournament.name.toLowerCase().includes('wimbledon');
-  const isUsOpen = tournament.name.toLowerCase().includes('us open');
-
-  const bgImage = isRolandGarros
-    ? 'https://images.unsplash.com/photo-1560014130-9ba41ce9bcef?w=1920&q=80'
-    : isWimbledon
-      ? 'https://worldtickets.hu/storage/2016/04/wimbledon-feature.jpg.webp?w=800&q=80'
-      : isUsOpen
-        ? 'https://images.unsplash.com/photo-1568663469495-b09d5e3c2e07?q=80'
-        : surfaceImages[tournament.surface] || surfaceImages.Hard;
+  const { label: statusLabel, color: statusColor } = getTournamentStatus(tournament);
+  const bgImage = getTournamentImage(tournament);
 
   return (
     <PageHero

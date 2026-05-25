@@ -179,17 +179,30 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
-    background: white;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    margin: 8px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #062c25;
-    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #064a3f;
+    background: rgba(255, 255, 255, 0.85);
+    border: 3px solid transparent;
+    background-clip: padding-box;
+  }
+  .custom-scrollbar::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  .custom-scrollbar {
+    scrollbar-width: auto;
+    scrollbar-color: rgba(255, 255, 255, 0.6) rgba(255, 255, 255, 0.15);
   }
 }

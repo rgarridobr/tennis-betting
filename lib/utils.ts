@@ -65,7 +65,7 @@ export const getStatusLabels: Record<string, string> = {
   draft: 'Rascunho',
   UPCOMING: 'Em breve',
   upcoming: 'Em breve',
-  OPEN: 'Apostas Abertas',
+  OPEN: 'Aberto para palpites',
   active: 'Ativo',
   published: 'Ativo',
   LOCKED: 'Apostas Fechadas',

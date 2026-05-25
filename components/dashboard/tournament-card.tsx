@@ -4,30 +4,18 @@ import { Calendar, Icon, MapPin, Trophy } from "lucide-react";
 import Link from "next/link";
 import type { Tournament } from "@/lib/data";
 import { tennisBall } from "@lucide/lab";
+import { getCategory } from "@/lib/utils";
+import {
+  surfaceColors,
+  surfaceLabels,
+  getTournamentImage,
+  getTournamentStatus,
+} from "@/lib/tournament";
 
 interface TournamentCardProps {
   tournament: Tournament;
   href?: string;
 }
-
-const surfaceColors: Record<string, string> = {
-  Hard: "bg-blue-500/90 text-white",
-  Clay: "bg-orange-500/90 text-white",
-  Grass: "bg-emerald-600/90 text-white",
-};
-
-const surfaceLabels: Record<string, string> = {
-  Hard: "Hard Court",
-  Clay: "Saibro",
-  Grass: "Grama",
-};
-
-const surfaceImages: Record<string, string> = {
-  Clay: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=600&q=80",
-  Grass:
-    "https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=600&q=80",
-  Hard: "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=600&q=80",
-};
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
@@ -35,68 +23,8 @@ function formatDate(dateString: string): string {
 }
 
 export function TournamentCard({ tournament, href }: TournamentCardProps) {
-  const isLockedByDate = new Date(tournament.start_date) <= new Date();
-  
-  const isFinished =
-    tournament.status === "finished" ||
-    tournament.status === "FINISHED" ||
-    tournament.status === "completed";
-
-  const statusLabel = isFinished
-    ? "Finalizado"
-    : tournament.status === "active" || tournament.status === "OPEN"
-      ? "Apostas Abertas"
-      : isLockedByDate
-        ? "Em Andamento"
-        : tournament.status === "STANDBY"
-          ? "Agendado"
-          : tournament.status === "UPCOMING"
-            ? "Preparando chaveamento"
-            : "";
-
-  const statusColor = isFinished
-    ? "bg-slate-600/95 text-white border-slate-500/50"
-    : tournament.status === "active" || tournament.status === "OPEN"
-      ? "bg-emerald-600/95 text-white border-emerald-500/50"
-      : isLockedByDate
-        ? "bg-blue-600/95 text-white border-blue-500/50"
-        : tournament.status === "STANDBY"
-          ? "bg-amber-500/95 text-white border-amber-400/50"
-          : "bg-purple-600/95 text-white border-purple-500/50";
-
-  const pulseEffect =
-    (isLockedByDate && !isFinished) ||
-    tournament.status === "active" ||
-    tournament.status === "OPEN";
-
-  const isRolandGarros = tournament.name.toLowerCase().includes("roland garros");
-  const isWimbledon = tournament.name.toLowerCase().includes("wimbledon");
-  const isUsOpen = tournament.name.toLowerCase().includes("us open");
-
-  const imageUrl = isRolandGarros
-    ? "https://images.unsplash.com/photo-1560014130-9ba41ce9bcef?w=800&q=80"
-    : isWimbledon
-      ? "https://worldtickets.hu/storage/2016/04/wimbledon-feature.jpg.webp?w=800&q=80"
-    : isUsOpen
-      ? "https://images.unsplash.com/photo-1568663469495-b09d5e3c2e07?q=80"
-      : tournament.image_url ||
-        surfaceImages[tournament.surface] ||
-      surfaceImages.Hard;
-
-  const getCategory = (category: string) => {
-    switch (category) {
-      case "GRAND_SLAM":
-        return "Grand Slam";
-      case "MASTERS_1000":
-        return "Masters 1000";
-      case "ATP_500":
-        return "ATP 500";
-      case "ATP_250":
-        return "ATP 250";
-      default:
-        return category;
-    }
-  };
+  const { label: statusLabel, color: statusColor, pulseEffect } = getTournamentStatus(tournament);
+  const imageUrl = getTournamentImage(tournament);
 
   return (
     <Link
