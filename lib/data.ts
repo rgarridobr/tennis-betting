@@ -593,42 +593,39 @@ export async function getUserPredictionsWithDetails(userId: number): Promise<Pre
 // ==================== STATS & RANKING ====================
 
 export async function getUserStats(userId: number): Promise<UserStats> {
-  const MAX_COUNTING_TOURNAMENTS = 22;
-
-  // Get tournaments with completed matches within the last 52 weeks (only finished tournaments count for ranking)
+  // Stats show only tournaments currently in progress (not finished ones)
   const tournaments = await sql`
     SELECT id, name, start_date
     FROM tournaments
     WHERE EXISTS (SELECT 1 FROM bracket_matches bm WHERE bm.tournament_id = tournaments.id AND bm.status = 'completed')
-      AND start_date >= (NOW() - INTERVAL '52 weeks')
-      AND status IN ('FINISHED', 'finished', 'completed')
+      AND status IN ('IN_PROGRESS', 'LOCKED')
     ORDER BY start_date DESC
   `;
 
-  // Determine which tournament IDs count (only the latest edition per name)
-  const latestByName: Record<string, number> = {};
-  for (const t of tournaments) {
-    const name = (t.name as string).trim();
-    if (!latestByName[name]) {
-      latestByName[name] = t.id as number;
-    }
-  }
-  const activeIds = Object.values(latestByName);
+  const tournamentIds = tournaments.map((t) => t.id as number);
 
-  // If no active tournaments, return empty stats
-  if (activeIds.length === 0) {
+  // If no in-progress tournaments, return empty stats
+  if (tournamentIds.length === 0) {
+    const activeTournaments = await sql`
+      SELECT COUNT(DISTINCT ut.tournament_id) as count
+      FROM user_tournaments ut
+      JOIN tournaments t ON ut.tournament_id = t.id
+      WHERE 
+        ut.user_id = ${userId} 
+        AND t.status IN ('upcoming', 'active', 'published', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS')
+    `;
     return {
       total_points: 0,
       correct_predictions: 0,
       wrong_predictions: 0,
       total_predictions: 0,
       accuracy: 0,
-      active_tournaments: 0,
+      active_tournaments: Number(activeTournaments[0]?.count || 0),
       tournament_stats: [],
     };
   }
 
-  // Get per-tournament breakdown for this user
+  // Get per-tournament breakdown for this user (only in-progress tournaments)
   const tournamentBreakdown = await sql`
     SELECT 
       t.id as tournament_id,
@@ -643,14 +640,13 @@ export async function getUserStats(userId: number): Promise<UserStats> {
     WHERE 
       p.user_id = ${userId}
       AND m.status = 'completed'
-      AND m.tournament_id = ANY(${activeIds}::integer[])
+      AND m.tournament_id = ANY(${tournamentIds}::integer[])
       AND m.points_cancelled IS NOT TRUE
     GROUP BY t.id, t.name
     HAVING COUNT(p.id) > 0
     ORDER BY points DESC
   `;
 
-  // Apply "best 22" rule: sort by points and take top 22
   const allTournamentStats = tournamentBreakdown.map((tb) => {
     const tbCorrect = Number(tb.correct_predictions || 0);
     const tbWrong = Number(tb.wrong_predictions || 0);
@@ -666,15 +662,10 @@ export async function getUserStats(userId: number): Promise<UserStats> {
     };
   });
 
-  // Sort by points descending and take top 22
-  const sortedStats = allTournamentStats.sort((a, b) => b.points - a.points);
-  const countingStats = sortedStats.slice(0, MAX_COUNTING_TOURNAMENTS);
-
-  // Calculate totals from the top 22 only
-  const totalPoints = countingStats.reduce((sum, t) => sum + t.points, 0);
-  const correct = countingStats.reduce((sum, t) => sum + t.correct_predictions, 0);
-  const wrong = countingStats.reduce((sum, t) => sum + t.wrong_predictions, 0);
-  const total = countingStats.reduce((sum, t) => sum + t.total_predictions, 0);
+  const totalPoints = allTournamentStats.reduce((sum, t) => sum + t.points, 0);
+  const correct = allTournamentStats.reduce((sum, t) => sum + t.correct_predictions, 0);
+  const wrong = allTournamentStats.reduce((sum, t) => sum + t.wrong_predictions, 0);
+  const total = allTournamentStats.reduce((sum, t) => sum + t.total_predictions, 0);
   const resolved = correct + wrong;
 
   const activeTournaments = await sql`
@@ -693,7 +684,7 @@ export async function getUserStats(userId: number): Promise<UserStats> {
     total_predictions: total,
     accuracy: resolved > 0 ? Math.round((correct / resolved) * 100) : 0,
     active_tournaments: Number(activeTournaments[0]?.count || 0),
-    tournament_stats: countingStats.map((ts) => ({
+    tournament_stats: allTournamentStats.map((ts) => ({
       tournament_id: ts.tournament_id,
       tournament_name: ts.tournament_name,
       points: ts.points,
