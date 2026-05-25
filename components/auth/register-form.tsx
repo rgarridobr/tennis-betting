@@ -70,25 +70,19 @@ export function RegisterForm() {
 
   async function handleSubmit(formData: FormData) {
     setError(null);
-    const isValid = validateForm(formData);
 
-    if (!isValid) {
-      return;
-    }
-    const result = await registerAction(formData);
-    if (result?.error) {
-      setError(result.error);
-    }
-  }
-
-  function validateForm(formData: FormData): boolean {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
     if (!validateEmail(email) || !validatePassword(password)) {
-      return false;
+      return;
     }
-    return !error;
+
+    const result = await registerAction(formData);
+    if (result?.error) {
+      toast.error(result.error)
+      setError(result.error);
+    }
   }
 
   function validateEmail(email: string): boolean {
