@@ -123,7 +123,6 @@ export default async function RulesPage() {
         {/* Scoring Table */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 mb-2">
-            <Trophy className="w-6 h-6 text-emerald-600" />
             <h2 className="text-2xl font-black text-slate-900 tracking-tight">Sistema de Pontuação</h2>
           </div>
 
@@ -170,7 +169,9 @@ export default async function RulesPage() {
         {/* Tie breaker */}
         <section className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
-            <HelpCircle className="w-6 h-6 text-emerald-600" />
+            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+              <HelpCircle className="w-5 h-5 text-emerald-600" />
+            </div>
             <h2 className="text-xl font-bold text-slate-900">Critérios de Desempate</h2>
           </div>
           <p className="text-slate-600 mb-4">
@@ -188,7 +189,9 @@ export default async function RulesPage() {
         {/* Ranking Geral */}
         <section className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm space-y-6">
           <div className="flex items-center gap-3 mb-4">
-            <Trophy className="w-6 h-6 text-emerald-600" />
+            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+              <Trophy className="w-5 h-5 text-emerald-600" />
+            </div>
             <h2 className="text-xl font-bold text-slate-900">Regras do Ranking Geral</h2>
           </div>
 
