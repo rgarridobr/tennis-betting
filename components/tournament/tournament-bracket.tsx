@@ -1073,6 +1073,11 @@ function PlayerRow({
           {display_name || displayName}
         </span>
         {indicator && <span className="text-[9px] font-black text-slate-400">{indicator}</span>}
+        {isWalkover && displaySets.length > 0 && !isWinner && (
+          <span className="ml-1 px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-[8px] font-black whitespace-nowrap">
+            RET
+          </span>
+        )}
         {showPredictionResult && pointsCancelled && viewMode === 'predictions' && (
           <div className="ml-2 bg-red-500 text-white text-[8px] font-black h-4 px-1 flex items-center rounded-sm">
             ANULADA
@@ -1106,7 +1111,7 @@ function PlayerRow({
         </div>
       )}
 
-      {isWalkover && (
+      {isWalkover && displaySets.length === 0 && (
         <div className="flex items-center gap-1.5 ml-3">
           <div className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-[9px] font-black whitespace-nowrap">
             W/O

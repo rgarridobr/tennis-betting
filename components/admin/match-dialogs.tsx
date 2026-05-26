@@ -741,10 +741,14 @@ export function SetResultDialog({
                 variant={isWalkover ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => {
-                  setIsWalkover(!isWalkover);
                   if (!isWalkover) {
+                    setWoPartialScore(score.replace(/^W\/O\s*/i, '').trim());
                     setScore('');
+                  } else {
+                    setScore(woPartialScore.trim());
+                    setWoPartialScore('');
                   }
+                  setIsWalkover(!isWalkover);
                 }}
                 className={`text-[10px] h-7 rounded-lg font-bold ${
                   isWalkover

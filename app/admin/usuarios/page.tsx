@@ -1,4 +1,4 @@
-import { getAllUsers, countAllUsers } from '@/lib/admin';
+import { getAllUsers, countAllUsers, getUserFilterOptions } from '@/lib/admin';
 import { PageHero } from '@/components/shared/page-hero';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,9 @@ import { UserPagination } from '@/components/admin/user-pagination';
 interface Props {
   searchParams: Promise<{
     search?: string;
+    state?: string;
+    city?: string;
+    club?: string;
     page?: string;
   }>;
 }
@@ -26,13 +29,14 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   const myUser = await getSession();
   if (!myUser || !myUser.is_admin) redirect('/login');
 
-  const { search, page } = await searchParams;
+  const { search, state, city, club, page } = await searchParams;
   const currentPage = page ? parseInt(page) : 1;
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
-  const [users, totalUsers] = await Promise.all([
-    getAllUsers({ search, limit: ITEMS_PER_PAGE, offset }),
-    countAllUsers(search)
+  const [users, totalUsers, filterOptions] = await Promise.all([
+    getAllUsers({ search, state, city, club, limit: ITEMS_PER_PAGE, offset }),
+    countAllUsers({ search, state, city, club }),
+    getUserFilterOptions(),
   ]);
 
   const totalPages = Math.ceil(totalUsers / ITEMS_PER_PAGE);
@@ -50,7 +54,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
           <CreateUserDialog />
         </div>
 
-        <UserFilters />
+        <UserFilters filterOptions={filterOptions} />
 
         {users.length === 0 ? (
           <Card className="border-0 shadow-md">
