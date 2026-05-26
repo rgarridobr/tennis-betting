@@ -1099,7 +1099,7 @@ function PlayerRow({
                   <div
                     className={cn(
                       'w-5 h-6 flex items-center justify-center text-[10px] font-black',
-                      isSetWinner ? 'text-emerald-500' : 'text-slate-400',
+                      isSetWinner ? 'text-slate-500' : 'text-slate-400',
                     )}
                   >
                     {setScore}
