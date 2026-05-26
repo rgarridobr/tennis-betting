@@ -24,7 +24,7 @@ export function PoolRanking({ ranking, currentUserId, initialHidePending = true 
   }, [initialHidePending]);
 
   const filteredRanking = hidePending 
-    ? ranking.filter(entry => entry.total_predictions > 0) 
+    ? ranking.filter(entry => entry.has_predictions !== false) 
     : ranking;
   if (ranking.length === 0) {
     return (
@@ -80,26 +80,35 @@ function RankingRow({
   entry: RankingEntry;
   isCurrentUser: boolean;
 }) {
+  const hasPredictions = entry.has_predictions !== false;
   const accuracy =
     entry.total_predictions > 0 ? Math.round((entry.correct_predictions / entry.total_predictions) * 100) : 0;
 
   return (
     <div
-      className={`flex items-center justify-between px-6 md:px-8 py-6 transition-colors ${isCurrentUser ? "bg-emerald-50/50" : "hover:bg-slate-50/50"}`}
+      className={`flex items-center justify-between px-6 md:px-8 py-6 transition-colors ${
+        !hasPredictions 
+          ? "opacity-60" 
+          : isCurrentUser 
+            ? "bg-emerald-50/50" 
+            : "hover:bg-slate-50/50"
+      }`}
     >
       <div className="flex items-center gap-4 md:gap-6">
         <div
           className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-xs md:text-sm font-black shrink-0 ${
-            entry.rank === 1
-              ? "bg-amber-400 text-white"
-              : entry.rank === 2
-                ? "bg-slate-400 text-white"
-                : entry.rank === 3
-                  ? "bg-orange-400 text-white"
-                  : "bg-slate-100 text-slate-500"
+            !hasPredictions
+              ? "bg-slate-100 text-slate-400"
+              : entry.rank === 1
+                ? "bg-amber-400 text-white"
+                : entry.rank === 2
+                  ? "bg-slate-400 text-white"
+                  : entry.rank === 3
+                    ? "bg-orange-400 text-white"
+                    : "bg-slate-100 text-slate-500"
           }`}
         >
-          {entry.rank}
+          {hasPredictions ? entry.rank : "-"}
         </div>
         <div>
           <p className="font-black text-slate-900 flex items-center gap-2 leading-none mb-2 text-sm md:text-base">
@@ -108,20 +117,28 @@ function RankingRow({
               <Badge className="bg-emerald-500 text-white border-none font-bold text-[9px] h-4 px-1.5">VOCÊ</Badge>
             )}
           </p>
-          <div className="flex items-center gap-3 md:gap-4 text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-            <span className="flex items-center gap-1">
-              <Target className="w-3 h-3" /> {entry.correct_predictions}/{entry.total_predictions} ACERTOS
-            </span>
-            <span className="flex items-center gap-1">
-              <TrendingUp className="w-3 h-3" /> {accuracy}% PRECISÃO
-            </span>
-          </div>
+          {hasPredictions ? (
+            <div className="flex items-center gap-3 md:gap-4 text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              <span className="flex items-center gap-1">
+                <Target className="w-3 h-3" /> {entry.correct_predictions}/{entry.total_predictions} ACERTOS
+              </span>
+              <span className="flex items-center gap-1">
+                <TrendingUp className="w-3 h-3" /> {accuracy}% PRECISÃO
+              </span>
+            </div>
+          ) : (
+            <p className="text-[10px] md:text-[11px] font-bold text-slate-400 italic">
+              Não completou seus palpites
+            </p>
+          )}
         </div>
       </div>
 
       <div className="flex items-center gap-4">
         <div className="text-right">
-          <p className="text-xl md:text-2xl font-black text-slate-900 leading-none">{entry.total_points}</p>
+          <p className={`text-xl md:text-2xl font-black leading-none ${hasPredictions ? "text-slate-900" : "text-slate-400"}`}>
+            {hasPredictions ? entry.total_points : "0"}
+          </p>
           <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Pontos</p>
         </div>
       </div>

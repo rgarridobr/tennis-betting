@@ -110,11 +110,12 @@ export interface RankingEntry {
   correct_predictions: number;
   total_predictions: number;
   total_points: number;
-  rank: number;
+  rank: number | null;
   final_score_correct?: boolean;
   hit_champion?: boolean;
   hit_both?: boolean;
   global_points?: number;
+  has_predictions?: boolean;
 }
 
 export interface PredictionWithDetails {
@@ -1238,6 +1239,7 @@ export async function getPoolRanking(
   const pool = await getPoolById(poolId);
   const tournamentId = tournamentIdOverride !== undefined ? tournamentIdOverride : pool?.tournament_id || null;
 
+  // Get ranked members (those who completed predictions for the final round)
   const ranking = await sql`
     SELECT *
     FROM (
@@ -1273,7 +1275,7 @@ export async function getPoolRanking(
     ORDER BY r.total_points DESC, r.hit_champion DESC, r.hit_both DESC, r.correct_predictions DESC, r.global_points DESC, r.user_name ASC
     LIMIT ${limit}`;
 
-  return ranking.map((r, i) => ({
+  const rankedEntries: RankingEntry[] = ranking.map((r, i) => ({
     user_id: r.user_id as number,
     user_name: r.user_name as string,
     correct_predictions: Number(r.correct_predictions || 0),
@@ -1283,7 +1285,40 @@ export async function getPoolRanking(
     hit_both: Boolean(r.hit_both),
     global_points: Number(r.global_points || 0),
     rank: i + 1,
+    has_predictions: true,
   }));
+
+  // Get members who did NOT complete predictions (not in the ranked list)
+  const rankedUserIds = rankedEntries.map(e => e.user_id);
+  const unrankedMembers = await sql`
+    SELECT 
+      u.id as user_id,
+      COALESCE(NULLIF(u.nickname, ''), u.name) as user_name
+    FROM users u
+    JOIN pool_members pm ON u.id = pm.user_id
+    WHERE pm.pool_id = ${poolId} 
+      AND u.is_admin = false 
+      AND u.is_deleted = false
+      AND u.id != ALL(${rankedUserIds.length > 0 ? rankedUserIds : [0]}::integer[])
+  `;
+
+  const unrankedEntries: RankingEntry[] = unrankedMembers.map((r) => ({
+    user_id: r.user_id as number,
+    user_name: r.user_name as string,
+    correct_predictions: 0,
+    total_predictions: 0,
+    total_points: 0,
+    hit_champion: false,
+    hit_both: false,
+    global_points: 0,
+    rank: null,
+    has_predictions: false,
+  }));
+
+  // Sort unranked alphabetically
+  unrankedEntries.sort((a, b) => a.user_name.localeCompare(b.user_name));
+
+  return [...rankedEntries, ...unrankedEntries];
 }
 
 export async function getEnrollment(userId: number, tournamentId: number): Promise<Enrollment | null> {
