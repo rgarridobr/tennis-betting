@@ -407,7 +407,35 @@ async function autoAdvanceIfBye(matchId: number, tournamentId: number) {
 }
 
 export function calculateSetScore(score: string): string {
-  if (!score || score.toUpperCase() === 'W/O' || score.toUpperCase() === 'BYE') return '';
+  if (!score || score.toUpperCase() === 'BYE') return '';
+
+  // Handle W/O with optional score (e.g., "W/O 6-4")
+  const scoreUpper = score.toUpperCase();
+  if (scoreUpper === 'W/O' || scoreUpper === 'WALKOVER') return '';
+
+  if (scoreUpper.startsWith('W/O') || scoreUpper.startsWith('WALKOVER')) {
+    // Extract score part after W/O or WALKOVER
+    const scorePart = score
+      .replace(/^W\/O\s*/i, '')
+      .replace(/^WALKOVER\s*/i, '')
+      .trim();
+    if (!scorePart) return ''; // W/O without score
+
+    // Process the score part
+    const sets = scorePart.split(/\s+/);
+    let p1 = 0;
+    let p2 = 0;
+    for (const set of sets) {
+      const games = set.split('-').map(Number);
+      if (games.length === 2 && !isNaN(games[0]) && !isNaN(games[1])) {
+        if (games[0] > games[1]) p1++;
+        else if (games[1] > games[0]) p2++;
+      }
+    }
+    return p1 >= p2 ? `${p1}-${p2}` : `${p2}-${p1}`;
+  }
+
+  // Regular score handling
   const sets = score.trim().split(/\s+/);
   let p1 = 0;
   let p2 = 0;
@@ -426,10 +454,58 @@ export function validateTennisScore(
   score: string,
   setsToWin: number,
 ): { valid: boolean; winner?: 1 | 2; error?: string } {
-  if (score.toUpperCase() === 'W/O' || score.toUpperCase() === 'WALKOVER') {
+  const scoreUpper = score.toUpperCase();
+
+  // Handle pure W/O or WALKOVER (no score)
+  if (scoreUpper === 'W/O' || scoreUpper === 'WALKOVER') {
     return { valid: true };
   }
 
+  // Handle W/O with optional score (e.g., "W/O 6-4")
+  if (scoreUpper.startsWith('W/O') || scoreUpper.startsWith('WALKOVER')) {
+    const scorePart = score
+      .replace(/^W\/O\s*/i, '')
+      .replace(/^WALKOVER\s*/i, '')
+      .trim();
+
+    // If no score part after W/O, it's valid (just a W/O)
+    if (!scorePart) return { valid: true };
+
+    // If there is a score part, validate it like a regular score
+    const sets = scorePart.split(/\s+/);
+    let player1Sets = 0;
+    let player2Sets = 0;
+
+    for (const set of sets) {
+      const games = set.split('-').map(Number);
+      if (games.length !== 2 || isNaN(games[0]) || isNaN(games[1])) {
+        return { valid: false, error: `Placar de set inválido: ${set}` };
+      }
+      const [g1, g2] = games;
+      if (g1 < 0 || g2 < 0) return { valid: false, error: 'Games não podem ser negativos' };
+
+      const isSetFinished =
+        ((g1 >= 6 || g2 >= 6) && Math.abs(g1 - g2) >= 2) || (g1 === 7 && g2 === 6) || (g1 === 6 && g2 === 7);
+
+      if (!isSetFinished) return { valid: false, error: `Set incompleto ou inválido: ${set}` };
+      if (g1 > 7 || g2 > 7) return { valid: false, error: `Placar impossível: ${set}` };
+      if ((g1 === 7 && g2 < 5) || (g2 === 7 && g1 < 5)) return { valid: false, error: `Placar inválido: ${set}` };
+
+      if (g1 > g2) player1Sets++;
+      else player2Sets++;
+
+      if (player1Sets === setsToWin || player2Sets === setsToWin) {
+        if (sets.indexOf(set) !== sets.length - 1) {
+          return { valid: false, error: 'Sets extras após o vencedor ser definido' };
+        }
+        return { valid: true, winner: player1Sets === setsToWin ? 1 : 2 };
+      }
+    }
+
+    return { valid: false, error: `Partida incompleta. São necessários ${setsToWin} sets para vencer.` };
+  }
+
+  // Regular score validation
   const sets = score.trim().split(/\s+/);
   let player1Sets = 0;
   let player2Sets = 0;
@@ -519,7 +595,12 @@ export async function setMatchResult(
     // }
 
     const isBye = score === 'BYE';
-    const isWalkover = score.toUpperCase() === 'W/O' || score.toUpperCase() === 'WALKOVER' || options?.isWalkover;
+    const isWalkover =
+      score.toUpperCase() === 'W/O' ||
+      score.toUpperCase() === 'WALKOVER' ||
+      score.toUpperCase().startsWith('W/O ') ||
+      score.toUpperCase().startsWith('WALKOVER ') ||
+      options?.isWalkover;
 
     // LL rule: points are only cancelled if the Lucky Loser player WINS the match.
     // If the LL player loses, scoring is credited normally.

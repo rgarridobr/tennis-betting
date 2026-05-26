@@ -982,12 +982,33 @@ function PlayerRow({
     );
   }
 
-  const sets = score ? score.split(' ') : [];
   const showPredictionResult = (isCompleted && isPredicted) || (isPredicted && isForceIncorrect);
 
-  const displaySets = viewMode === 'predictions' && score && score.includes('-') && !score.includes(' ')
-    ? [score]
-    : sets;
+  // Handle W/O with optional score (e.g., "W/O 6-4")
+  let displaySets: string[] = [];
+  let isWalkover = false;
+  
+  if (score) {
+    const scoreUpper = score.toUpperCase();
+    if (scoreUpper === 'W/O' || scoreUpper === 'WALKOVER') {
+      isWalkover = true;
+      displaySets = [];
+    } else if (scoreUpper.startsWith('W/O') || scoreUpper.startsWith('WALKOVER')) {
+      isWalkover = true;
+      // Extract score part after W/O or WALKOVER
+      const scorePart = score
+        .replace(/^W\/O\s*/i, '')
+        .replace(/^WALKOVER\s*/i, '')
+        .trim();
+      if (scorePart) {
+        displaySets = scorePart.split(/\s+/);
+      }
+    } else {
+      // Regular score
+      displaySets = score.includes('-') && !score.includes(' ') ? [score] : score.split(/\s+/);
+    }
+  }
+  
   const predictionCorrect = showPredictionResult && isWinner && !isForceIncorrect;
 
   const getIndicator = () => {
@@ -1082,6 +1103,14 @@ function PlayerRow({
               )
             );
           })}
+        </div>
+      )}
+
+      {isWalkover && (
+        <div className="flex items-center gap-1.5 ml-3">
+          <div className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-[9px] font-black whitespace-nowrap">
+            W/O
+          </div>
         </div>
       )}
 

@@ -519,11 +519,23 @@ export function SetResultDialog({
   const [success, setSuccess] = useState(false);
   const [winnerId, setWinnerId] = useState<string>(match.winner_id?.toString() || '');
   const [score, setScore] = useState(match.score || '');
+  const [isWalkover, setIsWalkover] = useState(match.score?.toUpperCase().startsWith('W/O') ?? false);
+  const [woPartialScore, setWoPartialScore] = useState(
+    match.score?.toUpperCase().startsWith('W/O')
+      ? match.score.replace(/^W\/O\s*/i, '').trim()
+      : ''
+  );
 
   useEffect(() => {
     if (open) {
       setWinnerId(match.winner_id?.toString() || '');
       setScore(match.score || '');
+      setIsWalkover(match.score?.toUpperCase().startsWith('W/O') ?? false);
+      setWoPartialScore(
+        match.score?.toUpperCase().startsWith('W/O')
+          ? match.score.replace(/^W\/O\s*/i, '').trim()
+          : ''
+      );
       setError(null);
       setSuccess(false);
       setShowConfirmFinish(false);
@@ -584,14 +596,30 @@ export function SetResultDialog({
       return;
     }
 
-    if (!winnerId || !score) {
-      setError('Selecione o vencedor e o placar');
+    if (!winnerId) {
+      setError('Selecione o vencedor');
+      setShowConfirmFinish(false);
+      return;
+    }
+
+    // Build score value based on walkover flag
+    let finalScore = score;
+    if (isWalkover) {
+      if (woPartialScore.trim()) {
+        finalScore = `W/O ${woPartialScore.trim()}`;
+      } else {
+        finalScore = 'W/O';
+      }
+    }
+
+    if (!finalScore) {
+      setError('Selecione o placar ou marque como W/O');
       setShowConfirmFinish(false);
       return;
     }
 
     startTransition(async () => {
-      const result = await setMatchResultAction(match.id, parseInt(winnerId), score.trim(), tournamentId);
+      const result = await setMatchResultAction(match.id, parseInt(winnerId), finalScore.trim(), tournamentId);
       if (result.success) {
         setSuccess(true);
         setShowConfirmFinish(false);
@@ -705,29 +733,51 @@ export function SetResultDialog({
 
           <div className="space-y-3">
             <Label className="text-xs font-black uppercase tracking-widest text-slate-500">Placar Final</Label>
-            <Input
-              value={score}
-              onChange={(e) => setScore(e.target.value)}
-              placeholder=""
-              required
-              autoFocus={false}
-              className="h-14 rounded-2xl border-2 border-slate-100 focus:border-emerald-500 text-lg font-black tracking-widest"
-            />
-            <div className="flex flex-wrap gap-2">
+            
+            {/* W/O Toggle */}
+            <div className="flex gap-2">
               <Button
                 type="button"
-                variant="outline"
+                variant={isWalkover ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setScore('W/O')}
-                className="text-[10px] h-7 rounded-lg font-bold"
+                onClick={() => {
+                  setIsWalkover(!isWalkover);
+                  if (!isWalkover) {
+                    setScore('');
+                  }
+                }}
+                className={`text-[10px] h-7 rounded-lg font-bold ${
+                  isWalkover
+                    ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                    : ''
+                }`}
               >
                 W/O
               </Button>
               <p className="text-[10px] text-slate-400 font-bold ml-auto flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
-                Sets separados por espaço (6-4 3-6 7-6)
+                {isWalkover ? 'Score parcial (opcional)' : 'Sets separados por espaço (6-4 3-6 7-6)'}
               </p>
             </div>
+
+            {/* Regular Score Input or W/O Partial Score Input */}
+            {isWalkover ? (
+              <Input
+                value={woPartialScore}
+                onChange={(e) => setWoPartialScore(e.target.value)}
+                placeholder="Ex: 6-4 (opcional)"
+                className="h-14 rounded-2xl border-2 border-slate-100 focus:border-amber-500 text-lg font-black tracking-widest"
+              />
+            ) : (
+              <Input
+                value={score}
+                onChange={(e) => setScore(e.target.value)}
+                placeholder=""
+                required
+                autoFocus={false}
+                className="h-14 rounded-2xl border-2 border-slate-100 focus:border-emerald-500 text-lg font-black tracking-widest"
+              />
+            )}
           </div>
 
           <div className="flex flex-col gap-3">
