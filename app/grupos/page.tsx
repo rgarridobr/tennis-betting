@@ -1,5 +1,4 @@
-import { getSession } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { requireUserWithLocation } from "@/lib/auth";
 import { getUserPools, getGeneralPools, getPools, getActiveTournament, getStateMemberCount, getTournamentsActive } from "@/lib/data";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { PageHero } from "@/components/shared/page-hero";
@@ -10,8 +9,7 @@ interface PoolsPageProps {
 }
 
 export default async function PoolsPage({ searchParams }: PoolsPageProps) {
-  const user = await getSession();
-  if (!user) redirect("/login");
+  const user = await requireUserWithLocation();
 
   const { q } = await searchParams;
 

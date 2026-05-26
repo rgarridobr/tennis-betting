@@ -528,7 +528,10 @@ export async function setMatchResult(
       (winnerId === m.player2_id && m.player2_type === 'LUCKY_LOSER');
     const effectivePointsCancelled = pointsCancelled || winnerIsLL;
 
-    const points = effectivePointsCancelled || isBye || isWalkover ? 0 : getMatchPoints(category, round, totalRounds, m.size as number);
+    const points =
+      effectivePointsCancelled || isBye || isWalkover
+        ? 0
+        : getMatchPoints(category, round, totalRounds, m.size as number);
 
     // Update match result
     const shouldCancelPoints = isWalkover || winnerIsLL;
@@ -848,8 +851,8 @@ export async function updatePlaceholderPlayer(
   // when the actual player is defined.
   try {
     const genericQualifiers = await sql`SELECT id FROM players WHERE name ILIKE 'Qualifier%'`;
-    const genericIds = genericQualifiers.map(q => q.id);
-    
+    const genericIds = genericQualifiers.map((q) => q.id);
+
     if (genericIds.length > 0) {
       await sql`
         UPDATE predictions
@@ -859,7 +862,7 @@ export async function updatePlaceholderPlayer(
       `;
     }
   } catch (err) {
-    console.error("Error transferring qualifier predictions:", err);
+    console.error('Error transferring qualifier predictions:', err);
   }
 
   if (m.status === 'completed') {
@@ -1072,11 +1075,19 @@ export async function getAdminStats() {
 
 export async function updateUser(
   id: number,
-  data: { name: string; email: string; nickname?: string; whatsapp: string; tennis_club: string },
+  data: {
+    name: string;
+    email: string;
+    nickname?: string;
+    whatsapp: string;
+    tennis_club: string;
+    state: string;
+    city: string;
+  },
 ): Promise<void> {
   await sql`
     UPDATE users
-    SET name = ${data.name}, email = ${data.email}, nickname = ${data.nickname || null}, whatsapp = ${data.whatsapp}, tennis_club = ${data.tennis_club}, updated_at = NOW()
+    SET name = ${data.name}, email = ${data.email}, nickname = ${data.nickname || null}, whatsapp = ${data.whatsapp}, tennis_club = ${data.tennis_club}, state = ${data.state ?? ''}, city = ${data.city ?? ''}, updated_at = NOW()
     WHERE id = ${id}
   `;
 }

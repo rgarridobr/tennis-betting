@@ -1,4 +1,4 @@
-import { getSession } from '@/lib/auth';
+import { requireUserWithLocation } from '@/lib/auth';
 import { redirect, notFound } from 'next/navigation';
 import {
   getTournamentById,
@@ -30,8 +30,7 @@ interface TournamentPageProps {
 }
 
 export default async function TournamentPage({ params, searchParams }: TournamentPageProps) {
-  const user = await getSession();
-  if (!user) redirect('/login');
+  const user = await requireUserWithLocation();
   if (user.is_admin) redirect('/admin');
 
   const { id } = await params;

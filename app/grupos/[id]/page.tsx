@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/auth";
+import { requireUserWithLocation } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
 import { 
   getPoolById, 
@@ -33,8 +33,7 @@ export default async function PoolPage({ params, searchParams }: PoolPageProps) 
   const poolId = parseInt(id, 10);
   if (isNaN(poolId)) notFound();
 
-  const user = await getSession();
-  if (!user) redirect(`/login?redirectTo=/grupos/${poolId}`);
+  const user = await requireUserWithLocation(`/grupos/${poolId}`);
 
   const pool = await getPoolById(poolId);
   if (!pool) notFound();

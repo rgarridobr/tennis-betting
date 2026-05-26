@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { StateCitySelector } from '@/components/shared/state-city-selector';
 import { createUserAction } from '@/lib/actions/admin';
 import { UserPlus, Mail, Lock, User, AlertCircle, Loader2, Phone, Home } from 'lucide-react';
 import { toast } from 'sonner';
@@ -30,6 +31,8 @@ export function CreateUserDialog() {
   const [tennisClub, setTennisClub] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [state, setState] = useState('');
+  const [city, setCity] = useState('');
 
   const [isNoneChecked, setIsNoneChecked] = useState(false);
   const [isFirstNameOnlyChecked, setIsFirstNameOnlyChecked] = useState(false);
@@ -89,10 +92,18 @@ export function CreateUserDialog() {
   async function handleSubmit(formData: FormData) {
     setError(null);
 
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
+    const email = (formData.get('email') as string | null)?.trim() ?? '';
+    const password = (formData.get('password') as string | null)?.trim() ?? '';
+    const state = (formData.get('state') as string | null)?.trim() ?? '';
+    const city = (formData.get('city') as string | null)?.trim() ?? '';
 
     if (!validateEmail(email) || !validatePassword(password)) return;
+    if (!state || !city) {
+      const message = 'Estado e cidade são obrigatórios.';
+      toast.error(message);
+      setError(message);
+      return;
+    }
 
     startTransition(async () => {
       const result = await createUserAction(formData);
@@ -202,6 +213,17 @@ export function CreateUserDialog() {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700"
+            />
+          </div>
+
+          {/* Estado e Cidade */}
+          <div className="space-y-4">
+            <StateCitySelector
+              selectedState={state}
+              selectedCity={city}
+              onStateChange={setState}
+              onCityChange={setCity}
+              required
             />
           </div>
 

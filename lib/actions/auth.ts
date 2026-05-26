@@ -4,14 +4,14 @@ import { registerUser, loginUser, createSession, destroySession } from '@/lib/au
 import { redirect } from 'next/navigation';
 
 export async function registerAction(formData: FormData) {
-  const name = formData.get('name') as string;
-  const email = formData.get('email') as string;
-  const nickname = formData.get('nickname') as string;
-  const password = formData.get('password') as string;
-  const whatsapp = formData.get('whatsapp') as string;
-  const tennis_club = formData.get('tennis_club') as string;
-  const state = formData.get('state') as string;
-  const city = formData.get('city') as string;
+  const name = (formData.get('name') as string | null)?.trim() ?? '';
+  const email = (formData.get('email') as string | null)?.trim() ?? '';
+  const nickname = (formData.get('nickname') as string | null)?.trim() ?? '';
+  const password = (formData.get('password') as string | null)?.trim() ?? '';
+  const whatsapp = (formData.get('whatsapp') as string | null)?.trim() ?? '';
+  const tennis_club = (formData.get('tennis_club') as string | null)?.trim() ?? '';
+  const state = (formData.get('state') as string | null)?.trim() ?? '';
+  const city = (formData.get('city') as string | null)?.trim() ?? '';
 
   if (!name || !email || !password || !tennis_club || !state || !city) {
     return { error: 'Todos os campos são obrigatórios' };
@@ -53,13 +53,13 @@ export async function loginAction(formData: FormData) {
     return { error: 'Email ou senha incorretos' };
   }
 
-    if (!user.is_active) {
-    return { error:'Sua conta está inativa. Entre em contato com o administrador.' }
+  if (!user.is_active) {
+    return { error: 'Sua conta está inativa. Entre em contato com o administrador.' };
   }
 
   await createSession(user.id);
   const redirectTo = formData.get('redirectTo') as string;
-  
+
   if (redirectTo) {
     redirect(redirectTo);
   } else if (user.is_admin) {

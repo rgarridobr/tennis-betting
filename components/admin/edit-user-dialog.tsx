@@ -9,6 +9,7 @@ import { UserPlus, Mail, User, AlertCircle, Loader2, Phone, Home, Pencil } from 
 import { toast } from 'sonner'
 import { formatBrazilianPhoneNumber } from '@/lib/utils'
 import { Checkbox } from '@/components/ui/checkbox'
+import { StateCitySelector } from '@/components/shared/state-city-selector'
 import {
   Dialog,
   DialogContent,
@@ -27,6 +28,8 @@ interface EditUserDialogProps {
     nickname?: string
     whatsapp?: string
     tennis_club?: string
+    state?: string
+    city?: string
   }
 }
 
@@ -38,6 +41,8 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
   const [nickname, setNickname] = useState(user.nickname || '')
   const [whatsapp, setWhatsapp] = useState(user.whatsapp || '')
   const [tennisClub, setTennisClub] = useState(user.tennis_club || '')
+  const [state, setState] = useState(user.state || '')
+  const [city, setCity] = useState(user.city || '')
   const [isNoneChecked, setIsNoneChecked] = useState(user.tennis_club?.toLowerCase() === 'nenhum')
   const [isFirstNameOnlyChecked, setIsFirstNameOnlyChecked] = useState(false)
 
@@ -74,6 +79,17 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
 
   async function handleSubmit(formData: FormData) {
     setError(null)
+
+    const state = (formData.get('state') as string | null)?.trim() ?? ''
+    const city = (formData.get('city') as string | null)?.trim() ?? ''
+
+    if (!state || !city) {
+      const message = 'Estado e cidade são obrigatórios.'
+      toast.error(message)
+      setError(message)
+      return
+    }
+
     startTransition(async () => {
       const result = await updateUserAction(user.id, formData)
       if (result.success) {
@@ -174,6 +190,16 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
                 placeholder=""
                 required
                 className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <StateCitySelector
+                selectedState={state}
+                selectedCity={city}
+                onStateChange={setState}
+                onCityChange={setCity}
+                required
               />
             </div>
 

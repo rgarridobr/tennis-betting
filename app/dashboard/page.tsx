@@ -1,4 +1,4 @@
-import { getSession } from '@/lib/auth';
+import { requireUserWithLocation } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getUserStats, getAllVisibleTournaments, getActiveTournament, getGlobalRanking } from '@/lib/data';
 import { HeroSection } from '@/components/dashboard/hero-section';
@@ -11,8 +11,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 export default async function DashboardPage() {
-  const user = await getSession();
-  if (!user) redirect('/login');
+  const user = await requireUserWithLocation();
   if (user.is_admin) redirect('/admin');
 
 

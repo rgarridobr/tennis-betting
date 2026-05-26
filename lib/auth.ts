@@ -1,5 +1,6 @@
 import { sql } from './db';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import bcrypt from 'bcryptjs';
 
 export interface User {
@@ -73,6 +74,26 @@ export async function getSession(): Promise<User | null> {
   return user;
 }
 
+export async function requireUser(): Promise<User> {
+  const user = await getSession();
+  if (!user) redirect('/login');
+  return user;
+}
+
+export async function requireUserWithLocation(redirectTo?: string): Promise<User> {
+  const user = await getSession();
+  if (!user) {
+    const loginPath = redirectTo ? `/login?redirectTo=${encodeURIComponent(redirectTo)}` : '/login';
+    redirect(loginPath);
+  }
+
+  if (!user.is_admin && (!user.state || !user.city)) {
+    redirect('/perfil');
+  }
+
+  return user;
+}
+
 export async function destroySession(): Promise<void> {
   const cookieStore = await cookies();
   const token = cookieStore.get('session_token')?.value;
@@ -90,14 +111,21 @@ export async function registerUser(
   whatsapp?: string,
   tennis_club?: string,
   nickname?: string,
-  state?: string,
-  city?: string,
+  state: string,
+  city: string,
 ): Promise<User> {
+  const normalizedState = state.trim();
+  const normalizedCity = city.trim();
+
+  if (!normalizedState || !normalizedCity) {
+    throw new Error('State and city are required to register');
+  }
+
   const hashedPassword = await hashPassword(password);
 
   const users = await sql`
     INSERT INTO users (name, email, whatsapp, tennis_club, nickname, password_hash, state, city)
-    VALUES (${name}, ${email}, ${whatsapp}, ${tennis_club}, ${nickname || null}, ${hashedPassword}, ${state || null}, ${city || null})
+    VALUES (${name}, ${email}, ${whatsapp}, ${tennis_club}, ${nickname || null}, ${hashedPassword}, ${normalizedState}, ${normalizedCity})
     RETURNING id, name, email, nickname, whatsapp, tennis_club, state, city, is_admin, created_at
   `;
 

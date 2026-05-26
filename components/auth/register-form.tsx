@@ -73,8 +73,17 @@ export function RegisterForm() {
 
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
+    const state = (formData.get('state') as string | null)?.trim() ?? '';
+    const city = (formData.get('city') as string | null)?.trim() ?? '';
 
     if (!validateEmail(email) || !validatePassword(password)) {
+      return;
+    }
+
+    if (!state || !city) {
+      const message = 'Estado e cidade são obrigatórios.';
+      toast.error(message);
+      setError(message);
       return;
     }
 
