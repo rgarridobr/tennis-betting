@@ -1221,7 +1221,7 @@ function PlayerRow({
         </div>
       )}
 
-      {isWalkover && displaySets.length === 0 && (
+      {isWalkover && displaySets.length === 0 && !isWinner && (
         <div className="flex items-center gap-1.5 ml-3">
           <div className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-[9px] font-black whitespace-nowrap">
             W/O
