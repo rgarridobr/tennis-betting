@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState, useTransition, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import type { BracketMatch, Player } from '@/lib/data';
 import { getFlagUrl } from '@/lib/countries';
 import { saveFullBracketAction } from '@/lib/actions/predictions';
@@ -52,41 +52,24 @@ export function TournamentBracket({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [localPredictions, setLocalPredictions] =
     useState<Record<number, { winnerId: number; score?: string }>>(predictions);
-  const [isSaving, setIsSaving] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
-  const [isInitialMount, setIsInitialMount] = useState(true);
-  const [isTransitioning, startTransition] = useTransition();
 
-  // Debounce saving predictions
+  // Track if user has unsaved changes
+  const hasUnsavedChanges = canMakePredictions && JSON.stringify(localPredictions) !== JSON.stringify(predictions);
+
+  // Warn user before leaving the page with unsaved predictions
   useEffect(() => {
-    if (isInitialMount) {
-      setIsInitialMount(false);
-      return;
-    }
+    if (!hasUnsavedChanges) return;
 
-    if (!canMakePredictions) return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = 'Você tem palpites não salvos. Tem certeza que deseja sair?';
+      return e.returnValue;
+    };
 
-    const timer = setTimeout(async () => {
-      setIsSaving(true);
-      try {
-        const predictionArray = Object.entries(localPredictions).map(([matchId, data]) => ({
-          matchId: parseInt(matchId),
-          winnerId: data.winnerId,
-          score: data.score,
-        }));
-
-        await saveFullBracketAction(userId, tournamentId, predictionArray);
-        toast.success('Palpite salvo com sucesso!');
-      } catch (error: any) {
-        console.error(error);
-        toast.error(error.message || 'Ocorreu um erro ao salvar seu palpite. Tente novamente.');
-      } finally {
-        setIsSaving(false);
-      }
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, [localPredictions, userId, tournamentId, canMakePredictions]);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   // Group matches by round and position for easy lookup
   const matchesMap: Record<string, BracketMatch> = {};
@@ -255,6 +238,89 @@ export function TournamentBracket({
     });
   }
 
+  /**
+   * Recursively resolve a qualifier prediction back through the bracket to find the real player.
+   * Traces the prediction chain from the given match back to round 1 where the qualifier slot
+   * has the actual player defined.
+   */
+  function resolveQualifierFromBracket(
+    match: BracketMatch | undefined,
+    preds: Record<number, { winnerId: number; score?: string }>,
+    mMap: Record<string, BracketMatch>,
+    qPlayerId: number,
+    pById: Record<number, { name: string; display_name: string | null; seed: number | null; type: string; country: string | null }>,
+  ): { realId: number | null; displayName: string | null } {
+    if (!match) return { realId: null, displayName: null };
+
+    // For round 1 matches, check the official match data directly
+    if (match.round === 1) {
+      const qSlotIsP1 = match.player1_type === 'QUALIFIER' || match.player1_type === 'LUCKY_LOSER';
+      const qSlotIsP2 = match.player2_type === 'QUALIFIER' || match.player2_type === 'LUCKY_LOSER';
+
+      // Check if the prediction used a slot marker
+      const slotMarker = preds[match.id]?.score;
+
+      if (slotMarker === '__SLOT_1__') {
+        // User picked slot 1
+        if (match.player1_id && match.player1_id !== qPlayerId) {
+          return { realId: match.player1_id, displayName: null };
+        }
+        return { realId: null, displayName: 'Qualifier 1' };
+      } else if (slotMarker === '__SLOT_2__') {
+        // User picked slot 2
+        if (match.player2_id && match.player2_id !== qPlayerId) {
+          return { realId: match.player2_id, displayName: null };
+        }
+        return { realId: null, displayName: 'Qualifier 2' };
+      }
+
+      // No slot marker - try to resolve from match types
+      if (qSlotIsP1 && match.player1_id && match.player1_id !== qPlayerId) {
+        return { realId: match.player1_id, displayName: null };
+      }
+      if (qSlotIsP2 && match.player2_id && match.player2_id !== qPlayerId) {
+        return { realId: match.player2_id, displayName: null };
+      }
+
+      return { realId: null, displayName: null };
+    }
+
+    // For rounds > 1, trace back: find which previous match fed the qualifier into this one
+    const prevRound = match.round - 1;
+    const prevM1 = mMap[`${prevRound}-${match.position * 2 - 1}`];
+    const prevM2 = mMap[`${prevRound}-${match.position * 2}`];
+
+    // Check which previous match had the qualifier prediction
+    const pred1 = preds[prevM1?.id]?.winnerId;
+    const pred2 = preds[prevM2?.id]?.winnerId;
+
+    // If a previous match prediction is qualifierPlayerId, recurse to resolve it
+    if (pred1 === qPlayerId && prevM1) {
+      return resolveQualifierFromBracket(prevM1, preds, mMap, qPlayerId, pById);
+    }
+    if (pred2 === qPlayerId && prevM2) {
+      return resolveQualifierFromBracket(prevM2, preds, mMap, qPlayerId, pById);
+    }
+
+    // If the prediction in the previous round used a real player ID that is a qualifier,
+    // return that real ID directly (the qualifier was already resolved at prediction time).
+    // Check both playersById type and the match's player types for robustness.
+    if (pred1 && pred1 !== qPlayerId && prevM1) {
+      const isQualifier = pById[pred1]?.type === 'QUALIFIER' ||
+        (prevM1.player1_id === pred1 && prevM1.player1_type === 'QUALIFIER') ||
+        (prevM1.player2_id === pred1 && prevM1.player2_type === 'QUALIFIER');
+      if (isQualifier) return { realId: pred1, displayName: null };
+    }
+    if (pred2 && pred2 !== qPlayerId && prevM2) {
+      const isQualifier = pById[pred2]?.type === 'QUALIFIER' ||
+        (prevM2.player1_id === pred2 && prevM2.player1_type === 'QUALIFIER') ||
+        (prevM2.player2_id === pred2 && prevM2.player2_type === 'QUALIFIER');
+      if (isQualifier) return { realId: pred2, displayName: null };
+    }
+
+    return { realId: null, displayName: null };
+  }
+
   const CARD_HEIGHT = 110;
   const BASE_GAP = 24;
 
@@ -311,29 +377,38 @@ export function TournamentBracket({
         </div>
 
         {/* Finalizar Button */}
-        {viewMode === 'predictions' && !hasStarted && isFinalPredicted && (
-          <button
-            onClick={handleFinalize}
-            disabled={isFinalizing}
-            className={cn(
-              'flex items-center gap-2 px-8 py-3 bg-emerald-600 text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-200 transition-all animate-in fade-in slide-in-from-right-4',
-              isFinalizing
-                ? 'opacity-80 cursor-not-allowed'
-                : 'hover:bg-emerald-700 hover:-translate-y-1',
+        {viewMode === 'predictions' && !hasStarted && canMakePredictions && hasUnsavedChanges && (
+          <div className="flex items-center gap-3">
+            {!isFinalPredicted && (
+              <span className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-2 rounded-xl border border-amber-200 animate-pulse">
+                Preencha até a final para salvar
+              </span>
             )}
-          >
-            {isFinalizing ? (
-              <>
-                Salvando...
-                <Loader2 className="w-4 h-4 animate-spin" />
-              </>
-            ) : (
-              <>
-                Finalizar
-                <LogOut className="w-4 h-4" />
-              </>
-            )}
-          </button>
+            <button
+              onClick={handleFinalize}
+              disabled={isFinalizing || !isFinalPredicted}
+              className={cn(
+                'flex items-center gap-2 px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-lg transition-all animate-in fade-in slide-in-from-right-4',
+                !isFinalPredicted
+                  ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-slate-100'
+                  : isFinalizing
+                    ? 'bg-emerald-600 text-white opacity-80 cursor-not-allowed shadow-emerald-200'
+                    : 'bg-emerald-600 text-white hover:bg-emerald-700 hover:-translate-y-1 shadow-emerald-200',
+              )}
+            >
+              {isFinalizing ? (
+                <>
+                  Salvando...
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                </>
+              ) : (
+                <>
+                  Finalizar
+                  <LogOut className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </div>
         )}
       </div>
 
@@ -551,33 +626,33 @@ export function TournamentBracket({
 
                             let pred1 = localPredictions[m1?.id]?.winnerId;
                             let pred2 = localPredictions[m2?.id]?.winnerId;
+                            let pred1DisplayName: string | null = null;
+                            let pred2DisplayName: string | null = null;
 
-                            // Resolve qualifier predictions: if the user predicted "Qualifier" (generic ID)
-                            // but the actual player has been defined in that match, show the real player name
-                            if (pred1 && pred1 === qualifierPlayerId && m1) {
-                              // Find the real player that replaced the qualifier in the previous match
-                              const qSlotIsP1 = m1.player1_type === 'QUALIFIER' || m1.player1_type === 'LUCKY_LOSER';
-                              const qSlotIsP2 = m1.player2_type === 'QUALIFIER' || m1.player2_type === 'LUCKY_LOSER';
-                              if (qSlotIsP1 && m1.player1_id && m1.player1_id !== qualifierPlayerId) {
-                                pred1 = m1.player1_id;
-                              } else if (qSlotIsP2 && m1.player2_id && m1.player2_id !== qualifierPlayerId) {
-                                pred1 = m1.player2_id;
+                            // Resolve qualifier predictions recursively:
+                            // If the user predicted "Qualifier" (generic ID), trace back through the bracket
+                            // to find the original qualifier slot and resolve to the real player if defined.
+                            if (pred1 && pred1 === qualifierPlayerId) {
+                              const resolved = resolveQualifierFromBracket(m1, localPredictions, matchesMap, qualifierPlayerId, playersById);
+                              if (resolved.realId) {
+                                pred1 = resolved.realId;
+                              } else {
+                                pred1DisplayName = resolved.displayName || 'Qualifier';
                               }
                             }
-                            if (pred2 && pred2 === qualifierPlayerId && m2) {
-                              const qSlotIsP1 = m2.player1_type === 'QUALIFIER' || m2.player1_type === 'LUCKY_LOSER';
-                              const qSlotIsP2 = m2.player2_type === 'QUALIFIER' || m2.player2_type === 'LUCKY_LOSER';
-                              if (qSlotIsP1 && m2.player1_id && m2.player1_id !== qualifierPlayerId) {
-                                pred2 = m2.player1_id;
-                              } else if (qSlotIsP2 && m2.player2_id && m2.player2_id !== qualifierPlayerId) {
-                                pred2 = m2.player2_id;
+                            if (pred2 && pred2 === qualifierPlayerId) {
+                              const resolved = resolveQualifierFromBracket(m2, localPredictions, matchesMap, qualifierPlayerId, playersById);
+                              if (resolved.realId) {
+                                pred2 = resolved.realId;
+                              } else {
+                                pred2DisplayName = resolved.displayName || 'Qualifier';
                               }
                             }
 
                             // In predictions mode, prioritize the user's prediction from previous round
                             // But fallback to official player if user hasn't predicted yet (e.g. BYE or partial bracket)
                             if (pred1) {
-                              p1 = { id: pred1, ...playersById[pred1] };
+                              p1 = { id: pred1, ...playersById[pred1], ...(pred1DisplayName ? { display_name: pred1DisplayName } : {}) };
                             } else if (match.player1_id) {
                               p1 = {
                                 id: match.player1_id,
@@ -592,7 +667,7 @@ export function TournamentBracket({
                             }
 
                             if (pred2) {
-                              p2 = { id: pred2, ...playersById[pred2] };
+                              p2 = { id: pred2, ...playersById[pred2], ...(pred2DisplayName ? { display_name: pred2DisplayName } : {}) };
                             } else if (match.player2_id) {
                               p2 = {
                                 id: match.player2_id,
@@ -763,10 +838,18 @@ function BracketMatchCard({
   const resolvedSelectedWinnerId = (() => {
     if (selectedWinnerId !== qualifierPlayerId || !qualifierPlayerId) return selectedWinnerId;
     // The user predicted "Qualifier" - find which real player is in the qualifier slot
+    // First try using the official match types (works for round 1)
     const isP1QualifierSlot = match.player1_type === 'QUALIFIER' || match.player1_type === 'LUCKY_LOSER';
     const isP2QualifierSlot = match.player2_type === 'QUALIFIER' || match.player2_type === 'LUCKY_LOSER';
     if (isP1QualifierSlot && p1?.id && p1.id !== qualifierPlayerId) return p1.id;
     if (isP2QualifierSlot && p2?.id && p2.id !== qualifierPlayerId) return p2.id;
+    // For rounds > 1, the p1/p2 come from resolved predictions and carry their original type.
+    // Check if either p1 or p2 was originally a qualifier player
+    if (p1?.id && p1.id !== qualifierPlayerId && p1?.type === 'QUALIFIER') return p1.id;
+    if (p2?.id && p2.id !== qualifierPlayerId && p2?.type === 'QUALIFIER') return p2.id;
+    // Last resort: if only one of p1/p2 has qualifierPlayerId as id, the prediction must be for that one
+    if (p1?.id === qualifierPlayerId && p2?.id && p2.id !== qualifierPlayerId) return qualifierPlayerId;
+    if (p2?.id === qualifierPlayerId && p1?.id && p1.id !== qualifierPlayerId) return qualifierPlayerId;
     return selectedWinnerId;
   })();
 
@@ -799,72 +882,99 @@ function BracketMatchCard({
 
   const cardContent = (
     <>
-      <PlayerRow
-        name={p1?.name || null}
-        display_name={p1?.display_name || null}
-        seed={p1?.seed || null}
-        type={p1?.type}
-        country={p1?.country}
-        isWinner={match.winner_id === p1?.id && isCompleted}
-        isSelected={resolvedSelectedWinnerId === p1?.id || (p1?.type === 'QUALIFIER' && (resolvedSelectedWinnerId === qualifierPlayerId || (!!p1?.id && p1?.id === qualifierPlayerId && resolvedSelectedWinnerId === p1.id)))}
-        isPredicted={resolvedSelectedWinnerId === p1?.id || (p1?.type === 'QUALIFIER' && (resolvedSelectedWinnerId === qualifierPlayerId || (!!p1?.id && p1?.id === qualifierPlayerId && resolvedSelectedWinnerId === p1.id)))}
-        isCompleted={isCompleted}
-        onSelect={() => {
-          if (p1?.id) {
-            onPredict(p1.id);
-          } else if (p1?.type === 'QUALIFIER' && qualifierPlayerId) {
-            onPredict(qualifierPlayerId);
-          } else if (p1?.type === 'QUALIFIER') {
-            toast.info('Aguardando definição do Qualifier pela organização.');
-          }
-        }}
-        canPredict={!!canPredict && (!!p1?.id || (p1?.type === 'QUALIFIER' && !!qualifierPlayerId))}
-        score={match.score}
-        isP1={true}
-        isPlaceholder={((!p1?.id || p1?.id === qualifierPlayerId) && p1?.type !== 'BYE' && p1?.type !== 'PLAYER') || p1?.isAwaiting || p1?.isNotPredicted}
-        pointsCancelled={effectivePointsCancelled}
-        isAwaiting={p1?.isAwaiting}
-        viewMode={viewMode}
-        isForceIncorrect={isP1Incorrect}
-        isNotPredicted={p1?.isNotPredicted}
-        isAdmin={isAdmin}
-        isFinishedTournament={isFinishedTournament}
-      />
+      {(() => {
+        const bothAreGenericQualifiers = 
+          (p1?.type === 'QUALIFIER' && (!p1?.id || p1?.id === qualifierPlayerId)) &&
+          (p2?.type === 'QUALIFIER' && (!p2?.id || p2?.id === qualifierPlayerId));
+        
+        // When both are generic qualifiers, use the score marker to determine which slot was picked
+        const predScore = currentPrediction?.score;
+        const pickedSlot = predScore === '__SLOT_1__' ? 1 : predScore === '__SLOT_2__' ? 2 : null;
+        // Fallback for legacy predictions without slot marker: show p1 as selected
+        const hasLegacyQualifierPred = !pickedSlot && currentPrediction?.winnerId === qualifierPlayerId;
 
-      <div className="h-[1px] bg-slate-50 mx-4" />
+        const p1IsSelected = bothAreGenericQualifiers
+          ? pickedSlot === 1 || hasLegacyQualifierPred
+          : resolvedSelectedWinnerId === p1?.id || (p1?.type === 'QUALIFIER' && (!p1?.id || p1?.id === qualifierPlayerId) && resolvedSelectedWinnerId === qualifierPlayerId);
+        
+        const p2IsSelected = bothAreGenericQualifiers
+          ? pickedSlot === 2
+          : resolvedSelectedWinnerId === p2?.id || (p2?.type === 'QUALIFIER' && (!p2?.id || p2?.id === qualifierPlayerId) && resolvedSelectedWinnerId === qualifierPlayerId);
 
-      <PlayerRow
-        name={p2?.name || null}
-        display_name={p2?.display_name || null}
-        seed={p2?.seed || null}
-        type={p2?.type}
-        country={p2?.country}
-        isWinner={match.winner_id === p2?.id && isCompleted}
-        isSelected={resolvedSelectedWinnerId === p2?.id || (p2?.type === 'QUALIFIER' && (resolvedSelectedWinnerId === qualifierPlayerId || (!!p2?.id && p2?.id === qualifierPlayerId && resolvedSelectedWinnerId === p2.id)))}
-        isPredicted={resolvedSelectedWinnerId === p2?.id || (p2?.type === 'QUALIFIER' && (resolvedSelectedWinnerId === qualifierPlayerId || (!!p2?.id && p2?.id === qualifierPlayerId && resolvedSelectedWinnerId === p2.id)))}
-        isCompleted={isCompleted}
-        onSelect={() => {
-          if (p2?.id) {
-            onPredict(p2.id);
-          } else if (p2?.type === 'QUALIFIER' && qualifierPlayerId) {
-            onPredict(qualifierPlayerId);
-          } else if (p2?.type === 'QUALIFIER') {
-            toast.info('Aguardando definição do Qualifier pela organização.');
-          }
-        }}
-        canPredict={!!canPredict && (!!p2?.id || (p2?.type === 'QUALIFIER' && !!qualifierPlayerId))}
-        score={match.score}
-        isP1={false}
-        isPlaceholder={((!p2?.id || p2?.id === qualifierPlayerId) && p2?.type !== 'BYE' && p2?.type !== 'PLAYER') || p2?.isAwaiting || p2?.isNotPredicted}
-        pointsCancelled={effectivePointsCancelled}
-        isAwaiting={p2?.isAwaiting}
-        viewMode={viewMode}
-        isForceIncorrect={isP2Incorrect}
-        isNotPredicted={p2?.isNotPredicted}
-        isAdmin={isAdmin}
-        isFinishedTournament={isFinishedTournament}
-      />
+        // When both are generic qualifiers, both are clickable but use slot markers
+        const p1CanPredict = !!canPredict && (!!p1?.id || (p1?.type === 'QUALIFIER' && !!qualifierPlayerId));
+        const p2CanPredict = !!canPredict && (!!p2?.id || (p2?.type === 'QUALIFIER' && !!qualifierPlayerId));
 
+        return (
+          <>
+            <PlayerRow
+              name={p1?.name || null}
+              display_name={bothAreGenericQualifiers ? 'Qualifier 1' : (p1?.display_name || null)}
+              seed={p1?.seed || null}
+              type={p1?.type}
+              country={p1?.country}
+              isWinner={match.winner_id === p1?.id && isCompleted}
+              isSelected={p1IsSelected}
+              isPredicted={p1IsSelected}
+              isCompleted={isCompleted}
+              onSelect={() => {
+                if (p1?.id && p1?.id !== qualifierPlayerId) {
+                  onPredict(p1.id);
+                } else if (p1?.type === 'QUALIFIER' && qualifierPlayerId) {
+                  onPredict(qualifierPlayerId, bothAreGenericQualifiers ? '__SLOT_1__' : undefined);
+                } else if (p1?.type === 'QUALIFIER') {
+                  toast.info('Aguardando definição do Qualifier pela organização.');
+                }
+              }}
+              canPredict={p1CanPredict}
+              score={match.score}
+              isP1={true}
+              isPlaceholder={((!p1?.id || p1?.id === qualifierPlayerId) && p1?.type !== 'BYE' && p1?.type !== 'PLAYER') || p1?.isAwaiting || p1?.isNotPredicted}
+              pointsCancelled={effectivePointsCancelled}
+              isAwaiting={p1?.isAwaiting}
+              viewMode={viewMode}
+              isForceIncorrect={isP1Incorrect}
+              isNotPredicted={p1?.isNotPredicted}
+              isAdmin={isAdmin}
+              isFinishedTournament={isFinishedTournament}
+            />
+
+            <div className="h-[1px] bg-slate-50 mx-4" />
+
+            <PlayerRow
+              name={p2?.name || null}
+              display_name={bothAreGenericQualifiers ? 'Qualifier 2' : (p2?.display_name || null)}
+              seed={p2?.seed || null}
+              type={p2?.type}
+              country={p2?.country}
+              isWinner={match.winner_id === p2?.id && isCompleted}
+              isSelected={p2IsSelected}
+              isPredicted={p2IsSelected}
+              isCompleted={isCompleted}
+              onSelect={() => {
+                if (p2?.id && p2?.id !== qualifierPlayerId) {
+                  onPredict(p2.id);
+                } else if (p2?.type === 'QUALIFIER' && qualifierPlayerId) {
+                  onPredict(qualifierPlayerId, bothAreGenericQualifiers ? '__SLOT_2__' : undefined);
+                } else if (p2?.type === 'QUALIFIER') {
+                  toast.info('Aguardando definição do Qualifier pela organização.');
+                }
+              }}
+              canPredict={p2CanPredict}
+              score={match.score}
+              isP1={false}
+              isPlaceholder={((!p2?.id || p2?.id === qualifierPlayerId) && p2?.type !== 'BYE' && p2?.type !== 'PLAYER') || p2?.isAwaiting || p2?.isNotPredicted}
+              pointsCancelled={effectivePointsCancelled}
+              isAwaiting={p2?.isAwaiting}
+              viewMode={viewMode}
+              isForceIncorrect={isP2Incorrect}
+              isNotPredicted={p2?.isNotPredicted}
+              isAdmin={isAdmin}
+              isFinishedTournament={isFinishedTournament}
+            />
+          </>
+        );
+      })()}
     </>
   );
 

@@ -48,12 +48,20 @@ export async function saveFullBracketAction(
   const matchIds = predictions.map((p) => p.matchId);
 
   // 1. Delete predictions that are no longer in the provided list for this tournament
+  // IMPORTANT: Only delete predictions for Round 1 matches that have BOTH players defined.
+  // This prevents losing predictions when the user saves before all qualifiers are confirmed.
+  // For rounds > 1, predictions are always managed by the cascade logic in the frontend.
   if (matchIds.length > 0) {
     await sql`
       DELETE FROM predictions
       WHERE user_id = ${userId}
       AND bracket_match_id IN (
-        SELECT id FROM bracket_matches WHERE tournament_id = ${tournamentId}
+        SELECT id FROM bracket_matches 
+        WHERE tournament_id = ${tournamentId}
+        AND (
+          round > 1 
+          OR (round = 1 AND player1_id IS NOT NULL AND player2_id IS NOT NULL)
+        )
       )
       AND bracket_match_id NOT IN (SELECT unnest(${matchIds}::int[]))
     `;
@@ -62,7 +70,12 @@ export async function saveFullBracketAction(
       DELETE FROM predictions
       WHERE user_id = ${userId}
       AND bracket_match_id IN (
-        SELECT id FROM bracket_matches WHERE tournament_id = ${tournamentId}
+        SELECT id FROM bracket_matches 
+        WHERE tournament_id = ${tournamentId}
+        AND (
+          round > 1 
+          OR (round = 1 AND player1_id IS NOT NULL AND player2_id IS NOT NULL)
+        )
       )
     `;
   }

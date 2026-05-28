@@ -338,15 +338,71 @@ export async function setMatchPlayers(
 ): Promise<void> {
   const isLL = player1.type === 'LUCKY_LOSER' || player2.type === 'LUCKY_LOSER';
 
+  // Get current match state before updating
+  const currentMatch = await sql`SELECT round, position, player1_id, player2_id, player1_type, player2_type FROM bracket_matches WHERE id = ${matchId}`;
+  
   let withdrawnPlayerId: number | null = null;
-  if (isLL && tournamentId) {
-    const match = await sql`SELECT round, player1_id, player2_id FROM bracket_matches WHERE id = ${matchId}`;
-    if (match.length > 0 && match[0].round === 1) {
-      const cm = match[0];
+  if (isLL && tournamentId && currentMatch.length > 0) {
+    const cm = currentMatch[0];
+    if (cm.round === 1) {
       if (player1.type === 'LUCKY_LOSER' && cm.player1_id && cm.player1_id !== player1.id) {
         withdrawnPlayerId = cm.player1_id;
       } else if (player2.type === 'LUCKY_LOSER' && cm.player2_id && cm.player2_id !== player2.id) {
         withdrawnPlayerId = cm.player2_id;
+      }
+    }
+  }
+
+  // Check if we're replacing generic qualifiers with real players
+  // This is used to update user predictions that pointed to the generic qualifier
+  let resolveQualifierSlot1 = false;
+  let resolveQualifierSlot2 = false;
+  if (tournamentId && currentMatch.length > 0) {
+    const cm = currentMatch[0];
+    const genericQualifier = await sql`SELECT id FROM players WHERE name = 'Qualifier' LIMIT 1`;
+    const qualifierPlayerId = genericQualifier.length > 0 ? genericQualifier[0].id : null;
+
+    if (qualifierPlayerId) {
+      // Slot 1 was a generic qualifier and is now being set to a real player
+      const wasSlot1Qualifier = cm.player1_type === 'QUALIFIER' && (!cm.player1_id || cm.player1_id === qualifierPlayerId);
+      const isSlot1NowReal = player1.id && player1.id !== qualifierPlayerId;
+      if (wasSlot1Qualifier && isSlot1NowReal) {
+        resolveQualifierSlot1 = true;
+      }
+
+      // Slot 2 was a generic qualifier and is now being set to a real player
+      const wasSlot2Qualifier = cm.player2_type === 'QUALIFIER' && (!cm.player2_id || cm.player2_id === qualifierPlayerId);
+      const isSlot2NowReal = player2.id && player2.id !== qualifierPlayerId;
+      if (wasSlot2Qualifier && isSlot2NowReal) {
+        resolveQualifierSlot2 = true;
+      }
+
+      // Resolve predictions: update predicted_winner_id from generic qualifier to real player
+      if (resolveQualifierSlot1 || resolveQualifierSlot2) {
+        // Were both slots qualifiers? If so, use the __SLOT_X__ markers to distinguish
+        const bothWereQualifiers = wasSlot1Qualifier && wasSlot2Qualifier;
+
+        if (bothWereQualifiers) {
+          // Update predictions that used __SLOT_1__ marker
+          if (resolveQualifierSlot1) {
+            await resolveQualifierPredictions(matchId, qualifierPlayerId, player1.id!, '__SLOT_1__', tournamentId);
+          }
+          // Update predictions that used __SLOT_2__ marker
+          if (resolveQualifierSlot2) {
+            await resolveQualifierPredictions(matchId, qualifierPlayerId, player2.id!, '__SLOT_2__', tournamentId);
+          }
+        } else {
+          // Only one slot was qualifier - no ambiguity, update all predictions for this match
+          const newPlayerId = resolveQualifierSlot1 ? player1.id! : player2.id!;
+          await sql`
+            UPDATE predictions
+            SET predicted_winner_id = ${newPlayerId}, predicted_score = NULL
+            WHERE bracket_match_id = ${matchId}
+            AND predicted_winner_id = ${qualifierPlayerId}
+          `;
+          // Also update cascaded predictions in subsequent rounds
+          await resolveQualifierCascade(matchId, qualifierPlayerId, newPlayerId, tournamentId);
+        }
       }
     }
   }
@@ -371,6 +427,99 @@ export async function setMatchPlayers(
 
   if (tournamentId) {
     await autoAdvanceIfBye(matchId, tournamentId);
+  }
+}
+
+/**
+ * Resolve qualifier predictions for a specific match when both slots were qualifiers.
+ * Updates predictions that have the slot marker (__SLOT_1__ or __SLOT_2__) to point to the real player.
+ * Also cascades the update to subsequent rounds.
+ */
+async function resolveQualifierPredictions(
+  matchId: number,
+  qualifierPlayerId: number,
+  realPlayerId: number,
+  slotMarker: string,
+  tournamentId: number,
+) {
+  // Update predictions for this specific match that used the slot marker
+  await sql`
+    UPDATE predictions
+    SET predicted_winner_id = ${realPlayerId}, predicted_score = NULL
+    WHERE bracket_match_id = ${matchId}
+    AND predicted_winner_id = ${qualifierPlayerId}
+    AND predicted_score = ${slotMarker}
+  `;
+
+  // Cascade: update predictions in subsequent rounds that depended on this qualifier
+  await resolveQualifierCascade(matchId, qualifierPlayerId, realPlayerId, tournamentId);
+}
+
+/**
+ * Cascade qualifier resolution to subsequent rounds.
+ * When a qualifier is resolved to a real player in round N, any predictions in rounds N+1, N+2, etc.
+ * that have predicted_winner_id = qualifierPlayerId should be updated to the real player.
+ * We use the bracket structure (position) to trace the path forward.
+ */
+async function resolveQualifierCascade(
+  matchId: number,
+  qualifierPlayerId: number,
+  realPlayerId: number,
+  tournamentId: number,
+) {
+  // Get the match details to trace the bracket path
+  const matchInfo = await sql`
+    SELECT round, position FROM bracket_matches WHERE id = ${matchId}
+  `;
+  if (matchInfo.length === 0) return;
+
+  let currentRound = matchInfo[0].round as number;
+  let currentPos = matchInfo[0].position as number;
+
+  const maxRoundResult = await sql`
+    SELECT MAX(round) as max_round FROM bracket_matches WHERE tournament_id = ${tournamentId}
+  `;
+  const maxRound = maxRoundResult[0]?.max_round || currentRound;
+
+  // Walk forward through the bracket
+  while (currentRound < maxRound) {
+    const nextRound = currentRound + 1;
+    const nextPos = Math.ceil(currentPos / 2);
+    // Determine which slot (1 or 2) this match feeds into in the next round
+    // Odd positions feed into slot 1, even positions feed into slot 2
+    const feedsIntoSlot = currentPos % 2 === 1 ? 1 : 2;
+    const slotMarker = `__SLOT_${feedsIntoSlot}__`;
+
+    // Find the next match in the bracket path
+    const nextMatch = await sql`
+      SELECT id FROM bracket_matches
+      WHERE tournament_id = ${tournamentId} AND round = ${nextRound} AND position = ${nextPos}
+    `;
+    if (nextMatch.length === 0) break;
+
+    const nextMatchId = nextMatch[0].id;
+
+    // First try to update predictions with the specific slot marker
+    await sql`
+      UPDATE predictions
+      SET predicted_winner_id = ${realPlayerId}, predicted_score = NULL
+      WHERE bracket_match_id = ${nextMatchId}
+      AND predicted_winner_id = ${qualifierPlayerId}
+      AND predicted_score = ${slotMarker}
+    `;
+
+    // Also update predictions without a slot marker (legacy or non-ambiguous cases)
+    // Only if there's no other qualifier in the other slot of this match
+    await sql`
+      UPDATE predictions
+      SET predicted_winner_id = ${realPlayerId}
+      WHERE bracket_match_id = ${nextMatchId}
+      AND predicted_winner_id = ${qualifierPlayerId}
+      AND (predicted_score IS NULL OR predicted_score NOT LIKE '__SLOT_%__')
+    `;
+
+    currentRound = nextRound;
+    currentPos = nextPos;
   }
 }
 
