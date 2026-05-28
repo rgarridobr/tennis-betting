@@ -41,7 +41,7 @@ export default async function RankingPage({
       ranking = await getStateRanking(user.state, selectedTournamentId);
     }
   } else {
-    ranking = await getGlobalRanking(100, selectedTournamentId);
+    ranking = await getGlobalRanking(1000, selectedTournamentId);
   }
 
   return (
