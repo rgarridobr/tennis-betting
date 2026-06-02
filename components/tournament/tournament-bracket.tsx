@@ -429,7 +429,7 @@ export function TournamentBracket({
           <div
             key={selectedRound}
             className={cn(
-              'flex gap-12 md:gap-24 relative pb-20 min-w-max md:min-w-max animate-in fade-in duration-500 p-2 px-8 md:p-12 pt-0',
+              'flex gap-12 md:gap-24 relative pb-20 min-w-max md:min-w-max animate-in fade-in duration-500 p-2 px-4 md:p-12 pt-0',
               direction === 'right'
                 ? 'slide-in-from-right-48'
                 : direction === 'left'
@@ -459,7 +459,7 @@ export function TournamentBracket({
                     key={`round-${round}`}
                     data-round={round}
                     className={cn(
-                      'flex flex-col w-[265px] md:w-[300px] relative z-10 shrink-0 snap-center transition-all duration-500 ease-in-out'
+                      'flex flex-col w-[300px] md:w-[300px] relative z-10 shrink-0 snap-center transition-all duration-500 ease-in-out'
                     )}
                   >
                     <div className="sticky top-0 md:pt-3 pt-10 z-30 flex flex-col items-center gap-2 m-auto">
@@ -1196,7 +1196,7 @@ function PlayerRow({
       </div>
 
       {displaySets.length > 0 && (
-        <div className="flex items-center gap-1.5 ml-3">
+        <div className="flex items-center gap-0.1 ml-3">
           {displaySets.map((set, i) => {
             const parts = set.split('-');
             const setScore = isP1 ? parts[0] : parts[1];
@@ -1229,7 +1229,7 @@ function PlayerRow({
         </div>
       )}
 
-      <div className="flex items-center justify-end gap-1.5 ml-2 shrink-0 min-w-[24px]">
+      <div className="flex items-center justify-end gap-1.5 ml-1 shrink-0 min-w-[24px]">
         {viewMode === 'predictions' ? (
           isSelected && !isCompleted && !isForceIncorrect ? (
             <div className="w-6 h-6 rounded-full flex items-center justify-center">
