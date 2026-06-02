@@ -38,6 +38,8 @@ const tournamentImageMap: { keyword: string; image: string }[] = [
   { keyword: 'national bank', image: '/tournaments/national-bank-open.webp' },
   { keyword: 'cincinnati open', image: '/tournaments/masters-1000-cincinnati.webp' },
   { keyword: 'kinoshita', image: '/tournaments/kinoshita-open.webp' },
+  { keyword: 'shanghai masters', image: '/tournaments/shanghai-masters.webp' },
+  { keyword: 'paris masters', image: '/tournaments/paris-masters.webp' },
 ];
 
 /**

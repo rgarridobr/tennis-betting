@@ -154,6 +154,13 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
                 </p>
               </div>
             </div>
+            <Link
+              href={`/ranking/torneio/${tournamentId}`}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-blue-700 shadow-sm ring-1 ring-blue-100 transition-colors hover:bg-blue-100"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Voltar para ranking
+            </Link>
           </div>
         )}
 

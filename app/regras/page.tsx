@@ -94,12 +94,11 @@ export default async function RulesPage() {
               <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center">
                 <Users className="w-5 h-5 text-rose-600" />
               </div>
-              <CardTitle className="text-lg">Ver Adversários</CardTitle>
+              <CardTitle className="text-lg">Ver palpites dos adversários</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-slate-600 text-sm leading-relaxed">
-                Para visualizar os palpites dos adversários, basta clicar em “Ranking” e depois em “Ranking por
-                Torneio” e em seguida, no adversário de sua escolha.
+                Para visualizar os palpites dos adversários, basta clicar em "Ranking", depois em "Ranking por Torneio", e ao acessar o torneio basta escolher um adversário.
               </p>
             </CardContent>
           </Card>
