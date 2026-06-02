@@ -168,8 +168,8 @@ export default async function RulesPage() {
         {/* Tie breaker */}
         <section className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
-              <HelpCircle className="w-5 h-5 text-emerald-600" />
+            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+              <HelpCircle className="w-5 h-5 text-gray-600" />
             </div>
             <h2 className="text-xl font-bold text-slate-900">Critérios de Desempate</h2>
           </div>
