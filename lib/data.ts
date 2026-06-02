@@ -399,15 +399,8 @@ export async function getAllVisibleTournaments(limit?: number): Promise<Tourname
       WHERE is_visible = TRUE
       AND (
         status NOT IN ('finished', 'FINISHED', 'completed')
-        OR EXISTS (SELECT 1 FROM bracket_matches bm WHERE bm.tournament_id = tournaments.id)
       )
-      ORDER BY
-        CASE
-          WHEN status IN ('IN_PROGRESS', 'LOCKED', 'active') THEN 1
-          WHEN status IN ('OPEN', 'UPCOMING', 'upcoming', 'published') THEN 2
-          ELSE 3
-        END ASC,
-        start_date DESC
+      ORDER BY start_date ASC, id ASC
       LIMIT ${limit}
     `;
     return rows as Tournament[];
@@ -419,15 +412,8 @@ export async function getAllVisibleTournaments(limit?: number): Promise<Tourname
     WHERE is_visible = TRUE
     AND (
       status NOT IN ('finished', 'FINISHED', 'completed')
-      OR EXISTS (SELECT 1 FROM bracket_matches bm WHERE bm.tournament_id = tournaments.id)
     )
-    ORDER BY
-      CASE
-        WHEN status IN ('IN_PROGRESS', 'LOCKED', 'active') THEN 1
-        WHEN status IN ('OPEN', 'UPCOMING', 'upcoming', 'published') THEN 2
-        ELSE 3
-      END ASC,
-      start_date DESC
+    ORDER BY start_date ASC, id ASC
   `;
 
   return rows as Tournament[];

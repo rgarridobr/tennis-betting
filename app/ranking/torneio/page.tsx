@@ -62,6 +62,10 @@ export default async function TournamentRankingListPage({ searchParams }: PagePr
     filteredTournaments = filteredTournaments.filter((t) => t.category === category);
   }
 
+  filteredTournaments = filteredTournaments.sort(
+    (a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
+  );
+
   const totalItems = filteredTournaments.length;
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;

@@ -19,7 +19,7 @@ import {
   CheckCircle2,
   MapPin,
 } from "lucide-react";
-import { getTournaments, getAllVisibleTournaments } from "@/lib/data";
+import { getAllVisibleTournaments } from "@/lib/data";
 import { TournamentCard } from "@/components/dashboard/tournament-card";
 import { HeroCta } from "@/components/shared/hero-cta";
 
