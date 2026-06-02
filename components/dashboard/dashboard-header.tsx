@@ -58,12 +58,16 @@ export function DashboardHeader({
 
   return (
     <>
-      {user && !user.is_admin && (!user.state || !user.city) && (
+      {user && !user.is_admin && (!user.state || !user.city || !user.tennis_club) && (
         <CompleteRegistrationForm
           user={{
             name: user.name,
             nickname: user.nickname,
             tennis_club: user.tennis_club,
+            tennis_club_id: user.tennis_club_id,
+            tennis_club_custom: user.tennis_club_custom,
+            state: user.state,
+            city: user.city,
           }}
         />
       )}

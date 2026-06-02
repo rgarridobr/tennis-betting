@@ -10,12 +10,25 @@ export interface User {
   nickname?: string;
   whatsapp?: string;
   tennis_club?: string;
+  tennis_club_id?: number | null;
+  tennis_club_custom?: string | null;
   state?: string;
   city?: string;
   is_admin: boolean;
   is_active: boolean;
   created_at: string;
 }
+
+sql`CREATE TABLE IF NOT EXISTS tennis_clubs (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)`
+  .then(async () => {
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS tennis_club_id INTEGER REFERENCES tennis_clubs(id)`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS tennis_club_custom VARCHAR(255)`;
+  })
+  .catch(console.error);
 
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12);
@@ -57,9 +70,15 @@ export async function getSession(): Promise<User | null> {
   if (!token) return null;
 
   const sessions = await sql`
-    SELECT u.id, u.name, u.email, u.nickname, u.whatsapp, u.tennis_club, u.state, u.city, u.is_admin, u.is_active, u.created_at
+    SELECT
+      u.id, u.name, u.email, u.nickname, u.whatsapp,
+      COALESCE(tc.name, u.tennis_club_custom, u.tennis_club) as tennis_club,
+      u.tennis_club_id,
+      u.tennis_club_custom,
+      u.state, u.city, u.is_admin, u.is_active, u.created_at
     FROM sessions s
     JOIN users u ON s.user_id = u.id
+    LEFT JOIN tennis_clubs tc ON tc.id = u.tennis_club_id
     WHERE s.token = ${token}
     AND s.expires_at > NOW()
     AND (u.is_deleted IS FALSE OR u.is_deleted IS NULL)
@@ -87,7 +106,7 @@ export async function requireUserWithLocation(redirectTo?: string): Promise<User
     redirect(loginPath);
   }
 
-  if (!user.is_admin && (!user.state || !user.city)) {
+  if (!user.is_admin && (!user.state || !user.city || !user.tennis_club)) {
     redirect('/perfil');
   }
 
@@ -108,11 +127,13 @@ export async function registerUser(
   name: string,
   email: string,
   password: string,
+  state: string,
+  city: string,
   whatsapp?: string,
   tennis_club?: string,
   nickname?: string,
-  state: string,
-  city: string,
+  tennis_club_id?: number | null,
+  tennis_club_custom?: string | null,
 ): Promise<User> {
   const normalizedState = state.trim();
   const normalizedCity = city.trim();
@@ -124,9 +145,9 @@ export async function registerUser(
   const hashedPassword = await hashPassword(password);
 
   const users = await sql`
-    INSERT INTO users (name, email, whatsapp, tennis_club, nickname, password_hash, state, city)
-    VALUES (${name}, ${email}, ${whatsapp}, ${tennis_club}, ${nickname || null}, ${hashedPassword}, ${normalizedState}, ${normalizedCity})
-    RETURNING id, name, email, nickname, whatsapp, tennis_club, state, city, is_admin, created_at
+    INSERT INTO users (name, email, whatsapp, tennis_club, tennis_club_id, tennis_club_custom, nickname, password_hash, state, city)
+    VALUES (${name}, ${email}, ${whatsapp}, ${tennis_club}, ${tennis_club_id || null}, ${tennis_club_custom || null}, ${nickname || null}, ${hashedPassword}, ${normalizedState}, ${normalizedCity})
+    RETURNING id, name, email, nickname, whatsapp, tennis_club, tennis_club_id, tennis_club_custom, state, city, is_admin, created_at
   `;
 
   return users[0] as User;
@@ -134,9 +155,16 @@ export async function registerUser(
 
 export async function loginUser(email: string, password: string): Promise<User | null> {
   const users = await sql`
-    SELECT id, name, email, nickname, whatsapp, tennis_club, state, city, password_hash, is_admin, is_active, created_at
-    FROM users WHERE email = ${email}
-    AND (is_deleted IS FALSE OR is_deleted IS NULL)
+    SELECT
+      u.id, u.name, u.email, u.nickname, u.whatsapp,
+      COALESCE(tc.name, u.tennis_club_custom, u.tennis_club) as tennis_club,
+      u.tennis_club_id,
+      u.tennis_club_custom,
+      u.state, u.city, u.password_hash, u.is_admin, u.is_active, u.created_at
+    FROM users u
+    LEFT JOIN tennis_clubs tc ON tc.id = u.tennis_club_id
+    WHERE u.email = ${email}
+    AND (u.is_deleted IS FALSE OR u.is_deleted IS NULL)
   `;
 
   if (users.length === 0) return null;
@@ -153,6 +181,8 @@ export async function loginUser(email: string, password: string): Promise<User |
     nickname: user.nickname as string,
     whatsapp: user.whatsapp as string,
     tennis_club: user.tennis_club as string,
+    tennis_club_id: user.tennis_club_id as number | null,
+    tennis_club_custom: user.tennis_club_custom as string | null,
     state: user.state as string,
     city: user.city as string,
     is_admin: user.is_admin as boolean,

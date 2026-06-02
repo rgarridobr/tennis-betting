@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { StateCitySelector } from '@/components/shared/state-city-selector';
+import { TennisClubSelector } from '@/components/shared/tennis-club-selector';
 import { createUserAction } from '@/lib/actions/admin';
+import type { TennisClub } from '@/lib/data';
 import { UserPlus, Mail, Lock, User, AlertCircle, Loader2, Phone, Home } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatBrazilianPhoneNumber } from '@/lib/utils';
@@ -20,7 +22,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 
-export function CreateUserDialog() {
+export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +36,6 @@ export function CreateUserDialog() {
   const [state, setState] = useState('');
   const [city, setCity] = useState('');
 
-  const [isNoneChecked, setIsNoneChecked] = useState(false);
   const [isFirstNameOnlyChecked, setIsFirstNameOnlyChecked] = useState(false);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,16 +58,6 @@ export function CreateUserDialog() {
   const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formattedValue = formatBrazilianPhoneNumber(e.target.value);
     setWhatsapp(formattedValue);
-  };
-
-  const handleNoneChange = (checked: boolean) => {
-    setIsNoneChecked(checked);
-
-    if (checked) {
-      setTennisClub('Nenhum');
-    } else {
-      setTennisClub('');
-    }
   };
 
   function validateEmail(email: string) {
@@ -261,35 +252,7 @@ export function CreateUserDialog() {
             />
           </div>
 
-          {/* Clube */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <Label className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
-                <Home className="w-4 h-4 text-emerald-500" /> Clube
-              </Label>
-
-              <div className="flex items-center gap-2">
-                <Checkbox id="none_club" checked={isNoneChecked} onCheckedChange={handleNoneChange} />
-                <label
-                  htmlFor="none_club"
-                  className="text-[10px] font-black uppercase tracking-widest text-slate-400 cursor-pointer"
-                >
-                  Nenhum
-                </label>
-              </div>
-            </div>
-
-            <Input
-              name="tennis_club"
-              value={tennisClub}
-              onChange={(e) => setTennisClub(e.target.value)}
-              readOnly={isNoneChecked}
-              required
-              className={`h-12 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 ${
-                isNoneChecked ? 'bg-slate-100 cursor-not-allowed' : 'bg-slate-50'
-              }`}
-            />
-          </div>
+          <TennisClubSelector clubs={clubs} value={tennisClub} onChange={setTennisClub} label="Clube *" required />
 
           <DialogFooter className="pt-4">
             <Button

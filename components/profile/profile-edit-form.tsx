@@ -7,22 +7,27 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { StateCitySelector } from '@/components/shared/state-city-selector'
+import { TennisClubSelector } from '@/components/shared/tennis-club-selector'
 import { updateProfile } from '@/lib/actions/profile'
+import type { TennisClub } from '@/lib/data'
 import { Loader2, Check, AlertCircle } from 'lucide-react'
 
 interface ProfileEditFormProps {
+  clubs: TennisClub[]
   user: {
     id: number
     name: string
     email: string
     nickname?: string
     tennis_club?: string
+    tennis_club_id?: number | null
+    tennis_club_custom?: string | null
     state?: string
     city?: string
   }
 }
 
-export function ProfileEditForm({ user }: ProfileEditFormProps) {
+export function ProfileEditForm({ user, clubs }: ProfileEditFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [name, setName] = useState(user.name)
@@ -30,7 +35,6 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
   const [tennisClub, setTennisClub] = useState(user.tennis_club || '')
   const [state, setState] = useState(user.state || '')
   const [city, setCity] = useState(user.city || '')
-  const [isNoneChecked, setIsNoneChecked] = useState(user.tennis_club === 'Nenhum')
   const [isFirstNameOnlyChecked, setIsFirstNameOnlyChecked] = useState(false)
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,14 +54,6 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
     }
   }
 
-  const handleNoneChange = (checked: boolean) => {
-    setIsNoneChecked(checked)
-    if (checked) {
-      setTennisClub('Nenhum')
-    } else {
-      setTennisClub(user.tennis_club === 'Nenhum' ? '' : user.tennis_club || '')
-    }
-  }
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   async function handleProfileSubmit(formData: FormData) {
@@ -140,35 +136,14 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="tennis_club">Clube em que joga tênis *</Label>
-            <Input
-              id="tennis_club"
-              name="tennis_club"
-              type="text"
-              placeholder=""
-              value={tennisClub}
-              onChange={(e) => setTennisClub(e.target.value)}
-              readOnly={isNoneChecked}
-              className={isNoneChecked ? 'bg-slate-50 cursor-not-allowed' : ''}
-              required
-            />
-            <div className="flex items-center justify-end px-1">
-              <div className="flex items-center space-x-2 shrink-0">
-                <Checkbox 
-                  id="no_club_profile" 
-                  checked={isNoneChecked}
-                  onCheckedChange={handleNoneChange}
-                />
-                <Label
-                  htmlFor="no_club_profile"
-                  className="text-[10px] sm:text-xs font-medium cursor-pointer"
-                >
-                  Não joga em nenhum clube
-                </Label>
-              </div>
-            </div>
-          </div>
+          <TennisClubSelector
+            clubs={clubs}
+            value={tennisClub}
+            onChange={setTennisClub}
+            clubId={user.tennis_club_id}
+            customClub={user.tennis_club_custom}
+            required
+          />
 
           <div className="md:col-span-2">
             <StateCitySelector

@@ -15,8 +15,11 @@ export async function updateProfile(formData: FormData) {
     const name = formData.get('name') as string
     const nickname = formData.get('nickname') as string
     const tennis_club = formData.get('tennis_club') as string
+    const tennis_club_id_raw = (formData.get('tennis_club_id') as string | null)?.trim() ?? ''
+    const tennis_club_custom = (formData.get('tennis_club_custom') as string | null)?.trim() ?? ''
     const state = formData.get('state') as string
     const city = formData.get('city') as string
+    const tennis_club_id = tennis_club_id_raw ? Number(tennis_club_id_raw) : null
 
     if (!name || name.trim().length === 0) {
       return { success: false, error: 'Nome é obrigatório' }
@@ -41,6 +44,8 @@ export async function updateProfile(formData: FormData) {
         name = ${name.trim()},
         nickname = ${nickname?.trim() || null},
         tennis_club = ${tennis_club.trim()},
+        tennis_club_id = ${tennis_club_id},
+        tennis_club_custom = ${tennis_club_custom || null},
         state = ${state},
         city = ${city},
         updated_at = NOW()

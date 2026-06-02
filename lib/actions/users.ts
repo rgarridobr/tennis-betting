@@ -1,6 +1,7 @@
 'use server'
 
 import { sql } from '@/lib/db'
+import { getTennisClubs } from '@/lib/data'
 
 export async function getUserCount() {
   try {
@@ -15,4 +16,8 @@ export async function getUserCount() {
     console.error('Error fetching user count:', error)
     return 0
   }
+}
+
+export async function getTennisClubsAction() {
+  return getTennisClubs()
 }

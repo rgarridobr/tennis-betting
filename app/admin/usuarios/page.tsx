@@ -1,4 +1,5 @@
 import { getAllUsers, countAllUsers, getUserFilterOptions } from '@/lib/admin';
+import { getTennisClubs } from '@/lib/data';
 import { PageHero } from '@/components/shared/page-hero';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +13,7 @@ import { redirect } from 'next/navigation';
 import { tennisBall } from '@lucide/lab';
 import { UserFilters } from '@/components/admin/user-filters';
 import { UserPagination } from '@/components/admin/user-pagination';
+import { TennisClubManager } from '@/components/admin/tennis-club-manager';
 
 interface Props {
   searchParams: Promise<{
@@ -33,10 +35,11 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   const currentPage = page ? parseInt(page) : 1;
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
-  const [users, totalUsers, filterOptions] = await Promise.all([
+  const [users, totalUsers, filterOptions, clubs] = await Promise.all([
     getAllUsers({ search, state, city, club, limit: ITEMS_PER_PAGE, offset }),
     countAllUsers({ search, state, city, club }),
     getUserFilterOptions(),
+    getTennisClubs(),
   ]);
 
   const totalPages = Math.ceil(totalUsers / ITEMS_PER_PAGE);
@@ -51,8 +54,10 @@ export default async function AdminUsersPage({ searchParams }: Props) {
             <h2 className="text-3xl font-black text-slate-900 tracking-tight">Lista de Usuários</h2>
             <p className="text-slate-500 font-medium">Gerencie o acesso e permissões dos participantes</p>
           </div>
-          <CreateUserDialog />
+          <CreateUserDialog clubs={clubs} />
         </div>
+
+        <TennisClubManager clubs={clubs} />
 
         <UserFilters filterOptions={filterOptions} />
 
@@ -139,7 +144,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                             <>
                               <UserStatusToggle userId={user.id} isActive={user.is_active} />
                               <div className="flex items-center gap-1 ml-2">
-                                <EditUserDialog user={user as any} />
+                                <EditUserDialog user={user as any} clubs={clubs} />
                                 <DeleteUserButton userId={user.id} userName={user.name} />
                               </div>
                             </>

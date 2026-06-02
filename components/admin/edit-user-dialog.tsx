@@ -10,6 +10,8 @@ import { toast } from 'sonner'
 import { formatBrazilianPhoneNumber } from '@/lib/utils'
 import { Checkbox } from '@/components/ui/checkbox'
 import { StateCitySelector } from '@/components/shared/state-city-selector'
+import { TennisClubSelector } from '@/components/shared/tennis-club-selector'
+import type { TennisClub } from '@/lib/data'
 import {
   Dialog,
   DialogContent,
@@ -21,6 +23,7 @@ import {
 } from '@/components/ui/dialog'
 
 interface EditUserDialogProps {
+  clubs: TennisClub[]
   user: {
     id: number
     name: string
@@ -28,12 +31,14 @@ interface EditUserDialogProps {
     nickname?: string
     whatsapp?: string
     tennis_club?: string
+    tennis_club_id?: number | null
+    tennis_club_custom?: string | null
     state?: string
     city?: string
   }
 }
 
-export function EditUserDialog({ user }: EditUserDialogProps) {
+export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
   const [isPending, startTransition] = useTransition()
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -43,7 +48,6 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
   const [tennisClub, setTennisClub] = useState(user.tennis_club || '')
   const [state, setState] = useState(user.state || '')
   const [city, setCity] = useState(user.city || '')
-  const [isNoneChecked, setIsNoneChecked] = useState(user.tennis_club?.toLowerCase() === 'nenhum')
   const [isFirstNameOnlyChecked, setIsFirstNameOnlyChecked] = useState(false)
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,15 +70,6 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
   const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formattedValue = formatBrazilianPhoneNumber(e.target.value)
     setWhatsapp(formattedValue)
-  }
-
-  const handleNoneChange = (checked: boolean) => {
-    setIsNoneChecked(checked)
-    if (checked) {
-      setTennisClub('Nenhum')
-    } else {
-      setTennisClub(user.tennis_club || '')
-    }
   }
 
   async function handleSubmit(formData: FormData) {
@@ -218,37 +213,14 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
               />
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between ml-1">
-                <Label htmlFor="edit-tennis_club" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest">
-                  <Home className="w-3 h-3 text-emerald-500" /> Clube em que joga tênis *
-                </Label>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="edit-no_club"
-                    checked={isNoneChecked}
-                    onCheckedChange={handleNoneChange}
-                    className="w-3 h-3 border-slate-300 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
-                  />
-                  <label
-                    htmlFor="edit-no_club"
-                    className="text-[10px] font-black uppercase tracking-widest text-slate-400 cursor-pointer"
-                  >
-                    Nenhum
-                  </label>
-                </div>
-              </div>
-              <Input
-                id="edit-tennis_club"
-                name="tennis_club"
-                placeholder=""
-                value={tennisClub}
-                onChange={(e) => setTennisClub(e.target.value)}
-                readOnly={isNoneChecked}
-                required
-                className={`h-12 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 placeholder:text-slate-300 ${isNoneChecked ? 'bg-slate-100 cursor-not-allowed' : 'bg-slate-50'}`}
-              />
-            </div>
+            <TennisClubSelector
+              clubs={clubs}
+              value={tennisClub}
+              onChange={setTennisClub}
+              clubId={user.tennis_club_id}
+              customClub={user.tennis_club_custom}
+              required
+            />
           </div>
 
           <div className="text-[10px] text-slate-400 font-black uppercase tracking-widest text-center">

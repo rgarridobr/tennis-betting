@@ -1,5 +1,6 @@
 import { RegisterForm } from '@/components/auth/register-form';
 import { getSession } from '@/lib/auth';
+import { getTennisClubs } from '@/lib/data';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
@@ -15,6 +16,7 @@ export default async function RegisterPage() {
       redirect('/dashboard');
     }
   }
+  const clubs = await getTennisClubs();
 
   return (
     <div className="min-h-screen flex bg-[#f8fafc] container mx-auto px-4 md:px-32">
@@ -52,7 +54,7 @@ export default async function RegisterPage() {
             </p>
           </div>
 
-          <RegisterForm />
+          <RegisterForm clubs={clubs} />
 
           <p className="text-center text-slate-500 font-medium">
             Já tem uma conta?{' '}

@@ -1230,16 +1230,21 @@ export async function getAllUsers(options?: { search?: string; state?: string; c
   const offset = options?.offset ?? 0;
 
   const users = await sql`
-    SELECT u.id, u.name, u.email, u.nickname, u.whatsapp, u.tennis_club, u.state, u.city, u.is_admin, u.is_active, u.is_deleted, u.created_at,
+    SELECT u.id, u.name, u.email, u.nickname, u.whatsapp,
+      COALESCE(tc.name, u.tennis_club_custom, u.tennis_club) as tennis_club,
+      u.tennis_club_id,
+      u.tennis_club_custom,
+      u.state, u.city, u.is_admin, u.is_active, u.is_deleted, u.created_at,
       COUNT(p.id) as total_predictions
     FROM users u
+    LEFT JOIN tennis_clubs tc ON tc.id = u.tennis_club_id
     LEFT JOIN predictions p ON u.id = p.user_id
     WHERE u.is_deleted = FALSE
       AND (${search}::text IS NULL OR u.name ILIKE ${search} OR u.email ILIKE ${search} OR u.nickname ILIKE ${search})
       AND (${stateFilter}::text IS NULL OR u.state = ${stateFilter})
       AND (${cityFilter}::text IS NULL OR u.city = ${cityFilter})
-      AND (${clubFilter}::text IS NULL OR u.tennis_club = ${clubFilter})
-    GROUP BY u.id, u.name, u.email, u.nickname, u.whatsapp, u.tennis_club, u.state, u.city, u.is_admin, u.is_active, u.is_deleted, u.created_at
+      AND (${clubFilter}::text IS NULL OR COALESCE(tc.name, u.tennis_club_custom, u.tennis_club) = ${clubFilter})
+    GROUP BY u.id, u.name, u.email, u.nickname, u.whatsapp, tc.name, u.tennis_club, u.tennis_club_id, u.tennis_club_custom, u.state, u.city, u.is_admin, u.is_active, u.is_deleted, u.created_at
     ORDER BY u.name ASC
     LIMIT ${limit} OFFSET ${offset}
   `;
@@ -1254,12 +1259,13 @@ export async function countAllUsers(options?: { search?: string; state?: string;
 
   const result = await sql`
     SELECT COUNT(*) as count
-    FROM users
-    WHERE is_deleted = FALSE
-      AND (${search}::text IS NULL OR name ILIKE ${search} OR email ILIKE ${search} OR nickname ILIKE ${search})
-      AND (${stateFilter}::text IS NULL OR state = ${stateFilter})
-      AND (${cityFilter}::text IS NULL OR city = ${cityFilter})
-      AND (${clubFilter}::text IS NULL OR tennis_club = ${clubFilter})
+    FROM users u
+    LEFT JOIN tennis_clubs tc ON tc.id = u.tennis_club_id
+    WHERE u.is_deleted = FALSE
+      AND (${search}::text IS NULL OR u.name ILIKE ${search} OR u.email ILIKE ${search} OR u.nickname ILIKE ${search})
+      AND (${stateFilter}::text IS NULL OR u.state = ${stateFilter})
+      AND (${cityFilter}::text IS NULL OR u.city = ${cityFilter})
+      AND (${clubFilter}::text IS NULL OR COALESCE(tc.name, u.tennis_club_custom, u.tennis_club) = ${clubFilter})
   `;
   return Number(result[0].count);
 }
@@ -1268,7 +1274,15 @@ export async function getUserFilterOptions() {
   const [states, cities, clubs] = await Promise.all([
     sql`SELECT DISTINCT state FROM users WHERE is_deleted = FALSE AND state IS NOT NULL AND state != '' ORDER BY state ASC`,
     sql`SELECT DISTINCT city FROM users WHERE is_deleted = FALSE AND city IS NOT NULL AND city != '' ORDER BY city ASC`,
-    sql`SELECT DISTINCT tennis_club FROM users WHERE is_deleted = FALSE AND tennis_club IS NOT NULL AND tennis_club != '' ORDER BY tennis_club ASC`,
+    sql`
+      SELECT DISTINCT COALESCE(tc.name, u.tennis_club_custom, u.tennis_club) as tennis_club
+      FROM users u
+      LEFT JOIN tennis_clubs tc ON tc.id = u.tennis_club_id
+      WHERE u.is_deleted = FALSE
+        AND COALESCE(tc.name, u.tennis_club_custom, u.tennis_club) IS NOT NULL
+        AND COALESCE(tc.name, u.tennis_club_custom, u.tennis_club) != ''
+      ORDER BY tennis_club ASC
+    `,
   ]);
 
   return {
@@ -1335,13 +1349,15 @@ export async function updateUser(
     nickname?: string;
     whatsapp: string;
     tennis_club: string;
+    tennis_club_id?: number | null;
+    tennis_club_custom?: string | null;
     state: string;
     city: string;
   },
 ): Promise<void> {
   await sql`
     UPDATE users
-    SET name = ${data.name}, email = ${data.email}, nickname = ${data.nickname || null}, whatsapp = ${data.whatsapp}, tennis_club = ${data.tennis_club}, state = ${data.state ?? ''}, city = ${data.city ?? ''}, updated_at = NOW()
+    SET name = ${data.name}, email = ${data.email}, nickname = ${data.nickname || null}, whatsapp = ${data.whatsapp}, tennis_club = ${data.tennis_club}, tennis_club_id = ${data.tennis_club_id || null}, tennis_club_custom = ${data.tennis_club_custom || null}, state = ${data.state ?? ''}, city = ${data.city ?? ''}, updated_at = NOW()
     WHERE id = ${id}
   `;
 }

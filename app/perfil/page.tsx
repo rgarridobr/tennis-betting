@@ -1,6 +1,6 @@
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { getUserStats, getGlobalRanking, getActiveTournament } from '@/lib/data';
+import { getUserStats, getGlobalRanking, getActiveTournament, getTennisClubs } from '@/lib/data';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { PageHero } from '@/components/shared/page-hero';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,10 +14,11 @@ export default async function PerfilPage() {
   if (!user) redirect('/login');
   if (user.is_admin) redirect('/admin');
 
-  const [stats, ranking, activeTournament] = await Promise.all([
+  const [stats, ranking, activeTournament, clubs] = await Promise.all([
     getUserStats(user.id),
     getGlobalRanking(100),
-    getActiveTournament()
+    getActiveTournament(),
+    getTennisClubs(),
   ]);
 
   // Find user position in ranking
@@ -87,7 +88,7 @@ export default async function PerfilPage() {
             </CardHeader>
 
             <CardContent>
-              <ProfileEditForm user={user} />
+              <ProfileEditForm user={user} clubs={clubs} />
             </CardContent>
           </Card>
 

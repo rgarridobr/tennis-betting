@@ -4,6 +4,61 @@ import { sql } from './db';
 sql`ALTER TABLE pools ADD COLUMN IF NOT EXISTS tournament_id INTEGER REFERENCES tournaments(id)`.catch(console.error);
 sql`ALTER TABLE pools ADD COLUMN IF NOT EXISTS hide_pending BOOLEAN DEFAULT TRUE`.catch(console.error);
 sql`ALTER TABLE pools ADD COLUMN IF NOT EXISTS whatsapp_link TEXT`.catch(console.error);
+sql`CREATE TABLE IF NOT EXISTS tennis_clubs (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)`
+  .then(async () => {
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS tennis_club_id INTEGER REFERENCES tennis_clubs(id)`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS tennis_club_custom VARCHAR(255)`;
+  })
+  .catch(console.error);
+
+const DEFAULT_TENNIS_CLUBS = [
+  'Clube Militar Lagoa',
+  'Tijuca Tênis Clube',
+  'Minas Tênis Clube',
+  'Rio de Janeiro Country Club',
+  'Leme Tênis Clube',
+  'Grajaú Country Club',
+  'Piedade Tennis Club',
+  'Rio Tennis Academy',
+  'Jockey Club Brasileiro',
+  'Clube dos Caiçaras',
+  'Techset Academy',
+  'Marapendi Club',
+  'Tennis Route',
+  'Marina Barra Clube',
+  'Paissandu Atlético Clube',
+  'Clube Naval Piraquê',
+  'Grêmio Náutico União',
+  'Clube da Orla',
+  'Cidade Jardim',
+  'Egberto Caldas Tennis',
+  'Parque Desportivo Unifor',
+  'ANSEF',
+  'Tênis Clube de Campos',
+  'TS Tennis Canoas',
+];
+
+async function ensureDefaultTennisClubs(): Promise<void> {
+  await sql`CREATE TABLE IF NOT EXISTS tennis_clubs (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS tennis_club_id INTEGER REFERENCES tennis_clubs(id)`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS tennis_club_custom VARCHAR(255)`;
+
+  for (const club of DEFAULT_TENNIS_CLUBS) {
+    await sql`
+      INSERT INTO tennis_clubs (name)
+      VALUES (${club})
+      ON CONFLICT (name) DO NOTHING
+    `;
+  }
+}
 
 // ==================== INTERFACES ====================
 
@@ -40,6 +95,11 @@ export interface Player {
 }
 
 export interface TournamentMetadata {
+  id: number;
+  name: string;
+}
+
+export interface TennisClub {
   id: number;
   name: string;
 }
@@ -492,6 +552,16 @@ export async function getTournamentNames(): Promise<TournamentMetadata[]> {
 export async function getTournamentLocations(): Promise<TournamentMetadata[]> {
   const rows = await sql`SELECT * FROM tournament_locations ORDER BY name ASC`;
   return rows as TournamentMetadata[];
+}
+
+export async function getTennisClubs(): Promise<TennisClub[]> {
+  await ensureDefaultTennisClubs();
+  const rows = await sql`
+    SELECT id, name
+    FROM tennis_clubs
+    ORDER BY name ASC
+  `;
+  return rows as TennisClub[];
 }
 
 // ==================== BRACKET MATCHES ====================

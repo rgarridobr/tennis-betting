@@ -10,8 +10,11 @@ export async function registerAction(formData: FormData) {
   const password = (formData.get('password') as string | null)?.trim() ?? '';
   const whatsapp = (formData.get('whatsapp') as string | null)?.trim() ?? '';
   const tennis_club = (formData.get('tennis_club') as string | null)?.trim() ?? '';
+  const tennis_club_id_raw = (formData.get('tennis_club_id') as string | null)?.trim() ?? '';
+  const tennis_club_custom = (formData.get('tennis_club_custom') as string | null)?.trim() ?? '';
   const state = (formData.get('state') as string | null)?.trim() ?? '';
   const city = (formData.get('city') as string | null)?.trim() ?? '';
+  const tennis_club_id = tennis_club_id_raw ? Number(tennis_club_id_raw) : null;
 
   if (!name || !email || !password || !tennis_club || !state || !city) {
     return { error: 'Todos os campos são obrigatórios' };
@@ -22,7 +25,18 @@ export async function registerAction(formData: FormData) {
   }
 
   try {
-    const user = await registerUser(name, email, password, whatsapp, tennis_club, nickname, state, city);
+    const user = await registerUser(
+      name,
+      email,
+      password,
+      state,
+      city,
+      whatsapp,
+      tennis_club,
+      nickname,
+      tennis_club_id,
+      tennis_club_custom || null,
+    );
     await createSession(user.id);
   } catch (error: unknown) {
     if (error instanceof Error && error.message.includes('unique')) {

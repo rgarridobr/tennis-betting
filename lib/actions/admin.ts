@@ -365,8 +365,11 @@ export async function createUserAction(formData: FormData) {
   const password = (formData.get('password') as string | null)?.trim() ?? '';
   const whatsapp = (formData.get('whatsapp') as string | null)?.trim() ?? '';
   const tennis_club = (formData.get('tennis_club') as string | null)?.trim() ?? '';
+  const tennis_club_id_raw = (formData.get('tennis_club_id') as string | null)?.trim() ?? '';
+  const tennis_club_custom = (formData.get('tennis_club_custom') as string | null)?.trim() ?? '';
   const state = (formData.get('state') as string | null)?.trim() ?? '';
   const city = (formData.get('city') as string | null)?.trim() ?? '';
+  const tennis_club_id = tennis_club_id_raw ? Number(tennis_club_id_raw) : null;
 
   if (!name || !email || !password || !tennis_club || !state || !city) {
     return { success: false, error: 'Todos os campos são obrigatórios' };
@@ -377,7 +380,18 @@ export async function createUserAction(formData: FormData) {
   }
 
   try {
-    await registerUser(name, email, password, whatsapp, tennis_club, nickname, state, city);
+    await registerUser(
+      name,
+      email,
+      password,
+      state,
+      city,
+      whatsapp,
+      tennis_club,
+      nickname,
+      tennis_club_id,
+      tennis_club_custom || null,
+    );
     revalidatePath('/admin/usuarios');
     return { success: true };
   } catch (error: any) {
@@ -397,15 +411,28 @@ export async function updateUserAction(id: number, formData: FormData) {
   const nickname = (formData.get('nickname') as string | null)?.trim() ?? '';
   const whatsapp = (formData.get('whatsapp') as string | null)?.trim() ?? '';
   const tennis_club = (formData.get('tennis_club') as string | null)?.trim() ?? '';
+  const tennis_club_id_raw = (formData.get('tennis_club_id') as string | null)?.trim() ?? '';
+  const tennis_club_custom = (formData.get('tennis_club_custom') as string | null)?.trim() ?? '';
   const state = (formData.get('state') as string | null)?.trim() ?? '';
   const city = (formData.get('city') as string | null)?.trim() ?? '';
+  const tennis_club_id = tennis_club_id_raw ? Number(tennis_club_id_raw) : null;
 
   if (!name || !email || !tennis_club || !state || !city) {
     return { success: false, error: 'Campos obrigatórios estão faltando' };
   }
 
   try {
-    await updateUser(id, { name, email, nickname, whatsapp, tennis_club, state, city });
+    await updateUser(id, {
+      name,
+      email,
+      nickname,
+      whatsapp,
+      tennis_club,
+      tennis_club_id,
+      tennis_club_custom: tennis_club_custom || null,
+      state,
+      city,
+    });
     revalidatePath('/admin/usuarios');
     return { success: true };
   } catch (error) {
@@ -426,6 +453,30 @@ export async function deleteUserAction(userId: number) {
   await softDeleteUser(userId);
   revalidatePath('/admin/usuarios');
   return { success: true };
+}
+
+export async function createTennisClubAction(formData: FormData) {
+  await requireAdmin();
+
+  const name = (formData.get('name') as string | null)?.trim() ?? '';
+  if (!name) {
+    return { success: false, error: 'Nome do clube Ã© obrigatÃ³rio' };
+  }
+
+  try {
+    await sql`
+      INSERT INTO tennis_clubs (name)
+      VALUES (${name})
+      ON CONFLICT (name) DO NOTHING
+    `;
+    revalidatePath('/admin/usuarios');
+    revalidatePath('/cadastro');
+    revalidatePath('/perfil');
+    return { success: true };
+  } catch (error) {
+    console.error('Error creating tennis club:', error);
+    return { success: false, error: 'Erro ao cadastrar clube' };
+  }
 }
 
 // ==================== ATP DRAW SYNC ====================

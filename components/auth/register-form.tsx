@@ -10,6 +10,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatBrazilianPhoneNumber } from '@/lib/utils';
 import { StateCitySelector } from '@/components/shared/state-city-selector';
+import { TennisClubSelector } from '@/components/shared/tennis-club-selector';
+import type { TennisClub } from '@/lib/data';
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
 
@@ -22,7 +24,7 @@ function SubmitButton() {
   );
 }
 
-export function RegisterForm() {
+export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirectTo') || '';
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +32,6 @@ export function RegisterForm() {
   const [nickname, setNickname] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [tennisClub, setTennisClub] = useState('');
-  const [isNoneChecked, setIsNoneChecked] = useState(false);
   const [isFirstNameOnlyChecked, setIsFirstNameOnlyChecked] = useState(false);
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
@@ -57,15 +58,6 @@ export function RegisterForm() {
   const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formattedValue = formatBrazilianPhoneNumber(e.target.value);
     setWhatsapp(formattedValue);
-  };
-
-  const handleNoneChange = (checked: boolean) => {
-    setIsNoneChecked(checked);
-    if (checked) {
-      setTennisClub('Nenhum');
-    } else {
-      setTennisClub('');
-    }
   };
 
   async function handleSubmit(formData: FormData) {
@@ -205,31 +197,7 @@ export function RegisterForm() {
             />
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="tennis_club">Clube em que joga tênis *</Label>
-              <div className="flex items-center space-x-2">
-                <Checkbox id="no_club" checked={isNoneChecked} onCheckedChange={handleNoneChange} />
-                <label
-                  htmlFor="no_club"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Nenhum
-                </label>
-              </div>
-            </div>
-            <Input
-              id="tennis_club"
-              name="tennis_club"
-              type="text"
-              placeholder=""
-              value={tennisClub}
-              onChange={(e) => setTennisClub(e.target.value)}
-              readOnly={isNoneChecked}
-              className={isNoneChecked ? 'bg-slate-50 cursor-not-allowed' : ''}
-              required
-            />
-          </div>
+          <TennisClubSelector clubs={clubs} value={tennisClub} onChange={setTennisClub} required />
 
           <div className="text-[10px] text-slate-400 font-bold px-1 italic py-2">Campos com * são obrigatórios</div>
 
