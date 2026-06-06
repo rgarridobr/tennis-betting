@@ -13,7 +13,6 @@ import { redirect } from 'next/navigation';
 import { tennisBall } from '@lucide/lab';
 import { UserFilters } from '@/components/admin/user-filters';
 import { UserPagination } from '@/components/admin/user-pagination';
-import { TennisClubManager } from '@/components/admin/tennis-club-manager';
 
 interface Props {
   searchParams: Promise<{
@@ -56,8 +55,6 @@ export default async function AdminUsersPage({ searchParams }: Props) {
           </div>
           <CreateUserDialog clubs={clubs} />
         </div>
-
-        <TennisClubManager clubs={clubs} />
 
         <UserFilters filterOptions={filterOptions} />
 

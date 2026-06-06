@@ -29,7 +29,7 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
   const currentPage = page ? parseInt(page) : 1;
 
   const [allTournaments, activeTournament, ranking] = await Promise.all([
-    getAllVisibleTournaments(),
+    getAllVisibleTournaments(undefined, true),
     getActiveTournament(),
     getGlobalRanking(5),
   ]);

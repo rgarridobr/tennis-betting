@@ -470,12 +470,88 @@ export async function createTennisClubAction(formData: FormData) {
       ON CONFLICT (name) DO NOTHING
     `;
     revalidatePath('/admin/usuarios');
+    revalidatePath('/admin/clubes');
     revalidatePath('/cadastro');
     revalidatePath('/perfil');
     return { success: true };
   } catch (error) {
     console.error('Error creating tennis club:', error);
     return { success: false, error: 'Erro ao cadastrar clube' };
+  }
+}
+
+export async function updateTennisClubAction(formData: FormData) {
+  await requireAdmin();
+
+  const id = Number((formData.get('id') as string | null)?.trim() ?? '');
+  const name = (formData.get('name') as string | null)?.trim() ?? '';
+
+  if (!id || !name) {
+    return { success: false, error: 'ID e nome do clube são obrigatórios' };
+  }
+
+  try {
+    const existingClub = await sql`
+      SELECT name FROM tennis_clubs WHERE id = ${id}
+    `;
+    if (existingClub.length === 0) {
+      return { success: false, error: 'Clube não encontrado' };
+    }
+
+    const oldName = existingClub[0].name;
+
+    await sql`
+      UPDATE tennis_clubs
+      SET name = ${name}
+      WHERE id = ${id}
+    `;
+
+    await sql`
+      UPDATE users
+      SET tennis_club = ${name}
+      WHERE tennis_club_id = ${id}
+        OR tennis_club = ${oldName}
+    `;
+
+    revalidatePath('/admin/usuarios');
+    revalidatePath('/admin/clubes');
+    revalidatePath('/cadastro');
+    revalidatePath('/perfil');
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating tennis club:', error);
+    return { success: false, error: 'Erro ao atualizar clube' };
+  }
+}
+
+export async function deleteTennisClubAction(formData: FormData) {
+  await requireAdmin();
+
+  const id = Number((formData.get('id') as string | null)?.trim() ?? '');
+  if (!id) {
+    return { success: false, error: 'ID do clube é obrigatório' };
+  }
+
+  try {
+    await sql`
+      UPDATE users
+      SET tennis_club_id = NULL
+      WHERE tennis_club_id = ${id}
+    `;
+
+    await sql`
+      DELETE FROM tennis_clubs
+      WHERE id = ${id}
+    `;
+
+    revalidatePath('/admin/usuarios');
+    revalidatePath('/admin/clubes');
+    revalidatePath('/cadastro');
+    revalidatePath('/perfil');
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting tennis club:', error);
+    return { success: false, error: 'Erro ao excluir clube' };
   }
 }
 

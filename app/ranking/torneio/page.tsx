@@ -30,7 +30,7 @@ export default async function TournamentRankingListPage({ searchParams }: PagePr
   const currentPage = page ? parseInt(page) : 1;
 
   const [allTournaments, activeTournament] = await Promise.all([
-    getAllVisibleTournaments(),
+    getAllVisibleTournaments(undefined, true),
     getActiveTournament(),
   ]);
 

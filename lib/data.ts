@@ -449,17 +449,17 @@ export async function getTournamentsByYearAndMonth(year: number, month: number):
   return rows as Tournament[];
 }
 
-export async function getAllVisibleTournaments(limit?: number): Promise<Tournament[]> {
+export async function getAllVisibleTournaments(limit?: number, includeFinished = false): Promise<Tournament[]> {
   await syncTournamentStatuses();
+
+  const statusFilter = includeFinished ? sql`` : sql`AND (status NOT IN ('finished', 'FINISHED', 'completed'))`;
 
   if (limit) {
     const rows = await sql`
       SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
       FROM tournaments
       WHERE is_visible = TRUE
-      AND (
-        status NOT IN ('finished', 'FINISHED', 'completed')
-      )
+      ${statusFilter}
       ORDER BY start_date ASC, id ASC
       LIMIT ${limit}
     `;
@@ -470,9 +470,7 @@ export async function getAllVisibleTournaments(limit?: number): Promise<Tourname
     SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
     FROM tournaments
     WHERE is_visible = TRUE
-    AND (
-      status NOT IN ('finished', 'FINISHED', 'completed')
-    )
+    ${statusFilter}
     ORDER BY start_date ASC, id ASC
   `;
 
@@ -866,14 +864,17 @@ export async function getGlobalRanking(limit: number = 50, tournamentId?: number
   }
 
   // Step 5: Group by user and apply "best 22" rule
-  const userTournaments: Record<number, Array<{
-    tournament_id: number;
-    points: number;
-    correct: number;
-    total: number;
-    hit_champion: boolean;
-    hit_both: boolean;
-  }>> = {};
+  const userTournaments: Record<
+    number,
+    Array<{
+      tournament_id: number;
+      points: number;
+      correct: number;
+      total: number;
+      hit_champion: boolean;
+      hit_both: boolean;
+    }>
+  > = {};
 
   for (const row of perTournamentPoints) {
     const userId = row.user_id as number;
@@ -1051,14 +1052,17 @@ export async function getStateRanking(
   }
 
   // Group by user and apply "best 22" rule
-  const userTournaments: Record<number, Array<{
-    tournament_id: number;
-    points: number;
-    correct: number;
-    total: number;
-    hit_champion: boolean;
-    hit_both: boolean;
-  }>> = {};
+  const userTournaments: Record<
+    number,
+    Array<{
+      tournament_id: number;
+      points: number;
+      correct: number;
+      total: number;
+      hit_champion: boolean;
+      hit_both: boolean;
+    }>
+  > = {};
 
   for (const row of perTournamentPoints) {
     const userId = row.user_id as number;
@@ -1345,7 +1349,7 @@ export async function getPoolRanking(
   }));
 
   // Get members who did NOT complete predictions (not in the ranked list)
-  const rankedUserIds = rankedEntries.map(e => e.user_id);
+  const rankedUserIds = rankedEntries.map((e) => e.user_id);
   const unrankedMembers = await sql`
     SELECT 
       u.id as user_id,
