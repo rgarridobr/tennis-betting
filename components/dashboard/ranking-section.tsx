@@ -73,12 +73,12 @@ export function RankingSection({ ranking, currentUserId }: RankingSectionProps) 
                           </Badge>
                         )}
                       </p>
-                      <div className="flex items-center gap-3 text-xs font-medium text-slate-500 flex-wrap">
-                        <span className="flex items-center gap-1.5 text-emerald-700 px-2 py-1 rounded-md whitespace-nowrap">
-                          <Target className="w-3.5 h-3.5 text-emerald-600" />
-                          <span className="font-bold text-emerald-600">{entry.correct_predictions}/{entry.total_predictions}</span>
+                      <div className="flex items-center gap-1 md:gap-2 text-xs font-medium text-slate-500 flex-wrap">
+                        <span className="flex items-center gap-1 text-black-700 px-2 py-1 rounded-md whitespace-nowrap">
+                          <Target className="w-3.5 h-3.5 text-black-600" />
+                          <span className="font-bold text-black-600">{entry.correct_predictions}/{entry.total_predictions}</span>
                         </span>
-                        <span className="flex items-center gap-1.5 text-blue-700 px-2 py-1 rounded-md whitespace-nowrap">
+                        <span className="flex items-center gap-1 text-blue-700 px-2 py-1 rounded-md whitespace-nowrap">
                           <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
                           <span className="font-bold text-blue-600">{accuracy}%</span>
                         </span>
