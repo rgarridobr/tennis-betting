@@ -1,40 +1,44 @@
-'use server'
+'use server';
 
-import { revalidatePath } from 'next/cache'
-import { sql } from '@/lib/db'
-import { getSession } from '@/lib/auth'
-import bcrypt from 'bcryptjs'
+import { revalidatePath } from 'next/cache';
+import { sql } from '@/lib/db';
+import { getSession } from '@/lib/auth';
+import bcrypt from 'bcryptjs';
 
 export async function updateProfile(formData: FormData) {
   try {
-    const user = await getSession()
+    const user = await getSession();
     if (!user) {
-      return { success: false, error: 'Não autorizado' }
+      return { success: false, error: 'Não autorizado' };
     }
 
-    const name = formData.get('name') as string
-    const nickname = formData.get('nickname') as string
-    const tennis_club = formData.get('tennis_club') as string
-    const tennis_club_id_raw = (formData.get('tennis_club_id') as string | null)?.trim() ?? ''
-    const tennis_club_custom = (formData.get('tennis_club_custom') as string | null)?.trim() ?? ''
-    const state = formData.get('state') as string
-    const city = formData.get('city') as string
-    const tennis_club_id = tennis_club_id_raw ? Number(tennis_club_id_raw) : null
+    const name = formData.get('name') as string;
+    const nickname = formData.get('nickname') as string;
+    const tennis_club = formData.get('tennis_club') as string;
+    const tennis_club_id_raw = (formData.get('tennis_club_id') as string | null)?.trim() ?? '';
+    const tennis_club_custom = (formData.get('tennis_club_custom') as string | null)?.trim() ?? '';
+    const country = (formData.get('country') as string | null)?.trim() || 'Brasil';
+    const state = (formData.get('state') as string | null)?.trim() ?? '';
+    const city = (formData.get('city') as string | null)?.trim() ?? '';
+    const tennis_club_id = tennis_club_id_raw ? Number(tennis_club_id_raw) : null;
+    const isBrazil = ['brasil', 'brazil'].includes(country.trim().toLowerCase());
+    const stateValue = isBrazil ? state : '';
+    const cityValue = isBrazil ? city : '';
 
     if (!name || name.trim().length === 0) {
-      return { success: false, error: 'Nome é obrigatório' }
+      return { success: false, error: 'Nome é obrigatório' };
     }
 
     if (!tennis_club || tennis_club.trim().length === 0) {
-      return { success: false, error: 'Clube em que joga tênis é obrigatório' }
+      return { success: false, error: 'Clube em que joga tênis é obrigatório' };
     }
 
-    if (!state || !city) {
-      return { success: false, error: 'Estado e cidade são obrigatórios' }
+    if (isBrazil && (!state || !city)) {
+      return { success: false, error: 'Estado e cidade são obrigatórios para Brasil' };
     }
 
     if (name.trim().length < 2) {
-      return { success: false, error: 'Nome deve ter pelo menos 2 caracteres' }
+      return { success: false, error: 'Nome deve ter pelo menos 2 caracteres' };
     }
 
     // Update user (email cannot be changed)
@@ -46,78 +50,79 @@ export async function updateProfile(formData: FormData) {
         tennis_club = ${tennis_club.trim()},
         tennis_club_id = ${tennis_club_id},
         tennis_club_custom = ${tennis_club_custom || null},
-        state = ${state},
-        city = ${city},
+        country = ${country.trim()},
+        state = ${stateValue},
+        city = ${cityValue},
         updated_at = NOW()
       WHERE id = ${user.id}
-    `
+    `;
 
-    revalidatePath('/perfil')
-    revalidatePath('/dashboard')
-    
-    return { success: true }
+    revalidatePath('/perfil');
+    revalidatePath('/dashboard');
+
+    return { success: true };
   } catch (error) {
-    console.error('Error updating profile:', error)
-    return { success: false, error: 'Erro ao atualizar perfil' }
+    console.error('Error updating profile:', error);
+    return { success: false, error: 'Erro ao atualizar perfil' };
   }
 }
 
 export async function updatePassword(formData: FormData) {
   try {
-    const user = await getSession()
+    const user = await getSession();
     if (!user) {
-      return { success: false, error: 'Você precisa estar logado para alterar a senha' }
+      return { success: false, error: 'Você precisa estar logado para alterar a senha' };
     }
 
-    const currentPassword = formData.get('currentPassword') as string
-    const newPassword = formData.get('newPassword') as string
+    const currentPassword = formData.get('currentPassword') as string;
+    const newPassword = formData.get('newPassword') as string;
 
     if (!currentPassword) {
-      return { success: false, error: 'Digite sua senha atual' }
+      return { success: false, error: 'Digite sua senha atual' };
     }
 
     if (!newPassword) {
-      return { success: false, error: 'Digite a nova senha' }
+      return { success: false, error: 'Digite a nova senha' };
     }
 
     if (newPassword.length < 6) {
-      return { success: false, error: 'A nova senha deve ter pelo menos 6 caracteres' }
+      return { success: false, error: 'A nova senha deve ter pelo menos 6 caracteres' };
     }
 
     if (currentPassword === newPassword) {
-      return { success: false, error: 'A nova senha deve ser diferente da atual' }
+      return { success: false, error: 'A nova senha deve ser diferente da atual' };
     }
 
     // Get current user with password
     const users = await sql`
       SELECT password_hash FROM users WHERE id = ${user.id}
-    `
+    `;
 
     if (users.length === 0) {
-      return { success: false, error: 'Usuário não encontrado' }
+      return { success: false, error: 'Usuário não encontrado' };
     }
 
     // Verify current password
-    const isValid = await bcrypt.compare(currentPassword, users[0].password_hash)
+    const isValid = await bcrypt.compare(currentPassword, users[0].password_hash);
     if (!isValid) {
-      return { success: false, error: 'Senha atual incorreta' }
+      return { success: false, error: 'Senha atual incorreta' };
     }
 
     // Hash new password
-    const hashedPassword = await bcrypt.hash(newPassword, 10)
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // Update password
     await sql`
       UPDATE users 
       SET password_hash = ${hashedPassword}, updated_at = NOW()
       WHERE id = ${user.id}
-    `
+    `;
 
-    revalidatePath('/perfil')
-    
-    return { success: true, message: 'Senha alterada com sucesso!' }
+    revalidatePath('/perfil');
+
+    return { success: true, message: 'Senha alterada com sucesso!' };
   } catch (error) {
-    console.error('Error updating password:', error)
-    return { success: false, error: 'Erro interno ao atualizar senha. Tente novamente.' }
+    console.error('Error updating password:', error);
+    return { success: false, error: 'Erro interno ao atualizar senha. Tente novamente.' };
   }
 }

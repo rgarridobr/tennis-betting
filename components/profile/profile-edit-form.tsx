@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { StateCitySelector } from '@/components/shared/state-city-selector'
 import { TennisClubSelector } from '@/components/shared/tennis-club-selector'
+import { CountrySelector } from '@/components/shared/country-selector'
 import { updateProfile } from '@/lib/actions/profile'
 import type { TennisClub } from '@/lib/data'
 import { Loader2, Check, AlertCircle } from 'lucide-react'
@@ -22,6 +23,7 @@ interface ProfileEditFormProps {
     tennis_club?: string
     tennis_club_id?: number | null
     tennis_club_custom?: string | null
+    country?: string
     state?: string
     city?: string
   }
@@ -33,9 +35,11 @@ export function ProfileEditForm({ user, clubs }: ProfileEditFormProps) {
   const [name, setName] = useState(user.name)
   const [nickname, setNickname] = useState(user.nickname || '')
   const [tennisClub, setTennisClub] = useState(user.tennis_club || '')
+  const [country, setCountry] = useState(user.country || 'Brasil')
   const [state, setState] = useState(user.state || '')
   const [city, setCity] = useState(user.city || '')
   const [isFirstNameOnlyChecked, setIsFirstNameOnlyChecked] = useState(false)
+  const isBrazil = ['brasil', 'brazil'].includes(country.trim().toLowerCase())
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -136,6 +140,18 @@ export function ProfileEditForm({ user, clubs }: ProfileEditFormProps) {
             </div>
           </div>
 
+          <CountrySelector
+            selectedCountry={country}
+            onCountryChange={(value) => {
+              setCountry(value)
+              if (!['brasil', 'brazil'].includes(value.trim().toLowerCase())) {
+                setState('')
+                setCity('')
+              }
+            }}
+            required
+          />
+
           <TennisClubSelector
             clubs={clubs}
             value={tennisClub}
@@ -146,14 +162,18 @@ export function ProfileEditForm({ user, clubs }: ProfileEditFormProps) {
           />
 
           <div className="md:col-span-2">
-            <StateCitySelector
-              selectedState={state}
-              selectedCity={city}
-              onStateChange={setState}
-              onCityChange={setCity}
-              required
-              layout="grid"
-            />
+            {isBrazil ? (
+              <StateCitySelector
+                selectedState={state}
+                selectedCity={city}
+                onStateChange={setState}
+                onCityChange={setCity}
+                required
+                layout="grid"
+              />
+            ) : (
+              <p className="text-sm text-slate-500">Para outros países, estado e cidade não são necessários.</p>
+            )}
           </div>
         </div>
 

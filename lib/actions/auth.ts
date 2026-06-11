@@ -12,12 +12,14 @@ export async function registerAction(formData: FormData) {
   const tennis_club = (formData.get('tennis_club') as string | null)?.trim() ?? '';
   const tennis_club_id_raw = (formData.get('tennis_club_id') as string | null)?.trim() ?? '';
   const tennis_club_custom = (formData.get('tennis_club_custom') as string | null)?.trim() ?? '';
+  const country = (formData.get('country') as string | null)?.trim() || 'Brasil';
   const state = (formData.get('state') as string | null)?.trim() ?? '';
   const city = (formData.get('city') as string | null)?.trim() ?? '';
   const tennis_club_id = tennis_club_id_raw ? Number(tennis_club_id_raw) : null;
+  const isBrazil = ['brasil', 'brazil'].includes(country.trim().toLowerCase());
 
-  if (!name || !email || !password || !tennis_club || !state || !city) {
-    return { error: 'Todos os campos são obrigatórios' };
+  if (!name || !email || !password || !tennis_club || (isBrazil && (!state || !city))) {
+    return { error: 'Todos os campos obrigatórios devem ser preenchidos' };
   }
 
   if (password.length < 6) {
@@ -29,6 +31,7 @@ export async function registerAction(formData: FormData) {
       name,
       email,
       password,
+      country,
       state,
       city,
       whatsapp,

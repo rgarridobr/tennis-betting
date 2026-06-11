@@ -14,6 +14,7 @@ export interface User {
   tennis_club_custom?: string | null;
   state?: string;
   city?: string;
+  country?: string;
   is_admin: boolean;
   is_active: boolean;
   created_at: string;
@@ -27,6 +28,9 @@ sql`CREATE TABLE IF NOT EXISTS tennis_clubs (
   .then(async () => {
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS tennis_club_id INTEGER REFERENCES tennis_clubs(id)`;
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS tennis_club_custom VARCHAR(255)`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS country VARCHAR(100)`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS state VARCHAR(100)`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS city VARCHAR(100)`;
   })
   .catch(console.error);
 
@@ -75,6 +79,7 @@ export async function getSession(): Promise<User | null> {
       COALESCE(tc.name, u.tennis_club_custom, u.tennis_club) as tennis_club,
       u.tennis_club_id,
       u.tennis_club_custom,
+      u.country as country,
       u.state, u.city, u.is_admin, u.is_active, u.created_at
     FROM sessions s
     JOIN users u ON s.user_id = u.id
@@ -106,8 +111,17 @@ export async function requireUserWithLocation(redirectTo?: string): Promise<User
     redirect(loginPath);
   }
 
-  if (!user.is_admin && (!user.state || !user.city || !user.tennis_club)) {
-    redirect('/perfil');
+  const country = user.country?.trim().toLowerCase() || '';
+  const isBrazil = ['brasil', 'brazil'].includes(country);
+
+  if (!user.is_admin) {
+    if (!user.tennis_club || !user.country) {
+      redirect('/perfil');
+    }
+
+    if (isBrazil && (!user.state || !user.city)) {
+      redirect('/perfil');
+    }
   }
 
   return user;
@@ -127,6 +141,7 @@ export async function registerUser(
   name: string,
   email: string,
   password: string,
+  country: string,
   state: string,
   city: string,
   whatsapp?: string,
@@ -135,19 +150,23 @@ export async function registerUser(
   tennis_club_id?: number | null,
   tennis_club_custom?: string | null,
 ): Promise<User> {
+  const normalizedCountry = country.trim() || 'Brasil';
+  const isBrazil = ['brasil', 'brazil'].includes(normalizedCountry.toLowerCase());
   const normalizedState = state.trim();
   const normalizedCity = city.trim();
+  const stateValue = isBrazil ? normalizedState : '';
+  const cityValue = isBrazil ? normalizedCity : '';
 
-  if (!normalizedState || !normalizedCity) {
-    throw new Error('State and city are required to register');
+  if (isBrazil && (!normalizedState || !normalizedCity)) {
+    throw new Error('State and city are required to register with Brasil');
   }
 
   const hashedPassword = await hashPassword(password);
 
   const users = await sql`
-    INSERT INTO users (name, email, whatsapp, tennis_club, tennis_club_id, tennis_club_custom, nickname, password_hash, state, city)
-    VALUES (${name}, ${email}, ${whatsapp}, ${tennis_club}, ${tennis_club_id || null}, ${tennis_club_custom || null}, ${nickname || null}, ${hashedPassword}, ${normalizedState}, ${normalizedCity})
-    RETURNING id, name, email, nickname, whatsapp, tennis_club, tennis_club_id, tennis_club_custom, state, city, is_admin, created_at
+    INSERT INTO users (name, email, whatsapp, tennis_club, tennis_club_id, tennis_club_custom, nickname, password_hash, country, state, city)
+    VALUES (${name}, ${email}, ${whatsapp}, ${tennis_club}, ${tennis_club_id || null}, ${tennis_club_custom || null}, ${nickname || null}, ${hashedPassword}, ${normalizedCountry}, ${stateValue}, ${cityValue})
+    RETURNING id, name, email, nickname, whatsapp, tennis_club, tennis_club_id, tennis_club_custom, country, state, city, is_admin, created_at
   `;
 
   return users[0] as User;
@@ -160,6 +179,7 @@ export async function loginUser(email: string, password: string): Promise<User |
       COALESCE(tc.name, u.tennis_club_custom, u.tennis_club) as tennis_club,
       u.tennis_club_id,
       u.tennis_club_custom,
+      COALESCE(u.country, 'Brasil') as country,
       u.state, u.city, u.password_hash, u.is_admin, u.is_active, u.created_at
     FROM users u
     LEFT JOIN tennis_clubs tc ON tc.id = u.tennis_club_id
@@ -183,6 +203,7 @@ export async function loginUser(email: string, password: string): Promise<User |
     tennis_club: user.tennis_club as string,
     tennis_club_id: user.tennis_club_id as number | null,
     tennis_club_custom: user.tennis_club_custom as string | null,
+    country: user.country as string,
     state: user.state as string,
     city: user.city as string,
     is_admin: user.is_admin as boolean,

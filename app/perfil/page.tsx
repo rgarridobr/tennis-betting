@@ -25,9 +25,15 @@ export default async function PerfilPage() {
   const userRankEntry = ranking.find((r) => r.user_id === user.id);
   const userPosition = userRankEntry?.rank || '-';
 
-  // Calculate account age
+  // Calculate account age in whole days using local calendar dates
   const createdAt = new Date(user.created_at);
-  const accountAge = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+  const now = new Date();
+  const createdDate = new Date(createdAt.getFullYear(), createdAt.getMonth(), createdAt.getDate());
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const accountAge = Math.max(
+    0,
+    Math.floor((today.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24)),
+  );
 
   const displayName = user.nickname || user.name;
   const initials = displayName

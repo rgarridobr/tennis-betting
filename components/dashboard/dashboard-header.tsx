@@ -56,9 +56,17 @@ export function DashboardHeader({
     { href: "/regras", label: "Regras", icon: FileText },
   ];
 
+  const showCompleteRegistration =
+    user &&
+    !user.is_admin &&
+    (!user.country ||
+      !user.tennis_club ||
+      (['brasil', 'brazil'].includes(user.country?.trim().toLowerCase() || '') &&
+        (!user.state || !user.city)));
+
   return (
     <>
-      {user && !user.is_admin && (!user.state || !user.city || !user.tennis_club) && (
+      {showCompleteRegistration && (
         <CompleteRegistrationForm
           user={{
             name: user.name,
@@ -66,6 +74,7 @@ export function DashboardHeader({
             tennis_club: user.tennis_club,
             tennis_club_id: user.tennis_club_id,
             tennis_club_custom: user.tennis_club_custom,
+            country: user.country,
             state: user.state,
             city: user.city,
           }}

@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { formatBrazilianPhoneNumber } from '@/lib/utils';
 import { StateCitySelector } from '@/components/shared/state-city-selector';
 import { TennisClubSelector } from '@/components/shared/tennis-club-selector';
+import { CountrySelector } from '@/components/shared/country-selector';
 import type { TennisClub } from '@/lib/data';
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
@@ -35,8 +36,11 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
   const [isFirstNameOnlyChecked, setIsFirstNameOnlyChecked] = useState(false);
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [country, setCountry] = useState('Brasil');
   const [state, setState] = useState('');
   const [city, setCity] = useState('');
+
+  const isBrazil = ['brasil', 'brazil'].includes(country.trim().toLowerCase());
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -56,8 +60,12 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
   };
 
   const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedValue = formatBrazilianPhoneNumber(e.target.value);
-    setWhatsapp(formattedValue);
+    const nextValue = e.target.value;
+    if (isBrazil) {
+      setWhatsapp(formatBrazilianPhoneNumber(nextValue));
+    } else {
+      setWhatsapp(nextValue);
+    }
   };
 
   async function handleSubmit(formData: FormData) {
@@ -65,15 +73,17 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
 
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
+    const country = (formData.get('country') as string | null)?.trim() || 'Brasil';
     const state = (formData.get('state') as string | null)?.trim() ?? '';
     const city = (formData.get('city') as string | null)?.trim() ?? '';
+    const isBrazil = ['brasil', 'brazil'].includes(country.toLowerCase());
 
     if (!validateEmail(email) || !validatePassword(password)) {
       return;
     }
 
-    if (!state || !city) {
-      const message = 'Estado e cidade são obrigatórios.';
+    if (isBrazil && (!state || !city)) {
+      const message = 'Estado e cidade são obrigatórios para Brasil.';
       toast.error(message);
       setError(message);
       return;
@@ -161,13 +171,33 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
             />
           </div>
 
-          <StateCitySelector
-            selectedState={state}
-            selectedCity={city}
-            onStateChange={setState}
-            onCityChange={setCity}
+          <CountrySelector
+            selectedCountry={country}
+            onCountryChange={(value) => {
+              const nextCountry = value.trim();
+              setCountry(nextCountry);
+
+              const nextIsBrazil = ['brasil', 'brazil'].includes(nextCountry.toLowerCase());
+              if (!nextIsBrazil) {
+                setState('');
+                setCity('');
+                setWhatsapp((current) => current.replace(/[^+\d]/g, ''));
+              }
+            }}
             required
           />
+
+          {isBrazil ? (
+            <StateCitySelector
+              selectedState={state}
+              selectedCity={city}
+              onStateChange={setState}
+              onCityChange={setCity}
+              required
+            />
+          ) : (
+            <p className="text-sm text-slate-500">Para outros países, estado e cidade não são necessários.</p>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="password">Senha *</Label>
