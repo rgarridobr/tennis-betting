@@ -64,7 +64,7 @@ git --version
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/tennis-betting.git
+git clone https://github.com/iamvictormt/tennis-betting.git
 cd tennis-betting
 ```
 
