@@ -32,33 +32,57 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
     getAllVisibleTournaments(undefined, true),
     getActiveTournament(),
     getGlobalRanking(5),
-  ]);
+  ]); 
   const activeStatuses = ['active', 'published', 'OPEN', 'LOCKED', 'IN_PROGRESS'];
+  const upcomingStatuses = ['upcoming', 'UPCOMING', 'STANDBY'];
+  const requestedStatus = status || 'active';
+
+  function applyTextAndCategoryFilters(tournaments: typeof allTournaments) {
+    let result = tournaments;
+
+    if (search) {
+      const searchLower = search.toLowerCase();
+      result = result.filter(
+        (t) => t.name.toLowerCase().includes(searchLower) || t.location.toLowerCase().includes(searchLower),
+      );
+    }
+
+    if (category && category !== 'all') {
+      result = result.filter((t) => t.category === category);
+    }
+
+    return result;
+  }
+
   // Apply filters
   let filteredTournaments = allTournaments;
-  if (status === 'finished') {
+  let sectionTitle = 'Torneios Ativos';
+
+  if (requestedStatus === 'finished') {
     filteredTournaments = filteredTournaments
       .filter((t) => ['finished', 'FINISHED', 'completed'].includes(t.status))
       .sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime());
-  } else if (status === 'upcoming') {
+    sectionTitle = 'Torneios Finalizados';
+  } else if (requestedStatus === 'upcoming') {
     filteredTournaments = filteredTournaments
-      .filter((t) => ['upcoming', 'UPCOMING', 'STANDBY'].includes(t.status))
+      .filter((t) => upcomingStatuses.includes(t.status))
       .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
+    sectionTitle = 'O que vem por aí';
   } else {
     filteredTournaments = filteredTournaments
       .filter((t) => activeStatuses.includes(t.status))
       .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
   }
 
-  if (search) {
-    const searchLower = search.toLowerCase();
-    filteredTournaments = filteredTournaments.filter(
-      (t) => t.name.toLowerCase().includes(searchLower) || t.location.toLowerCase().includes(searchLower),
-    );
-  }
+  filteredTournaments = applyTextAndCategoryFilters(filteredTournaments);
 
-  if (category && category !== 'all') {
-    filteredTournaments = filteredTournaments.filter((t) => t.category === category);
+  if (requestedStatus === 'active' && filteredTournaments.length === 0) {
+    filteredTournaments = applyTextAndCategoryFilters(
+      allTournaments
+        .filter((t) => upcomingStatuses.includes(t.status))
+        .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime()),
+    );
+    sectionTitle = 'O que vem por aí';
   }
 
   const totalItems = filteredTournaments.length;
@@ -99,13 +123,7 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
               <section className="mb-12">
                 <div className="flex items-center gap-2 mb-6">
                   <div className="w-2 h-8 bg-emerald-500 rounded-full" />
-                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-                    {status === 'finished'
-                      ? 'Torneios Finalizados'
-                      : status === 'active' || !status 
-                        ? 'Torneios Ativos'
-                        : 'Torneios Futuros'}
-                  </h2>
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">{sectionTitle}</h2>
                   <span className="ml-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold">
                     {totalItems} {totalItems === 1 ? 'torneio' : 'torneios'}
                   </span>

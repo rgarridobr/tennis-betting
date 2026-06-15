@@ -50,6 +50,8 @@ export default async function ManageTournamentPage({ params }: Props) {
   });
 
   const maxRound = matches.length > 0 ? Math.max(...matches.map((m) => m.round)) : 0;
+  const finalMatch = matches.find((m) => m.round === maxRound);
+  const finalCompleted = finalMatch?.status === 'completed' && !!finalMatch.winner_id;
   const dynamicRoundNames = getDynamicRoundNames(maxRound);
 
   const statusLabels: Record<string, string> = {
@@ -100,7 +102,11 @@ export default async function ManageTournamentPage({ params }: Props) {
           </Button>
 
           <div className="flex items-center gap-3 flex-wrap">
-            <TournamentStatusTransition tournamentId={tournamentId} status={tournament.status} />
+            <TournamentStatusTransition
+              tournamentId={tournamentId}
+              status={tournament.status}
+              finalCompleted={finalCompleted}
+            />
 
             <Badge
               className={

@@ -31,6 +31,7 @@ import {
   softDeleteUser,
   updateTournament,
   cancelMatchPoints,
+  finishTournament,
 } from '@/lib/admin';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -130,6 +131,22 @@ export async function updateTournamentStatusAction(tournamentId: number, status:
   revalidatePath('/admin/torneios');
   revalidatePath('/torneios');
   revalidatePath('/dashboard');
+}
+
+export async function finishTournamentAction(tournamentId: number) {
+  await requireAdmin();
+  const result = await finishTournament(tournamentId);
+
+  if (result.success) {
+    revalidatePath('/admin/torneios');
+    revalidatePath(`/admin/torneios/${tournamentId}`);
+    revalidatePath('/torneios');
+    revalidatePath(`/torneios/${tournamentId}`);
+    revalidatePath('/ranking');
+    revalidatePath('/dashboard');
+  }
+
+  return result;
 }
 
 export async function deleteTournamentAction(tournamentId: number) {

@@ -74,6 +74,43 @@ export async function updateTournamentStatus(tournamentId: number, status: strin
   await sql`UPDATE tournaments SET status = ${status}, updated_at = NOW() WHERE id = ${tournamentId}`;
 }
 
+export async function finishTournament(tournamentId: number): Promise<{ success: boolean; error?: string }> {
+  try {
+    const finalMatches = await sql`
+      SELECT bm.player1_id, bm.player2_id, bm.winner_id, bm.status
+      FROM bracket_matches bm
+      WHERE bm.tournament_id = ${tournamentId}
+      AND bm.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = ${tournamentId})
+      LIMIT 1
+    `;
+
+    if (finalMatches.length === 0) {
+      return { success: false, error: 'Final não encontrada para este torneio.' };
+    }
+
+    const final = finalMatches[0];
+    if (final.status !== 'completed' || !final.winner_id) {
+      return { success: false, error: 'Cadastre o resultado da final antes de finalizar o torneio.' };
+    }
+
+    const runnerUpId = final.player1_id === final.winner_id ? final.player2_id : final.player1_id;
+    if (!runnerUpId) {
+      return { success: false, error: 'Não foi possível identificar o vice-campeão.' };
+    }
+
+    await sql`
+      UPDATE tournaments
+      SET status = 'FINISHED', champion_id = ${final.winner_id}, runner_up_id = ${runnerUpId}, updated_at = NOW()
+      WHERE id = ${tournamentId}
+    `;
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error finishing tournament:', error);
+    return { success: false, error: 'Erro ao finalizar torneio' };
+  }
+}
+
 export async function updateTournament(
   tournamentId: number,
   data: Partial<{
@@ -712,7 +749,7 @@ export async function setMatchResult(
     // const setsToWin = m.sets_format === 5 ? 3 : 2
     const totalRounds = Math.ceil(Math.log2(m.size as number));
 
-    if (m.tournament_status === 'finished' || m.tournament_status === 'completed') {
+    if (m.tournament_status === 'finished' || m.tournament_status === 'completed' || m.tournament_status === 'FINISHED') {
       return { success: false, error: 'O torneio já foi finalizado e os resultados não podem ser alterados.' };
     }
 
@@ -795,11 +832,6 @@ export async function setMatchResult(
     } else {
       // Final round completed
       const runnerUpId = m.player1_id === winnerId ? m.player2_id : m.player1_id;
-      await sql`
-        UPDATE tournaments
-        SET status = 'finished', champion_id = ${winnerId}, runner_up_id = ${runnerUpId}, updated_at = NOW()
-        WHERE id = ${tournamentId}
-      `;
 
       // Special scoring for final
       const catConfig = getPointsConfig(category, m.size as number);

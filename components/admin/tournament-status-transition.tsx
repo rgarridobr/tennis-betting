@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { updateTournamentStatusAction, prepareTournamentAction, resetTournamentToStandbyAction, randomizeFirstRoundAction } from '@/lib/actions/admin'
-import { Edit3, Clock, Loader2, PlayCircle, Shuffle, RotateCcw, AlertTriangle } from 'lucide-react'
+import { prepareTournamentAction, resetTournamentToStandbyAction, finishTournamentAction } from '@/lib/actions/admin'
+import { Loader2, PlayCircle, RotateCcw, AlertTriangle, Trophy } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   Dialog,
@@ -17,11 +17,14 @@ import {
 interface Props {
   tournamentId: number
   status: string
+  finalCompleted?: boolean
 }
 
-export function TournamentStatusTransition({ tournamentId, status }: Props) {
+export function TournamentStatusTransition({ tournamentId, status, finalCompleted = false }: Props) {
   const [isPending, startTransition] = useTransition()
   const [showResetConfirm, setShowResetConfirm] = useState(false)
+
+  const isFinished = status === 'FINISHED' || status === 'finished' || status === 'completed'
 
   function handleReset() {
     setShowResetConfirm(false)
@@ -50,6 +53,21 @@ export function TournamentStatusTransition({ tournamentId, status }: Props) {
         }
       } catch (error) {
         toast.error('Erro ao preparar torneio')
+      }
+    })
+  }
+
+  function handleFinish() {
+    startTransition(async () => {
+      try {
+        const result = await finishTournamentAction(tournamentId)
+        if (result.success) {
+          toast.success('Torneio finalizado com sucesso!')
+        } else {
+          toast.error(result.error || 'Erro ao finalizar torneio')
+        }
+      } catch (error) {
+        toast.error('Erro ao finalizar torneio')
       }
     })
   }
@@ -113,6 +131,19 @@ export function TournamentStatusTransition({ tournamentId, status }: Props) {
           </DialogContent>
         </Dialog>
       </>
+    )
+  }
+
+  if (!isFinished && finalCompleted) {
+    return (
+      <Button
+        onClick={handleFinish}
+        disabled={isPending}
+        className="rounded-2xl font-black bg-slate-900 hover:bg-slate-800 text-white shadow-lg h-12 px-6 gap-2"
+      >
+        {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trophy className="w-4 h-4" />}
+        Finalizar Torneio
+      </Button>
     )
   }
 

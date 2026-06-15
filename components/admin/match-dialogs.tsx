@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useState, useTransition } from 'react';
 import type { BracketMatch, Player } from '@/lib/data';
@@ -238,7 +238,7 @@ export function SetPlayersDialog({
 
     if (p1.type === 'SEED' && !p1.seed) return setError('Defina o Seed do Jogador 1');
     if (p2.type === 'SEED' && !p2.seed) return setError('Defina o Seed do Jogador 2');
-    if (p1.type === 'BYE' && p2.type === 'BYE') return setError('Bye não pode enfrentar Bye');
+    if (p1.type === 'BYE' && p2.type === 'BYE') return setError('Bye nÃ£o pode enfrentar Bye');
 
     startTransition(async () => {
       try {
@@ -511,7 +511,6 @@ export function SetResultDialog({
   const [internalOpen, setInternalOpen] = useState(false);
   const open = externalOpen !== undefined ? externalOpen : internalOpen;
   const setOpen = externalOnOpenChange || setInternalOpen;
-  const [showConfirmFinish, setShowConfirmFinish] = useState(false);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [showConfirmCancelPoints, setShowConfirmCancelPoints] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -538,7 +537,6 @@ export function SetResultDialog({
       );
       setError(null);
       setSuccess(false);
-      setShowConfirmFinish(false);
       setShowConfirmClear(false);
       setShowConfirmCancelPoints(false);
     }
@@ -591,14 +589,8 @@ export function SetResultDialog({
     setError(null);
     setSuccess(false);
 
-    if (isFinalRound && !showConfirmFinish) {
-      setShowConfirmFinish(true);
-      return;
-    }
-
     if (!winnerId) {
       setError('Selecione o vencedor');
-      setShowConfirmFinish(false);
       return;
     }
 
@@ -614,7 +606,6 @@ export function SetResultDialog({
 
     if (!finalScore) {
       setError('Selecione o placar ou marque como W/O');
-      setShowConfirmFinish(false);
       return;
     }
 
@@ -622,7 +613,6 @@ export function SetResultDialog({
       const result = await setMatchResultAction(match.id, parseInt(winnerId), finalScore.trim(), tournamentId);
       if (result.success) {
         setSuccess(true);
-        setShowConfirmFinish(false);
         setTimeout(() => {
           setOpen(false);
           setSuccess(false);
@@ -631,7 +621,6 @@ export function SetResultDialog({
         }, 1000);
       } else {
         setError(result.error || 'Erro ao salvar');
-        setShowConfirmFinish(false);
       }
     });
   }
@@ -893,37 +882,7 @@ export function SetResultDialog({
             </DialogFooter>
           </DialogContent>
         </Dialog>
-
-        <Dialog open={showConfirmFinish} onOpenChange={setShowConfirmFinish}>
-          <DialogContent className="rounded-[2rem] border-none shadow-2xl max-w-md">
-            <DialogHeader className="pt-4">
-              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
-                <Trophy className="w-8 h-8 text-amber-600" />
-              </div>
-              <DialogTitle className="text-2xl font-black text-center text-slate-900">Finalizar Torneio?</DialogTitle>
-              <DialogDescription className="text-center text-slate-500 font-medium px-4">
-                Este é o jogo da <strong>FINAL</strong>. Ao confirmar este resultado, o torneio será marcado como{' '}
-                <strong>FINALIZADO</strong> e não poderá mais ser alterado.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="flex flex-col sm:flex-row gap-3 p-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowConfirmFinish(false)}
-                className="flex-1 rounded-xl font-bold h-12 border-2"
-              >
-                Revisar
-              </Button>
-              <Button
-                onClick={() => handleSubmit()}
-                className="flex-1 rounded-xl font-black h-12 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-100"
-              >
-                Sim, Finalizar!
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </DialogContent>
+</DialogContent>
     </Dialog>
   );
 }
