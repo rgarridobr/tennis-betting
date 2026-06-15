@@ -1234,6 +1234,7 @@ export async function getAllUsers(options?: { search?: string; state?: string; c
       COALESCE(tc.name, u.tennis_club_custom, u.tennis_club) as tennis_club,
       u.tennis_club_id,
       u.tennis_club_custom,
+      COALESCE(u.country, 'Brasil') as country,
       u.state, u.city, u.is_admin, u.is_active, u.is_deleted, u.created_at,
       COUNT(p.id) as total_predictions
     FROM users u
@@ -1244,7 +1245,7 @@ export async function getAllUsers(options?: { search?: string; state?: string; c
       AND (${stateFilter}::text IS NULL OR u.state = ${stateFilter})
       AND (${cityFilter}::text IS NULL OR u.city = ${cityFilter})
       AND (${clubFilter}::text IS NULL OR COALESCE(tc.name, u.tennis_club_custom, u.tennis_club) = ${clubFilter})
-    GROUP BY u.id, u.name, u.email, u.nickname, u.whatsapp, tc.name, u.tennis_club, u.tennis_club_id, u.tennis_club_custom, u.state, u.city, u.is_admin, u.is_active, u.is_deleted, u.created_at
+    GROUP BY u.id, u.name, u.email, u.nickname, u.whatsapp, tc.name, u.tennis_club, u.tennis_club_id, u.tennis_club_custom, u.country, u.state, u.city, u.is_admin, u.is_active, u.is_deleted, u.created_at
     ORDER BY u.name ASC
     LIMIT ${limit} OFFSET ${offset}
   `;
@@ -1351,13 +1352,14 @@ export async function updateUser(
     tennis_club: string;
     tennis_club_id?: number | null;
     tennis_club_custom?: string | null;
+    country: string;
     state: string;
     city: string;
   },
 ): Promise<void> {
   await sql`
     UPDATE users
-    SET name = ${data.name}, email = ${data.email}, nickname = ${data.nickname || null}, whatsapp = ${data.whatsapp}, tennis_club = ${data.tennis_club}, tennis_club_id = ${data.tennis_club_id || null}, tennis_club_custom = ${data.tennis_club_custom || null}, state = ${data.state ?? ''}, city = ${data.city ?? ''}, updated_at = NOW()
+    SET name = ${data.name}, email = ${data.email}, nickname = ${data.nickname || null}, whatsapp = ${data.whatsapp}, tennis_club = ${data.tennis_club}, tennis_club_id = ${data.tennis_club_id || null}, tennis_club_custom = ${data.tennis_club_custom || null}, country = ${data.country}, state = ${data.state ?? ''}, city = ${data.city ?? ''}, updated_at = NOW()
     WHERE id = ${id}
   `;
 }

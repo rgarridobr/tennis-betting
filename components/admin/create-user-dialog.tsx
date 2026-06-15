@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { StateCitySelector } from '@/components/shared/state-city-selector';
 import { TennisClubSelector } from '@/components/shared/tennis-club-selector';
+import { CountrySelector } from '@/components/shared/country-selector';
 import { createUserAction } from '@/lib/actions/admin';
 import type { TennisClub } from '@/lib/data';
 import { UserPlus, Mail, Lock, User, AlertCircle, Loader2, Phone, Home } from 'lucide-react';
@@ -33,8 +34,10 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
   const [tennisClub, setTennisClub] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [country, setCountry] = useState('Brasil');
   const [state, setState] = useState('');
   const [city, setCity] = useState('');
+  const isBrazil = ['brasil', 'brazil'].includes(country.trim().toLowerCase());
 
   const [isFirstNameOnlyChecked, setIsFirstNameOnlyChecked] = useState(false);
 
@@ -56,8 +59,8 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
   };
 
   const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedValue = formatBrazilianPhoneNumber(e.target.value);
-    setWhatsapp(formattedValue);
+    const nextValue = e.target.value;
+    setWhatsapp(isBrazil ? formatBrazilianPhoneNumber(nextValue) : nextValue);
   };
 
   function validateEmail(email: string) {
@@ -85,12 +88,14 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
 
     const email = (formData.get('email') as string | null)?.trim() ?? '';
     const password = (formData.get('password') as string | null)?.trim() ?? '';
+    const country = (formData.get('country') as string | null)?.trim() || 'Brasil';
     const state = (formData.get('state') as string | null)?.trim() ?? '';
     const city = (formData.get('city') as string | null)?.trim() ?? '';
+    const isBrazil = ['brasil', 'brazil'].includes(country.toLowerCase());
 
     if (!validateEmail(email) || !validatePassword(password)) return;
-    if (!state || !city) {
-      const message = 'Estado e cidade são obrigatórios.';
+    if (isBrazil && (!state || !city)) {
+      const message = 'Estado e cidade são obrigatórios para Brasil.';
       toast.error(message);
       setError(message);
       return;
@@ -207,15 +212,34 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
             />
           </div>
 
+          <CountrySelector
+            selectedCountry={country}
+            onCountryChange={(value) => {
+              const nextCountry = value.trim();
+              setCountry(nextCountry);
+
+              if (!['brasil', 'brazil'].includes(nextCountry.toLowerCase())) {
+                setState('');
+                setCity('');
+                setWhatsapp((current) => current.replace(/[^+\d]/g, ''));
+              }
+            }}
+            required
+          />
+
           {/* Estado e Cidade */}
           <div className="space-y-4">
-            <StateCitySelector
-              selectedState={state}
-              selectedCity={city}
-              onStateChange={setState}
-              onCityChange={setCity}
-              required
-            />
+            {isBrazil ? (
+              <StateCitySelector
+                selectedState={state}
+                selectedCity={city}
+                onStateChange={setState}
+                onCityChange={setCity}
+                required
+              />
+            ) : (
+              <p className="text-sm text-slate-500">Para outros países, estado e cidade não são necessários.</p>
+            )}
           </div>
 
           {/* Senha */}

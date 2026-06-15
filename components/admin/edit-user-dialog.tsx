@@ -1,16 +1,17 @@
-'use client'
+﻿'use client'
 
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { updateUserAction } from '@/lib/actions/admin'
-import { UserPlus, Mail, User, AlertCircle, Loader2, Phone, Home, Pencil } from 'lucide-react'
+import { Mail, User, AlertCircle, Loader2, Phone, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatBrazilianPhoneNumber } from '@/lib/utils'
 import { Checkbox } from '@/components/ui/checkbox'
 import { StateCitySelector } from '@/components/shared/state-city-selector'
 import { TennisClubSelector } from '@/components/shared/tennis-club-selector'
+import { CountrySelector } from '@/components/shared/country-selector'
 import type { TennisClub } from '@/lib/data'
 import {
   Dialog,
@@ -33,6 +34,7 @@ interface EditUserDialogProps {
     tennis_club?: string
     tennis_club_id?: number | null
     tennis_club_custom?: string | null
+    country?: string
     state?: string
     city?: string
   }
@@ -46,9 +48,11 @@ export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
   const [nickname, setNickname] = useState(user.nickname || '')
   const [whatsapp, setWhatsapp] = useState(user.whatsapp || '')
   const [tennisClub, setTennisClub] = useState(user.tennis_club || '')
+  const [country, setCountry] = useState(user.country || 'Brasil')
   const [state, setState] = useState(user.state || '')
   const [city, setCity] = useState(user.city || '')
   const [isFirstNameOnlyChecked, setIsFirstNameOnlyChecked] = useState(false)
+  const isBrazil = ['brasil', 'brazil'].includes(country.trim().toLowerCase())
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -68,8 +72,8 @@ export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
   }
 
   const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedValue = formatBrazilianPhoneNumber(e.target.value)
-    setWhatsapp(formattedValue)
+    const nextValue = e.target.value
+    setWhatsapp(isBrazil ? formatBrazilianPhoneNumber(nextValue) : nextValue)
   }
 
   async function handleSubmit(formData: FormData) {
@@ -77,9 +81,11 @@ export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
 
     const state = (formData.get('state') as string | null)?.trim() ?? ''
     const city = (formData.get('city') as string | null)?.trim() ?? ''
+    const country = (formData.get('country') as string | null)?.trim() || 'Brasil'
+    const isBrazil = ['brasil', 'brazil'].includes(country.toLowerCase())
 
-    if (!state || !city) {
-      const message = 'Estado e cidade são obrigatórios.'
+    if (isBrazil && (!state || !city)) {
+      const message = 'Estado e cidade são obrigatórios para Brasil.'
       toast.error(message)
       setError(message)
       return
@@ -189,13 +195,34 @@ export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
             </div>
 
             <div className="space-y-2">
-              <StateCitySelector
-                selectedState={state}
-                selectedCity={city}
-                onStateChange={setState}
-                onCityChange={setCity}
+              <CountrySelector
+                selectedCountry={country}
+                onCountryChange={(value) => {
+                  const nextCountry = value.trim()
+                  setCountry(nextCountry)
+
+                  if (!['brasil', 'brazil'].includes(nextCountry.toLowerCase())) {
+                    setState('')
+                    setCity('')
+                    setWhatsapp((current) => current.replace(/[^+\d]/g, ''))
+                  }
+                }}
                 required
               />
+            </div>
+
+            <div className="space-y-2">
+              {isBrazil ? (
+                <StateCitySelector
+                  selectedState={state}
+                  selectedCity={city}
+                  onStateChange={setState}
+                  onCityChange={setCity}
+                  required
+                />
+              ) : (
+                <p className="text-sm text-slate-500">Para outros países, estado e cidade não são necessários.</p>
+              )}
             </div>
 
             <div className="space-y-2">

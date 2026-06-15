@@ -59,9 +59,10 @@ export function StateCitySelector({
     async function fetchStates() {
       setLoadingStates(true);
       try {
-        const response = await fetch(
-          "https://servicodados.ibge.gov.br/api/v1/localidades/estados",
-        );
+        const response = await fetch("/api/locations/states");
+        if (!response.ok) {
+          throw new Error(`States API responded with status ${response.status}`);
+        }
         const data: State[] = await response.json();
         const sorted = data.sort((a, b) =>
           a.nome.localeCompare(b.nome, "pt-BR"),
@@ -86,9 +87,10 @@ export function StateCitySelector({
     async function fetchCities() {
       setLoadingCities(true);
       try {
-        const response = await fetch(
-          `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedState}/municipios`,
-        );
+        const response = await fetch(`/api/locations/states/${selectedState}/cities`);
+        if (!response.ok) {
+          throw new Error(`Cities API responded with status ${response.status}`);
+        }
         const data: City[] = await response.json();
         const sorted = data.sort((a, b) =>
           a.nome.localeCompare(b.nome, "pt-BR"),

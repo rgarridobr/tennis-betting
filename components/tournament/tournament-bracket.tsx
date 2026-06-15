@@ -95,7 +95,65 @@ export function TournamentBracket({
   );
   const router = useRouter();
 
-  const isFinalPredicted = !!localPredictions[matches.find((m) => m.round === maxRound)?.id || -1]?.winnerId;
+  const isRealPlayerId = (playerId: number | null | undefined) => !!playerId && playerId !== qualifierPlayerId;
+  const isAutomaticByePick = (match: BracketMatch, winnerId: number) => {
+    const player1IsBye = match.player1_type === 'BYE';
+    const player2IsBye = match.player2_type === 'BYE';
+    return (
+      (player1IsBye && match.player2_id === winnerId && isRealPlayerId(match.player2_id)) ||
+      (player2IsBye && match.player1_id === winnerId && isRealPlayerId(match.player1_id))
+    );
+  };
+  const getBracketValidationError = () => {
+    if (rounds.length === 0 || maxRound === 0) return 'Chaveamento ainda não disponível.';
+
+    const resolvedWinners = new Map<number, number>();
+
+    for (const round of rounds) {
+      const roundMatches = [...(matchesByRound[round] || [])].sort((a, b) => a.position - b.position);
+
+      for (const match of roundMatches) {
+        const prediction = localPredictions[match.id];
+        if (!prediction?.winnerId) return 'Preencha todos os confrontos antes de finalizar.';
+
+        let validWinnerIds: number[] = [];
+
+        if (match.round === 1) {
+          if (isRealPlayerId(match.player1_id)) validWinnerIds.push(match.player1_id!);
+          if (isRealPlayerId(match.player2_id)) validWinnerIds.push(match.player2_id!);
+
+          if (
+            validWinnerIds.length === 1 &&
+            !isAutomaticByePick(match, validWinnerIds[0]) &&
+            (match.player1_type === 'QUALIFIER' || match.player2_type === 'QUALIFIER')
+          ) {
+            return 'Aguarde todos os jogadores da chave serem definidos antes de finalizar.';
+          }
+        } else {
+          const previousRound = match.round - 1;
+          const previousMatch1 = matchesMap[`${previousRound}-${match.position * 2 - 1}`];
+          const previousMatch2 = matchesMap[`${previousRound}-${match.position * 2}`];
+          const winner1 = previousMatch1 ? resolvedWinners.get(previousMatch1.id) : undefined;
+          const winner2 = previousMatch2 ? resolvedWinners.get(previousMatch2.id) : undefined;
+
+          if (winner1) validWinnerIds.push(winner1);
+          if (winner2) validWinnerIds.push(winner2);
+        }
+
+        validWinnerIds = Array.from(new Set(validWinnerIds));
+
+        if (!validWinnerIds.includes(prediction.winnerId)) {
+          return 'Revise a chave: há palpite em confronto sem jogador definido.';
+        }
+
+        resolvedWinners.set(match.id, prediction.winnerId);
+      }
+    }
+
+    return null;
+  };
+  const bracketValidationError = getBracketValidationError();
+  const canFinalizeBracket = !bracketValidationError;
 
   // Track officially eliminated players and the round they lost to highlight incorrect predictions early
   const playerEliminatedInRound = new Map<number, number>();
@@ -137,6 +195,11 @@ export function TournamentBracket({
 
   const handleFinalize = async () => {
     if (isFinalizing) return;
+    if (bracketValidationError) {
+      toast.error(bracketValidationError);
+      return;
+    }
+
     setIsFinalizing(true);
     try {
       const predictionArray = Object.entries(localPredictions).map(([matchId, data]) => ({
@@ -379,17 +442,17 @@ export function TournamentBracket({
         {/* Finalizar Button */}
         {viewMode === 'predictions' && !hasStarted && canMakePredictions && hasUnsavedChanges && (
           <div className="flex items-center gap-3">
-            {!isFinalPredicted && (
+            {bracketValidationError && (
               <span className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-2 rounded-xl border border-amber-200 animate-pulse">
-                Preencha até a final para salvar
+                {bracketValidationError}
               </span>
             )}
             <button
               onClick={handleFinalize}
-              disabled={isFinalizing || !isFinalPredicted}
+              disabled={isFinalizing || !canFinalizeBracket}
               className={cn(
                 'flex items-center gap-2 px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-lg transition-all animate-in fade-in slide-in-from-right-4',
-                !isFinalPredicted
+                !canFinalizeBracket
                   ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-slate-100'
                   : isFinalizing
                     ? 'bg-emerald-600 text-white opacity-80 cursor-not-allowed shadow-emerald-200'
@@ -733,8 +796,6 @@ export function TournamentBracket({
                               currentPrediction={localPredictions[match.id]}
                               actualPrediction={predictions[match.id]}
                               canMakePredictions={canMakePredictions && viewMode === 'predictions'}
-                              isEnrolled={isEnrolled}
-                              isViewingOthers={isViewingOthers}
                               qualifierPlayerId={qualifierPlayerId}
                               isAdmin={isAdmin}
                               players={players}
@@ -901,9 +962,16 @@ function BracketMatchCard({
           ? pickedSlot === 2
           : resolvedSelectedWinnerId === p2?.id || (p2?.type === 'QUALIFIER' && (!p2?.id || p2?.id === qualifierPlayerId) && resolvedSelectedWinnerId === qualifierPlayerId);
 
-        // When both are generic qualifiers, both are clickable but use slot markers
-        const p1CanPredict = !!canPredict && (!!p1?.id || (p1?.type === 'QUALIFIER' && !!qualifierPlayerId));
-        const p2CanPredict = !!canPredict && (!!p2?.id || (p2?.type === 'QUALIFIER' && !!qualifierPlayerId));
+        const p1IsPlaceholder =
+          ((!p1?.id || p1?.id === qualifierPlayerId) && p1?.type !== 'BYE' && p1?.type !== 'PLAYER') ||
+          p1?.isAwaiting ||
+          p1?.isNotPredicted;
+        const p2IsPlaceholder =
+          ((!p2?.id || p2?.id === qualifierPlayerId) && p2?.type !== 'BYE' && p2?.type !== 'PLAYER') ||
+          p2?.isAwaiting ||
+          p2?.isNotPredicted;
+        const p1CanPredict = !!canPredict && !p1IsPlaceholder && !!p1?.id;
+        const p2CanPredict = !!canPredict && !p2IsPlaceholder && !!p2?.id;
 
         return (
           <>
@@ -929,7 +997,7 @@ function BracketMatchCard({
               canPredict={p1CanPredict}
               score={match.score}
               isP1={true}
-              isPlaceholder={((!p1?.id || p1?.id === qualifierPlayerId) && p1?.type !== 'BYE' && p1?.type !== 'PLAYER') || p1?.isAwaiting || p1?.isNotPredicted}
+              isPlaceholder={p1IsPlaceholder}
               pointsCancelled={effectivePointsCancelled}
               isAwaiting={p1?.isAwaiting}
               viewMode={viewMode}
@@ -963,7 +1031,7 @@ function BracketMatchCard({
               canPredict={p2CanPredict}
               score={match.score}
               isP1={false}
-              isPlaceholder={((!p2?.id || p2?.id === qualifierPlayerId) && p2?.type !== 'BYE' && p2?.type !== 'PLAYER') || p2?.isAwaiting || p2?.isNotPredicted}
+              isPlaceholder={p2IsPlaceholder}
               pointsCancelled={effectivePointsCancelled}
               isAwaiting={p2?.isAwaiting}
               viewMode={viewMode}

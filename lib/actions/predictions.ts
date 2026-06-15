@@ -4,6 +4,116 @@ import { createPrediction, isUserEnrolled, hasTournamentStarted } from '@/lib/da
 import { sql } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 
+type BracketPredictionInput = { matchId: number; winnerId: number; score?: string };
+
+type BracketMatchRow = {
+  id: number;
+  round: number;
+  position: number;
+  player1_id: number | null;
+  player2_id: number | null;
+  player1_type: string | null;
+  player2_type: string | null;
+};
+
+async function validateFullBracketPredictions(
+  tournamentId: number,
+  predictions: BracketPredictionInput[],
+): Promise<BracketPredictionInput[]> {
+  const matches = (await sql`
+    SELECT id, round, position, player1_id, player2_id, player1_type, player2_type
+    FROM bracket_matches
+    WHERE tournament_id = ${tournamentId}
+    ORDER BY round ASC, position ASC
+  `) as BracketMatchRow[];
+
+  if (matches.length === 0) {
+    throw new Error('Chaveamento ainda nao disponivel.');
+  }
+
+  const genericQualifier = await sql`
+    SELECT id
+    FROM players
+    WHERE name = 'Qualifier'
+    LIMIT 1
+  `;
+  const qualifierPlayerId = genericQualifier.length > 0 ? Number(genericQualifier[0].id) : null;
+  const predictionsByMatch = new Map<number, BracketPredictionInput>();
+
+  for (const prediction of predictions) {
+    if (!Number.isInteger(prediction.matchId) || !Number.isInteger(prediction.winnerId)) {
+      throw new Error('Palpite invalido.');
+    }
+    predictionsByMatch.set(prediction.matchId, prediction);
+  }
+
+  const matchIds = new Set(matches.map((match) => match.id));
+  for (const matchId of predictionsByMatch.keys()) {
+    if (!matchIds.has(matchId)) {
+      throw new Error('Palpite invalido para este torneio.');
+    }
+  }
+
+  const matchesMap = new Map<string, BracketMatchRow>();
+  const rounds = Array.from(new Set(matches.map((match) => match.round))).sort((a, b) => a - b);
+
+  for (const match of matches) {
+    matchesMap.set(`${match.round}-${match.position}`, match);
+  }
+
+  const isRealPlayerId = (playerId: number | null | undefined) => !!playerId && playerId !== qualifierPlayerId;
+  const isAutomaticByePick = (match: BracketMatchRow, winnerId: number) =>
+    (match.player1_type === 'BYE' && match.player2_id === winnerId && isRealPlayerId(match.player2_id)) ||
+    (match.player2_type === 'BYE' && match.player1_id === winnerId && isRealPlayerId(match.player1_id));
+
+  const resolvedWinners = new Map<number, number>();
+
+  for (const round of rounds) {
+    const roundMatches = matches.filter((match) => match.round === round);
+
+    for (const match of roundMatches) {
+      const prediction = predictionsByMatch.get(match.id);
+      if (!prediction?.winnerId) {
+        throw new Error('Preencha todos os confrontos antes de finalizar.');
+      }
+
+      let validWinnerIds: number[] = [];
+
+      if (match.round === 1) {
+        if (isRealPlayerId(match.player1_id)) validWinnerIds.push(match.player1_id!);
+        if (isRealPlayerId(match.player2_id)) validWinnerIds.push(match.player2_id!);
+
+        if (
+          validWinnerIds.length === 1 &&
+          !isAutomaticByePick(match, validWinnerIds[0]) &&
+          (match.player1_type === 'QUALIFIER' || match.player2_type === 'QUALIFIER')
+        ) {
+          throw new Error('Aguarde todos os jogadores da chave serem definidos antes de finalizar.');
+        }
+      } else {
+        const previousRound = match.round - 1;
+        const previousMatch1 = matchesMap.get(`${previousRound}-${match.position * 2 - 1}`);
+        const previousMatch2 = matchesMap.get(`${previousRound}-${match.position * 2}`);
+        const winner1 = previousMatch1 ? resolvedWinners.get(previousMatch1.id) : undefined;
+        const winner2 = previousMatch2 ? resolvedWinners.get(previousMatch2.id) : undefined;
+
+        if (winner1) validWinnerIds.push(winner1);
+        if (winner2) validWinnerIds.push(winner2);
+      }
+
+      validWinnerIds = Array.from(new Set(validWinnerIds));
+
+      if (!validWinnerIds.includes(prediction.winnerId)) {
+        throw new Error('Revise a chave: ha palpite em confronto sem jogador definido.');
+      }
+
+      resolvedWinners.set(match.id, prediction.winnerId);
+    }
+  }
+
+  return Array.from(predictionsByMatch.values());
+}
+
 export async function makePredictionAction(
   userId: number,
   bracketMatchId: number,
@@ -28,7 +138,7 @@ export async function makePredictionAction(
 export async function saveFullBracketAction(
   userId: number,
   tournamentId: number,
-  predictions: Array<{ matchId: number; winnerId: number; score?: string }>,
+  predictions: BracketPredictionInput[],
 ) {
   // Verify user is enrolled
   const enrolled = await isUserEnrolled(userId, tournamentId);
@@ -44,8 +154,10 @@ export async function saveFullBracketAction(
     );
   }
 
+  const validPredictions = await validateFullBracketPredictions(tournamentId, predictions);
+
   // Batch insert/update predictions
-  const matchIds = predictions.map((p) => p.matchId);
+  const matchIds = validPredictions.map((p) => p.matchId);
 
   // 1. Delete predictions that are no longer in the provided list for this tournament
   // IMPORTANT: Only delete predictions for Round 1 matches that have BOTH players defined.
@@ -81,7 +193,7 @@ export async function saveFullBracketAction(
   }
 
   // 2. Insert/Update predictions
-  for (const p of predictions) {
+  for (const p of validPredictions) {
     await sql`
       INSERT INTO predictions (user_id, bracket_match_id, predicted_winner_id, predicted_score)
       VALUES (${userId}, ${p.matchId}, ${p.winnerId}, ${p.score || null})
@@ -90,23 +202,11 @@ export async function saveFullBracketAction(
     `;
   }
 
-  // 3. Update bracket_submitted flag if final is predicted
-  const hasFinal = await sql`
-    SELECT 1 FROM bracket_matches bm
-    JOIN predictions p ON bm.id = p.bracket_match_id
-    WHERE p.user_id = ${userId} 
-    AND bm.tournament_id = ${tournamentId}
-    AND bm.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = ${tournamentId})
-    LIMIT 1
+  await sql`
+    UPDATE user_tournaments
+    SET bracket_submitted = true
+    WHERE user_id = ${userId} AND tournament_id = ${tournamentId}
   `;
-
-  if (hasFinal.length > 0) {
-    await sql`
-      UPDATE user_tournaments 
-      SET bracket_submitted = true 
-      WHERE user_id = ${userId} AND tournament_id = ${tournamentId}
-    `;
-  }
 
   revalidatePath(`/torneios/${tournamentId}`);
   return { success: true };
