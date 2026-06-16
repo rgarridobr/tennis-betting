@@ -45,10 +45,28 @@ export async function fetchAtpDraw(
     const archiveUrl = `https://www.atptour.com/en/scores/archive/${slug}/${atpId}/${year}/draws`;
 
     console.log(`Attempting to fetch ATP draw from: ${archiveUrl}`);
-    await page.goto(archiveUrl, {
+    const response = await page.goto(archiveUrl, {
       waitUntil: "domcontentloaded",
-      timeout: 30000,
+      timeout: 45000,
     });
+
+    console.log(
+      `ATP draw page loaded: status=${response?.status() ?? "unknown"} url=${page.url()}`,
+    );
+
+    await page
+      .waitForLoadState("networkidle", { timeout: 15000 })
+      .catch(() => console.log("ATP draw page did not reach networkidle before extraction."));
+
+    await page
+      .waitForSelector(".draw-item, .draw-round-wrapper, .draw-items-wrapper", {
+        timeout: 25000,
+      })
+      .catch(() => console.log("ATP draw selectors were not found before extraction."));
+
+    // The ATP page hydrates the draw client-side. Vercel's cold starts can
+    // reach DOMContentLoaded before the draw nodes are attached.
+    await page.waitForTimeout(1500);
 
     const drawData = await page.evaluate(() => {
       const matches: any[] = [];
@@ -106,6 +124,17 @@ export async function fetchAtpDraw(
       });
       return matches;
     });
+
+    if (drawData.length === 0) {
+      const debugInfo = await page.evaluate(() => ({
+        title: document.title,
+        url: window.location.href,
+        bodyText: document.body?.innerText?.slice(0, 500) ?? "",
+        drawItems: document.querySelectorAll(".draw-item").length,
+        drawWrappers: document.querySelectorAll(".draw-round-wrapper, .draw-items-wrapper").length,
+      }));
+      console.error("ATP draw extraction returned no matches:", debugInfo);
+    }
 
     return drawData as AtpMatch[];
   } catch (err) {

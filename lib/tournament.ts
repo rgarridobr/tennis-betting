@@ -79,9 +79,7 @@ export function getTournamentStatus(tournament: Pick<Tournament, 'status' | 'sta
   const isLockedByDate = new Date(tournament.start_date) <= new Date();
 
   const isFinished =
-    tournament.status === 'finished' ||
-    tournament.status === 'FINISHED' ||
-    tournament.status === 'completed';
+    tournament.status === 'finished' || tournament.status === 'FINISHED' || tournament.status === 'completed';
 
   const isOpen = tournament.status === 'active' || tournament.status === 'OPEN';
 
@@ -94,12 +92,12 @@ export function getTournamentStatus(tournament: Pick<Tournament, 'status' | 'sta
   } else if (isOpen) {
     label = 'Aberto para palpites';
     color = 'bg-emerald-600/95 text-white border-emerald-500/50';
-  } else if (isLockedByDate) {
-    label = 'Em andamento';
-    color = 'bg-blue-600/95 text-white border-blue-500/50';
   } else if (tournament.status === 'STANDBY') {
     label = 'Agendado';
     color = 'bg-amber-500/95 text-white border-amber-400/50';
+  } else if (isLockedByDate) {
+    label = 'Em andamento';
+    color = 'bg-blue-600/95 text-white border-blue-500/50';
   } else if (tournament.status === 'UPCOMING') {
     label = 'Preparando chaveamento';
     color = 'bg-purple-600/95 text-white border-purple-500/50';

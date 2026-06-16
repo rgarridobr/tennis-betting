@@ -612,12 +612,15 @@ export async function syncTournamentBracketAction(tournamentId: number) {
 
   // Remove o ano do final do slug para obter o slug da ATP (ex: basel-2024 -> basel, roland-garros-2024 -> roland-garros)
   const atpSlug = slug.replace(new RegExp(`-${year}$`), '');
+  const atpDrawUrl = `https://www.atptour.com/en/scores/archive/${atpSlug}/${api_id}/${year}/draws`;
 
   try {
+    console.log(`Syncing ATP bracket for tournament ${tournamentId}: ${atpDrawUrl}`);
     const drawMatches = await fetchAtpDraw(api_id, year, atpSlug);
 
     if (drawMatches.length === 0) {
-      return { success: false, error: 'Nenhuma partida encontrada no chaveamento da ATP' };
+      console.error(`No ATP draw matches found for tournament ${tournamentId}: ${atpDrawUrl}`);
+      return { success: false, error: 'Nenhuma partida encontrada no chaveamento da ATP. Tente novamente em instantes ou verifique os logs da Vercel.' };
     }
 
     // Buscar partidas da primeira rodada do nosso banco
