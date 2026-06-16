@@ -28,6 +28,7 @@ import {
   deleteTournament,
   updateUser,
   toggleUserStatus,
+  toggleTournamentVisibility,
   softDeleteUser,
   updateTournament,
   cancelMatchPoints,
@@ -157,6 +158,17 @@ export async function deleteTournamentAction(tournamentId: number) {
     revalidatePath('/dashboard');
   }
   return result;
+}
+
+export async function toggleTournamentVisibilityAction(tournamentId: number, isVisible: boolean) {
+  await requireAdmin();
+  await toggleTournamentVisibility(tournamentId, isVisible);
+  revalidatePath('/admin/torneios');
+  revalidatePath(`/admin/torneios/${tournamentId}`);
+  revalidatePath('/torneios');
+  revalidatePath(`/torneios/${tournamentId}`);
+  revalidatePath('/dashboard');
+  return { success: true };
 }
 
 // ==================== PLAYERS ====================

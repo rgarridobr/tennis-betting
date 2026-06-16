@@ -2,8 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { toggleTournamentVisibility } from '@/lib/admin';
+import { toggleTournamentVisibilityAction } from '@/lib/actions/admin';
 import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react';
 
@@ -23,7 +22,7 @@ export function TournamentVisibilityToggle({
     setIsVisible(checked);
     startTransition(async () => {
       try {
-        await toggleTournamentVisibility(tournamentId, checked);
+        await toggleTournamentVisibilityAction(tournamentId, checked);
         toast.success(checked ? 'Torneio agora está visível' : 'Torneio agora está oculto');
       } catch (error) {
         setIsVisible(!checked);
