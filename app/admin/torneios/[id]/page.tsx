@@ -50,7 +50,7 @@ export default async function ManageTournamentPage({ params }: Props) {
   ]);
 
   const isFinished = tournament.status === 'finished' || tournament.status === 'FINISHED' || tournament.status === 'completed';
-  const canAuditParticipants = ['LOCKED', 'IN_PROGRESS', 'FINISHED', 'finished', 'completed'].includes(tournament.status);
+  const canAuditParticipants = tournament.status.toUpperCase() !== 'STANDBY';
 
   const assignedPlayerIds = new Set<number>();
   matches.forEach((m) => {
