@@ -1,4 +1,8 @@
 import { neon } from '@neondatabase/serverless'
 
-const connectionString = "postgresql://neondb_owner:npg_Wl8zjqS3LVOB@ep-dark-shadow-ah376b0v-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+const connectionString = process.env.NEON_CONNECTION_STRING
+
+if (!connectionString) {
+  throw new Error('NEON_CONNECTION_STRING environment variable is not set')
+}
 export const sql = neon(connectionString)
