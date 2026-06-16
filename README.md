@@ -1,57 +1,72 @@
-# 🎾 Tennis Betting Platform
+# Tennis Betting Platform
 
-Uma plataforma moderna para apostas e gerenciamento de torneios de tênis com painel administrativo integrado.
+Plataforma web para palpites em torneios de tenis, rankings de participantes, grupos/pools e administracao completa de torneios.
 
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/victoorres-projects/tennis-betting-platform)
 [![Next.js](https://img.shields.io/badge/Built%20with-Next.js%2016-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
-[![Database](<https://img.shields.io/badge/Database-Neon%20(PostgreSQL)-informational?style=for-the-badge&logo=postgresql>)](https://neon.tech)
+[![Database](https://img.shields.io/badge/Database-Neon%20(PostgreSQL)-informational?style=for-the-badge&logo=postgresql)](https://neon.tech)
 
-## 📋 Índice
+## Indice
 
-- [Visão Geral](#visão-geral)
-- [Funcionalidades](#funcionalidades)
-- [Pré-requisitos](#pré-requisitos)
-- [Instalação](#instalação)
-- [Configuração do Ambiente](#configuração-do-ambiente)
-- [Como Executar](#como-executar)
-- [Scripts Disponíveis](#scripts-disponíveis)
-- [Estrutura do Projeto](#estrutura-do-projeto)
-- [Deployment](#deployment)
-- [Suporte](#suporte)
+- [Sobre o projeto](#sobre-o-projeto)
+- [Principais recursos](#principais-recursos)
+- [Stack](#stack)
+- [Pre-requisitos](#pre-requisitos)
+- [Configuracao local](#configuracao-local)
+- [Variaveis de ambiente](#variaveis-de-ambiente)
+- [Scripts](#scripts)
+- [Estrutura](#estrutura)
+- [Fluxo de torneios](#fluxo-de-torneios)
+- [Banco de dados](#banco-de-dados)
+- [Deploy](#deploy)
+- [Troubleshooting](#troubleshooting)
 
-## 🎯 Visão Geral
+## Sobre o projeto
 
-Tennis Betting Platform é uma aplicação web completa para:
+O Tennis Betting Platform permite que usuarios se cadastrem, entrem em torneios, preencham palpites por chaveamento e acompanhem rankings. O projeto tambem inclui um painel administrativo para controlar torneios, chaveamentos, usuarios, clubes, grupos e resultados.
 
-- **Gerenciar torneios de tênis** com suporte a chaves automáticas
-- **Fazer apostas** em partidas e resultados
-- **Sincronização automática** com calendário ATP
-- **Painel administrativo** para gerenciar usuários, torneios e configurações
-- **Ranking de apostadores** com histórico de resultados
-- **Sistema de autenticação** seguro com suporte a múltiplos usuários
+O produto tem duas experiencias principais:
 
-## ✨ Funcionalidades Principais
+- Area do participante: dashboard, torneios, palpites, grupos/pools, ranking geral e ranking por torneio.
+- Area administrativa: criacao e manutencao de torneios, sincronizacao ATP, publicacao de chaveamento, lancamento de resultados, controle de usuarios, clubes e grupos.
 
-- 🏆 Gerenciamento completo de torneios
-- 💰 Sistema de apostas e pools
-- 👥 Autenticação de usuários com registro e login
-- 📊 Dashboard com estatísticas
-- 🔐 Painel administrativo protegido
-- 🌐 Suporte a categorias estaduais
-- 📱 Interface responsiva (mobile-friendly)
-- 🔄 Sincronização com calendário ATP
-- 🌙 Tema claro/escuro
+## Principais recursos
 
-## 📋 Pré-requisitos
+- Cadastro, login e sessao propria via cookie `session_token`.
+- Recuperacao de senha por codigo enviado via SMTP.
+- Torneios com status administrativo e chaveamento por rodadas.
+- Inscricao de usuarios em torneios.
+- Palpites por partida e pontuacao automatica por resultado.
+- Rankings globais, por torneio e por estado.
+- Grupos/pools gerais, privados e estaduais.
+- Painel admin para torneios, usuarios, clubes e grupos.
+- Sincronizacao de calendario/chaveamento ATP.
+- Auditoria de inscritos no admin, incluindo quem palpitou e quem ainda nao palpitou.
+- UI responsiva com Next.js, React, Radix UI e Tailwind CSS.
 
-Antes de começar, verifique se você tem instalado:
+## Stack
 
-- **Node.js** v18 ou superior ([Baixar aqui](https://nodejs.org/))
-- **npm** ou **yarn** (geralmente vem com Node.js)
-- **Git** ([Baixar aqui](https://git-scm.com/))
-- Uma conta no **Neon** para o banco de dados ([Criar conta](https://console.neon.tech/))
+- Next.js 16 com App Router
+- React 19
+- TypeScript
+- Tailwind CSS
+- Radix UI
+- Neon PostgreSQL
+- `@neondatabase/serverless`
+- Nodemailer
+- bcryptjs
+- date-fns
+- lucide-react
 
-Para verificar as versões instaladas, execute:
+## Pre-requisitos
+
+- Node.js 18 ou superior
+- npm
+- Git
+- Banco PostgreSQL no Neon
+- Servidor SMTP para envio de emails de recuperacao de senha
+
+Verifique as versoes:
 
 ```bash
 node --version
@@ -59,184 +74,206 @@ npm --version
 git --version
 ```
 
-## 🚀 Instalação
+## Configuracao local
 
-### 1. Clone o repositório
+Clone o repositorio:
 
 ```bash
 git clone https://github.com/iamvictormt/tennis-betting.git
 cd tennis-betting
 ```
 
-### 2. Instale as dependências
+Instale as dependencias:
 
 ```bash
 npm install
 ```
 
-Ou com yarn:
-
-```bash
-yarn install
-```
-
-## ⚙️ Configuração do Ambiente
-
-### 1. Crie o arquivo `.env.local`
-
-Na raiz do projeto, crie um arquivo chamado `.env.local` com as seguintes variáveis:
+Crie o arquivo `.env.local` na raiz do projeto:
 
 ```env
-# Banco de dados Neon
-DATABASE_URL=postgresql://user:password@host/database
+NEON_CONNECTION_STRING=postgresql://user:password@host/database?sslmode=require
 
-# Autenticação
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=sua-chave-secreta-aqui
-
-# Email (para redefinição de senha)
-SMTP_HOST=smtp.seu-servidor.com
+SMTP_HOST=smtp.seu-provedor.com
 SMTP_PORT=587
+SMTP_SECURE=false
 SMTP_USER=seu-email@exemplo.com
-SMTP_PASSWORD=sua-senha-smtp
-
-# Ambiente
-NODE_ENV=development
+SMTP_PASS=sua-senha-ou-app-password
 ```
 
-### 2. Obtenha a string de conexão Neon
-
-1. Acesse [console.neon.tech](https://console.neon.tech/)
-2. Crie um novo projeto ou use um existente
-3. Copie a **Connection String** no formato PostgreSQL
-4. Cole em `DATABASE_URL` no arquivo `.env.local`
-
-### 3. Configure seu SMTP (para emails)
-
-Se você deseja usar o sistema de recuperação de senha:
-
-1. Configure um servidor SMTP (Mailtrap, SendGrid, Gmail, etc.)
-2. Adicione as credenciais no arquivo `.env.local`
-
-## 🏃 Como Executar
-
-### Modo Desenvolvimento (com hot-reload)
+Inicie o servidor local:
 
 ```bash
 npm run dev
 ```
 
-A aplicação estará disponível em: **http://localhost:3000**
+Acesse:
 
-### Modo Produção
-
-```bash
-npm run build
-npm run start
+```text
+http://localhost:3000
 ```
 
-## 📝 Scripts Disponíveis
+## Variaveis de ambiente
 
-| Comando            | Descrição                               |
-| ------------------ | --------------------------------------- |
-| `npm run dev`      | Inicia o servidor de desenvolvimento    |
-| `npm run build`    | Compila a aplicação para produção       |
-| `npm start`        | Inicia a aplicação compilada            |
-| `npm run lint`     | Verifica erros de código com ESLint     |
-| `npm run sync-atp` | Sincroniza o calendário ATP manualmente |
+Estas sao as variaveis usadas pelo projeto:
 
-## 📁 Estrutura do Projeto
+| Variavel | Obrigatoria | Uso |
+| --- | --- | --- |
+| `NEON_CONNECTION_STRING` | Sim | Conexao com o banco Neon PostgreSQL. |
+| `SMTP_HOST` | Sim | Host SMTP para envio de emails. |
+| `SMTP_PORT` | Sim | Porta SMTP. Use `587` para STARTTLS ou `465` para SSL. |
+| `SMTP_SECURE` | Sim | `true` para porta `465`; `false` para `587`. |
+| `SMTP_USER` | Sim | Usuario/email autenticado no SMTP. |
+| `SMTP_PASS` | Sim | Senha SMTP ou app password. |
 
+Exemplo com Gmail:
+
+```env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=seu-email@gmail.com
+SMTP_PASS=sua-app-password
 ```
+
+Observacao: para Gmail, use uma app password. A senha comum da conta normalmente nao funciona para SMTP.
+
+## Scripts
+
+| Comando | Descricao |
+| --- | --- |
+| `npm run dev` | Inicia o servidor de desenvolvimento. |
+| `npm run build` | Gera o build de producao. |
+| `npm run start` | Inicia a aplicacao apos o build. |
+| `npm run lint` | Executa ESLint no projeto. |
+| `npm run sync-atp` | Sincroniza o calendario ATP manualmente. |
+
+## Estrutura
+
+```text
 tennis-betting/
-├── app/                      # Páginas e rotas da aplicação
-│   ├── admin/               # Painel administrativo
-│   ├── dashboard/           # Dashboard do usuário
-│   ├── login/               # Página de login
-│   ├── torneios/            # Gerenciamento de torneios
-│   ├── grupos/              # Gerenciamento de grupos/pools
-│   ├── ranking/             # Ranking de apostadores
-│   └── api/                 # Rotas de API
-├── components/              # Componentes React reutilizáveis
-│   ├── admin/              # Componentes do painel admin
-│   ├── auth/               # Componentes de autenticação
-│   ├── ui/                 # Componentes UI genéricos (Radix UI)
-│   └── ...
-├── lib/                     # Funções e utilitários
-│   ├── db.ts               # Conexão com banco de dados
-│   ├── auth.ts             # Lógica de autenticação
-│   ├── utils.ts            # Funções utilitárias
-│   └── actions/            # Server actions
-├── public/                  # Arquivos estáticos
-├── scripts/                 # Scripts de migração e sincronização
-└── styles/                  # CSS global
-
+|-- app/
+|   |-- admin/              # Painel administrativo
+|   |-- api/                # Rotas de API
+|   |-- cadastro/           # Cadastro de usuario
+|   |-- dashboard/          # Area logada do participante
+|   |-- grupos/             # Grupos e pools
+|   |-- login/              # Login
+|   |-- perfil/             # Perfil do usuario
+|   |-- ranking/            # Rankings
+|   `-- torneios/           # Torneios e palpites
+|-- components/
+|   |-- admin/              # Componentes do admin
+|   |-- auth/               # Formularios de autenticacao
+|   |-- dashboard/          # Componentes do dashboard
+|   |-- pools/              # Componentes de grupos/pools
+|   |-- profile/            # Componentes do perfil
+|   |-- shared/             # Componentes compartilhados
+|   |-- tournament/         # Chaveamento, ranking e inscricao
+|   `-- ui/                 # Componentes base
+|-- lib/
+|   |-- actions/            # Server actions
+|   |-- services/           # Integracoes externas
+|   |-- admin.ts            # Regras administrativas
+|   |-- auth.ts             # Autenticacao e sessoes
+|   |-- data.ts             # Consultas e regras de dados
+|   |-- db.ts               # Cliente Neon
+|   `-- email.ts            # Envio de emails
+|-- public/                 # Assets estaticos
+|-- scripts/                # SQLs, migracoes e sincronizacoes
+|-- styles/                 # Estilos globais auxiliares
+`-- README.md
 ```
 
-## 🔑 Variáveis de Ambiente Detalhadas
+## Fluxo de torneios
 
-| Variável          | Descrição                    | Exemplo                                              |
-| ----------------- | ---------------------------- | ---------------------------------------------------- |
-| `DATABASE_URL`    | String de conexão PostgreSQL | `postgresql://user:pass@host/db`                     |
-| `NEXTAUTH_URL`    | URL da aplicação             | `http://localhost:3000` ou `https://seu-dominio.com` |
-| `NEXTAUTH_SECRET` | Chave secreta para JWT       | Qualquer string aleatória segura                     |
-| `SMTP_HOST`       | Host do servidor SMTP        | `smtp.mailtrap.io`                                   |
-| `SMTP_PORT`       | Porta SMTP                   | `587` ou `465`                                       |
-| `SMTP_USER`       | Usuário SMTP                 | `seu-email@exemplo.com`                              |
-| `SMTP_PASSWORD`   | Senha SMTP                   | Sua senha SMTP                                       |
-| `NODE_ENV`        | Ambiente                     | `development` ou `production`                        |
+O torneio passa por estados que controlam visibilidade, palpites e resultados:
 
-## 🌐 Deployment
+| Status | Significado |
+| --- | --- |
+| `STANDBY` | Torneio interno no admin, ainda sem exibicao para participantes. |
+| `UPCOMING` | Torneio preparado/visivel, aguardando abertura. |
+| `OPEN` | Aberto para inscricoes e palpites. |
+| `LOCKED` / `IN_PROGRESS` | Palpites encerrados ou torneio em andamento. |
+| `FINISHED` | Torneio finalizado, com campeao e vice definidos. |
 
-### Deploy no Vercel (Recomendado)
+No admin, a tela de torneio permite:
 
-1. Faça push do código para GitHub
-2. Acesse [vercel.com](https://vercel.com/)
-3. Clique em "New Project" e selecione o repositório
-4. Configure as variáveis de ambiente
-5. Clique em "Deploy"
+- Preparar e publicar chaveamento.
+- Sincronizar chaveamento ATP quando aplicavel.
+- Definir jogadores e placeholders.
+- Lancar, limpar ou cancelar resultados.
+- Finalizar torneio.
+- Auditar inscritos e identificar quem enviou ou nao enviou palpites.
 
-As variáveis de ambiente devem ser adicionadas nas configurações do projeto no Vercel.
+## Banco de dados
 
-## 🐛 Solução de Problemas
+O projeto usa Neon PostgreSQL via `@neondatabase/serverless`.
 
-### Erro de Conexão com Banco de Dados
+Tabelas/conceitos centrais:
 
-```
-Error: connect ECONNREFUSED
-```
+- `users`: usuarios, perfil, clube, estado/cidade e permissao admin.
+- `sessions`: sessoes de login por token.
+- `tournaments`: torneios, datas, status, categoria e configuracoes.
+- `bracket_matches`: partidas do chaveamento.
+- `predictions`: palpites por usuario e partida.
+- `user_tournaments`: inscricoes de usuarios em torneios.
+- `pools` e `pool_members`: grupos e participantes.
+- `players`: jogadores do chaveamento.
+- `tennis_clubs`: clubes cadastrados.
 
-**Solução:** Verifique se:
+Os scripts SQL e utilitarios ficam em `scripts/`. Antes de rodar em producao, confira o script especifico que pretende executar e use a connection string correta.
 
-- A string `DATABASE_URL` está correta
-- O banco de dados está online
-- Sua conexão de internet está ativa
+## Deploy
 
-### Porta 3000 já em uso
+O deploy recomendado e pela Vercel:
 
-```
-Error: listen EADDRINUSE: address already in use :::3000
-```
+1. Envie o codigo para o GitHub.
+2. Crie um projeto na Vercel apontando para este repositorio.
+3. Configure as variaveis de ambiente:
+   - `NEON_CONNECTION_STRING`
+   - `SMTP_HOST`
+   - `SMTP_PORT`
+   - `SMTP_SECURE`
+   - `SMTP_USER`
+   - `SMTP_PASS`
+4. Rode o deploy.
 
-**Solução:** Execute em outra porta:
+## Troubleshooting
+
+### `NEON_CONNECTION_STRING environment variable is not set`
+
+Crie `.env.local` e preencha `NEON_CONNECTION_STRING`.
+
+### Erro de conexao com o Neon
+
+Verifique se:
+
+- A connection string esta correta.
+- O banco esta ativo.
+- A string contem `sslmode=require`, quando exigido pelo Neon.
+
+### Email de recuperacao nao chega
+
+Verifique se:
+
+- As variaveis SMTP estao preenchidas.
+- `SMTP_SECURE` corresponde a porta usada.
+- O provedor permite envio por aplicacoes externas.
+- No Gmail, uma app password foi usada.
+
+### Porta 3000 em uso
+
+Rode em outra porta:
 
 ```bash
-npm run dev -- -p 3001
+npm run dev -- --port 3001
 ```
 
-### Erro de autenticação
+### `eslint` nao encontrado
 
-Verifique se as variáveis `NEXTAUTH_URL` e `NEXTAUTH_SECRET` estão configuradas corretamente.
-
-## 📞 Suporte
-
-Para dúvidas ou problemas:
-
-1. Verifique se todos os pré-requisitos estão instalados
-2. Consulte este README novamente
-3. Verifique os logs de erro no console
-4. Entre em contato com o suporte
+Rode `npm install` novamente. Se o pacote ainda nao estiver disponivel no projeto, instale/configure o ESLint antes de usar `npm run lint`.
 
 ---
 
-**Última atualização:** Junho 2026
+Ultima atualizacao: Junho de 2026
