@@ -1,5 +1,11 @@
 import { notFound } from 'next/navigation';
-import { getTournamentById, getBracketMatches, getPlayers, getTournamentRanking } from '@/lib/data';
+import {
+  getTournamentById,
+  getBracketMatches,
+  getPlayers,
+  getTournamentRanking,
+  getTournamentParticipantAudit,
+} from '@/lib/data';
 import { getDynamicRoundNames } from '@/lib/utils';
 import { isRound1Complete } from '@/lib/admin';
 import { PageHero } from '@/components/shared/page-hero';
@@ -17,6 +23,7 @@ import { ptBR } from 'date-fns/locale';
 import { format } from 'date-fns';
 import { EditTournamentDateModal } from '@/components/admin/edit-tournament-date-modal';
 import { TournamentPodium } from '@/components/tournament/tournament-podium';
+import { TournamentParticipantsAudit } from '@/components/admin/tournament-participants-audit';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -34,14 +41,16 @@ export default async function ManageTournamentPage({ params }: Props) {
   const tournament = await getTournamentById(tournamentId);
   if (!tournament) notFound();
 
-  const [matches, players, round1Complete, ranking] = await Promise.all([
+  const [matches, players, round1Complete, ranking, participantAudit] = await Promise.all([
     getBracketMatches(tournamentId),
     getPlayers(),
     isRound1Complete(tournamentId),
     getTournamentRanking(tournamentId, 3),
+    getTournamentParticipantAudit(tournamentId),
   ]);
 
   const isFinished = tournament.status === 'finished' || tournament.status === 'FINISHED' || tournament.status === 'completed';
+  const canAuditParticipants = ['LOCKED', 'IN_PROGRESS', 'FINISHED', 'finished', 'completed'].includes(tournament.status);
 
   const assignedPlayerIds = new Set<number>();
   matches.forEach((m) => {
@@ -102,6 +111,14 @@ export default async function ManageTournamentPage({ params }: Props) {
           </Button>
 
           <div className="flex items-center gap-3 flex-wrap">
+            {canAuditParticipants && (
+              <TournamentParticipantsAudit
+                participants={participantAudit.participants}
+                totalMatches={participantAudit.totalMatches}
+                tournamentId={tournamentId}
+              />
+            )}
+
             <TournamentStatusTransition
               tournamentId={tournamentId}
               status={tournament.status}
