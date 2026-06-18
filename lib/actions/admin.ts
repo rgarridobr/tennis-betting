@@ -2,7 +2,11 @@
 
 import { getSession, registerUser } from '@/lib/auth';
 import { sql } from '@/lib/db';
-import { fetchAtpDraw } from '@/lib/services/atp-draw';
+import {
+  fetchAtpDraw,
+  findAtpPlayerMatch,
+  type ExistingPlayer,
+} from '@/lib/services/atp-draw';
 import {
   createTournament,
   updateTournamentStatus,
@@ -592,17 +596,18 @@ export async function deleteTennisClubAction(formData: FormData) {
 
 // ==================== ATP DRAW SYNC ====================
 
-function extractFullNameFromHref(href: string | null, fallback: string): string {
-  if (!href) return fallback;
-  const parts = href.split('/');
-  const playersIdx = parts.indexOf('players');
-  if (playersIdx === -1 || playersIdx >= parts.length - 1) return fallback;
+function cleanAtpPlayerName(value: string): string {
+  return value
+    .replace(/\b([A-Z])\s+([a-z]{1,5})\b/g, '$1$2')
+    .replace(/\b([A-Z][a-z]+)\s+([A-Z])\s+([a-z]+)\b/g, '$1 $2$3')
+    .replace(/\b([A-Za-z]+)\s+It\s+A\s+([A-Za-z]+)\b/g, '$1 $2')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
-  const slug = parts[playersIdx + 1]; // e.g. carlos-alcaraz
-  return slug
-    .split('-')
-    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-    .join(' ');
+function normalizePlayerType(type: string): string {
+  if (type === 'WILD_CARD') return 'WILDCARD';
+  return type;
 }
 
 export async function syncTournamentBracketAction(tournamentId: number) {
@@ -622,23 +627,26 @@ export async function syncTournamentBracketAction(tournamentId: number) {
     return { success: false, error: 'ID da API ATP não configurado para este torneio' };
   }
 
-  // Remove o ano do final do slug para obter o slug da ATP (ex: basel-2024 -> basel, roland-garros-2024 -> roland-garros)
   const atpSlug = slug.replace(new RegExp(`-${year}$`), '');
   const atpDrawUrl = `https://www.atptour.com/en/scores/archive/${atpSlug}/${api_id}/${year}/draws`;
 
   try {
     console.log(`Syncing ATP bracket for tournament ${tournamentId}: ${atpDrawUrl}`);
+
     const drawMatches = await fetchAtpDraw(api_id, year, atpSlug);
 
     if (drawMatches.length === 0) {
-      console.error(`No ATP draw matches found for tournament ${tournamentId}: ${atpDrawUrl}`);
-      return { success: false, error: 'Nenhuma partida encontrada no chaveamento da ATP. Tente novamente em instantes ou verifique os logs da Vercel.' };
+      return {
+        success: false,
+        error: 'Nenhuma partida encontrada no chaveamento da ATP.',
+      };
     }
 
-    // Buscar partidas da primeira rodada do nosso banco
     const ourMatches = await sql`
-      SELECT id, position FROM bracket_matches 
-      WHERE tournament_id = ${tournamentId} AND round = 1
+      SELECT id, position
+      FROM bracket_matches
+      WHERE tournament_id = ${tournamentId}
+        AND round = 1
       ORDER BY position ASC
     `;
 
@@ -646,107 +654,109 @@ export async function syncTournamentBracketAction(tournamentId: number) {
       return { success: false, error: 'Chaveamento ainda não foi gerado no sistema' };
     }
 
+    const allPlayers = await sql`
+      SELECT id, name, display_name, country
+      FROM players
+    ` as ExistingPlayer[];
+
     let updatedCount = 0;
 
-    // Mapear cada partida da ATP para a nossa partida correspondente na Rodada 1
-    // drawMatches costumam ser retornadas na ordem de exibição (topo para baixo)
     for (let i = 0; i < ourMatches.length; i++) {
       const ourMatch = ourMatches[i];
       const atpMatch = drawMatches[i];
 
       if (!atpMatch) break;
 
-      const playersToUpdate = [];
+      const playersToUpdate: Array<{
+        id?: number;
+        type: string;
+        seed: number | null;
+      }> = [];
 
       for (let pIdx = 0; pIdx < 2; pIdx++) {
         const atpPlayer = atpMatch.players[pIdx];
+
         if (!atpPlayer) {
-          playersToUpdate.push({ id: null, type: 'PLAYER', seed: null });
+          playersToUpdate.push({ id: undefined, type: 'PLAYER', seed: null });
           continue;
         }
 
         if (atpPlayer.type === 'BYE') {
-          playersToUpdate.push({ id: null, type: 'BYE', seed: null });
+          playersToUpdate.push({ id: undefined, type: 'BYE', seed: null });
           continue;
         }
 
-        // Detect qualifier placeholders: names like "Qualifier", "Qualifier1", "Qualifier Qualifier2",
-        // "Q. Qualifier10", or any name containing "qualifier" as it comes from ATP placeholder slots
-        const nameIsQualifier =
-          /qualifier/i.test(atpPlayer.name?.trim() || '') ||
-          /qualifier/i.test(extractFullNameFromHref(atpPlayer.href, ''));
-        if (atpPlayer.type === 'QUALIFIER' || nameIsQualifier) {
-          playersToUpdate.push({ id: null, type: 'QUALIFIER', seed: null });
-          continue;
-        }
+        let matchedPlayer = findAtpPlayerMatch(
+          atpPlayer.name,
+          atpPlayer.country,
+          allPlayers,
+        );
 
-        // Tentar encontrar ou criar o jogador no banco
-        const fullName = extractFullNameFromHref(atpPlayer.href, atpPlayer.name);
-        const displayName = atpPlayer.name;
+        const cleanedAtpName = cleanAtpPlayerName(atpPlayer.name);
 
-        // Matching logic improvement:
-        // 1. Try full name match (slug-based)
-        // 2. Try display name match
-        // 3. Try partial matches for common patterns (e.g., "Z. Zhang" matches "Zhizhen Zhang")
-        let playerRecord = await sql`
-          SELECT id, name, display_name FROM players 
-          WHERE name ILIKE ${fullName} 
-             OR display_name ILIKE ${displayName}
-             OR name ILIKE ${displayName}
-             OR display_name ILIKE ${fullName}
-        `;
-
-        // If no direct match, try a more relaxed search for short names like "Z. Zhang"
-        if (playerRecord.length === 0 && displayName.includes('. ')) {
-          const [initial, lastName] = displayName.split('. ');
-          if (lastName) {
-            const searchPattern = `${initial.charAt(0)}% ${lastName}`;
-            playerRecord = await sql`
-              SELECT id, name, display_name FROM players 
-              WHERE name ILIKE ${searchPattern} OR display_name ILIKE ${searchPattern}
-            `;
-          }
+        if (!matchedPlayer && cleanedAtpName !== atpPlayer.name) {
+          matchedPlayer = findAtpPlayerMatch(
+            cleanedAtpName,
+            atpPlayer.country,
+            allPlayers,
+          );
         }
 
         let playerId: number;
-        if (playerRecord.length === 0) {
-          const newPlayer = await sql`
+
+        if (!matchedPlayer && atpPlayer.name.includes('…')) {
+          throw new Error(
+            `Nome truncado no PDF não pôde ser associado com segurança: ${atpPlayer.name} (${atpPlayer.country || 'sem país'})`,
+          );
+        }
+
+        if (!matchedPlayer) {
+          const createdPlayer = await sql`
             INSERT INTO players (name, country, display_name)
-            VALUES (${fullName}, ${atpPlayer.country || null}, ${displayName})
+            VALUES (${cleanedAtpName}, ${atpPlayer.country || null}, ${cleanedAtpName})
             RETURNING id
           `;
-          playerId = newPlayer[0].id;
+
+          playerId = createdPlayer[0].id;
+          allPlayers.push({
+            id: playerId,
+            name: cleanedAtpName,
+            display_name: cleanedAtpName,
+            country: atpPlayer.country || null,
+          });
         } else {
-          playerId = playerRecord[0].id;
-          // Update country and always update display_name to reflect current seed structure
-          if (atpPlayer.country || displayName) {
-            await sql`
-              UPDATE players 
-              SET 
-                country = COALESCE(country, ${atpPlayer.country || null}),
-                display_name = ${displayName}
-              WHERE id = ${playerId}
-            `;
-          }
+          playerId = matchedPlayer.id;
+        }
+
+        if (atpPlayer.country) {
+          await sql`
+            UPDATE players
+            SET country = COALESCE(country, ${atpPlayer.country})
+            WHERE id = ${playerId}
+          `;
         }
 
         playersToUpdate.push({
           id: playerId,
-          type: atpPlayer.type,
+          type: normalizePlayerType(atpPlayer.type),
           seed: atpPlayer.seed && !isNaN(parseInt(atpPlayer.seed, 10)) ? parseInt(atpPlayer.seed, 10) : null,
         });
       }
 
-      // Atualizar a partida no banco
       await setMatchPlayers(ourMatch.id, playersToUpdate[0], playersToUpdate[1], tournamentId);
       updatedCount++;
     }
 
     revalidatePath(`/admin/torneios/${tournamentId}`);
+    revalidatePath(`/torneios/${tournamentId}`);
+
     return { success: true, updatedCount };
   } catch (error: any) {
     console.error('Error syncing bracket:', error);
-    return { success: false, error: 'Erro ao sincronizar chaveamento: ' + error.message };
+    return {
+      success: false,
+      error: 'Erro ao sincronizar chaveamento: ' + error.message,
+    };
   }
 }
 
