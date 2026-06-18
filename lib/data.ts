@@ -203,20 +203,14 @@ export interface PredictionWithDetails {
   tournament_size: number;
 }
 
-export interface TournamentParticipantAuditEntry {
+export interface TournamentParticipantEntry {
   user_id: number;
   user_name: string;
   email: string;
   nickname: string | null;
   whatsapp: string | null;
   tennis_club: string | null;
-  prediction_count: number;
-  last_prediction_at: string | null;
-}
-
-export interface TournamentParticipantAudit {
-  totalMatches: number;
-  participants: TournamentParticipantAuditEntry[];
+  joined_at: string | null;
 }
 
 // ==================== ROUND CONFIG ====================
@@ -661,48 +655,33 @@ export async function getUserPredictionsWithDetails(userId: number): Promise<Pre
   return rows as PredictionWithDetails[];
 }
 
-export async function getTournamentParticipantAudit(tournamentId: number): Promise<TournamentParticipantAudit> {
-  const [matchCountRows, participantRows] = await Promise.all([
-    sql`
-      SELECT COUNT(*) as count
-      FROM bracket_matches
-      WHERE tournament_id = ${tournamentId}
-    `,
-    sql`
-      SELECT
-        u.id as user_id,
-        COALESCE(NULLIF(u.nickname, ''), u.name) as user_name,
-        u.email,
-        NULLIF(u.nickname, '') as nickname,
-        NULLIF(u.whatsapp, '') as whatsapp,
-        COALESCE(tc.name, NULLIF(u.tennis_club_custom, ''), NULLIF(u.tennis_club, '')) as tennis_club,
-        COUNT(DISTINCT p.bracket_match_id)::int as prediction_count,
-        MAX(p.created_at) as last_prediction_at
-      FROM user_tournaments ut
-      JOIN users u ON u.id = ut.user_id
-      LEFT JOIN tennis_clubs tc ON tc.id = u.tennis_club_id
-      LEFT JOIN bracket_matches bm ON bm.tournament_id = ut.tournament_id
-      LEFT JOIN predictions p ON p.user_id = u.id AND p.bracket_match_id = bm.id
-      WHERE ut.tournament_id = ${tournamentId}
-        AND u.is_deleted = FALSE
-      GROUP BY u.id, u.name, u.nickname, u.email, u.whatsapp, tc.name, u.tennis_club_custom, u.tennis_club
-      ORDER BY prediction_count DESC, user_name ASC
-    `,
-  ]);
+export async function getTournamentParticipants(tournamentId: number): Promise<TournamentParticipantEntry[]> {
+  const rows = await sql`
+    SELECT
+      u.id as user_id,
+      COALESCE(NULLIF(u.nickname, ''), u.name) as user_name,
+      u.email,
+      NULLIF(u.nickname, '') as nickname,
+      NULLIF(u.whatsapp, '') as whatsapp,
+      COALESCE(tc.name, NULLIF(u.tennis_club_custom, ''), NULLIF(u.tennis_club, '')) as tennis_club,
+      ut.joined_at
+    FROM user_tournaments ut
+    JOIN users u ON u.id = ut.user_id
+    LEFT JOIN tennis_clubs tc ON tc.id = u.tennis_club_id
+    WHERE ut.tournament_id = ${tournamentId}
+      AND u.is_deleted = FALSE
+    ORDER BY user_name ASC
+  `;
 
-  return {
-    totalMatches: Number(matchCountRows[0]?.count || 0),
-    participants: participantRows.map((row) => ({
-      user_id: Number(row.user_id),
-      user_name: String(row.user_name),
-      email: String(row.email),
-      nickname: (row.nickname as string | null) ?? null,
-      whatsapp: (row.whatsapp as string | null) ?? null,
-      tennis_club: (row.tennis_club as string | null) ?? null,
-      prediction_count: Number(row.prediction_count || 0),
-      last_prediction_at: row.last_prediction_at ? String(row.last_prediction_at) : null,
-    })),
-  };
+  return rows.map((row) => ({
+    user_id: Number(row.user_id),
+    user_name: String(row.user_name),
+    email: String(row.email),
+    nickname: (row.nickname as string | null) ?? null,
+    whatsapp: (row.whatsapp as string | null) ?? null,
+    tennis_club: (row.tennis_club as string | null) ?? null,
+    joined_at: row.joined_at ? String(row.joined_at) : null,
+  }));
 }
 
 // ==================== STATS & RANKING ====================
