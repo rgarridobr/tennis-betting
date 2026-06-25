@@ -7,7 +7,8 @@ import { createTournamentAction } from '@/lib/actions/admin'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Trophy, MapPin, Layers, Calendar, ArrowRight, AlertCircle, Users, Hash } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
+import { Trophy, MapPin, Layers, Calendar, ArrowRight, AlertCircle, Users, Hash, Gift } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -127,6 +128,18 @@ export function TournamentForm({ names, locations }: Props) {
 
       <input type="hidden" name="image_url" value={imageUrl} />
       <input type="hidden" name="status" value="STANDBY" />
+
+      <div className="space-y-4">
+        <Label htmlFor="prize_description" className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
+          <Gift className="w-4 h-4 text-emerald-500" /> Prêmio
+        </Label>
+        <Textarea
+          id="prize_description"
+          name="prize_description"
+          placeholder="Descreva o que o ganhador vai receber"
+          className="min-h-28 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700"
+        />
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         <div className="space-y-4">

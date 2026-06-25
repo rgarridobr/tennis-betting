@@ -4,6 +4,7 @@ import { sql } from './db';
 sql`ALTER TABLE pools ADD COLUMN IF NOT EXISTS tournament_id INTEGER REFERENCES tournaments(id)`.catch(console.error);
 sql`ALTER TABLE pools ADD COLUMN IF NOT EXISTS hide_pending BOOLEAN DEFAULT TRUE`.catch(console.error);
 sql`ALTER TABLE pools ADD COLUMN IF NOT EXISTS whatsapp_link TEXT`.catch(console.error);
+sql`ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS prize_description TEXT`.catch(console.error);
 sql`CREATE TABLE IF NOT EXISTS tennis_clubs (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL UNIQUE,
@@ -70,6 +71,7 @@ export interface Tournament {
   start_date: string;
   end_date: string;
   image_url: string | null;
+  prize_description: string | null;
   status: string;
   created_at: string;
   category: string;
@@ -381,7 +383,7 @@ async function syncTournamentStatuses(): Promise<void> {
 export async function getTournamentsActive(): Promise<Tournament[]> {
   await syncTournamentStatuses();
   const rows = await sql`
-    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, prize_description, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
     FROM tournaments 
     WHERE is_visible = TRUE 
     AND status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS', 'STANDBY') 
@@ -393,7 +395,7 @@ export async function getTournamentsActive(): Promise<Tournament[]> {
 export async function getTournamentsActiveThisMonth(): Promise<Tournament[]> {
   await syncTournamentStatuses();
   const rows = await sql`
-    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, prize_description, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
     FROM tournaments
     WHERE is_visible = TRUE
       AND status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS')
@@ -407,7 +409,7 @@ export async function getTournamentsActiveThisMonth(): Promise<Tournament[]> {
 export async function getTournamentsByYear(year: number): Promise<Tournament[]> {
   await syncTournamentStatuses();
   const rows = await sql`
-    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, prize_description, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
     FROM tournaments
     WHERE is_visible = TRUE
       AND EXTRACT(YEAR FROM start_date) = ${year}
@@ -423,7 +425,7 @@ export async function getTournamentsByYear(year: number): Promise<Tournament[]> 
 export async function getTournaments(): Promise<Tournament[]> {
   await syncTournamentStatuses();
   const rows = await sql`
-    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, prize_description, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
     FROM tournaments 
     ORDER BY start_date ASC
   `;
@@ -433,7 +435,7 @@ export async function getTournaments(): Promise<Tournament[]> {
 export async function getTournamentsWithBrackets(): Promise<Tournament[]> {
   await syncTournamentStatuses();
   const rows = await sql`
-    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, prize_description, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
     FROM tournaments 
     WHERE is_visible = TRUE 
       AND EXISTS (SELECT 1 FROM bracket_matches bm WHERE bm.tournament_id = tournaments.id)
@@ -445,7 +447,7 @@ export async function getTournamentsWithBrackets(): Promise<Tournament[]> {
 export async function getTournamentsByYearAndMonth(year: number, month: number): Promise<Tournament[]> {
   await syncTournamentStatuses();
   const rows = await sql`
-    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, prize_description, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
     FROM tournaments 
     WHERE is_visible = TRUE
     AND EXTRACT(YEAR FROM start_date) = ${year}
@@ -466,7 +468,7 @@ export async function getAllVisibleTournaments(limit?: number, includeFinished =
 
   if (limit) {
     const rows = await sql`
-      SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+      SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, prize_description, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
       FROM tournaments
       WHERE is_visible = TRUE
       ${statusFilter}
@@ -477,7 +479,7 @@ export async function getAllVisibleTournaments(limit?: number, includeFinished =
   }
 
   const rows = await sql`
-    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, prize_description, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
     FROM tournaments
     WHERE is_visible = TRUE
     ${statusFilter}
@@ -485,6 +487,23 @@ export async function getAllVisibleTournaments(limit?: number, includeFinished =
   `;
 
   return rows as Tournament[];
+}
+
+export async function getFeaturedPrizeTournament(): Promise<Tournament | null> {
+  await syncTournamentStatuses();
+
+  const rows = await sql`
+    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, prize_description, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    FROM tournaments
+    WHERE is_visible = TRUE
+      AND prize_description IS NOT NULL
+      AND TRIM(prize_description) != ''
+      AND status IN ('active', 'published', 'upcoming', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS', 'STANDBY')
+    ORDER BY start_date ASC, id ASC
+    LIMIT 1
+  `;
+
+  return rows.length > 0 ? (rows[0] as Tournament) : null;
 }
 
 export async function getTournamentById(id: number): Promise<Tournament | null> {
@@ -513,14 +532,14 @@ export async function getTournamentById(id: number): Promise<Tournament | null> 
   `;
 
   const rows =
-    await sql`SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id FROM tournaments WHERE id = ${id}`;
+    await sql`SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, prize_description, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id FROM tournaments WHERE id = ${id}`;
   return rows.length > 0 ? (rows[0] as Tournament) : null;
 }
 
 export async function getActiveTournament(): Promise<Tournament | null> {
   await syncTournamentStatuses();
   const rows = await sql`
-    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
+    SELECT id, name, surface, location, start_date as start_date, end_date as end_date, image_url, prize_description, status, created_at, category, category_custom, format, sets_format, size, has_seeds, has_qualifiers, has_wildcards, has_byes, is_visible, champion_id, runner_up_id
     FROM tournaments
     WHERE is_visible = TRUE
       AND status IN ('OPEN', 'LOCKED', 'IN_PROGRESS')

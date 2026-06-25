@@ -65,6 +65,7 @@ export async function createTournamentAction(formData: FormData) {
   const format = formData.get('format') as string;
   const sets_format = parseInt(formData.get('sets_format') as string, 10);
   const size = parseInt(formData.get('size') as string, 10);
+  const prize_description = ((formData.get('prize_description') as string | null) || '').trim();
 
   const has_seeds = formData.get('has_seeds') === 'true';
   const has_qualifiers = formData.get('has_qualifiers') === 'true';
@@ -104,6 +105,7 @@ export async function createTournamentAction(formData: FormData) {
       has_byes,
       status: status || 'STANDBY',
       image_url,
+      prize_description: prize_description || null,
     });
 
     revalidatePath('/admin/torneios');
@@ -114,6 +116,24 @@ export async function createTournamentAction(formData: FormData) {
     console.error('Error creating tournament:', error);
     const message = error.message || 'Erro ao criar torneio. Tente novamente.';
     return { success: false, error: message };
+  }
+}
+
+export async function updateTournamentPrizeAction(tournamentId: number, prizeDescription: string) {
+  await requireAdmin();
+
+  try {
+    await updateTournament(tournamentId, {
+      prize_description: prizeDescription.trim() || null,
+    });
+    revalidatePath(`/admin/torneios/${tournamentId}`);
+    revalidatePath(`/torneios/${tournamentId}`);
+    revalidatePath('/torneios');
+    revalidatePath('/dashboard');
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating tournament prize:', error);
+    return { success: false, error: 'Erro ao atualizar o prêmio do torneio' };
   }
 }
 
@@ -499,7 +519,7 @@ export async function createTennisClubAction(formData: FormData) {
 
   const name = (formData.get('name') as string | null)?.trim() ?? '';
   if (!name) {
-    return { success: false, error: 'Nome do clube Ã© obrigatÃ³rio' };
+    return { success: false, error: 'Nome do clube é obrigatório' };
   }
 
   try {

@@ -29,6 +29,7 @@ export async function createTournament(data: {
   has_byes: boolean;
   status?: string;
   image_url?: string;
+  prize_description?: string | null;
 }): Promise<number> {
   const start = new Date(data.start_date);
   const year = start.getFullYear();
@@ -57,13 +58,13 @@ export async function createTournament(data: {
       name, slug, surface, location, start_date, end_date, status,
       category, category_custom, format, sets_format, size,
       has_seeds, has_qualifiers, has_wildcards, has_byes,
-      image_url, source, year, tournament_concept_id, needs_review
+      image_url, prize_description, source, year, tournament_concept_id, needs_review
     )
     VALUES (
       ${data.name}, ${slug}, ${data.surface}, ${data.location}, ${data.start_date}, ${data.end_date}, ${data.status || 'draft'},
       ${data.category}, ${data.category_custom || null}, ${data.format}, ${data.sets_format}, ${data.size},
       ${data.has_seeds}, ${data.has_qualifiers}, ${data.has_wildcards}, ${data.has_byes},
-      ${data.image_url || null}, 'MANUAL', ${year}, ${conceptId}, ${!conceptId}
+      ${data.image_url || null}, ${data.prize_description || null}, 'MANUAL', ${year}, ${conceptId}, ${!conceptId}
     )
     RETURNING id
   `;
@@ -129,6 +130,7 @@ export async function updateTournament(
     has_wildcards: boolean;
     has_byes: boolean;
     image_url?: string;
+    prize_description?: string | null;
     status?: string;
   }>,
 ): Promise<void> {

@@ -1,14 +1,16 @@
-import { requireUserWithLocation } from '@/lib/auth';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { SearchX, Trophy, Zap } from 'lucide-react';
+import { requireUserWithLocation } from '@/lib/auth';
 import { getAllVisibleTournaments, getActiveTournament, getGlobalRanking } from '@/lib/data';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { RankingSection } from '@/components/dashboard/ranking-section';
 import { TournamentCard } from '@/components/dashboard/tournament-card';
-import { PageHero } from '@/components/shared/page-hero';
-import { Card, CardContent } from '@/components/ui/card';
-import { Zap, Trophy, SearchX } from 'lucide-react';
 import { TournamentFilters } from '@/components/dashboard/tournament-filters';
 import { TournamentPagination } from '@/components/dashboard/tournament-pagination';
-import { RankingSection } from '@/components/dashboard/ranking-section';
+import { PageHero } from '@/components/shared/page-hero';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface PageProps {
   searchParams: Promise<{
@@ -26,16 +28,23 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
   if (user.is_admin) redirect('/admin');
 
   const { status, search, category, page } = await searchParams;
-  const currentPage = page ? parseInt(page) : 1;
+  const currentPage = page ? parseInt(page, 10) : 1;
 
   const [allTournaments, activeTournament, ranking] = await Promise.all([
     getAllVisibleTournaments(undefined, true),
     getActiveTournament(),
     getGlobalRanking(5),
-  ]); 
+  ]);
+
   const activeStatuses = ['active', 'published', 'OPEN', 'LOCKED', 'IN_PROGRESS'];
   const upcomingStatuses = ['upcoming', 'UPCOMING', 'STANDBY'];
-  const requestedStatus = status || 'active';
+  const finishedStatuses = ['finished', 'FINISHED', 'completed'];
+
+  const hasActiveTournaments = allTournaments.some((t) => activeStatuses.includes(t.status));
+  const defaultStatus = hasActiveTournaments ? 'active' : 'upcoming';
+  const requestedStatus = status || defaultStatus;
+  const explicitlyRequestedActive = status === 'active';
+  const showingUpcomingByDefault = !status && !hasActiveTournaments;
 
   function applyTextAndCategoryFilters(tournaments: typeof allTournaments) {
     let result = tournaments;
@@ -54,15 +63,15 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
     return result;
   }
 
-  // Apply filters
   let filteredTournaments = allTournaments;
-  let sectionTitle = 'Torneios Ativos';
+  let sectionTitle = 'Torneios ativos';
+  let showNoActiveInfo = false;
 
   if (requestedStatus === 'finished') {
     filteredTournaments = filteredTournaments
-      .filter((t) => ['finished', 'FINISHED', 'completed'].includes(t.status))
+      .filter((t) => finishedStatuses.includes(t.status))
       .sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime());
-    sectionTitle = 'Torneios Finalizados';
+    sectionTitle = 'Torneios finalizados';
   } else if (requestedStatus === 'upcoming') {
     filteredTournaments = filteredTournaments
       .filter((t) => upcomingStatuses.includes(t.status))
@@ -72,18 +81,10 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
     filteredTournaments = filteredTournaments
       .filter((t) => activeStatuses.includes(t.status))
       .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
+    showNoActiveInfo = explicitlyRequestedActive && !hasActiveTournaments;
   }
 
   filteredTournaments = applyTextAndCategoryFilters(filteredTournaments);
-
-  if (requestedStatus === 'active' && filteredTournaments.length === 0) {
-    filteredTournaments = applyTextAndCategoryFilters(
-      allTournaments
-        .filter((t) => upcomingStatuses.includes(t.status))
-        .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime()),
-    );
-    sectionTitle = 'O que vem por aí';
-  }
 
   const totalItems = filteredTournaments.length;
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
@@ -91,7 +92,7 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
   const paginatedTournaments = filteredTournaments.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const availableCount = allTournaments.filter((t) =>
-    ['active', 'published', 'OPEN', 'UPCOMING', 'LOCKED', 'IN_PROGRESS'].includes(t.status),
+    [...activeStatuses, ...upcomingStatuses].includes(t.status),
   ).length;
 
   return (
@@ -117,9 +118,30 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
       <main className="container mx-auto px-4 md:px-12 lg:px-32 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
           <div className="lg:col-span-2 space-y-8">
-            <TournamentFilters />
-
-            {paginatedTournaments.length > 0 ? (
+            <TournamentFilters defaultStatus={defaultStatus} />
+            {showNoActiveInfo ? (
+              <Card className="border border-emerald-100 bg-white shadow-md rounded-[2rem]">
+                <CardContent className="p-8 md:p-10">
+                  <div className="flex flex-col md:flex-row md:items-center gap-5">
+                    <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                      <Trophy className="w-7 h-7" />
+                    </div>
+                    <div className="flex-1">
+                      <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+                        Nenhum torneio ativo no momento
+                      </h2>
+                      <p className="mt-2 text-slate-600 font-medium leading-relaxed">
+                        Assim que um torneio for aberto para palpites, ele aparecerá aqui. Enquanto isso, veja os
+                        próximos torneios já agendados.
+                      </p>
+                    </div>
+                    <Button asChild className="rounded-2xl bg-emerald-600 font-black hover:bg-emerald-500">
+                      <Link href="/torneios?status=upcoming">Ver o que vem por aí</Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : paginatedTournaments.length > 0 ? (
               <section className="mb-12">
                 <div className="flex items-center gap-2 mb-6">
                   <div className="w-2 h-8 bg-emerald-500 rounded-full" />
@@ -141,7 +163,9 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
                 <CardContent className="py-20 text-center">
                   <SearchX className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                   <h2 className="text-xl font-semibold text-slate-900 mb-2">Nenhum torneio encontrado</h2>
-                  <p className="text-slate-600 mb-6">Não encontramos torneios que correspondam aos filtros selecionados.</p>
+                  <p className="text-slate-600 mb-6">
+                    Não encontramos torneios que correspondam aos filtros selecionados.
+                  </p>
                 </CardContent>
               </Card>
             )}
@@ -155,4 +179,3 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
     </div>
   );
 }
-

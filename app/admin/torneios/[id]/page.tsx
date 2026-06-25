@@ -22,6 +22,7 @@ import Link from 'next/link';
 import { ptBR } from 'date-fns/locale';
 import { format } from 'date-fns';
 import { EditTournamentDateModal } from '@/components/admin/edit-tournament-date-modal';
+import { EditTournamentPrizeModal } from '@/components/admin/edit-tournament-prize-modal';
 import { TournamentPodium } from '@/components/tournament/tournament-podium';
 import { TournamentParticipantsDialog } from '@/components/admin/tournament-participants-dialog';
 
@@ -98,6 +99,10 @@ export default async function ManageTournamentPage({ params }: Props) {
       >
         <div className="grid grid-cols-1 gap-4">
           <EditTournamentDateModal tournamentId={tournamentId} currentDate={new Date(tournament.start_date)} hasFinished={tournament.status === 'finished'}/>
+          <EditTournamentPrizeModal
+            tournamentId={tournamentId}
+            initialPrizeDescription={tournament.prize_description}
+          />
         </div>
       </PageHero>
       <main className="container mx-auto px-4 md:px-32 py-8">

@@ -18,6 +18,7 @@ CREATE TABLE tournaments (
   start_date TIMESTAMP NOT NULL,
   end_date DATE NOT NULL,
   image_url VARCHAR(500),
+  prize_description TEXT,
   status VARCHAR(50) DEFAULT 'upcoming',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

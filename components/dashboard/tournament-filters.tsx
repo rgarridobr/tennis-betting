@@ -1,5 +1,9 @@
 'use client';
 
+import { useEffect, useState, useTransition } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Search, FilterX } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -9,16 +13,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, FilterX } from 'lucide-react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useTransition, useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
 
 interface TournamentFiltersProps {
   hideUpcoming?: boolean;
+  defaultStatus?: 'active' | 'upcoming' | 'finished';
 }
 
-export function TournamentFilters({ hideUpcoming }: TournamentFiltersProps = {}) {
+export function TournamentFilters({ hideUpcoming, defaultStatus = 'active' }: TournamentFiltersProps = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -26,7 +27,7 @@ export function TournamentFilters({ hideUpcoming }: TournamentFiltersProps = {})
 
   const [search, setSearch] = useState(searchParams.get('search') || '');
 
-  const currentStatus = searchParams.get('status') || 'active';
+  const currentStatus = searchParams.get('status') || defaultStatus;
   const currentCategory = searchParams.get('category') || 'all';
 
   useEffect(() => {
@@ -40,7 +41,7 @@ export function TournamentFilters({ hideUpcoming }: TournamentFiltersProps = {})
 
   function handleFilterChange(name: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
-    params.set('page', '1'); // Reset to page 1 on filter change
+    params.set('page', '1');
 
     if (value && value !== 'all') {
       params.set(name, value);
@@ -66,7 +67,7 @@ export function TournamentFilters({ hideUpcoming }: TournamentFiltersProps = {})
     <div className="space-y-6 mb-12">
       <div className="flex flex-col md:flex-row gap-4 items-end">
         <div className="flex-1 w-full space-y-2">
-          <label className="text-sm font-bold text-slate-700 ml-1">Buscar Torneio</label>
+          <label className="text-sm font-bold text-slate-700 ml-1">Buscar torneio</label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
@@ -80,10 +81,7 @@ export function TournamentFilters({ hideUpcoming }: TournamentFiltersProps = {})
 
         <div className="w-full md:w-64 space-y-2">
           <label className="text-sm font-bold text-slate-700 ml-1">Categoria</label>
-          <Select
-            value={currentCategory}
-            onValueChange={(value) => handleFilterChange('category', value)}
-          >
+          <Select value={currentCategory} onValueChange={(value) => handleFilterChange('category', value)}>
             <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
               <SelectValue placeholder="Todas as categorias" />
             </SelectTrigger>
@@ -98,8 +96,8 @@ export function TournamentFilters({ hideUpcoming }: TournamentFiltersProps = {})
         </div>
 
         {hasActiveFilters && (
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             onClick={clearFilters}
             className="h-12 rounded-2xl text-slate-500 font-bold hover:text-rose-500 hover:bg-rose-50"
           >
@@ -110,29 +108,25 @@ export function TournamentFilters({ hideUpcoming }: TournamentFiltersProps = {})
       </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <Tabs
-          value={currentStatus}
-          onValueChange={(value) => handleFilterChange('status', value)}
-          className="w-full sm:w-auto"
-        >
+        <Tabs value={currentStatus} onValueChange={(value) => handleFilterChange('status', value)} className="w-full sm:w-auto">
           <TabsList className="bg-slate-100 p-1 rounded-2xl h-12 w-full sm:w-auto flex">
-            <TabsTrigger 
-              value="active" 
+            <TabsTrigger
+              value="active"
               className="flex-1 rounded-xl px-3 sm:px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm transition-all"
             >
               Ativos
             </TabsTrigger>
             {!hideUpcoming && (
-              <TabsTrigger 
-                value="upcoming" 
+              <TabsTrigger
+                value="upcoming"
                 className="flex-1 rounded-xl px-3 sm:px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm transition-all"
               >
                 <span className="hidden sm:inline">O que vem por aí</span>
                 <span className="sm:hidden">Próximos</span>
               </TabsTrigger>
             )}
-            <TabsTrigger 
-              value="finished" 
+            <TabsTrigger
+              value="finished"
               className="flex-1 rounded-xl px-3 sm:px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm transition-all"
             >
               Finalizados

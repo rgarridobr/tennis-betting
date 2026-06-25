@@ -5,6 +5,7 @@ import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 import { Toaster } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { GlobalPrizeFloatingBadge } from '@/components/dashboard/global-prize-floating-badge';
 
 const _geist = Geist({ subsets: ['latin'] });
 const _geistMono = Geist_Mono({ subsets: ['latin'] });
@@ -88,6 +89,7 @@ export default function RootLayout({
         />
         <TooltipProvider>
           {children}
+          <GlobalPrizeFloatingBadge />
         </TooltipProvider>
         <Analytics />
       </body>

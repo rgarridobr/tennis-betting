@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Icon, MapPin, Users, Zap } from 'lucide-react';
+import { Calendar, Clock, Gift, Icon, MapPin, Users, Zap } from 'lucide-react';
 import type { Tournament } from '@/lib/data';
 import { PageHero } from '../shared/page-hero';
 import { Card, CardContent } from '../ui/card';
@@ -60,6 +60,20 @@ export function TournamentHeader({ tournament, participants = 0 }: TournamentHea
                 <p className="text-xl md:text-2xl font-black text-white">{participants}</p>
               </div>{' '}
             </div>
+
+            {tournament.prize_description && (
+              <div className="flex gap-4 mt-4 pt-4 border-t border-white/10">
+                <div className="w-12 h-12 rounded-2xl bg-rose-500/20 flex items-center justify-center border border-rose-500/30">
+                  <Gift className="w-6 h-6 text-rose-300" />
+                </div>
+                <div>
+                  <p className="text-rose-100/80 text-xs font-bold uppercase tracking-wider">Prêmio</p>
+                  <p className="text-sm md:text-base font-bold text-white whitespace-pre-line leading-relaxed">
+                    {tournament.prize_description}
+                  </p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
