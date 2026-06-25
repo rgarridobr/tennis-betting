@@ -159,7 +159,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-blue-700 shadow-sm ring-1 ring-blue-100 transition-colors hover:bg-blue-100"
             >
               <ArrowLeft className="w-4 h-4" />
-              Voltar para ranking
+              Voltar para Ranking
             </Link>
           </div>
         )}
@@ -172,7 +172,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
         enrolled ? (
           <div className="text-center py-24 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm px-6">
             <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-4">
-              Inscrição confirmada !
+              Inscrição confirmada!
             </h3>
             <p className="text-slate-500 text-lg font-bold max-w-2xl mx-auto mb-4">
               Aguardando divulgação do chaveamento por parte da ATP. 🎾
@@ -184,11 +184,11 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
             </div>
 
             <p className="text-slate-500 text-lg font-medium max-w-3xl mx-auto mb-4">
-              ✅ Os palpites serao liberados assim que a chave inicial sair.
+              ✅ Os palpites serão liberados assim que a chave inicial sair.
             </p>
 
             <p className="text-slate-500 text-lg font-medium max-w-3xl mx-auto mb-4">
-              ⌛ A chave completa sera finalizada apos o Qualifying, geralmente um dia antes do torneio.
+              ⌛ A chave completa será finalizada após o Qualifying, geralmente um dia antes do torneio.
             </p>
 
             <p className="text-slate-500 text-base font-medium max-w-2xl mx-auto mb-2">Volte aqui por volta de:</p>
