@@ -151,7 +151,7 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
           {/* Nome */}
           <div className="space-y-4">
             <Label className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
-              <User className="w-4 h-4 text-emerald-500" /> Nome Completo (privado) *
+              <User className="w-4 h-4 text-emerald-500" /> Nome *
             </Label>
 
             <Input

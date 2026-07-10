@@ -122,7 +122,7 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
         <form action={handleSubmit} className="space-y-4">
           {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} />}
           <div className="space-y-2">
-            <Label htmlFor="name">Nome Completo (privado) *</Label>
+            <Label htmlFor="name">Nome *</Label>
             <Input id="name" name="name" type="text" placeholder="" required value={name} onChange={handleNameChange} />
           </div>
 

@@ -29,6 +29,21 @@ import { cn } from '@/lib/utils';
 
 // ==================== HELPER FUNCTIONS ====================
 
+type MatchResultMode = 'regular' | 'walkover' | 'retired';
+
+function getMatchResultMode(score?: string | null): { mode: MatchResultMode; partialScore: string } {
+  const scoreUpper = score?.toUpperCase() || '';
+  const isWalkoverScore = scoreUpper.startsWith('W/O') || scoreUpper.startsWith('WALKOVER');
+  const partialScore = isWalkoverScore
+    ? score?.replace(/^W\/O\s*/i, '').replace(/^WALKOVER\s*/i, '').trim() || ''
+    : '';
+
+  return {
+    mode: isWalkoverScore ? (partialScore ? 'retired' : 'walkover') : 'regular',
+    partialScore,
+  };
+}
+
 function formatPlayerName(name: string | null, seed: number | null, type?: string) {
   if (!name) {
     if (type === 'QUALIFIER') return 'Qualifier';
@@ -518,23 +533,17 @@ export function SetResultDialog({
   const [success, setSuccess] = useState(false);
   const [winnerId, setWinnerId] = useState<string>(match.winner_id?.toString() || '');
   const [score, setScore] = useState(match.score || '');
-  const [isWalkover, setIsWalkover] = useState(match.score?.toUpperCase().startsWith('W/O') ?? false);
-  const [woPartialScore, setWoPartialScore] = useState(
-    match.score?.toUpperCase().startsWith('W/O')
-      ? match.score.replace(/^W\/O\s*/i, '').trim()
-      : ''
-  );
+  const initialResult = getMatchResultMode(match.score);
+  const [resultMode, setResultMode] = useState<MatchResultMode>(initialResult.mode);
+  const [woPartialScore, setWoPartialScore] = useState(initialResult.partialScore);
 
   useEffect(() => {
     if (open) {
       setWinnerId(match.winner_id?.toString() || '');
       setScore(match.score || '');
-      setIsWalkover(match.score?.toUpperCase().startsWith('W/O') ?? false);
-      setWoPartialScore(
-        match.score?.toUpperCase().startsWith('W/O')
-          ? match.score.replace(/^W\/O\s*/i, '').trim()
-          : ''
-      );
+      const result = getMatchResultMode(match.score);
+      setResultMode(result.mode);
+      setWoPartialScore(result.partialScore);
       setError(null);
       setSuccess(false);
       setShowConfirmClear(false);
@@ -594,18 +603,16 @@ export function SetResultDialog({
       return;
     }
 
-    // Build score value based on walkover flag
+    // RET is stored as W/O with a partial score for compatibility with existing matches.
     let finalScore = score;
-    if (isWalkover) {
-      if (woPartialScore.trim()) {
-        finalScore = `W/O ${woPartialScore.trim()}`;
-      } else {
-        finalScore = 'W/O';
-      }
+    if (resultMode === 'walkover') {
+      finalScore = 'W/O';
+    } else if (resultMode === 'retired') {
+      finalScore = woPartialScore.trim() ? `W/O ${woPartialScore.trim()}` : '';
     }
 
     if (!finalScore) {
-      setError('Selecione o placar ou marque como W/O');
+      setError(resultMode === 'retired' ? 'Informe o placar parcial do RET' : 'Selecione o placar ou marque W/O/RET');
       return;
     }
 
@@ -723,44 +730,87 @@ export function SetResultDialog({
           <div className="space-y-3">
             <Label className="text-xs font-black uppercase tracking-widest text-slate-500">Placar Final</Label>
             
-            {/* W/O Toggle */}
-            <div className="flex gap-2">
+            {/* Result mode */}
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="button"
-                variant={isWalkover ? 'default' : 'outline'}
+                variant={resultMode === 'regular' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => {
-                  if (!isWalkover) {
-                    setWoPartialScore(score.replace(/^W\/O\s*/i, '').trim());
-                    setScore('');
-                  } else {
-                    setScore(woPartialScore.trim());
-                    setWoPartialScore('');
+                  if (resultMode !== 'regular') {
+                    setScore(resultMode === 'retired' ? woPartialScore : '');
                   }
-                  setIsWalkover(!isWalkover);
+                  setResultMode('regular');
                 }}
                 className={`text-[10px] h-7 rounded-lg font-bold ${
-                  isWalkover
+                  resultMode === 'regular'
+                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                    : ''
+                }`}
+              >
+                Normal
+              </Button>
+              <Button
+                type="button"
+                variant={resultMode === 'walkover' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  if (resultMode === 'regular') {
+                    setWoPartialScore(score.replace(/^W\/O\s*/i, '').trim());
+                    setScore('');
+                  }
+                  setResultMode('walkover');
+                }}
+                className={`text-[10px] h-7 rounded-lg font-bold ${
+                  resultMode === 'walkover'
                     ? 'bg-amber-500 hover:bg-amber-600 text-white'
                     : ''
                 }`}
               >
                 W/O
               </Button>
-              <p className="text-[10px] text-slate-400 font-bold ml-auto flex items-center gap-1">
+              <Button
+                type="button"
+                variant={resultMode === 'retired' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  if (resultMode === 'regular') {
+                    setWoPartialScore(score.replace(/^W\/O\s*/i, '').trim());
+                    setScore('');
+                  }
+                  setResultMode('retired');
+                }}
+                className={`text-[10px] h-7 rounded-lg font-bold ${
+                  resultMode === 'retired'
+                    ? 'bg-orange-600 hover:bg-orange-700 text-white'
+                    : ''
+                }`}
+              >
+                RET
+              </Button>
+              <p className="basis-full sm:basis-auto sm:ml-auto text-[10px] text-slate-400 font-bold flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
-                {isWalkover ? 'Score parcial (opcional)' : 'Sets separados por espaço (6-4 3-6 7-6)'}
+                {resultMode === 'retired'
+                  ? 'Placar parcial obrigatório'
+                  : resultMode === 'walkover'
+                    ? 'Sem placar'
+                    : 'Sets separados por espaço (6-4 3-6 7-6)'}
               </p>
             </div>
 
-            {/* Regular Score Input or W/O Partial Score Input */}
-            {isWalkover ? (
+            {/* Regular Score Input or RET Partial Score Input */}
+            {resultMode === 'retired' ? (
               <Input
                 value={woPartialScore}
                 onChange={(e) => setWoPartialScore(e.target.value)}
-                placeholder="Ex: 6-4 (opcional)"
-                className="h-14 rounded-2xl border-2 border-slate-100 focus:border-amber-500 text-lg font-black tracking-widest"
+                placeholder="Ex: 6-4 3-2"
+                required
+                className="h-14 rounded-2xl border-2 border-slate-100 focus:border-orange-600 text-lg font-black tracking-widest"
               />
+            ) : resultMode === 'walkover' ? (
+              <div className="h-14 rounded-2xl border-2 border-amber-100 bg-amber-50 text-amber-700 flex items-center px-4 text-sm font-black uppercase tracking-widest">
+                W/O sem placar
+              </div>
             ) : (
               <Input
                 value={score}

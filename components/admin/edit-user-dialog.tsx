@@ -135,7 +135,7 @@ export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="edit-name" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest ml-1">
-                <User className="w-3 h-3 text-emerald-500" /> Nome Completo (privado) *
+                <User className="w-3 h-3 text-emerald-500" /> Nome *
               </Label>
               <Input
                 id="edit-name"
