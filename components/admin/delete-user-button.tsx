@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { useTranslations } from 'next-intl'
 
 interface DeleteUserButtonProps {
   userId: number
@@ -21,6 +22,8 @@ interface DeleteUserButtonProps {
 }
 
 export function DeleteUserButton({ userId, userName }: DeleteUserButtonProps) {
+  const t = useTranslations('admin')
+  const tButtons = useTranslations('buttons')
   const [isPending, startTransition] = useTransition()
   const [open, setOpen] = useState(false)
 
@@ -28,10 +31,10 @@ export function DeleteUserButton({ userId, userName }: DeleteUserButtonProps) {
     startTransition(async () => {
       const result = await deleteUserAction(userId)
       if (result.success) {
-        toast.success('Usuário excluído com sucesso!')
+        toast.success(t('userActions.toastDeleteSuccess'))
         setOpen(false)
       } else {
-        toast.error('Erro ao excluir usuário')
+        toast.error(t('userActions.toastDeleteError'))
       }
     })
   }
@@ -52,9 +55,14 @@ export function DeleteUserButton({ userId, userName }: DeleteUserButtonProps) {
           <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mb-6 border border-red-200 shadow-sm mx-auto">
             <AlertTriangle className="w-8 h-8 text-red-600" />
           </div>
-          <DialogTitle className="text-3xl font-black text-slate-900 tracking-tight text-center">Excluir Usuário?</DialogTitle>
+          <DialogTitle className="text-3xl font-black text-slate-900 tracking-tight text-center">
+            {t('userActions.deleteTitle')}
+          </DialogTitle>
           <DialogDescription className="text-center text-lg font-medium text-slate-500 mt-2">
-            Tem certeza que deseja excluir <strong>{userName}</strong>? Esta ação não poderá ser desfeita.
+            {t.rich('userActions.deleteDesc', {
+              name: userName,
+              strong: (chunks) => <strong>{chunks}</strong>,
+            })}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="mt-8 sm:justify-center gap-3 flex-col sm:flex-row">
@@ -63,7 +71,7 @@ export function DeleteUserButton({ userId, userName }: DeleteUserButtonProps) {
             onClick={() => setOpen(false)}
             className="h-14 rounded-2xl border-2 border-slate-100 text-slate-500 font-black px-8 hover:bg-slate-50 transition-all w-full sm:w-auto"
           >
-            Cancelar
+            {tButtons('cancel')}
           </Button>
           <Button
             onClick={handleDelete}
@@ -73,10 +81,10 @@ export function DeleteUserButton({ userId, userName }: DeleteUserButtonProps) {
             {isPending ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                Excluindo...
+                {t('userActions.deleting')}
               </>
             ) : (
-              'Confirmar Exclusão'
+              t('userActions.confirmDelete')
             )}
           </Button>
         </DialogFooter>

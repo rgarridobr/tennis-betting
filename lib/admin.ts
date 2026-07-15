@@ -1,5 +1,6 @@
 import { sql } from './db';
 import { ROUND_POINTS, getMatchPoints, getPointsConfig } from './data';
+import { getTranslations } from 'next-intl/server';
 
 function normalizeString(str: string): string {
   return str
@@ -31,6 +32,7 @@ export async function createTournament(data: {
   image_url?: string;
   prize_description?: string | null;
 }): Promise<number> {
+  const t = await getTranslations('errors');
   const start = new Date(data.start_date);
   const year = start.getFullYear();
 
@@ -50,7 +52,7 @@ export async function createTournament(data: {
   // Check for duplicate slug
   const existing = await sql`SELECT id FROM tournaments WHERE slug = ${slug}`;
   if (existing.length > 0) {
-    throw new Error(`Um torneio com este nome para o ano de ${year} já existe (slug: ${slug}).`);
+    throw new Error(t('adminTournamentNameExists', { year, slug }));
   }
 
   const result = await sql`
@@ -75,7 +77,9 @@ export async function updateTournamentStatus(tournamentId: number, status: strin
   await sql`UPDATE tournaments SET status = ${status}, updated_at = NOW() WHERE id = ${tournamentId}`;
 }
 
-export async function finishTournament(tournamentId: number): Promise<{ success: boolean; error?: string }> {
+export async function finishTournament(tournamentId: number): Promise<{
+  success: boolean; error?: string }> {
+  const t = await getTranslations('errors');
   try {
     const finalMatches = await sql`
       SELECT bm.player1_id, bm.player2_id, bm.winner_id, bm.status
@@ -86,17 +90,17 @@ export async function finishTournament(tournamentId: number): Promise<{ success:
     `;
 
     if (finalMatches.length === 0) {
-      return { success: false, error: 'Final não encontrada para este torneio.' };
+      return { success: false, error: t('adminFinalNotFound') };
     }
 
     const final = finalMatches[0];
     if (final.status !== 'completed' || !final.winner_id) {
-      return { success: false, error: 'Cadastre o resultado da final antes de finalizar o torneio.' };
+      return { success: false, error: t('adminFinalResultRequired') };
     }
 
     const runnerUpId = final.player1_id === final.winner_id ? final.player2_id : final.player1_id;
     if (!runnerUpId) {
-      return { success: false, error: 'Não foi possível identificar o vice-campeão.' };
+      return { success: false, error: t('adminRunnerUpUnknown') };
     }
 
     await sql`
@@ -108,7 +112,7 @@ export async function finishTournament(tournamentId: number): Promise<{ success:
     return { success: true };
   } catch (error) {
     console.error('Error finishing tournament:', error);
-    return { success: false, error: 'Erro ao finalizar torneio' };
+    return { success: false, error: t('adminFinishFailed') };
   }
 }
 
@@ -168,13 +172,15 @@ export async function updateTournament(
   );
 }
 
-export async function deleteTournament(tournamentId: number): Promise<{ success: boolean; error?: string }> {
+export async function deleteTournament(tournamentId: number): Promise<{
+  success: boolean; error?: string }> {
+  const t = await getTranslations('errors');
   const tournament = await sql`SELECT status FROM tournaments WHERE id = ${tournamentId}`;
-  if (tournament.length === 0) return { success: false, error: 'Torneio não encontrado' };
+  if (tournament.length === 0) return { success: false, error: t('adminTournamentNotFound') };
 
   const status = tournament[0].status;
   if (status !== 'draft' && status !== 'upcoming') {
-    return { success: false, error: 'Apenas torneios em rascunho ou em breve podem ser excluídos.' };
+    return { success: false, error: t('adminDeleteStatusBlocked') };
   }
 
   try {
@@ -184,16 +190,17 @@ export async function deleteTournament(tournamentId: number): Promise<{ success:
     return { success: true };
   } catch (error) {
     console.error('Error deleting tournament:', error);
-    return { success: false, error: 'Erro ao excluir torneio. Verifique se existem dependências.' };
+    return { success: false, error: t('adminDeleteTournamentFailed') };
   }
 }
 
 export async function prepareTournament(tournamentId: number): Promise<void> {
+  const t = await getTranslations('errors');
   const tournament = await sql`SELECT status, size FROM tournaments WHERE id = ${tournamentId}`;
-  if (tournament.length === 0) throw new Error('Torneio não encontrado');
+  if (tournament.length === 0) throw new Error(t('adminTournamentNotFound'));
 
   if (tournament[0].status !== 'STANDBY' && tournament[0].status !== 'upcoming') {
-    throw new Error('Torneio já está preparado ou em outro status');
+    throw new Error(t('adminAlreadyPrepared'));
   }
 
   // Generate bracket structure
@@ -204,8 +211,9 @@ export async function prepareTournament(tournamentId: number): Promise<void> {
 }
 
 export async function resetTournamentToStandby(tournamentId: number): Promise<void> {
+  const t = await getTranslations('errors');
   const tournament = await sql`SELECT status FROM tournaments WHERE id = ${tournamentId}`;
-  if (tournament.length === 0) throw new Error('Torneio não encontrado');
+  if (tournament.length === 0) throw new Error(t('adminTournamentNotFound'));
 
   // We should only allow reset if it's in UPCOMING or STANDBY (though STANDBY shouldn't have matches yet usually, unless it was just prepared)
   // Actually, the user wants to go back from UPCOMING to STANDBY.
@@ -230,8 +238,9 @@ export async function resetTournamentToStandby(tournamentId: number): Promise<vo
 }
 
 export async function randomizeFirstRound(tournamentId: number): Promise<void> {
+  const t = await getTranslations('errors');
   const tournament = await sql`SELECT status, size FROM tournaments WHERE id = ${tournamentId}`;
-  if (tournament.length === 0) throw new Error('Torneio não encontrado');
+  if (tournament.length === 0) throw new Error(t('adminTournamentNotFound'));
 
   const matches = await sql`
     SELECT id FROM bracket_matches
@@ -239,10 +248,10 @@ export async function randomizeFirstRound(tournamentId: number): Promise<void> {
     ORDER BY position ASC
   `;
 
-  if (matches.length === 0) throw new Error('Chaveamento não gerado');
+  if (matches.length === 0) throw new Error(t('adminBracketMissing'));
 
   const players = await sql`SELECT id FROM players`;
-  if (players.length === 0) throw new Error('Nenhum jogador cadastrado');
+  if (players.length === 0) throw new Error(t('adminNoPlayersRegistered'));
 
   // Shuffle players
   const shuffledPlayers = [...players].sort(() => Math.random() - 0.5);
@@ -268,15 +277,16 @@ export async function randomizeFirstRound(tournamentId: number): Promise<void> {
 // ==================== BRACKET GENERATION ====================
 
 export async function generateBracket(tournamentId: number): Promise<void> {
+  const t = await getTranslations('errors');
   const tournament = await sql`SELECT size FROM tournaments WHERE id = ${tournamentId}`;
-  if (tournament.length === 0) throw new Error('Torneio não encontrado');
+  if (tournament.length === 0) throw new Error(t('adminTournamentNotFound'));
 
   const size = tournament[0].size as number;
   const totalRounds = Math.ceil(Math.log2(size));
 
   const existing = await sql`SELECT COUNT(*) as count FROM bracket_matches WHERE tournament_id = ${tournamentId}`;
   if (Number(existing[0].count) > 0) {
-    throw new Error('Chaveamento já foi gerado para este torneio');
+    throw new Error(t('adminBracketAlreadyGenerated'));
   }
 
   const allMatches = [];
@@ -317,7 +327,9 @@ export async function createPlayer(
   return result[0].id as number;
 }
 
-export async function deletePlayer(id: number): Promise<{ success: boolean; error?: string }> {
+export async function deletePlayer(id: number): Promise<{
+  success: boolean; error?: string }> {
+  const t = await getTranslations('errors');
   try {
     await sql`DELETE FROM players WHERE id = ${id}`;
     return { success: true };
@@ -325,7 +337,7 @@ export async function deletePlayer(id: number): Promise<{ success: boolean; erro
     console.error('Error deleting player:', error);
     return {
       success: false,
-      error: 'Não é possível excluir o jogador, pois ele já possui partidas ou palpites vinculados.',
+      error: t('adminPlayerDeleteBlocked'),
     };
   }
 }
@@ -335,7 +347,9 @@ export async function updatePlayer(
   name: string,
   country: string | null,
   display_name: string | null,
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{
+  success: boolean; error?: string }> {
+  const t = await getTranslations('errors');
   try {
     await sql`
       UPDATE players
@@ -345,7 +359,7 @@ export async function updatePlayer(
     return { success: true };
   } catch (error) {
     console.error('Error updating player:', error);
-    return { success: false, error: 'Erro ao atualizar jogador. Verifique se o nome já existe.' };
+    return { success: false, error: t('adminPlayerUpdateFailed') };
   }
 }
 
@@ -667,30 +681,30 @@ export function validateTennisScore(
     for (const set of sets) {
       const games = set.split('-').map(Number);
       if (games.length !== 2 || isNaN(games[0]) || isNaN(games[1])) {
-        return { valid: false, error: `Placar de set inválido: ${set}` };
+        return { valid: false, error: 'Invalid set score: ' + set };
       }
       const [g1, g2] = games;
-      if (g1 < 0 || g2 < 0) return { valid: false, error: 'Games não podem ser negativos' };
+      if (g1 < 0 || g2 < 0) return { valid: false, error: 'Games cannot be negative' };
 
       const isSetFinished =
         ((g1 >= 6 || g2 >= 6) && Math.abs(g1 - g2) >= 2) || (g1 === 7 && g2 === 6) || (g1 === 6 && g2 === 7);
 
-      if (!isSetFinished) return { valid: false, error: `Set incompleto ou inválido: ${set}` };
-      if (g1 > 7 || g2 > 7) return { valid: false, error: `Placar impossível: ${set}` };
-      if ((g1 === 7 && g2 < 5) || (g2 === 7 && g1 < 5)) return { valid: false, error: `Placar inválido: ${set}` };
+      if (!isSetFinished) return { valid: false, error: 'Incomplete or invalid set: ' + set };
+      if (g1 > 7 || g2 > 7) return { valid: false, error: 'Impossible score: ' + set };
+      if ((g1 === 7 && g2 < 5) || (g2 === 7 && g1 < 5)) return { valid: false, error: 'Invalid score: ' + set };
 
       if (g1 > g2) player1Sets++;
       else player2Sets++;
 
       if (player1Sets === setsToWin || player2Sets === setsToWin) {
         if (sets.indexOf(set) !== sets.length - 1) {
-          return { valid: false, error: 'Sets extras após o vencedor ser definido' };
+          return { valid: false, error: 'Extra sets after winner decided' };
         }
         return { valid: true, winner: player1Sets === setsToWin ? 1 : 2 };
       }
     }
 
-    return { valid: false, error: `Partida incompleta. São necessários ${setsToWin} sets para vencer.` };
+    return { valid: false, error: 'Incomplete match. Need ' + setsToWin + ' sets to win' };
   }
 
   // Regular score validation
@@ -701,30 +715,30 @@ export function validateTennisScore(
   for (const set of sets) {
     const games = set.split('-').map(Number);
     if (games.length !== 2 || isNaN(games[0]) || isNaN(games[1])) {
-      return { valid: false, error: `Placar de set inválido: ${set}` };
+      return { valid: false, error: 'Invalid set score: ' + set };
     }
     const [g1, g2] = games;
-    if (g1 < 0 || g2 < 0) return { valid: false, error: 'Games não podem ser negativos' };
+    if (g1 < 0 || g2 < 0) return { valid: false, error: 'Games cannot be negative' };
 
     const isSetFinished =
       ((g1 >= 6 || g2 >= 6) && Math.abs(g1 - g2) >= 2) || (g1 === 7 && g2 === 6) || (g1 === 6 && g2 === 7);
 
-    if (!isSetFinished) return { valid: false, error: `Set incompleto ou inválido: ${set}` };
-    if (g1 > 7 || g2 > 7) return { valid: false, error: `Placar impossível: ${set}` };
-    if ((g1 === 7 && g2 < 5) || (g2 === 7 && g1 < 5)) return { valid: false, error: `Placar inválido: ${set}` };
+    if (!isSetFinished) return { valid: false, error: 'Incomplete or invalid set: ' + set };
+    if (g1 > 7 || g2 > 7) return { valid: false, error: 'Impossible score: ' + set };
+    if ((g1 === 7 && g2 < 5) || (g2 === 7 && g1 < 5)) return { valid: false, error: 'Invalid score: ' + set };
 
     if (g1 > g2) player1Sets++;
     else player2Sets++;
 
     if (player1Sets === setsToWin || player2Sets === setsToWin) {
       if (sets.indexOf(set) !== sets.length - 1) {
-        return { valid: false, error: 'Sets extras após o vencedor ser definido' };
+        return { valid: false, error: 'Extra sets after winner decided' };
       }
       return { valid: true, winner: player1Sets === setsToWin ? 1 : 2 };
     }
   }
 
-  return { valid: false, error: `Partida incompleta. São necessários ${setsToWin} sets para vencer.` };
+  return { valid: false, error: 'Incomplete match. Need ' + setsToWin + ' sets to win' };
 }
 
 export async function setMatchResult(
@@ -732,7 +746,9 @@ export async function setMatchResult(
   winnerId: number,
   score: string,
   options?: { isWalkover?: boolean },
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{
+  success: boolean; error?: string }> {
+  const t = await getTranslations('errors');
   try {
     const matchData = await sql`
       SELECT bm.*, t.sets_format, t.size, t.status as tournament_status, t.category
@@ -740,7 +756,7 @@ export async function setMatchResult(
       JOIN tournaments t ON bm.tournament_id = t.id
       WHERE bm.id = ${matchId}
     `;
-    if (matchData.length === 0) return { success: false, error: 'Partida não encontrada' };
+    if (matchData.length === 0) return { success: false, error: t('adminMatchNotFound') };
 
     const m = matchData[0];
     const round = m.round as number;
@@ -752,7 +768,7 @@ export async function setMatchResult(
     const totalRounds = Math.ceil(Math.log2(m.size as number));
 
     if (m.tournament_status === 'finished' || m.tournament_status === 'completed' || m.tournament_status === 'FINISHED') {
-      return { success: false, error: 'O torneio já foi finalizado e os resultados não podem ser alterados.' };
+      return { success: false, error: t('adminTournamentFinishedLocked') };
     }
 
     if (
@@ -761,12 +777,12 @@ export async function setMatchResult(
       m.tournament_status === 'STANDBY' ||
       m.tournament_status === 'UPCOMING'
     ) {
-      return { success: false, error: 'O torneio ainda não foi publicado. Publique-o antes de lançar resultados.' };
+      return { success: false, error: t('adminPublishBeforeResults') };
     }
 
     // Validation: Ensure winnerId is one of the players in this match
     if (winnerId !== m.player1_id && winnerId !== m.player2_id) {
-      return { success: false, error: 'O vencedor selecionado não faz parte deste confronto.' };
+      return { success: false, error: t('adminWinnerNotInMatch') };
     }
 
     // if (!options?.isWalkover) {
@@ -777,7 +793,7 @@ export async function setMatchResult(
     //   if (validation.winner) {
     //     const expectedWinnerId = validation.winner === 1 ? m.player1_id : m.player2_id
     //     if (winnerId !== expectedWinnerId) {
-    //       return { success: false, error: 'O vencedor selecionado não coincide com o placar dos sets' }
+    //       return { success: false, error: t('adminWinnerScoreMismatch') }
     //     }
     //   }
     // }
@@ -908,11 +924,13 @@ export async function setMatchResult(
     return { success: true };
   } catch (error) {
     console.error('Error setting match result:', error);
-    return { success: false, error: 'Erro ao salvar resultado' };
+    return { success: false, error: t('adminSaveResultFailed') };
   }
 }
 
-export async function clearMatchResult(matchId: number): Promise<{ success: boolean; error?: string }> {
+export async function clearMatchResult(matchId: number): Promise<{
+  success: boolean; error?: string }> {
+  const t = await getTranslations('errors');
   try {
     const matchData = await sql`
       SELECT bm.*, t.status as tournament_status, t.size
@@ -920,7 +938,7 @@ export async function clearMatchResult(matchId: number): Promise<{ success: bool
       JOIN tournaments t ON bm.tournament_id = t.id
       WHERE bm.id = ${matchId}
     `;
-    if (matchData.length === 0) return { success: false, error: 'Partida não encontrada' };
+    if (matchData.length === 0) return { success: false, error: t('adminMatchNotFound') };
 
     const m = matchData[0];
     const tournamentId = m.tournament_id as number;
@@ -965,7 +983,7 @@ export async function clearMatchResult(matchId: number): Promise<{ success: bool
     return { success: true };
   } catch (error) {
     console.error('Error clearing match result:', error);
-    return { success: false, error: 'Erro ao limpar resultado' };
+    return { success: false, error: t('adminClearResultFailed') };
   }
 }
 
@@ -1050,8 +1068,9 @@ async function advancePlayer(
 }
 
 export async function publishTournament(tournamentId: number): Promise<void> {
+  const t = await getTranslations('errors');
   const tournament = await sql`SELECT size FROM tournaments WHERE id = ${tournamentId}`;
-  if (tournament.length === 0) throw new Error('Torneio não encontrado');
+  if (tournament.length === 0) throw new Error(t('adminTournamentNotFound'));
 
   // 1. Mark tournament as active
   await sql`UPDATE tournaments SET status = 'OPEN', updated_at = NOW() WHERE id = ${tournamentId}`;

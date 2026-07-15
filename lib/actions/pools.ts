@@ -3,10 +3,12 @@
 import { sql } from '../db';
 import { getSession, hashPassword, verifyPassword } from '../auth';
 import { revalidatePath } from 'next/cache';
+import { getTranslations } from 'next-intl/server';
 
 export async function createPoolAction(formData: FormData) {
+  const t = await getTranslations('errors');
   const user = await getSession();
-  if (!user) throw new Error('Não autorizado');
+  if (!user) throw new Error(t('unauthorized'));
 
   const name = formData.get('name') as string;
   const description = formData.get('description') as string;
@@ -16,7 +18,7 @@ export async function createPoolAction(formData: FormData) {
   const tournamentId = formData.get('tournament_id') && formData.get('tournament_id') !== 'all' ? Number(formData.get('tournament_id')) : null;
   const whatsappLink = formData.get('whatsapp_link') as string;
 
-  if (!name) return { error: 'O nome do grupo é obrigatório' };
+  if (!name) return { error: t('poolNameRequired') };
 
   let passwordHash = null;
   if (password) {
@@ -42,26 +44,27 @@ export async function createPoolAction(formData: FormData) {
     return { success: true, poolId };
   } catch (error) {
     console.error('Erro ao criar grupo:', error);
-    return { error: 'Ocorreu um erro ao criar o grupo' };
+    return { error: t('poolCreateFailed') };
   }
 }
 
 export async function joinPoolAction(poolId: number, password?: string) {
+  const t = await getTranslations('errors');
   const user = await getSession();
-  if (!user) throw new Error('Não autorizado');
+  if (!user) throw new Error(t('unauthorized'));
 
   try {
     const pool = await sql`SELECT * FROM pools WHERE id = ${poolId}`;
-    if (pool.length === 0) return { error: 'Grupo não encontrado' };
+    if (pool.length === 0) return { error: t('poolNotFound') };
 
     const poolData = pool[0];
 
     // Check password if private
     if (poolData.password_hash && !user.is_admin) {
-      if (!password) return { error: 'Este grupo requer senha', needsPassword: true };
+      if (!password) return { error: t('poolPasswordRequired'), needsPassword: true };
       
       const isValid = await verifyPassword(password, poolData.password_hash);
-      if (!isValid) return { error: 'Senha incorreta' };
+      if (!isValid) return { error: t('poolWrongPassword') };
     }
 
     await sql`
@@ -75,13 +78,14 @@ export async function joinPoolAction(poolId: number, password?: string) {
     return { success: true };
   } catch (error) {
     console.error('Erro ao entrar no grupo:', error);
-    return { error: 'Ocorreu um erro ao entrar no grupo' };
+    return { error: t('poolJoinFailed') };
   }
 }
 
 export async function leavePoolAction(poolId: number) {
+  const t = await getTranslations('errors');
   const user = await getSession();
-  if (!user) throw new Error('Não autorizado');
+  if (!user) throw new Error(t('unauthorized'));
 
   try {
     await sql`
@@ -94,13 +98,14 @@ export async function leavePoolAction(poolId: number) {
     return { success: true };
   } catch (error) {
     console.error('Erro ao sair do grupo:', error);
-    return { error: 'Ocorreu um erro ao sair do grupo' };
+    return { error: t('poolLeaveFailed') };
   }
 }
 
 export async function updatePoolAction(poolId: number, formData: FormData) {
+  const t = await getTranslations('errors');
   const user = await getSession();
-  if (!user) throw new Error('Não autorizado');
+  if (!user) throw new Error(t('unauthorized'));
 
   const name = formData.get('name') as string;
   const description = formData.get('description') as string;
@@ -109,12 +114,12 @@ export async function updatePoolAction(poolId: number, formData: FormData) {
   const tournamentId = formData.get('tournament_id') && formData.get('tournament_id') !== 'all' ? Number(formData.get('tournament_id')) : null;
   const whatsappLink = formData.get('whatsapp_link') as string;
 
-  if (!name) return { error: 'O nome do grupo é obrigatório' };
+  if (!name) return { error: t('poolNameRequired') };
 
   try {
     const pool = await sql`SELECT creator_id, password_hash FROM pools WHERE id = ${poolId}`;
-    if (pool.length === 0) return { error: 'Grupo não encontrado' };
-    if (pool[0].creator_id !== user.id && !user.is_admin) return { error: 'Não autorizado' };
+    if (pool.length === 0) return { error: t('poolNotFound') };
+    if (pool[0].creator_id !== user.id && !user.is_admin) return { error: t('unauthorized') };
 
     let passwordHash = pool[0].password_hash;
     if (password) {
@@ -134,13 +139,14 @@ export async function updatePoolAction(poolId: number, formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error('Erro ao atualizar grupo:', error);
-    return { error: 'Ocorreu um erro ao atualizar o grupo' };
+    return { error: t('poolUpdateFailed') };
   }
 }
 
 export async function deletePoolAction(poolId: number) {
+  const t = await getTranslations('errors');
   const user = await getSession();
-  if (!user || !user.is_admin) throw new Error('Não autorizado');
+  if (!user || !user.is_admin) throw new Error(t('unauthorized'));
 
   try {
     await sql`DELETE FROM pool_members WHERE pool_id = ${poolId}`;
@@ -149,13 +155,14 @@ export async function deletePoolAction(poolId: number) {
     return { success: true };
   } catch (error) {
     console.error('Erro ao excluir grupo:', error);
-    return { error: 'Ocorreu um erro ao excluir o grupo' };
+    return { error: t('poolDeleteFailed') };
   }
 }
 
 export async function getPoolMembersAction(poolId: number) {
+  const t = await getTranslations('errors');
   const user = await getSession();
-  if (!user || !user.is_admin) throw new Error('Não autorizado');
+  if (!user || !user.is_admin) throw new Error(t('unauthorized'));
   
   try {
     const rows = await sql`
@@ -172,22 +179,23 @@ export async function getPoolMembersAction(poolId: number) {
     return { success: true, members: rows };
   } catch (error) {
     console.error('Erro ao buscar membros:', error);
-    return { error: 'Ocorreu um erro ao buscar membros' };
+    return { error: t('genericError') };
   }
 }
 
 export async function getPoolMembersWithPredictionsAction(poolId: number, tournamentId: number) {
+  const t = await getTranslations('errors');
   const user = await getSession();
-  if (!user) throw new Error('Não autorizado');
+  if (!user) throw new Error(t('unauthorized'));
   
   try {
     // Check if user is admin or the creator of the pool
     const pool = await sql`SELECT creator_id FROM pools WHERE id = ${poolId}`;
-    if (pool.length === 0) throw new Error('Grupo não encontrado');
+    if (pool.length === 0) throw new Error(t('poolNotFound'));
     
     const isCreator = pool[0].creator_id === user.id;
     if (!user.is_admin && !isCreator) {
-      throw new Error('Não autorizado');
+      throw new Error(t('unauthorized'));
     }
     const rows = await sql`
       SELECT 
@@ -208,6 +216,6 @@ export async function getPoolMembersWithPredictionsAction(poolId: number, tourna
     return { success: true, members: rows };
   } catch (error) {
     console.error('Erro ao buscar membros com palpites:', error);
-    return { error: 'Ocorreu um erro ao buscar membros' };
+    return { error: t('genericError') };
   }
 }

@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useTranslations } from 'next-intl';
 
 interface TournamentFiltersProps {
   hideUpcoming?: boolean;
@@ -20,6 +21,7 @@ interface TournamentFiltersProps {
 }
 
 export function TournamentFilters({ hideUpcoming, defaultStatus = 'active' }: TournamentFiltersProps = {}) {
+  const t = useTranslations('tournaments');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -67,11 +69,11 @@ export function TournamentFilters({ hideUpcoming, defaultStatus = 'active' }: To
     <div className="space-y-6 mb-12">
       <div className="flex flex-col md:flex-row gap-4 items-end">
         <div className="flex-1 w-full space-y-2">
-          <label className="text-sm font-bold text-slate-700 ml-1">Buscar torneio</label>
+          <label className="text-sm font-bold text-slate-700 ml-1">{t('searchLabel')}</label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
-              placeholder="Ex: Roland Garros, Wimbledon..."
+              placeholder={t('searchPlaceholder')}
               className="pl-10 h-12 rounded-2xl border-slate-200 bg-white shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -80,13 +82,13 @@ export function TournamentFilters({ hideUpcoming, defaultStatus = 'active' }: To
         </div>
 
         <div className="w-full md:w-64 space-y-2">
-          <label className="text-sm font-bold text-slate-700 ml-1">Categoria</label>
+          <label className="text-sm font-bold text-slate-700 ml-1">{t('category')}</label>
           <Select value={currentCategory} onValueChange={(value) => handleFilterChange('category', value)}>
             <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
-              <SelectValue placeholder="Todas as categorias" />
+              <SelectValue placeholder={t('allCategories')} />
             </SelectTrigger>
             <SelectContent className="rounded-2xl border-slate-200">
-              <SelectItem value="all">Todas as categorias</SelectItem>
+              <SelectItem value="all">{t('allCategories')}</SelectItem>
               <SelectItem value="GRAND_SLAM">Grand Slam</SelectItem>
               <SelectItem value="MASTERS_1000">Masters 1000</SelectItem>
               <SelectItem value="ATP_500">ATP 500</SelectItem>
@@ -102,7 +104,7 @@ export function TournamentFilters({ hideUpcoming, defaultStatus = 'active' }: To
             className="h-12 rounded-2xl text-slate-500 font-bold hover:text-rose-500 hover:bg-rose-50"
           >
             <FilterX className="w-4 h-4 mr-2" />
-            Limpar
+            {t('clear')}
           </Button>
         )}
       </div>
@@ -114,22 +116,22 @@ export function TournamentFilters({ hideUpcoming, defaultStatus = 'active' }: To
               value="active"
               className="flex-1 rounded-xl px-3 sm:px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm transition-all"
             >
-              Ativos
+              {t('filterActive')}
             </TabsTrigger>
             {!hideUpcoming && (
               <TabsTrigger
                 value="upcoming"
                 className="flex-1 rounded-xl px-3 sm:px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm transition-all"
               >
-                <span className="hidden sm:inline">O que vem por aí</span>
-                <span className="sm:hidden">Próximos</span>
+                <span className="hidden sm:inline">{t('filterUpcoming')}</span>
+                <span className="sm:hidden">{t('filterUpcomingShort')}</span>
               </TabsTrigger>
             )}
             <TabsTrigger
               value="finished"
               className="flex-1 rounded-xl px-3 sm:px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm transition-all"
             >
-              Finalizados
+              {t('filterFinished')}
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -137,7 +139,7 @@ export function TournamentFilters({ hideUpcoming, defaultStatus = 'active' }: To
         {isPending && (
           <div className="flex items-center gap-2 text-slate-400 animate-pulse">
             <div className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span className="text-xs font-bold uppercase tracking-wider">Atualizando...</span>
+            <span className="text-xs font-bold uppercase tracking-wider">{t('updating')}</span>
           </div>
         )}
       </div>

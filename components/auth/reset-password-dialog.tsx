@@ -13,8 +13,11 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp"
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp"
+import { useTranslations } from 'next-intl'
 
 export function ResetPasswordDialog({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) {
+  const t = useTranslations('auth')
+  const tButtons = useTranslations('buttons')
   const [step, setStep] = useState<'email' | 'code' | 'new-password'>('email')
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
@@ -54,7 +57,10 @@ export function ResetPasswordDialog({ open, onOpenChange }: { open: boolean, onO
     } else if (result.error) {
       setError(result.error)
       // If code expired or many attempts, reset flow after a brief delay?
-      if (result.error.includes('expirou') || result.error.includes('invalidado')) {
+      if (
+        (result as { code?: string }).code === 'CODE_EXPIRED' ||
+        (result as { code?: string }).code === 'CODE_INVALIDATED'
+      ) {
         setTimeout(() => {
           setStep('email')
           setCode('')
@@ -70,12 +76,12 @@ export function ResetPasswordDialog({ open, onOpenChange }: { open: boolean, onO
     const confirmPassword = formData.get('confirmPassword') as string
 
     if (newPassword !== confirmPassword) {
-      setError('As senhas não coincidem.')
+      setError(t('passwordMismatch'))
       return
     }
 
     if (newPassword.length < 6) {
-      setError('A senha deve ter pelo menos 6 caracteres.')
+      setError(t('passwordMin6'))
       return
     }
 
@@ -90,7 +96,7 @@ export function ResetPasswordDialog({ open, onOpenChange }: { open: boolean, onO
     setLoading(false)
 
     if (result.success) {
-      toast.success('Senha alterada com sucesso!')
+      toast.success(t('resetSuccess'))
       onOpenChange(false)
       window.location.href = '/dashboard' // Redirect to dashboard since it logs in automatically
     } else if (result.error) {
@@ -112,11 +118,11 @@ export function ResetPasswordDialog({ open, onOpenChange }: { open: boolean, onO
     }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Recuperar Senha</DialogTitle>
+          <DialogTitle>{t('resetTitle')}</DialogTitle>
           <DialogDescription>
-            {step === 'email' && 'Informe seu e-mail para receber o código de recuperação.'}
-            {step === 'code' && 'Digite o código de 5 caracteres enviado para o seu e-mail.'}
-            {step === 'new-password' && 'Escolha sua nova senha de acesso.'}
+            {step === 'email' && t('resetEmailDesc')}
+            {step === 'code' && t('resetCodeDesc')}
+            {step === 'new-password' && t('resetNewPasswordDesc')}
           </DialogDescription>
         </DialogHeader>
 
@@ -129,19 +135,19 @@ export function ResetPasswordDialog({ open, onOpenChange }: { open: boolean, onO
         {step === 'email' && (
           <form onSubmit={handleRequestCode} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="reset-email">Email</Label>
+              <Label htmlFor="reset-email">{t('email')}</Label>
               <Input
                 id="reset-email"
                 name="email"
                 type="email"
-                placeholder="exemplo@email.com"
+                placeholder={t('resetEmailPlaceholder')}
                 required
                 defaultValue={email}
               />
             </div>
             <DialogFooter>
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Enviando...' : 'Enviar Código'}
+                {loading ? t('resetSending') : t('resetSendCode')}
               </Button>
             </DialogFooter>
           </form>
@@ -173,10 +179,10 @@ export function ResetPasswordDialog({ open, onOpenChange }: { open: boolean, onO
                     className="w-full"
                     disabled={loading || code.length < 5}
                 >
-                    {loading ? 'Verificando...' : 'Verificar Código'}
+                    {loading ? t('resetVerifying') : t('resetVerifyCode')}
                 </Button>
                 <Button variant="ghost" onClick={() => setStep('email')} disabled={loading} className="text-slate-500">
-                    Voltar
+                    {tButtons('back')}
                 </Button>
             </div>
           </div>
@@ -185,17 +191,17 @@ export function ResetPasswordDialog({ open, onOpenChange }: { open: boolean, onO
         {step === 'new-password' && (
           <form onSubmit={handleResetPassword} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="newPassword">Nova Senha</Label>
+              <Label htmlFor="newPassword">{t('resetNewPassword')}</Label>
               <Input
                 id="newPassword"
                 name="newPassword"
                 type="password"
-                placeholder="Mínimo 6 caracteres"
+                placeholder={t('resetPasswordPlaceholder')}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmar Nova Senha</Label>
+              <Label htmlFor="confirmPassword">{t('resetConfirmPassword')}</Label>
               <Input
                 id="confirmPassword"
                 name="confirmPassword"
@@ -205,7 +211,7 @@ export function ResetPasswordDialog({ open, onOpenChange }: { open: boolean, onO
             </div>
             <DialogFooter>
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Alterando...' : 'Alterar Senha e Entrar'}
+                {loading ? t('resetSubmitting') : t('resetSubmit')}
               </Button>
             </DialogFooter>
           </form>

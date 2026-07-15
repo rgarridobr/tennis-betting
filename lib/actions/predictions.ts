@@ -3,6 +3,7 @@
 import { createPrediction, isUserEnrolled, hasTournamentStarted } from '@/lib/data';
 import { sql } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import { getTranslations } from 'next-intl/server';
 
 type BracketPredictionInput = { matchId: number; winnerId: number; score?: string };
 
@@ -20,6 +21,7 @@ async function validateFullBracketPredictions(
   tournamentId: number,
   predictions: BracketPredictionInput[],
 ): Promise<BracketPredictionInput[]> {
+  const t = await getTranslations('errors');
   const matches = (await sql`
     SELECT id, round, position, player1_id, player2_id, player1_type, player2_type
     FROM bracket_matches
@@ -28,7 +30,7 @@ async function validateFullBracketPredictions(
   `) as BracketMatchRow[];
 
   if (matches.length === 0) {
-    throw new Error('Chaveamento ainda nao disponivel.');
+    throw new Error(t('bracketUnavailable'));
   }
 
   const genericQualifier = await sql`
@@ -42,7 +44,7 @@ async function validateFullBracketPredictions(
 
   for (const prediction of predictions) {
     if (!Number.isInteger(prediction.matchId) || !Number.isInteger(prediction.winnerId)) {
-      throw new Error('Palpite invalido.');
+      throw new Error(t('invalidPrediction'));
     }
     predictionsByMatch.set(prediction.matchId, prediction);
   }
@@ -50,7 +52,7 @@ async function validateFullBracketPredictions(
   const matchIds = new Set(matches.map((match) => match.id));
   for (const matchId of predictionsByMatch.keys()) {
     if (!matchIds.has(matchId)) {
-      throw new Error('Palpite invalido para este torneio.');
+      throw new Error(t('invalidPredictionTournament'));
     }
   }
 
@@ -74,7 +76,7 @@ async function validateFullBracketPredictions(
     for (const match of roundMatches) {
       const prediction = predictionsByMatch.get(match.id);
       if (!prediction?.winnerId) {
-        throw new Error('Preencha todos os confrontos antes de finalizar.');
+        throw new Error(t('fillAllMatches'));
       }
 
       let validWinnerIds: number[] = [];
@@ -88,7 +90,7 @@ async function validateFullBracketPredictions(
           !isAutomaticByePick(match, validWinnerIds[0]) &&
           (match.player1_type === 'QUALIFIER' || match.player2_type === 'QUALIFIER')
         ) {
-          throw new Error('Aguarde todos os jogadores da chave serem definidos antes de finalizar.');
+          throw new Error(t('waitPlayers'));
         }
       } else {
         const previousRound = match.round - 1;
@@ -104,7 +106,7 @@ async function validateFullBracketPredictions(
       validWinnerIds = Array.from(new Set(validWinnerIds));
 
       if (!validWinnerIds.includes(prediction.winnerId)) {
-        throw new Error('Revise a chave: ha palpite em confronto sem jogador definido.');
+        throw new Error(t('invalidChain'));
       }
 
       resolvedWinners.set(match.id, prediction.winnerId);
@@ -120,16 +122,17 @@ export async function makePredictionAction(
   predictedWinnerId: number,
   tournamentId: number,
 ) {
+  const t = await getTranslations('errors');
   // Verify user is enrolled
   const enrolled = await isUserEnrolled(userId, tournamentId);
   if (!enrolled) {
-    throw new Error('Você precisa estar inscrito no torneio para fazer palpites');
+    throw new Error(t('mustEnroll'));
   }
 
   // Verify tournament hasn't started
   const started = await hasTournamentStarted(tournamentId);
   if (started) {
-    throw new Error('O torneio já começou e não é mais possível fazer palpites');
+    throw new Error(t('tournamentStarted'));
   }
 
   await createPrediction(userId, bracketMatchId, predictedWinnerId);
@@ -140,18 +143,17 @@ export async function saveFullBracketAction(
   tournamentId: number,
   predictions: BracketPredictionInput[],
 ) {
+  const t = await getTranslations('errors');
   // Verify user is enrolled
   const enrolled = await isUserEnrolled(userId, tournamentId);
   if (!enrolled) {
-    throw new Error('Você precisa estar inscrito no torneio para fazer palpites');
+    throw new Error(t('mustEnroll'));
   }
 
   // Verify tournament hasn't started
   const started = await hasTournamentStarted(tournamentId);
   if (started) {
-    throw new Error(
-      'O torneio já começou e não é mais possível alterar os palpites. Por favor, aperte a tecla F5 para atualizar a página.',
-    );
+    throw new Error(t('tournamentStartedEdit'));
   }
 
   const validPredictions = await validateFullBracketPredictions(tournamentId, predictions);

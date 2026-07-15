@@ -9,10 +9,9 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
 import { Trophy } from 'lucide-react';
 import { PlayerScoreRow } from './player-score-row-props';
+import { useTranslations } from 'next-intl';
 
 interface SetPredictionScoreDialogProps {
   isOpen: boolean;
@@ -35,6 +34,7 @@ export function SetPredictionScoreDialog({
   category = 'GRAND_SLAM',
   onSave,
 }: SetPredictionScoreDialogProps) {
+  const t = useTranslations('tournaments');
   const isGrandSlam = category === 'GRAND_SLAM';
   const maxSets = isGrandSlam ? 3 : 2;
   const options = Array.from({ length: maxSets + 1 }, (_, i) => i);
@@ -75,8 +75,6 @@ export function SetPredictionScoreDialog({
     onOpenChange(false);
   };
 
-  const winner = winnerId === p1?.id ? p1 : p2;
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[400px] rounded-[2rem] p-8">
@@ -85,12 +83,12 @@ export function SetPredictionScoreDialog({
             <Trophy className="w-8 h-8" />
           </div>
           <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">
-            Placar da Final
+            {t('finalScoreTitle')}
           </DialogTitle>
           <p className="text-slate-500 font-medium">
-            Defina quantos sets cada jogador vencerá na final.
+            {t('finalScoreSubtitle')}
             <br />
-            O campeão deve ter <span className="text-emerald-600 font-bold">{maxSets}</span> sets.
+            {t('finalScoreChampionMustHave', { n: maxSets })}
           </p>
         </DialogHeader>
 
@@ -99,7 +97,7 @@ export function SetPredictionScoreDialog({
 <div className="flex flex-col gap-4">
   <PlayerScoreRow
     player={p1}
-    label="Jogador 1"
+    label={t('player1')}
     score={score1}
     setScore={setScore1}
     winnerId={winnerId}
@@ -109,7 +107,7 @@ export function SetPredictionScoreDialog({
 
   <PlayerScoreRow
     player={p2}
-    label="Jogador 2"
+    label={t('player2')}
     score={score2}
     setScore={setScore2}
     winnerId={winnerId}
@@ -126,7 +124,7 @@ export function SetPredictionScoreDialog({
             disabled={!isValid()}
             className="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-6 rounded-2xl text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Confirmar Placar
+            {t('finalScoreConfirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

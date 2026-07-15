@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   tournamentId: number
@@ -20,6 +21,8 @@ interface Props {
 }
 
 export function DeleteTournamentButton({ tournamentId, tournamentName }: Props) {
+  const t = useTranslations('admin')
+  const tButtons = useTranslations('buttons')
   const [isPending, startTransition] = useTransition()
   const [showConfirm, setShowConfirm] = useState(false)
 
@@ -28,9 +31,9 @@ export function DeleteTournamentButton({ tournamentId, tournamentName }: Props) 
     startTransition(async () => {
       const result = await deleteTournamentAction(tournamentId)
       if (result.success) {
-        toast.success('Torneio excluído com sucesso!')
+        toast.success(t('deleteTournament.toastSuccess'))
       } else {
-        toast.error(result.error || 'Erro ao excluir torneio')
+        toast.error(result.error || t('deleteTournament.toastError'))
       }
     })
   }
@@ -43,7 +46,7 @@ export function DeleteTournamentButton({ tournamentId, tournamentName }: Props) 
         onClick={() => setShowConfirm(true)}
         disabled={isPending}
         className="text-rose-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl shrink-0"
-        title="Excluir Torneio"
+        title={t('deleteTournament.tooltip')}
       >
         {isPending ? (
           <Loader2 className="w-5 h-5 animate-spin" />
@@ -58,9 +61,11 @@ export function DeleteTournamentButton({ tournamentId, tournamentName }: Props) 
             <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
               <AlertTriangle className="w-8 h-8 text-rose-600" />
             </div>
-            <DialogTitle className="text-2xl font-black text-center text-slate-900">Excluir Torneio?</DialogTitle>
+            <DialogTitle className="text-2xl font-black text-center text-slate-900">
+              {t('deleteTournament.title')}
+            </DialogTitle>
             <DialogDescription className="text-center text-slate-500 font-medium px-4">
-              Você está prestes a excluir o torneio <span className="font-bold text-slate-900">"{tournamentName}"</span>. Esta ação não pode ser desfeita.
+              {t('deleteTournament.description', { name: tournamentName })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex flex-col sm:flex-row gap-3 p-2">
@@ -69,14 +74,14 @@ export function DeleteTournamentButton({ tournamentId, tournamentName }: Props) 
               onClick={() => setShowConfirm(false)}
               className="flex-1 rounded-xl font-bold h-12 border-2"
             >
-              Cancelar
+              {tButtons('cancel')}
             </Button>
             <Button
               onClick={handleDelete}
               variant="destructive"
               className="flex-1 rounded-xl font-black h-12 bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-100"
             >
-              Sim, Excluir
+              {t('deleteTournament.yesDelete')}
             </Button>
           </DialogFooter>
         </DialogContent>

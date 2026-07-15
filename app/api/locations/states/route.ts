@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getTranslations } from 'next-intl/server';
 
 interface IbgeState {
   id: number;
@@ -7,6 +8,7 @@ interface IbgeState {
 }
 
 export async function GET() {
+  const t = await getTranslations('errors');
   try {
     const response = await fetch('https://brasilapi.com.br/api/ibge/uf/v1', {
       next: { revalidate: 86400 },
@@ -26,6 +28,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error('IBGE states proxy error:', error);
-    return NextResponse.json({ error: 'Erro ao carregar estados' }, { status: 500 });
+    return NextResponse.json({ error: t('apiStatesFailed') }, { status: 500 });
   }
 }

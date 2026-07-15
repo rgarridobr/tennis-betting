@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Lock, Users, ArrowRight, Trophy, Shield, MapPin } from 'lucide-react';
-import Link from 'next/link';
 import type { Pool, Tournament } from '@/lib/data';
-import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { CreatePoolForm } from './create-pool-form';
+import { useTranslations } from 'next-intl';
+import { Link, useRouter } from '@/i18n/navigation';
 
 interface PoolListProps {
   myPools: Pool[];
@@ -26,6 +26,7 @@ export function PoolList({
   tournaments = [],
   isAdmin = false,
 }: PoolListProps) {
+  const t = useTranslations('pools');
   const [search, setSearch] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -49,10 +50,10 @@ export function PoolList({
             <div className="p-3 bg-emerald-100 rounded-2xl text-emerald-500 shadow-inner">
               <Search className="w-7 h-7" />
             </div>
-            Encontrar grupos
+            {t('findTitle')}
           </h2>
           <p className="text-slate-500 mt-2 font-medium ml-1">
-            Busque pelo nome do grupo para encontrar competições criadas por seus amigos.
+            {t('findSubtitle')}
           </p>
 
           <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4 p-1">
@@ -61,7 +62,7 @@ export function PoolList({
                 <Search className="h-5 w-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
               </div>
               <Input
-                placeholder="Ex: Grupo dos amigos..."
+                placeholder={t('searchPlaceholder')}
                 className="pl-14 h-14 rounded-2xl border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:ring-emerald-500/20 transition-all text-base shadow-sm"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -72,14 +73,14 @@ export function PoolList({
               className="h-14 px-8 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold uppercase tracking-widest text-xs transition-all shadow-md hover:shadow-xl hover:-translate-y-0.5 shrink-0"
               disabled={isSearching}
             >
-              {isSearching ? 'Buscando...' : 'Pesquisar'}
+              {isSearching ? t('searching') : t('search')}
             </Button>
           </form>
         </div>
 
         {searchResults.length > 0 && search && (
           <div className="mt-4 pt-4">
-            <h3 className="text-lg font-bold text-slate-800 mb-6">Resultados da busca</h3>
+            <h3 className="text-lg font-bold text-slate-800 mb-6">{t('searchResults')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {searchResults.map((pool) => (
                 <PoolCard key={pool.id} pool={pool} />
@@ -97,15 +98,15 @@ export function PoolList({
               <div className="p-3 bg-blue-100 rounded-2xl text-blue-600 shadow-inner">
                 <Users className="w-7 h-7" />
               </div>
-              Meus Grupos
+              {t('myPoolsTitle')}
             </h2>
-            <p className="text-slate-500 mt-2 font-medium ml-1">Grupos que você já participa.</p>
+            <p className="text-slate-500 mt-2 font-medium ml-1">{t('myPoolsSubtitle')}</p>
           </div>
           <Button
             onClick={() => setShowCreateDialog(true)}
             className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold uppercase tracking-widest text-xs px-6 py-6 shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/30 cursor-pointer"
           >
-            Criar Novo Grupo
+            {t('createNew')}
           </Button>
         </div>
 
@@ -120,9 +121,9 @@ export function PoolList({
             <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
               <Shield className="w-10 h-10 text-slate-300" />
             </div>
-            <h3 className="text-xl font-bold text-slate-700 mb-2">Nenhum grupo ativo</h3>
+            <h3 className="text-xl font-bold text-slate-700 mb-2">{t('emptyTitle')}</h3>
             <p className="text-slate-500 font-medium max-w-sm mx-auto">
-              Você ainda não participa de nenhum grupo. Crie o seu próprio grupo ou busque por um grupo de amigos acima.
+              {t('emptyBody')}
             </p>
           </div>
         )}
@@ -136,9 +137,9 @@ export function PoolList({
               <div className="p-3 bg-amber-100 rounded-2xl text-amber-500 shadow-inner">
                 <Trophy className="w-7 h-7" />
               </div>
-              Grupos Gerais
+              {t('generalTitle')}
             </h2>
-            <p className="text-slate-500 mt-2 font-medium ml-1">Competições públicas abertas a todos os usuários.</p>
+            <p className="text-slate-500 mt-2 font-medium ml-1">{t('generalSubtitle')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
@@ -151,9 +152,9 @@ export function PoolList({
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent className="sm:max-w-[500px] rounded-3xl max-h-[95vh] overflow-y-auto p-6 sm:p-10">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-black text-slate-800 tracking-tight">Criar Grupo</DialogTitle>
+            <DialogTitle className="text-2xl font-black text-slate-800 tracking-tight">{t('createDialogTitle')}</DialogTitle>
             <DialogDescription className="text-slate-500">
-              Personalize seu grupo e convide amigos para competir.
+              {t('createDialogDescription')}
             </DialogDescription>
           </DialogHeader>
 
@@ -165,6 +166,8 @@ export function PoolList({
 }
 
 function PoolCard({ pool, isMember }: { pool: Pool; isMember?: boolean }) {
+  const t = useTranslations('pools');
+  const tCommon = useTranslations('common');
   const isGeneral = pool.is_general;
   const isStatePool = pool.is_state_pool;
 
@@ -225,7 +228,7 @@ function PoolCard({ pool, isMember }: { pool: Pool; isMember?: boolean }) {
             {pool.password_hash && !isGeneral && (
               <div
                 className="bg-white/20 backdrop-blur-md text-white p-2 rounded-xl shadow-sm border border-white/10 shrink-0 self-start"
-                title="Requer senha"
+                title={t('requiresPassword')}
               >
                 <Lock className="w-4 h-4" />
               </div>
@@ -235,14 +238,15 @@ function PoolCard({ pool, isMember }: { pool: Pool; isMember?: boolean }) {
 
         <div className="px-6 pt-4 relative z-10 flex-1 flex flex-col">
           <p className="text-slate-500 font-medium text-sm line-clamp-2 mb-6 flex-1">
-            {pool.description || 'Sem descrição disponível para este grupo.'}
+            {pool.description || t('noDescription')}
           </p>
 
           <div className="flex items-center justify-between mt-auto py-5">
             <div className="flex items-center gap-2.5 text-slate-500 font-bold text-sm bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
               <Users className="w-4 h-4 text-slate-400" />
               <span>
-                {pool.member_count} {pool.member_count === 1 ? 'membro' : 'membros'}
+                {pool.member_count}{' '}
+                {pool.member_count === 1 ? tCommon('memberOne') : tCommon('memberOther')}
               </span>
             </div>
 
@@ -254,7 +258,7 @@ function PoolCard({ pool, isMember }: { pool: Pool; isMember?: boolean }) {
                   : 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100',
               )}
             >
-              {isMember ? 'Ver Ranking' : 'Entrar'}
+              {isMember ? t('viewRanking') : t('join')}
               <ArrowRight className="w-4 h-4" />
             </div>
           </div>

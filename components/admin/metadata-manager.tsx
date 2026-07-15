@@ -11,11 +11,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
 } from '@/components/ui/dialog'
 import { createMetadataAction, updateMetadataAction, deleteMetadataAction } from '@/lib/actions/admin'
 import { toast } from 'sonner'
 import type { TournamentMetadata } from '@/lib/data'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   type: 'name' | 'location'
@@ -24,6 +24,9 @@ interface Props {
 }
 
 export function MetadataManager({ type, title, options }: Props) {
+  const t = useTranslations('admin')
+  const tButtons = useTranslations('buttons')
+  const tUi = useTranslations('ui')
   const [open, setOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [newValue, setNewValue] = useState('')
@@ -37,7 +40,7 @@ export function MetadataManager({ type, title, options }: Props) {
       const result = await createMetadataAction(type, newValue)
       if (result.success) {
         setNewValue('')
-        toast.success(`${title} adicionado!`)
+        toast.success(t('metadata.toastAdded', { title }))
       }
     })
   }
@@ -50,7 +53,7 @@ export function MetadataManager({ type, title, options }: Props) {
       if (result.success) {
         setEditingId(null)
         setNewValue('')
-        toast.success(`${title} atualizado!`)
+        toast.success(t('metadata.toastUpdated', { title }))
       }
     })
   }
@@ -60,9 +63,9 @@ export function MetadataManager({ type, title, options }: Props) {
     startTransition(async () => {
       const result = await deleteMetadataAction(type, id)
       if (result.success) {
-        toast.success(`${title} excluído!`)
+        toast.success(t('metadata.toastDeleted', { title }))
       } else {
-        setError(result.error || 'Erro ao excluir')
+        setError(result.error || t('metadata.deleteError'))
       }
     })
   }
@@ -74,7 +77,7 @@ export function MetadataManager({ type, title, options }: Props) {
           variant="outline"
           size="icon"
           className="h-11 w-11 shrink-0 rounded-xl bg-slate-50 border-slate-200 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 transition-all"
-          title={`Gerenciar ${title}s`}
+          title={t('metadata.manage', { title })}
         >
           <Settings2 className="w-4 h-4" />
         </Button>
@@ -88,8 +91,10 @@ export function MetadataManager({ type, title, options }: Props) {
               {type === 'name' ? <Trophy className="w-6 h-6" /> : <MapPin className="w-6 h-6" />}
             </div>
             <div>
-              <DialogTitle className="text-xl font-bold">Gerenciar {title}s</DialogTitle>
-              <p className="text-slate-400 text-sm mt-0.5">{options.length} {title.toLowerCase()}s cadastrados</p>
+              <DialogTitle className="text-xl font-bold">{t('metadata.manage', { title })}</DialogTitle>
+              <p className="text-slate-400 text-sm mt-0.5">
+                {t('metadata.countRegistered', { count: options.length, title: title.toLowerCase() })}
+              </p>
             </div>
           </div>
         </div>
@@ -104,11 +109,13 @@ export function MetadataManager({ type, title, options }: Props) {
           {/* Add new */}
           <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-end gap-3">
             <div className="flex-1 space-y-2">
-              <Label className="text-slate-600 ml-1">Adicionar Novo {title}</Label>
+              <Label className="text-slate-600 ml-1">{t('metadata.addNew', { title })}</Label>
               <Input
                 value={editingId ? '' : newValue}
                 onChange={e => !editingId && setNewValue(e.target.value)}
-                placeholder={`Ex: ${type === 'name' ? 'Australian Open' : 'Melbourne'}`}
+                placeholder={tUi('examplePrefix', {
+                  example: type === 'name' ? t('metadata.exampleName') : t('metadata.exampleLocation'),
+                })}
                 disabled={!!editingId || isPending}
                 className="h-11 bg-white border-slate-200 rounded-xl focus:ring-slate-900"
               />
@@ -124,7 +131,7 @@ export function MetadataManager({ type, title, options }: Props) {
 
           <div className="space-y-3">
             <div className="flex items-center justify-between px-1">
-              <Label className="text-slate-500 font-medium">Lista de {title}s</Label>
+              <Label className="text-slate-500 font-medium">{t('metadata.list', { title })}</Label>
             </div>
 
             <div className="max-h-[300px] overflow-y-auto space-y-2 pr-2 custom-scrollbar">
@@ -145,10 +152,10 @@ export function MetadataManager({ type, title, options }: Props) {
                     {editingId === opt.id ? (
                       <>
                         <Button size="sm" variant="ghost" className="h-9 px-3 text-emerald-600 hover:bg-emerald-50 rounded-lg font-bold" onClick={() => handleUpdate(opt.id)} disabled={isPending}>
-                          Salvar
+                          {tButtons('save')}
                         </Button>
                         <Button size="sm" variant="ghost" className="h-9 px-3 text-slate-500 hover:bg-slate-100 rounded-lg" onClick={() => { setEditingId(null); setNewValue(''); }} disabled={isPending}>
-                          Sair
+                          {t('metadata.exit')}
                         </Button>
                       </>
                     ) : (
@@ -176,7 +183,9 @@ export function MetadataManager({ type, title, options }: Props) {
               ))}
               {options.length === 0 && (
                 <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                  <p className="text-sm text-slate-400">Nenhum {title.toLowerCase()} cadastrado ainda.</p>
+                  <p className="text-sm text-slate-400">
+                    {t('metadata.empty', { title: title.toLowerCase() })}
+                  </p>
                 </div>
               )}
             </div>
@@ -188,7 +197,7 @@ export function MetadataManager({ type, title, options }: Props) {
               onClick={() => setOpen(false)}
               className="w-full md:w-auto rounded-xl h-11 px-8 text-slate-600"
             >
-              Fechar Gerenciador
+              {t('metadata.closeManager')}
             </Button>
           </div>
         </div>

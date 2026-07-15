@@ -35,12 +35,14 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useTranslations } from 'next-intl';
 
 interface Props {
   players: Player[];
 }
 
 export function PlayerManager({ players }: Props) {
+  const t = useTranslations('admin');
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const filtered = players.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
@@ -55,8 +57,10 @@ export function PlayerManager({ players }: Props) {
                 <Users className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
-                <CardTitle className="text-base">Jogadores Cadastrados</CardTitle>
-                <p className="text-xs text-slate-500 mt-0.5">{players.length} jogadores no sistema</p>
+                <CardTitle className="text-base">{t('players.title')}</CardTitle>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {t('players.countInSystem', { n: players.length })}
+                </p>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 mt-3 sm:mt-0">
@@ -67,8 +71,12 @@ export function PlayerManager({ players }: Props) {
                   className="gap-2 border-slate-200 text-slate-600 hover:bg-slate-50 transition-all"
                 >
                   {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  <span className="hidden sm:inline">{isOpen ? 'Recolher' : 'Expandir'} busca de jogadores</span>
-                  <span className="sm:hidden">{isOpen ? 'Recolher' : 'Expandir'}</span>
+                  <span className="hidden sm:inline">
+                    {isOpen ? t('players.collapseSearch') : t('players.expandSearch')}
+                  </span>
+                  <span className="sm:hidden">
+                    {isOpen ? t('players.collapse') : t('players.expand')}
+                  </span>
                 </Button>
               </CollapsibleTrigger>
               <AddPlayersDialog />
@@ -81,7 +89,7 @@ export function PlayerManager({ players }: Props) {
             <div className="relative mb-4 mt-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
-                placeholder="Buscar jogador..."
+                placeholder={t('players.searchPlaceholder')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-9"
@@ -92,9 +100,7 @@ export function PlayerManager({ players }: Props) {
             <div className="max-h-80 overflow-y-auto space-y-1">
               {filtered.length === 0 ? (
                 <p className="text-sm text-slate-400 text-center py-6">
-                  {players.length === 0
-                    ? 'Nenhum jogador cadastrado. Adicione jogadores para começar.'
-                    : 'Nenhum jogador encontrado.'}
+                  {players.length === 0 ? t('players.empty') : t('players.notFound')}
                 </p>
               ) : (
                 filtered.map((p) => (
@@ -126,26 +132,27 @@ export function PlayerManager({ players }: Props) {
 }
 
 function AddPlayersDialog() {
+  const t = useTranslations('admin');
   const [open, setOpen] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200">
-          <UserPlus className="w-4 h-4" /> Adicionar
+          <UserPlus className="w-4 h-4" /> {t('players.add')}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-full sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Adicionar Jogadores</DialogTitle>
+          <DialogTitle>{t('players.addTitle')}</DialogTitle>
         </DialogHeader>
         <Tabs defaultValue="individual" className="mt-2">
           <TabsList className="w-full">
             <TabsTrigger value="individual" className="flex-1 gap-1.5">
-              <UserPlus className="w-3.5 h-3.5" /> Individual
+              <UserPlus className="w-3.5 h-3.5" /> {t('players.individual')}
             </TabsTrigger>
             <TabsTrigger value="import" className="flex-1 gap-1.5">
-              <Upload className="w-3.5 h-3.5" /> Importar em Lote
+              <Upload className="w-3.5 h-3.5" /> {t('players.bulkImport')}
             </TabsTrigger>
           </TabsList>
 
@@ -163,6 +170,8 @@ function AddPlayersDialog() {
 }
 
 function AddSinglePlayer({ onSuccess }: { onSuccess: () => void }) {
+  const t = useTranslations('admin');
+  const tButtons = useTranslations('buttons');
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -180,7 +189,7 @@ function AddSinglePlayer({ onSuccess }: { onSuccess: () => void }) {
         (e.target as HTMLFormElement).reset();
         setTimeout(() => setSuccess(false), 2000);
       } else {
-        setError(result.error || 'Erro ao cadastrar');
+        setError(result.error || t('players.errorRegister'));
       }
     });
   }
@@ -196,34 +205,36 @@ function AddSinglePlayer({ onSuccess }: { onSuccess: () => void }) {
       {success && (
         <div className="flex items-center gap-2 p-3 bg-emerald-50 text-emerald-700 rounded-lg text-sm">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
-          Jogador cadastrado!
+          {t('players.registered')}
         </div>
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="name">Nome do Jogador *</Label>
-        <Input id="name" name="name" placeholder="Ex: Carlos Alcaraz" required />
+        <Label htmlFor="name">{t('players.nameRequired')}</Label>
+        <Input id="name" name="name" placeholder={t('players.namePlaceholder')} required />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="display_name">Nome de Exibição (Chaveamento)</Label>
+        <Label htmlFor="display_name">{t('players.displayName')}</Label>
         <Input id="display_name" name="display_name" placeholder="" />
-        <p className="text-[10px] text-slate-500">Como o nome aparecerá no chaveamento. Se vazio, usa o nome completo.</p>
+        <p className="text-[10px] text-slate-500">{t('players.displayNameHint')}</p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="country">Sigla do País</Label>
-        <Input id="country" name="country" placeholder="Ex: ESP" />
+        <Label htmlFor="country">{t('players.countryCode')}</Label>
+        <Input id="country" name="country" placeholder={t('players.countryPlaceholder')} />
       </div>
 
       <Button type="submit" className="w-full" disabled={isPending}>
-        {isPending ? 'Salvando...' : 'Cadastrar Jogador'}
+        {isPending ? tButtons('saving') : t('players.registerPlayer')}
       </Button>
     </form>
   );
 }
 
 function EditPlayerDialog({ player }: { player: Player }) {
+  const t = useTranslations('admin');
+  const tButtons = useTranslations('buttons');
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -236,10 +247,10 @@ function EditPlayerDialog({ player }: { player: Player }) {
     startTransition(async () => {
       const result = await updatePlayerAction(player.id, formData);
       if (result.success) {
-        toast.success('Jogador atualizado com sucesso');
+        toast.success(t('players.toastUpdated'));
         setOpen(false);
       } else {
-        setError(result.error || 'Erro ao atualizar');
+        setError(result.error || t('players.errorUpdate'));
       }
     });
   }
@@ -253,8 +264,8 @@ function EditPlayerDialog({ player }: { player: Player }) {
       </DialogTrigger>
       <DialogContent className="max-w-full sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Editar Jogador</DialogTitle>
-          <DialogDescription>Altere as informações do jogador conforme necessário.</DialogDescription>
+          <DialogTitle>{t('players.editTitle')}</DialogTitle>
+          <DialogDescription>{t('players.editDesc')}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           {error && (
@@ -265,27 +276,27 @@ function EditPlayerDialog({ player }: { player: Player }) {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="edit-name">Nome do Jogador *</Label>
+            <Label htmlFor="edit-name">{t('players.nameRequired')}</Label>
             <Input id="edit-name" name="name" defaultValue={player.name} required />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="edit-display-name">Nome de Exibição (Chaveamento)</Label>
+            <Label htmlFor="edit-display-name">{t('players.displayName')}</Label>
             <Input id="edit-display-name" name="display_name" defaultValue={player.display_name || ''} placeholder="" />
-            <p className="text-[10px] text-slate-500">Como o nome aparecerá no chaveamento. Se vazio, usa o nome completo.</p>
+            <p className="text-[10px] text-slate-500">{t('players.displayNameHint')}</p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="edit-country">Sigla do País</Label>
-            <Input id="edit-country" name="country" defaultValue={player.country || ''} placeholder="Ex: ESP" />
+            <Label htmlFor="edit-country">{t('players.countryCode')}</Label>
+            <Input id="edit-country" name="country" defaultValue={player.country || ''} placeholder={t('players.countryPlaceholder')} />
           </div>
 
           <DialogFooter className="gap-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
-              Cancelar
+              {tButtons('cancel')}
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? 'Salvando...' : 'Salvar Alterações'}
+              {isPending ? tButtons('saving') : t('players.saveChanges')}
             </Button>
           </DialogFooter>
         </form>
@@ -295,6 +306,8 @@ function EditPlayerDialog({ player }: { player: Player }) {
 }
 
 function DeletePlayerDialog({ player }: { player: Player }) {
+  const t = useTranslations('admin');
+  const tButtons = useTranslations('buttons');
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -302,10 +315,10 @@ function DeletePlayerDialog({ player }: { player: Player }) {
     startTransition(async () => {
       const result = await deletePlayerAction(player.id);
       if (result.success) {
-        toast.success('Jogador excluido com sucesso');
+        toast.success(t('players.toastDeleted'));
         setOpen(false);
       } else {
-        toast.error(result.error || 'Erro ao excluir jogador');
+        toast.error(result.error || t('players.toastDeleteError'));
       }
     });
   }
@@ -319,17 +332,20 @@ function DeletePlayerDialog({ player }: { player: Player }) {
       </DialogTrigger>
       <DialogContent className="max-w-full sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Excluir Jogador</DialogTitle>
+          <DialogTitle>{t('players.deleteTitle')}</DialogTitle>
           <DialogDescription>
-            Tem certeza de que deseja excluir <strong>{player.name}</strong>? Esta ação não pode ser desfeita.
+            {t.rich('players.deleteDesc', {
+              name: player.name,
+              strong: (chunks) => <strong>{chunks}</strong>,
+            })}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
-            Cancelar
+            {tButtons('cancel')}
           </Button>
           <Button variant="destructive" onClick={handleDelete} disabled={isPending}>
-            {isPending ? 'Excluindo...' : 'Excluir Jogador'}
+            {isPending ? t('players.deleting') : t('players.deletePlayer')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -338,6 +354,7 @@ function DeletePlayerDialog({ player }: { player: Player }) {
 }
 
 function ImportPlayersForm({ onSuccess }: { onSuccess: () => void }) {
+  const t = useTranslations('admin');
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
@@ -350,17 +367,17 @@ function ImportPlayersForm({ onSuccess }: { onSuccess: () => void }) {
     const text = formData.get('players') as string;
 
     if (!text.trim()) {
-      setError('Cole a lista de jogadores');
+      setError(t('players.pasteList'));
       return;
     }
 
     startTransition(async () => {
       const res = await importPlayersAction(text);
       if (res.success) {
-        setResult(`${res.count} jogadores importados com sucesso!`);
+        setResult(t('players.importSuccess', { count: res.count }));
         (e.target as HTMLFormElement).reset();
       } else {
-        setError(res.error || 'Erro ao importar');
+        setError(res.error || t('players.importError'));
       }
     });
   }
@@ -381,21 +398,21 @@ function ImportPlayersForm({ onSuccess }: { onSuccess: () => void }) {
       )}
 
       <div className="space-y-2">
-        <Label>Lista de Jogadores</Label>
+        <Label>{t('players.playerList')}</Label>
         <Textarea
           name="players"
           rows={10}
-          placeholder={`Cole a lista no formato:\nCarlos Alcaraz (ESP) [Car. Alcaraz]\nJannik Sinner (ITA) [J. Sinner]\nNovak Djokovic (SRB)\n...\n\nOu apenas nomes:\nCarlos Alcaraz\nJannik Sinner\nNovak Djokovic`}
+          placeholder={t('players.importPlaceholder')}
           className="font-mono text-xs max-h-50"
           required
         />
         <p className="text-xs text-slate-400">
-          Formatos aceitos: "Nome (Pais) [Nome Exibição]", "Nome (Pais)" ou apenas "Nome". Um jogador por linha. O sistema ignora numeracao caso exista.
+          {t('players.importHint')}
         </p>
       </div>
 
       <Button type="submit" className="w-full" disabled={isPending}>
-        {isPending ? 'Importando...' : 'Importar Jogadores'}
+        {isPending ? t('players.importing') : t('players.importPlayers')}
       </Button>
     </form>
   );

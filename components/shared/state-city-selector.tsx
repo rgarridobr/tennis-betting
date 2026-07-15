@@ -18,6 +18,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
+import { useTranslations } from "next-intl";
 
 interface State {
   id: number;
@@ -47,6 +48,7 @@ export function StateCitySelector({
   required = false,
   layout = "vertical",
 }: StateCitySelectorProps) {
+  const t = useTranslations("shared");
   const [states, setStates] = useState<State[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [loadingStates, setLoadingStates] = useState(false);
@@ -114,7 +116,9 @@ export function StateCitySelector({
       }
     >
       <div className="space-y-2">
-        <Label htmlFor="state">Estado {required && "*"}</Label>
+        <Label htmlFor="state">
+          {t("state")} {required && "*"}
+        </Label>
         <Popover modal={true} open={openState} onOpenChange={setOpenState}>
           <PopoverTrigger asChild>
             <Button
@@ -130,7 +134,7 @@ export function StateCitySelector({
                 ) : selectedState ? (
                   states.find((state) => state.sigla === selectedState)?.nome
                 ) : (
-                  "Selecione o estado..."
+                  t("selectState")
                 )}
               </span>
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -138,9 +142,9 @@ export function StateCitySelector({
           </PopoverTrigger>
           <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
             <Command>
-              <CommandInput placeholder="Buscar estado..." />
+              <CommandInput placeholder={t("searchState")} />
               <CommandList>
-                <CommandEmpty>Nenhum estado encontrado.</CommandEmpty>
+                <CommandEmpty>{t("noState")}</CommandEmpty>
                 <CommandGroup>
                   {states.map((state) => (
                     <CommandItem
@@ -177,7 +181,9 @@ export function StateCitySelector({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="city">Cidade {required && "*"}</Label>
+        <Label htmlFor="city">
+          {t("city")} {required && "*"}
+        </Label>
         <Popover modal={true} open={openCity} onOpenChange={setOpenCity}>
           <PopoverTrigger asChild>
             <Button
@@ -194,9 +200,9 @@ export function StateCitySelector({
                   cities.find((city) => city.nome === selectedCity)?.nome ||
                   selectedCity
                 ) : !selectedState ? (
-                  "Selecione um estado"
+                  t("selectStateFirst")
                 ) : (
-                  "Selecione a cidade..."
+                  t("selectCity")
                 )}
               </span>
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -204,15 +210,15 @@ export function StateCitySelector({
           </PopoverTrigger>
           <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
             <Command>
-              <CommandInput placeholder="Buscar cidade..." />
+              <CommandInput placeholder={t("searchCity")} />
               <CommandList>
-                <CommandEmpty>Nenhuma cidade encontrada.</CommandEmpty>
+                <CommandEmpty>{t("noCity")}</CommandEmpty>
                 <CommandGroup>
                   {cities.map((city) => (
                     <CommandItem
                       key={city.id}
                       value={city.nome}
-                      onSelect={(currentValue) => {
+                      onSelect={() => {
                         // currentValue is lowercased by CommandItem, but we want the original city.nome
                         onCityChange(city.nome);
                         setOpenCity(false);

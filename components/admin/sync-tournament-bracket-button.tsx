@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useTranslations } from "next-intl";
 
 interface SyncTournamentBracketButtonProps {
   tournamentId: number;
@@ -23,6 +24,8 @@ export function SyncTournamentBracketButton({
   tournamentId,
   isReady,
 }: SyncTournamentBracketButtonProps) {
+  const t = useTranslations("admin");
+  const tButtons = useTranslations("buttons");
   const [loading, setLoading] = useState(false);
   const [showSyncConfirm, setShowSyncConfirm] = useState(false);
 
@@ -32,15 +35,13 @@ export function SyncTournamentBracketButton({
     try {
       const result = await syncTournamentBracketAction(tournamentId);
       if (result.success) {
-        toast.success(
-          `Sincronizado com sucesso! ${result.updatedCount} partidas atualizadas.`,
-        );
+        toast.success(t("sync.toastBracketSuccess", { count: result.updatedCount }));
       } else {
-        toast.error(result.error || "Erro ao sincronizar chaveamento");
+        toast.error(result.error || t("sync.toastBracketError"));
       }
     } catch (error) {
       console.error("Error syncing bracket:", error);
-      toast.error("Erro ao conectar com o servidor");
+      toast.error(t("sync.toastServerError"));
     } finally {
       setLoading(false);
     }
@@ -60,7 +61,7 @@ export function SyncTournamentBracketButton({
           ) : (
             <RefreshCcw className="w-4 h-4 mr-2" />
           )}
-          Sincronizar Chaveamento ATP
+          {t("sync.syncBracket")}
         </Button>
       )}
 
@@ -71,11 +72,10 @@ export function SyncTournamentBracketButton({
               <AlertTriangle className="w-8 h-8 text-amber-600" />
             </div>
             <DialogTitle className="text-2xl font-black text-center text-slate-900">
-              Sincronizar Chaveamento?
+              {t("sync.syncBracketTitle")}
             </DialogTitle>
             <DialogDescription className="text-center text-slate-500 font-medium px-4">
-              Deseja sincronizar o chaveamento com a ATP? Isso substituirá os
-              jogadores da Rodada 1.
+              {t("sync.syncBracketDesc")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex flex-col sm:flex-row gap-3 p-2">
@@ -84,14 +84,14 @@ export function SyncTournamentBracketButton({
               onClick={() => setShowSyncConfirm(false)}
               className="flex-1 rounded-xl font-bold h-12 border-2"
             >
-              Cancelar
+              {tButtons("cancel")}
             </Button>
             <Button
               onClick={handleSync}
               variant="default"
               className="flex-1 rounded-xl font-black h-12 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-100"
             >
-              Sim, Sincronizar
+              {t("sync.yesSync")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -60,6 +60,23 @@ export const getCategory = (category: string) => {
   }
 };
 
+/** Maps DB status → `status.*` message keys (translate in UI). */
+export const getStatusLabelKeys: Record<string, string> = {
+  STANDBY: 'standby',
+  draft: 'draft',
+  UPCOMING: 'upcoming',
+  upcoming: 'upcoming',
+  OPEN: 'open',
+  active: 'active',
+  published: 'published',
+  LOCKED: 'locked',
+  IN_PROGRESS: 'inProgress',
+  FINISHED: 'finished',
+  finished: 'finished',
+  completed: 'finished',
+};
+
+/** @deprecated Prefer getStatusLabelKeys + next-intl. Portuguese fallbacks only. */
 export const getStatusLabels: Record<string, string> = {
   STANDBY: 'Standby',
   draft: 'Rascunho',

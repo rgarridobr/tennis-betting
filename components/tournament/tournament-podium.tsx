@@ -1,6 +1,8 @@
+'use client';
+
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import type { RankingEntry } from '@/lib/data';
+import { useTranslations } from 'next-intl';
 
 export function PodiumMedal({ place }: { place: 1 | 2 | 3 }) {
   const gradients = {
@@ -70,6 +72,9 @@ interface TournamentPodiumProps {
 }
 
 export function TournamentPodium({ ranking, isFinished, title, hideTitle }: TournamentPodiumProps) {
+  const t = useTranslations('tournaments');
+  const tCommon = useTranslations('common');
+
   if (!ranking || ranking.length === 0) return null;
 
   return (
@@ -77,7 +82,7 @@ export function TournamentPodium({ ranking, isFinished, title, hideTitle }: Tour
       {!hideTitle && (
         <div className="flex items-center gap-3 mb-6">
           <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-            {title || (isFinished ? 'Pódio do Torneio' : 'Liderança Atual')}
+            {title || (isFinished ? t('podiumFinished') : t('podiumLive'))}
           </h2>
         </div>
       )}
@@ -86,7 +91,6 @@ export function TournamentPodium({ ranking, isFinished, title, hideTitle }: Tour
         {ranking.map((user, index) => {
           const isFirst = index === 0;
           const isSecond = index === 1;
-          const isThird = index === 2;
           
           const colors = isFirst 
             ? 'bg-gradient-to-br from-amber-300 to-amber-500 border-amber-400 text-amber-950 shadow-amber-500/30' 
@@ -113,12 +117,12 @@ export function TournamentPodium({ ranking, isFinished, title, hideTitle }: Tour
                   
                   <div className="flex items-center gap-4 shrink-0">
                     <div className="flex flex-col items-end">
-                      <span className="text-[10px] font-bold uppercase tracking-wider opacity-70 leading-none">Pontos</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider opacity-70 leading-none">{tCommon('points')}</span>
                       <span className="text-xl font-black drop-shadow-sm leading-tight">{user.total_points}</span>
                     </div>
                     <div className="w-[1px] h-8 bg-current opacity-10" />
                     <div className="flex flex-col items-end">
-                      <span className="text-[10px] font-bold uppercase tracking-wider opacity-70 leading-none">Acertos</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider opacity-70 leading-none">{tCommon('hits')}</span>
                       <span className="text-sm font-bold leading-tight">{user.correct_predictions}/{user.total_predictions}</span>
                     </div>
                   </div>

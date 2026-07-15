@@ -2,8 +2,10 @@
 
 import { registerUser, loginUser, createSession, destroySession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 export async function registerAction(formData: FormData) {
+  const t = await getTranslations('errors');
   const name = (formData.get('name') as string | null)?.trim() ?? '';
   const email = (formData.get('email') as string | null)?.trim() ?? '';
   const nickname = (formData.get('nickname') as string | null)?.trim() ?? '';
@@ -19,11 +21,11 @@ export async function registerAction(formData: FormData) {
   const isBrazil = ['brasil', 'brazil'].includes(country.trim().toLowerCase());
 
   if (!name || !email || !password || !tennis_club || (isBrazil && (!state || !city))) {
-    return { error: 'Todos os campos obrigatórios devem ser preenchidos' };
+    return { error: t('requiredFields') };
   }
 
   if (password.length < 6) {
-    return { error: 'A senha deve ter pelo menos 6 caracteres' };
+    return { error: t('passwordMin6') };
   }
 
   try {
@@ -43,9 +45,9 @@ export async function registerAction(formData: FormData) {
     await createSession(user.id);
   } catch (error: unknown) {
     if (error instanceof Error && error.message.includes('unique')) {
-      return { error: 'Este email já está cadastrado' };
+      return { error: t('emailTaken') };
     }
-    return { error: 'Erro ao criar conta. Tente novamente.' };
+    return { error: t('registerFailed') };
   }
 
   const redirectTo = formData.get('redirectTo') as string;
@@ -57,21 +59,22 @@ export async function registerAction(formData: FormData) {
 }
 
 export async function loginAction(formData: FormData) {
+  const t = await getTranslations('errors');
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
 
   if (!email || !password) {
-    return { error: 'Email e senha são obrigatórios' };
+    return { error: t('emailPasswordRequired') };
   }
 
   const user = await loginUser(email, password);
 
   if (!user) {
-    return { error: 'Email ou senha incorretos' };
+    return { error: t('invalidCredentials') };
   }
 
   if (!user.is_active) {
-    return { error: 'Sua conta está inativa. Entre em contato com o administrador.' };
+    return { error: t('accountInactive') };
   }
 
   await createSession(user.id);

@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { Check, ChevronsUpDown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -32,11 +33,14 @@ export function Combobox({
   options,
   value,
   onValueChange,
-  placeholder = 'Selecione...',
-  emptyText = 'Nenhum resultado encontrado.',
+  placeholder,
+  emptyText,
   className,
 }: ComboboxProps) {
+  const t = useTranslations('ui');
   const [open, setOpen] = React.useState(false);
+  const resolvedPlaceholder = placeholder ?? t('select');
+  const resolvedEmpty = emptyText ?? t('noResults');
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -49,15 +53,15 @@ export function Combobox({
         >
           {value
             ? options.find((option) => option.value === value)?.label
-            : placeholder}
+            : resolvedPlaceholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0 rounded-xl" align="start">
         <Command className="rounded-xl">
-          <CommandInput placeholder="Buscar..." className="font-bold" />
+          <CommandInput placeholder={t('search')} className="font-bold" />
           <CommandList className="max-h-60">
-            <CommandEmpty>{emptyText}</CommandEmpty>
+            <CommandEmpty>{resolvedEmpty}</CommandEmpty>
             <CommandGroup>
               {options.map((option) => (
                 <CommandItem

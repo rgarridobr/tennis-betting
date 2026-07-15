@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { updatePassword } from '@/lib/actions/profile';
 import { Loader2, Check, AlertCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export function ProfilePasswordForm() {
+  const t = useTranslations('profile');
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -19,13 +21,13 @@ export function ProfilePasswordForm() {
     const confirmPassword = formData.get('confirmPassword') as string;
 
     if (newPassword !== confirmPassword) {
-      setPasswordMessage({ type: 'error', text: 'As senhas não coincidem' });
+      setPasswordMessage({ type: 'error', text: t('passwordMismatch') });
       setIsPasswordLoading(false);
       return;
     }
 
     if (newPassword.length < 6) {
-      setPasswordMessage({ type: 'error', text: 'A senha deve ter pelo menos 6 caracteres' });
+      setPasswordMessage({ type: 'error', text: t('passwordMinLength') });
       setIsPasswordLoading(false);
       return;
     }
@@ -33,15 +35,15 @@ export function ProfilePasswordForm() {
     try {
       const result = await updatePassword(formData);
       if (result.success) {
-        setPasswordMessage({ type: 'success', text: 'Senha atualizada com sucesso!' });
+        setPasswordMessage({ type: 'success', text: t('passwordSuccess') });
         // Clear password fields
         const form = document.getElementById('password-form-sidebar') as HTMLFormElement;
         form?.reset();
       } else {
-        setPasswordMessage({ type: 'error', text: result.error || 'Erro ao atualizar senha' });
+        setPasswordMessage({ type: 'error', text: result.error || t('passwordError') });
       }
     } catch {
-      setPasswordMessage({ type: 'error', text: 'Erro ao atualizar senha' });
+      setPasswordMessage({ type: 'error', text: t('passwordError') });
     } finally {
       setIsPasswordLoading(false);
     }
@@ -50,17 +52,17 @@ export function ProfilePasswordForm() {
   return (
     <form id="password-form-sidebar" action={handlePasswordSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="currentPassword">Senha Atual</Label>
+        <Label htmlFor="currentPassword">{t('currentPassword')}</Label>
         <Input id="currentPassword" name="currentPassword" type="password" placeholder="" required />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="newPassword">Nova Senha</Label>
+        <Label htmlFor="newPassword">{t('newPassword')}</Label>
         <Input id="newPassword" name="newPassword" type="password" placeholder="" required minLength={6} />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="confirmPassword">Confirmar Nova Senha</Label>
+        <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
         <Input id="confirmPassword" name="confirmPassword" type="password" placeholder="" required minLength={6} />
       </div>
 
@@ -79,10 +81,10 @@ export function ProfilePasswordForm() {
         {isPasswordLoading ? (
           <>
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            Atualizando...
+            {t('updating')}
           </>
         ) : (
-          'Alterar Senha'
+          t('changePassword')
         )}
       </Button>
     </form>

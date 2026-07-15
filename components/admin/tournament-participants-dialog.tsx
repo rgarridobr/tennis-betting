@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useLocale, useTranslations } from 'next-intl';
 
 interface Props {
   participants: TournamentParticipantEntry[];
@@ -27,10 +28,10 @@ function normalize(value: string) {
     .toLowerCase();
 }
 
-function formatEnrollmentDate(date: string | null) {
+function formatEnrollmentDate(date: string | null, locale: string) {
   if (!date) return null;
 
-  return new Intl.DateTimeFormat('pt-BR', {
+  return new Intl.DateTimeFormat(locale === 'pt' ? 'pt-BR' : 'en-US', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -38,6 +39,8 @@ function formatEnrollmentDate(date: string | null) {
 }
 
 export function TournamentParticipantsDialog({ participants }: Props) {
+  const t = useTranslations('admin');
+  const locale = useLocale();
   const [query, setQuery] = useState('');
 
   const filteredParticipants = useMemo(() => {
@@ -62,7 +65,7 @@ export function TournamentParticipantsDialog({ participants }: Props) {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="bg-white">
           <Users className="size-4" />
-          Inscritos
+          {t('participantsDialog.enrolled')}
           <Badge className="ml-1 rounded-full bg-slate-900 px-2 py-0.5 text-[10px] text-white">
             {participants.length}
           </Badge>
@@ -74,12 +77,12 @@ export function TournamentParticipantsDialog({ participants }: Props) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl font-black text-slate-900">
               <Users className="size-5 text-emerald-600" />
-              Inscritos no torneio
+              {t('participantsDialog.title')}
             </DialogTitle>
             <DialogDescription>
               {participants.length === 1
-                ? '1 pessoa está inscrita neste torneio.'
-                : `${participants.length} pessoas estão inscritas neste torneio.`}
+                ? t('participantsDialog.countOne')
+                : t('participantsDialog.countOther', { count: participants.length })}
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -90,7 +93,7 @@ export function TournamentParticipantsDialog({ participants }: Props) {
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar por nome, email, clube ou WhatsApp"
+              placeholder={t('participantsDialog.searchPlaceholder')}
               className="pl-9"
             />
           </div>
@@ -98,14 +101,14 @@ export function TournamentParticipantsDialog({ participants }: Props) {
           {filteredParticipants.length === 0 ? (
             <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm font-bold text-slate-500">
               {participants.length === 0
-                ? 'Nenhum inscrito neste torneio.'
-                : 'Nenhum inscrito encontrado para essa busca.'}
+                ? t('participantsDialog.empty')
+                : t('participantsDialog.notFound')}
             </div>
           ) : (
             <ScrollArea className="h-[420px] pr-3">
               <div className="space-y-2">
                 {filteredParticipants.map((participant) => {
-                  const enrollmentDate = formatEnrollmentDate(participant.joined_at);
+                  const enrollmentDate = formatEnrollmentDate(participant.joined_at, locale);
 
                   return (
                     <div
@@ -128,7 +131,7 @@ export function TournamentParticipantsDialog({ participants }: Props) {
                           {enrollmentDate && (
                             <span className="flex items-center gap-1">
                               <CalendarDays className="size-3.5" />
-                              Inscrito em {enrollmentDate}
+                              {t('participantsDialog.enrolledOn', { date: enrollmentDate })}
                             </span>
                           )}
                         </div>

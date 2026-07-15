@@ -12,11 +12,12 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 import { joinPoolAction, leavePoolAction } from "@/lib/actions/pools";
-import { Lock, LogOut, Users, Share2, CheckCircle2, AlertCircle, Edit } from "lucide-react";
+import { Lock, LogOut, Users, Share2, AlertCircle, Edit } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { EditPoolDialog } from "./edit-pool-dialog";
 import type { Pool, Tournament } from "@/lib/data";
+import { useTranslations } from "next-intl";
 
 interface PoolActionsProps {
   pool: Pool;
@@ -26,6 +27,8 @@ interface PoolActionsProps {
 }
 
 export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActionsProps) {
+  const t = useTranslations("pools");
+  const tButtons = useTranslations("buttons");
   const poolId = Number(pool.id);
   const poolName = pool.name;
   const needsPassword = !!pool.password_hash;
@@ -53,7 +56,7 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
       setIsLoading(false);
     } else {
       setShowPasswordDialog(false);
-      toast.success(`Você entrou no grupo ${poolName}.`);
+      toast.success(t("joinedToast", { name: poolName }));
       setIsLoading(false);
     }
   };
@@ -67,10 +70,10 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
     const result = await leavePoolAction(poolId);
     
     if (result.success) {
-      toast.success(`Você não faz mais parte do grupo ${poolName}.`);
+      toast.success(t("leftToast", { name: poolName }));
       setShowLeaveDialog(false);
     } else {
-      toast.error("Ocorreu um erro ao sair do grupo.");
+      toast.error(t("leaveError"));
     }
     setIsLoading(false);
   };
@@ -78,7 +81,7 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
   const handleShare = () => {
     const url = window.location.href;
     navigator.clipboard.writeText(url);
-    toast.success("O link deste grupo foi copiado para sua área de transferência.");
+    toast.success(t("linkCopied"));
   };
 
   return (
@@ -92,7 +95,7 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
               onClick={() => setShowEditDialog(true)}
             >
               <Edit className="w-4 h-4 mr-2" />
-              Editar Grupo
+              {t("edit")}
             </Button>
           )}
           <Button 
@@ -101,7 +104,7 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
             onClick={handleShare}
           >
             <Share2 className="w-4 h-4 mr-2" />
-            Compartilhar Convite
+            {t("share")}
           </Button>
           <Button 
             variant="ghost" 
@@ -110,7 +113,7 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
             disabled={isLoading}
           >
             <LogOut className="w-4 h-4 mr-2" />
-            Sair do Grupo
+            {t("leave")}
           </Button>
         </div>
       ) : (
@@ -120,7 +123,7 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
           disabled={isLoading}
         >
           <Users className="w-5 h-5 mr-2" />
-          {needsPassword ? "Entrar com Senha" : "Entrar no Grupo"}
+          {needsPassword ? t("joinWithPassword") : t("joinGroup")}
         </Button>
       )}
 
@@ -130,9 +133,9 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
             <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
               <Lock className="w-8 h-8 text-emerald-600" />
             </div>
-            <DialogTitle className="text-2xl font-black text-center text-slate-900">Senha de Acesso</DialogTitle>
+            <DialogTitle className="text-2xl font-black text-center text-slate-900">{t("passwordTitle")}</DialogTitle>
             <DialogDescription className="text-center text-slate-500 font-medium px-4">
-              Este grupo é privado. Digite a senha para entrar e participar do ranking.
+              {t("passwordDescription")}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 px-2 space-y-4">
@@ -144,7 +147,7 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
             )}
             <Input
               type="password"
-              placeholder="Digite a senha"
+              placeholder={t("passwordInput")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="h-14 rounded-2xl border-slate-100 bg-slate-50 focus:bg-white transition-all text-center text-lg font-bold"
@@ -157,14 +160,14 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
               onClick={() => setShowPasswordDialog(false)}
               className="flex-1 rounded-xl font-bold h-12 border-2"
             >
-              Cancelar
+              {tButtons("cancel")}
             </Button>
             <Button 
               onClick={handleJoin} 
               className="flex-1 rounded-xl font-black h-12 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-100"
               disabled={isLoading}
             >
-              {isLoading ? "Validando..." : "Entrar"}
+              {isLoading ? t("validating") : t("enter")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -176,9 +179,9 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
             <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
               <LogOut className="w-8 h-8 text-rose-600" />
             </div>
-            <DialogTitle className="text-2xl font-black text-center text-slate-900">Sair do Grupo?</DialogTitle>
+            <DialogTitle className="text-2xl font-black text-center text-slate-900">{t("leaveConfirmTitle")}</DialogTitle>
             <DialogDescription className="text-center text-slate-500 font-medium px-4">
-              Tem certeza que deseja sair de <strong>{poolName}</strong>? Seu progresso no ranking deste grupo será perdido.
+              {t("leaveConfirmBody", { name: poolName })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex flex-col sm:flex-row gap-3 p-2">
@@ -187,14 +190,14 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
               onClick={() => setShowLeaveDialog(false)}
               className="flex-1 rounded-xl font-bold h-12 border-2"
             >
-              Voltar
+              {tButtons("back")}
             </Button>
             <Button 
               onClick={confirmLeave} 
               className="flex-1 rounded-xl font-black h-12 bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-rose-100"
               disabled={isLoading}
             >
-              {isLoading ? "Saindo..." : "Sair do Grupo"}
+              {isLoading ? t("leaving") : t("leave")}
             </Button>
           </DialogFooter>
         </DialogContent>

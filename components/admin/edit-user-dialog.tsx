@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { useTranslations } from 'next-intl'
 
 interface EditUserDialogProps {
   clubs: TennisClub[]
@@ -41,6 +42,10 @@ interface EditUserDialogProps {
 }
 
 export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
+  const tAuth = useTranslations('auth')
+  const tProfile = useTranslations('profile')
+  const tCommon = useTranslations('common')
+  const tButtons = useTranslations('buttons')
   const [isPending, startTransition] = useTransition()
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -85,7 +90,7 @@ export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
     const isBrazil = ['brasil', 'brazil'].includes(country.toLowerCase())
 
     if (isBrazil && (!state || !city)) {
-      const message = 'Estado e cidade são obrigatórios para Brasil.'
+      const message = tAuth('stateCityRequired')
       toast.error(message)
       setError(message)
       return
@@ -94,10 +99,10 @@ export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
     startTransition(async () => {
       const result = await updateUserAction(user.id, formData)
       if (result.success) {
-        toast.success('Usuário atualizado com sucesso!')
+        toast.success(tCommon('success'))
         setOpen(false)
       } else {
-        setError(result.error || 'Erro ao atualizar usuário')
+        setError(result.error || tCommon('error'))
       }
     })
   }
@@ -118,9 +123,9 @@ export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
           <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-4 border border-emerald-200 shadow-sm">
             <Pencil className="w-7 h-7 text-emerald-600" />
           </div>
-          <DialogTitle className="text-3xl font-black text-slate-900 tracking-tight text-left">Editar Usuário</DialogTitle>
+          <DialogTitle className="text-3xl font-black text-slate-900 tracking-tight text-left">{tProfile('editTitle')}</DialogTitle>
           <DialogDescription className="text-base font-medium text-slate-400 mt-1 text-left">
-            Atualize as informações do participante.
+            {tProfile('subtitle')}
           </DialogDescription>
         </DialogHeader>
 
@@ -135,7 +140,7 @@ export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="edit-name" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest ml-1">
-                <User className="w-3 h-3 text-emerald-500" /> Nome *
+                <User className="w-3 h-3 text-emerald-500" /> {tAuth('name')}
               </Label>
               <Input
                 id="edit-name"
@@ -151,7 +156,7 @@ export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
             <div className="space-y-2">
               <div className="flex items-center justify-between ml-1">
                 <Label htmlFor="edit-nickname" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest">
-                  <User className="w-3 h-3 text-emerald-500" /> Apelido (visível no site)
+                  <User className="w-3 h-3 text-emerald-500" /> {tAuth('nickname')}
                 </Label>
                 <div className="flex items-center space-x-2">
                   <Checkbox
@@ -164,7 +169,7 @@ export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
                     htmlFor="edit-first_name_only"
                     className="text-[10px] font-black uppercase tracking-widest text-slate-400 cursor-pointer"
                   >
-                    Apenas o primeiro nome
+                    {tAuth('firstNameOnly')}
                   </label>
                 </div>
               </div>
@@ -181,7 +186,7 @@ export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
 
             <div className="space-y-2">
               <Label htmlFor="edit-email" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest ml-1">
-                <Mail className="w-3 h-3 text-emerald-500" /> E-mail *
+                <Mail className="w-3 h-3 text-emerald-500" /> {tAuth('emailRequired')}
               </Label>
               <Input
                 id="edit-email"
@@ -221,13 +226,13 @@ export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
                   required
                 />
               ) : (
-                <p className="text-sm text-slate-500">Para outros países, estado e cidade não são necessários.</p>
+                <p className="text-sm text-slate-500">{tAuth('nonBrazilHint')}</p>
               )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="edit-whatsapp" className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest ml-1">
-                <Phone className="w-3 h-3 text-emerald-500" /> WhatsApp
+                <Phone className="w-3 h-3 text-emerald-500" /> {tAuth('whatsapp')}
               </Label>
               <Input
                 id="edit-whatsapp"
@@ -251,7 +256,7 @@ export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
           </div>
 
           <div className="text-[10px] text-slate-400 font-black uppercase tracking-widest text-center">
-            Campos com * são obrigatórios
+            {tAuth('requiredFields')}
           </div>
 
           <DialogFooter className="pt-4">
@@ -263,11 +268,11 @@ export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
               {isPending ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Salvando...
+                  {tButtons('saving')}
                 </>
               ) : (
                 <>
-                  Salvar Alterações
+                  {tProfile('save')}
                 </>
               )}
             </Button>

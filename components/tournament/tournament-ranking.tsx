@@ -2,9 +2,10 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Medal, Target, TrendingUp, Crown, Award, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Trophy, Target, TrendingUp, ChevronRight } from 'lucide-react';
 import type { RankingEntry } from '@/lib/data';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation'
+import { useTranslations } from 'next-intl';
 
 interface TournamentRankingProps {
   ranking: RankingEntry[];
@@ -14,13 +15,15 @@ interface TournamentRankingProps {
 }
 
 export function TournamentRanking({ ranking, currentUserId, tournamentId, hasStarted }: TournamentRankingProps) {
+  const t = useTranslations('tournaments');
+
   if (ranking.length === 0) {
     return (
       <Card className="border-0 shadow-sm bg-white rounded-[2.5rem]">
         <CardContent className="py-16 text-center">
           <Trophy className="w-16 h-16 text-slate-200 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-slate-900 mb-2">Nenhum palpite ainda</h2>
-          <p className="text-slate-500">As classificações aparecerão assim que os resultados forem lançados.</p>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">{t('rankingEmptyTitle')}</h2>
+          <p className="text-slate-500">{t('rankingEmptyBody')}</p>
         </CardContent>
       </Card>
     );
@@ -32,10 +35,10 @@ export function TournamentRanking({ ranking, currentUserId, tournamentId, hasSta
       <Card className="border-0 shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
         <div className="bg-slate-50 px-8 py-6 border-b border-slate-100 flex items-center justify-between">
           <h3 className="text-lg font-black text-slate-900 flex items-center gap-2 uppercase tracking-tight">
-            Classificação Completa
+            {t('rankingFull')}
           </h3>
           <Badge variant="outline" className="font-bold">
-            {ranking.length} participantes
+            {t('rankingParticipants', { count: ranking.length })}
           </Badge>
         </div>
         <CardContent className="p-0">
@@ -67,6 +70,9 @@ function RankingRow({
   tournamentId: number;
   hasStarted: boolean;
 }) {
+  const t = useTranslations('tournaments');
+  const tCommon = useTranslations('common');
+
   const accuracy =
     entry.total_predictions > 0 ? Math.round((entry.correct_predictions / entry.total_predictions) * 100) : 0;
 
@@ -94,20 +100,20 @@ function RankingRow({
           <p className="font-black text-slate-900 flex items-center gap-2 leading-none mb-1.5">
             {entry.user_name}
             {isCurrentUser && (
-              <Badge className="bg-emerald-500 text-white border-none font-bold text-[9px] h-4">VOCÊ</Badge>
+              <Badge className="bg-emerald-500 text-white border-none font-bold text-[9px] h-4">{tCommon('youUpper')}</Badge>
             )}
             {entry.hit_champion && (
-              <span title={entry.hit_both ? "Acertou Campeão e Vice" : "Acertou o Campeão"}>
+              <span title={entry.hit_both ? t('hitChampionAndRunner') : t('hitChampion')}>
                 <Trophy className={`w-4 h-4 ${entry.hit_both ? 'text-amber-500' : 'text-emerald-500'}`} />
               </span>
             )}
           </p>
           <div className="flex items-center gap-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
             <span className="flex items-center gap-1">
-              <Target className="w-3 h-3" /> {entry.correct_predictions}/{entry.total_predictions} ACERTOS
+              <Target className="w-3 h-3" /> {entry.correct_predictions}/{entry.total_predictions} {t('hitsLabel')}
             </span>
             <span className="flex items-center gap-1">
-              <TrendingUp className="w-3 h-3" /> {accuracy}% PRECISÃO
+              <TrendingUp className="w-3 h-3" /> {accuracy}% {t('accuracyLabel')}
             </span>
           </div>
         </div>
@@ -116,7 +122,7 @@ function RankingRow({
       <div className="flex items-center gap-6">
         <div className="text-right">
           <p className="text-2xl font-black text-slate-900 leading-none">{entry.total_points}</p>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Pontos</p>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{tCommon('points')}</p>
         </div>
           <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-500 transition-colors" />
 

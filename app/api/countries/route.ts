@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 
 interface FirstOrgCountry {
   country: string;
@@ -16,6 +18,7 @@ interface FirstOrgResponse {
 }
 
 export async function GET() {
+  const t = await getTranslations('errors');
   try {
     const response = await fetch('https://api.first.org/data/v1/countries?limit=300');
     if (!response.ok) {
@@ -38,6 +41,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Country proxy error:', error);
-    return NextResponse.json({ error: 'Erro ao carregar países' }, { status: 500 });
+    return NextResponse.json({ error: t('apiCountriesFailed') }, { status: 500 });
   }
 }

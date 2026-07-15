@@ -16,8 +16,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useTranslations } from 'next-intl';
 
 export function TennisClubManager({ clubs }: { clubs: TennisClub[] }) {
+  const t = useTranslations('admin');
+  const tButtons = useTranslations('buttons');
+  const tCommon = useTranslations('common');
+  const tShared = useTranslations('shared');
   const [name, setName] = useState('');
   const [editingClubId, setEditingClubId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState('');
@@ -30,10 +35,10 @@ export function TennisClubManager({ clubs }: { clubs: TennisClub[] }) {
     startTransition(async () => {
       const result = await createTennisClubAction(formData);
       if (result.success) {
-        toast.success('Clube cadastrado com sucesso!');
+        toast.success(tCommon('success'));
         setName('');
       } else {
-        toast.error(result.error || 'Erro ao cadastrar clube');
+        toast.error(result.error || tCommon('error'));
       }
     });
   }
@@ -52,10 +57,10 @@ export function TennisClubManager({ clubs }: { clubs: TennisClub[] }) {
     startTransition(async () => {
       const result = await updateTennisClubAction(formData);
       if (result.success) {
-        toast.success('Clube atualizado com sucesso!');
+        toast.success(tCommon('success'));
         handleCancelEdit();
       } else {
-        toast.error(result.error || 'Erro ao atualizar clube');
+        toast.error(result.error || tCommon('error'));
       }
     });
   }
@@ -75,9 +80,9 @@ export function TennisClubManager({ clubs }: { clubs: TennisClub[] }) {
       formData.set('id', String(deleteClubId));
       const result = await deleteTennisClubAction(formData);
       if (result.success) {
-        toast.success('Clube excluído com sucesso!');
+        toast.success(tCommon('success'));
       } else {
-        toast.error(result.error || 'Erro ao excluir clube');
+        toast.error(result.error || tCommon('error'));
       }
     });
   }
@@ -90,10 +95,10 @@ export function TennisClubManager({ clubs }: { clubs: TennisClub[] }) {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Building2 className="h-5 w-5 text-emerald-600" />
-                <h3 className="text-lg font-black text-slate-900">Clubes oficiais</h3>
+                <h3 className="text-lg font-black text-slate-900">{t('clubsTitle')}</h3>
               </div>
               <p className="text-sm font-medium text-slate-500">
-                Cadastre, edite e exclua os clubes que aparecerão na seleção dos usuários.
+                {t('clubsSubtitle')}
               </p>
             </div>
 
@@ -102,7 +107,7 @@ export function TennisClubManager({ clubs }: { clubs: TennisClub[] }) {
                 name="name"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                placeholder="Nome do clube"
+                placeholder={tShared('clubCustomPlaceholder')}
                 className="h-12 rounded-2xl border-slate-200"
                 required
               />
@@ -112,7 +117,7 @@ export function TennisClubManager({ clubs }: { clubs: TennisClub[] }) {
                 className="h-12 rounded-2xl bg-emerald-600 px-5 font-black hover:bg-emerald-700"
               >
                 {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                Cadastrar
+                {tButtons('save')}
               </Button>
             </form>
           </div>
@@ -136,11 +141,11 @@ export function TennisClubManager({ clubs }: { clubs: TennisClub[] }) {
                     <div className="flex gap-2">
                       <Button type="submit" disabled={isPending} className="h-12 rounded-2xl bg-emerald-600 px-4 font-black hover:bg-emerald-700">
                         {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Edit3 className="h-4 w-4" />}
-                        Salvar
+                        {tButtons('save')}
                       </Button>
                       <Button type="button" variant="secondary" onClick={handleCancelEdit} className="h-12 rounded-2xl px-4 font-black">
                         <X className="h-4 w-4" />
-                        Cancelar
+                        {tButtons('cancel')}
                       </Button>
                     </div>
                   </form>
@@ -155,7 +160,7 @@ export function TennisClubManager({ clubs }: { clubs: TennisClub[] }) {
                         className="h-10 rounded-2xl px-4 font-black"
                       >
                         <Edit3 className="mr-2 h-4 w-4" />
-                        Editar
+                        {tButtons('edit')}
                       </Button>
                       <Button
                         type="button"
@@ -164,7 +169,7 @@ export function TennisClubManager({ clubs }: { clubs: TennisClub[] }) {
                         className="h-10 rounded-2xl px-4 font-black"
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
-                        Excluir
+                        {tButtons('delete')}
                       </Button>
                     </div>
                   </>
@@ -181,10 +186,9 @@ export function TennisClubManager({ clubs }: { clubs: TennisClub[] }) {
             <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
               <AlertTriangle className="w-8 h-8 text-rose-600" />
             </div>
-            <DialogTitle className="text-2xl font-black text-center text-slate-900">Excluir Clube?</DialogTitle>
+            <DialogTitle className="text-2xl font-black text-center text-slate-900">{tButtons('delete')}</DialogTitle>
             <DialogDescription className="text-center text-slate-500 font-medium px-4">
-              Você está prestes a excluir o clube oficial <span className="font-bold text-slate-900">"{deleteClubName}"</span>.
-              Essa ação removerá a associação oficial de usuários que pertencem a esse clube.
+              <span className="font-bold text-slate-900">&quot;{deleteClubName}&quot;</span>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex flex-col sm:flex-row gap-3 p-2">
@@ -193,14 +197,14 @@ export function TennisClubManager({ clubs }: { clubs: TennisClub[] }) {
               onClick={() => setShowDeleteConfirm(false)}
               className="flex-1 rounded-xl font-bold h-12 border-2"
             >
-              Cancelar
+              {tButtons('cancel')}
             </Button>
             <Button
               onClick={handleDelete}
               variant="destructive"
               className="flex-1 rounded-xl font-black h-12 bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-100"
             >
-              Sim, Excluir
+              {tButtons('confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>

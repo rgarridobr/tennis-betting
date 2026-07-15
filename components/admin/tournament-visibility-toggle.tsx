@@ -5,6 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { toggleTournamentVisibilityAction } from '@/lib/actions/admin';
 import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface TournamentVisibilityToggleProps {
   tournamentId: number;
@@ -15,6 +16,7 @@ export function TournamentVisibilityToggle({
   tournamentId,
   isVisible: initialIsVisible,
 }: TournamentVisibilityToggleProps) {
+  const t = useTranslations('admin');
   const [isVisible, setIsVisible] = useState(initialIsVisible);
   const [isPending, startTransition] = useTransition();
 
@@ -23,10 +25,10 @@ export function TournamentVisibilityToggle({
     startTransition(async () => {
       try {
         await toggleTournamentVisibilityAction(tournamentId, checked);
-        toast.success(checked ? 'Torneio agora está visível' : 'Torneio agora está oculto');
-      } catch (error) {
+        toast.success(checked ? t('visibility.nowVisible') : t('visibility.nowHidden'));
+      } catch {
         setIsVisible(!checked);
-        toast.error('Erro ao atualizar visibilidade');
+        toast.error(t('visibility.error'));
       }
     });
   };

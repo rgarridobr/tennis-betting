@@ -1,10 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { ArrowRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export function HeroCta() {
+  const t = useTranslations("home");
+
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     const element = document.getElementById("como-funciona");
@@ -47,7 +50,7 @@ export function HeroCta() {
         asChild
       >
         <Link href="/cadastro">
-          Criar minha conta
+          {t("createAccount")}
           <ArrowRight className="w-5 h-5 ml-2" />
         </Link>
       </Button>
@@ -59,7 +62,7 @@ export function HeroCta() {
         asChild
       >
         <a href="#como-funciona" onClick={scrollToSection}>
-          Como funciona
+          {t("howItWorks")}
         </a>
       </Button>
     </div>

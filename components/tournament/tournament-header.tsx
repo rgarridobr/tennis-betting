@@ -1,30 +1,48 @@
-import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Gift, Icon, MapPin, Users, Zap } from 'lucide-react';
+'use client';
+
+import { Gift, Icon, Users } from 'lucide-react';
 import type { Tournament } from '@/lib/data';
 import { PageHero } from '../shared/page-hero';
 import { Card, CardContent } from '../ui/card';
 import { tennisBall } from '@lucide/lab';
 import { getCategory } from '@/lib/utils';
 import {
-  surfaceColors,
-  surfaceLabels,
-  surfaceImages,
   getTournamentImage,
   getTournamentStatus,
+  normalizeSurfaceKey,
 } from '@/lib/tournament';
+import { useLocale, useTranslations } from 'next-intl';
 
 interface TournamentHeaderProps {
   tournament: Tournament;
   participants?: number;
 }
 
-function formatDate(dateString: string): string {
+function formatDate(dateString: string, locale: string): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' });
+  const dateLocale = locale === 'en' ? 'en-US' : 'pt-BR';
+  return date.toLocaleDateString(dateLocale, { day: 'numeric', month: 'long' });
+}
+
+function formatTime(dateString: string, locale: string): string {
+  const date = new Date(dateString);
+  const dateLocale = locale === 'en' ? 'en-US' : 'pt-BR';
+  return date.toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' });
 }
 
 export function TournamentHeader({ tournament, participants = 0 }: TournamentHeaderProps) {
-  const { label: statusLabel, color: statusColor } = getTournamentStatus(tournament);
+  const t = useTranslations('tournaments');
+  const tStatus = useTranslations('status');
+  const tSurfaces = useTranslations('surfaces');
+  const locale = useLocale();
+
+  const { statusKey } = getTournamentStatus(tournament);
+  const statusLabel = tStatus(statusKey);
+  const surfaceKey = normalizeSurfaceKey(tournament.surface);
+  const surface =
+    surfaceKey === 'Hard' || surfaceKey === 'Clay' || surfaceKey === 'Grass'
+      ? tSurfaces(surfaceKey)
+      : tournament.surface;
   const bgImage = getTournamentImage(tournament);
 
   return (
@@ -32,9 +50,9 @@ export function TournamentHeader({ tournament, participants = 0 }: TournamentHea
       title={tournament.name}
       subtitle={
         tournament.location +
-        `\n${formatDate(tournament.start_date)} - ${formatDate(tournament.end_date)}` +
-        `\n Início às ${new Date(tournament.start_date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` +
-        `\n${surfaceLabels[tournament.surface] || tournament.surface}`
+        `\n${formatDate(tournament.start_date, locale)} - ${formatDate(tournament.end_date, locale)}` +
+        `\n ${t('headerStartsAt')} ${formatTime(tournament.start_date, locale)}` +
+        `\n${surface}`
       }
       bgImage={bgImage}
     >
@@ -46,7 +64,7 @@ export function TournamentHeader({ tournament, participants = 0 }: TournamentHea
                 <Icon iconNode={tennisBall} className="w-6 h-6 text-emerald-400" />
               </div>
               <div>
-                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">Categoria</p>
+                <p className="text-emerald-100/70 text-xs font-bold uppercase tracking-wider">{t('headerCategory')}</p>
                 <p className="text-xl md:text-2xl font-black text-white">{getCategory(tournament.category)}</p>
               </div>
             </div>
@@ -56,7 +74,7 @@ export function TournamentHeader({ tournament, participants = 0 }: TournamentHea
                 <Users className="w-6 h-6 text-yellow-400" />
               </div>
               <div>
-                <p className="text-yellow-100/70 text-xs font-bold uppercase tracking-wider">Inscritos</p>
+                <p className="text-yellow-100/70 text-xs font-bold uppercase tracking-wider">{t('headerEnrolled')}</p>
                 <p className="text-xl md:text-2xl font-black text-white">{participants}</p>
               </div>{' '}
             </div>
@@ -67,7 +85,7 @@ export function TournamentHeader({ tournament, participants = 0 }: TournamentHea
                   <Gift className="w-6 h-6 text-rose-300" />
                 </div>
                 <div>
-                  <p className="text-rose-100/80 text-xs font-bold uppercase tracking-wider">Prêmio</p>
+                  <p className="text-rose-100/80 text-xs font-bold uppercase tracking-wider">{t('headerPrize')}</p>
                   <p className="text-sm md:text-base font-bold text-white whitespace-pre-line leading-relaxed">
                     {tournament.prize_description}
                   </p>

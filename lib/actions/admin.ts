@@ -2,6 +2,7 @@
 
 import { getSession, registerUser } from '@/lib/auth';
 import { sql } from '@/lib/db';
+import { getTranslations } from 'next-intl/server';
 import {
   fetchAtpDraw,
   findAtpPlayerMatch,
@@ -52,6 +53,7 @@ async function requireAdmin() {
 // ==================== TOURNAMENT ====================
 
 export async function createTournamentAction(formData: FormData) {
+  const t = await getTranslations('errors');
   await requireAdmin();
 
   const name = formData.get('name') as string;
@@ -84,7 +86,7 @@ export async function createTournamentAction(formData: FormData) {
     isNaN(sets_format) ||
     isNaN(size)
   ) {
-    return { success: false, error: 'Todos os campos são obrigatórios' };
+    return { success: false, error: t('adminAllFieldsRequired') };
   }
 
   try {
@@ -114,12 +116,13 @@ export async function createTournamentAction(formData: FormData) {
     return { success: true, tournamentId };
   } catch (error: any) {
     console.error('Error creating tournament:', error);
-    const message = error.message || 'Erro ao criar torneio. Tente novamente.';
+    const message = error.message || t('adminCreateTournamentFailed');
     return { success: false, error: message };
   }
 }
 
 export async function updateTournamentPrizeAction(tournamentId: number, prizeDescription: string) {
+  const t = await getTranslations('errors');
   await requireAdmin();
 
   try {
@@ -133,11 +136,12 @@ export async function updateTournamentPrizeAction(tournamentId: number, prizeDes
     return { success: true };
   } catch (error) {
     console.error('Error updating tournament prize:', error);
-    return { success: false, error: 'Erro ao atualizar o prêmio do torneio' };
+    return { success: false, error: t('adminPrizeUpdateFailed') };
   }
 }
 
 export async function updateStartDateTournamentAction(tournamentId: number, newDate: string) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   try {
     await updateTournament(tournamentId, { start_date: newDate });
@@ -146,11 +150,12 @@ export async function updateStartDateTournamentAction(tournamentId: number, newD
     return { success: true };
   } catch (error) {
     console.error('Error updating tournament date:', error);
-    return { success: false, error: 'Erro ao atualizar a data do torneio' };
+    return { success: false, error: t('adminDateUpdateFailed') };
   }
 }
 
 export async function updateTournamentStatusAction(tournamentId: number, status: string) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   await updateTournamentStatus(tournamentId, status);
   revalidatePath('/admin/torneios');
@@ -159,6 +164,7 @@ export async function updateTournamentStatusAction(tournamentId: number, status:
 }
 
 export async function finishTournamentAction(tournamentId: number) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   const result = await finishTournament(tournamentId);
 
@@ -175,6 +181,7 @@ export async function finishTournamentAction(tournamentId: number) {
 }
 
 export async function deleteTournamentAction(tournamentId: number) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   const result = await deleteTournament(tournamentId);
   if (result.success) {
@@ -185,6 +192,7 @@ export async function deleteTournamentAction(tournamentId: number) {
 }
 
 export async function toggleTournamentVisibilityAction(tournamentId: number, isVisible: boolean) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   await toggleTournamentVisibility(tournamentId, isVisible);
   revalidatePath('/admin/torneios');
@@ -198,6 +206,7 @@ export async function toggleTournamentVisibilityAction(tournamentId: number, isV
 // ==================== PLAYERS ====================
 
 export async function createPlayerAction(formData: FormData) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   const name = formData.get('name') as string;
   const country = (formData.get('country') as string) || null;
@@ -205,7 +214,7 @@ export async function createPlayerAction(formData: FormData) {
   const seedStr = formData.get('seed') as string;
   const seed = seedStr ? parseInt(seedStr, 10) : null;
 
-  if (!name) return { success: false, error: 'Nome obrigatório' };
+  if (!name) return { success: false, error: t('adminNameRequired') };
 
   await createPlayer(name, country, seed, display_name);
   revalidatePath('/admin/torneios');
@@ -213,6 +222,7 @@ export async function createPlayerAction(formData: FormData) {
 }
 
 export async function deletePlayerAction(id: number) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   const result = await deletePlayer(id);
   if (result.success) {
@@ -222,12 +232,13 @@ export async function deletePlayerAction(id: number) {
 }
 
 export async function updatePlayerAction(id: number, formData: FormData) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   const name = formData.get('name') as string;
   const country = (formData.get('country') as string) || null;
   const display_name = (formData.get('display_name') as string) || null;
 
-  if (!name) return { success: false, error: 'Nome obrigatório' };
+  if (!name) return { success: false, error: t('adminNameRequired') };
 
   const result = await updatePlayer(id, name, country, display_name);
   if (result.success) {
@@ -237,6 +248,7 @@ export async function updatePlayerAction(id: number, formData: FormData) {
 }
 
 export async function importPlayersAction(playersText: string) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   const lines = playersText.split('\n').filter((l) => l.trim());
   const players: Array<{ name: string; country: string | null; seed: number | null; display_name: string | null }> = [];
@@ -269,7 +281,7 @@ export async function importPlayersAction(playersText: string) {
     }
   }
 
-  if (players.length === 0) return { success: false, error: 'Nenhum jogador encontrado' };
+  if (players.length === 0) return { success: false, error: t('adminNoPlayersFound') };
 
   const count = await importPlayers(players);
   revalidatePath('/admin/torneios');
@@ -284,6 +296,7 @@ export async function setMatchPlayersAction(
   player2: { id?: number; type: string; seed?: number | null },
   tournamentId: number,
 ) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   await setMatchPlayers(matchId, player1, player2, tournamentId);
   revalidatePath(`/admin/torneios/${tournamentId}`);
@@ -292,6 +305,7 @@ export async function setMatchPlayersAction(
 }
 
 export async function prepareTournamentAction(tournamentId: number) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   try {
     await prepareTournament(tournamentId);
@@ -302,11 +316,12 @@ export async function prepareTournamentAction(tournamentId: number) {
     return { success: true };
   } catch (error) {
     console.error('Error preparing tournament:', error);
-    return { success: false, error: 'Erro ao preparar torneio' };
+    return { success: false, error: t('adminPrepareFailed') };
   }
 }
 
 export async function resetTournamentToStandbyAction(tournamentId: number) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   try {
     await resetTournamentToStandby(tournamentId);
@@ -317,11 +332,12 @@ export async function resetTournamentToStandbyAction(tournamentId: number) {
     return { success: true };
   } catch (error) {
     console.error('Error resetting tournament:', error);
-    return { success: false, error: 'Erro ao resetar torneio' };
+    return { success: false, error: t('adminResetFailed') };
   }
 }
 
 export async function randomizeFirstRoundAction(tournamentId: number) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   try {
     await randomizeFirstRound(tournamentId);
@@ -330,11 +346,12 @@ export async function randomizeFirstRoundAction(tournamentId: number) {
     return { success: true };
   } catch (error: any) {
     console.error('Error randomizing first round:', error);
-    return { success: false, error: error.message || 'Erro ao gerar chaves aleatórias' };
+    return { success: false, error: error.message || t('adminRandomizeFailed') };
   }
 }
 
 export async function publishTournamentAction(tournamentId: number) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   try {
     await publishTournament(tournamentId);
@@ -344,7 +361,7 @@ export async function publishTournamentAction(tournamentId: number) {
     return { success: true };
   } catch (error) {
     console.error('Error publishing tournament:', error);
-    return { success: false, error: 'Erro ao publicar torneio' };
+    return { success: false, error: t('adminPublishFailed') };
   }
 }
 
@@ -355,6 +372,7 @@ export async function updatePlaceholderPlayerAction(
   tournamentId: number,
   isLL?: boolean,
 ) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   await updatePlaceholderPlayer(matchId, slot, playerId, tournamentId, isLL);
   revalidatePath(`/admin/torneios/${tournamentId}`);
@@ -365,6 +383,7 @@ export async function updatePlaceholderPlayerAction(
 }
 
 export async function setMatchResultAction(matchId: number, winnerId: number, score: string, tournamentId: number) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   const result = await setMatchResult(matchId, winnerId, score);
 
@@ -379,6 +398,7 @@ export async function setMatchResultAction(matchId: number, winnerId: number, sc
 }
 
 export async function cancelMatchPointsAction(matchId: number, cancelled: boolean, tournamentId: number) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   try {
     await cancelMatchPoints(matchId, cancelled);
@@ -389,11 +409,12 @@ export async function cancelMatchPointsAction(matchId: number, cancelled: boolea
     return { success: true };
   } catch (error) {
     console.error('Error cancelling match points:', error);
-    return { success: false, error: 'Erro ao cancelar pontuação' };
+    return { success: false, error: t('adminCancelPointsFailed') };
   }
 }
 
 export async function clearMatchResultAction(matchId: number, tournamentId: number) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   const result = await clearMatchResult(matchId);
 
@@ -410,6 +431,7 @@ export async function clearMatchResultAction(matchId: number, tournamentId: numb
 // ==================== USERS ====================
 
 export async function createUserAction(formData: FormData) {
+  const t = await getTranslations('errors');
   await requireAdmin();
 
   const name = (formData.get('name') as string | null)?.trim() ?? '';
@@ -427,11 +449,11 @@ export async function createUserAction(formData: FormData) {
   const isBrazil = ['brasil', 'brazil'].includes(country.toLowerCase());
 
   if (!name || !email || !password || !tennis_club || !country || (isBrazil && (!state || !city))) {
-    return { success: false, error: 'Todos os campos obrigatórios estão faltando' };
+    return { success: false, error: t('adminRequiredMissing') };
   }
 
   if (password.length < 6) {
-    return { success: false, error: 'A senha deve ter pelo menos 6 caracteres' };
+    return { success: false, error: t('passwordMin6') };
   }
 
   try {
@@ -453,13 +475,14 @@ export async function createUserAction(formData: FormData) {
   } catch (error: any) {
     console.error('Error creating user:', error);
     if (error.message?.includes('unique') || error.code === '23505') {
-      return { success: false, error: 'Este email já está cadastrado' };
+      return { success: false, error: t('emailTaken') };
     }
-    return { success: false, error: 'Erro ao criar conta. Tente novamente.' };
+    return { success: false, error: t('registerFailed') };
   }
 }
 
 export async function updateUserAction(id: number, formData: FormData) {
+  const t = await getTranslations('errors');
   await requireAdmin();
 
   const name = (formData.get('name') as string | null)?.trim() ?? '';
@@ -476,7 +499,7 @@ export async function updateUserAction(id: number, formData: FormData) {
   const isBrazil = ['brasil', 'brazil'].includes(country.toLowerCase());
 
   if (!name || !email || !tennis_club || !country || (isBrazil && (!state || !city))) {
-    return { success: false, error: 'Campos obrigatórios estão faltando' };
+    return { success: false, error: t('adminRequiredMissingShort') };
   }
 
   try {
@@ -496,11 +519,12 @@ export async function updateUserAction(id: number, formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error('Error updating user:', error);
-    return { success: false, error: 'Erro ao atualizar usuário' };
+    return { success: false, error: t('adminUserUpdateFailed') };
   }
 }
 
 export async function toggleUserStatusAction(userId: number, isActive: boolean) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   await toggleUserStatus(userId, isActive);
   revalidatePath('/admin/usuarios');
@@ -508,6 +532,7 @@ export async function toggleUserStatusAction(userId: number, isActive: boolean) 
 }
 
 export async function deleteUserAction(userId: number) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   await softDeleteUser(userId);
   revalidatePath('/admin/usuarios');
@@ -515,11 +540,12 @@ export async function deleteUserAction(userId: number) {
 }
 
 export async function createTennisClubAction(formData: FormData) {
+  const t = await getTranslations('errors');
   await requireAdmin();
 
   const name = (formData.get('name') as string | null)?.trim() ?? '';
   if (!name) {
-    return { success: false, error: 'Nome do clube é obrigatório' };
+    return { success: false, error: t('adminClubNameRequired') };
   }
 
   try {
@@ -535,18 +561,19 @@ export async function createTennisClubAction(formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error('Error creating tennis club:', error);
-    return { success: false, error: 'Erro ao cadastrar clube' };
+    return { success: false, error: t('adminClubCreateFailed') };
   }
 }
 
 export async function updateTennisClubAction(formData: FormData) {
+  const t = await getTranslations('errors');
   await requireAdmin();
 
   const id = Number((formData.get('id') as string | null)?.trim() ?? '');
   const name = (formData.get('name') as string | null)?.trim() ?? '';
 
   if (!id || !name) {
-    return { success: false, error: 'ID e nome do clube são obrigatórios' };
+    return { success: false, error: t('adminClubIdNameRequired') };
   }
 
   try {
@@ -554,7 +581,7 @@ export async function updateTennisClubAction(formData: FormData) {
       SELECT name FROM tennis_clubs WHERE id = ${id}
     `;
     if (existingClub.length === 0) {
-      return { success: false, error: 'Clube não encontrado' };
+      return { success: false, error: t('adminClubNotFound') };
     }
 
     const oldName = existingClub[0].name;
@@ -579,16 +606,17 @@ export async function updateTennisClubAction(formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error('Error updating tennis club:', error);
-    return { success: false, error: 'Erro ao atualizar clube' };
+    return { success: false, error: t('adminClubUpdateFailed') };
   }
 }
 
 export async function deleteTennisClubAction(formData: FormData) {
+  const t = await getTranslations('errors');
   await requireAdmin();
 
   const id = Number((formData.get('id') as string | null)?.trim() ?? '');
   if (!id) {
-    return { success: false, error: 'ID do clube é obrigatório' };
+    return { success: false, error: t('adminClubIdRequired') };
   }
 
   try {
@@ -610,7 +638,7 @@ export async function deleteTennisClubAction(formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error('Error deleting tennis club:', error);
-    return { success: false, error: 'Erro ao excluir clube' };
+    return { success: false, error: t('adminClubDeleteFailed') };
   }
 }
 
@@ -631,6 +659,7 @@ function normalizePlayerType(type: string): string {
 }
 
 export async function syncTournamentBracketAction(tournamentId: number) {
+  const t = await getTranslations('errors');
   await requireAdmin();
 
   const tournament = await sql`
@@ -638,13 +667,13 @@ export async function syncTournamentBracketAction(tournamentId: number) {
   `;
 
   if (tournament.length === 0) {
-    return { success: false, error: 'Torneio não encontrado' };
+    return { success: false, error: t('adminTournamentNotFound') };
   }
 
   const { api_id, year, slug } = tournament[0];
 
   if (!api_id) {
-    return { success: false, error: 'ID da API ATP não configurado para este torneio' };
+    return { success: false, error: t('adminAtpApiIdMissing') };
   }
 
   const atpSlug = slug.replace(new RegExp(`-${year}$`), '');
@@ -658,7 +687,7 @@ export async function syncTournamentBracketAction(tournamentId: number) {
     if (drawMatches.length === 0) {
       return {
         success: false,
-        error: 'Nenhuma partida encontrada no chaveamento da ATP.',
+        error: t('adminNoAtpMatches'),
       };
     }
 
@@ -671,7 +700,7 @@ export async function syncTournamentBracketAction(tournamentId: number) {
     `;
 
     if (ourMatches.length === 0) {
-      return { success: false, error: 'Chaveamento ainda não foi gerado no sistema' };
+      return { success: false, error: t('adminBracketNotGenerated') };
     }
 
     const allPlayers = await sql`
@@ -725,9 +754,7 @@ export async function syncTournamentBracketAction(tournamentId: number) {
         let playerId: number;
 
         if (!matchedPlayer && atpPlayer.name.includes('…')) {
-          throw new Error(
-            `Nome truncado no PDF não pôde ser associado com segurança: ${atpPlayer.name} (${atpPlayer.country || 'sem país'})`,
-          );
+          throw new Error(t('adminTruncatedPlayerName', { name: atpPlayer.name, country: atpPlayer.country || t('adminNoCountry') }));
         }
 
         if (!matchedPlayer) {
@@ -775,7 +802,7 @@ export async function syncTournamentBracketAction(tournamentId: number) {
     console.error('Error syncing bracket:', error);
     return {
       success: false,
-      error: 'Erro ao sincronizar chaveamento: ' + error.message,
+      error: t('adminBracketSyncFailed', { message: error.message }),
     };
   }
 }
@@ -783,6 +810,7 @@ export async function syncTournamentBracketAction(tournamentId: number) {
 // ==================== METADATA ====================
 
 export async function createMetadataAction(type: 'name' | 'location', name: string) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   if (type === 'name') {
     await createTournamentName(name);
@@ -794,6 +822,7 @@ export async function createMetadataAction(type: 'name' | 'location', name: stri
 }
 
 export async function updateMetadataAction(type: 'name' | 'location', id: number, name: string) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   if (type === 'name') {
     await updateTournamentName(id, name);
@@ -805,6 +834,7 @@ export async function updateMetadataAction(type: 'name' | 'location', id: number
 }
 
 export async function deleteMetadataAction(type: 'name' | 'location', id: number) {
+  const t = await getTranslations('errors');
   await requireAdmin();
   try {
     if (type === 'name') {
@@ -816,6 +846,6 @@ export async function deleteMetadataAction(type: 'name' | 'location', id: number
     return { success: true };
   } catch (error) {
     console.error('Error deleting metadata:', error);
-    return { success: false, error: 'Erro ao excluir. O item pode estar em uso.' };
+    return { success: false, error: t('adminDeleteInUse') };
   }
 }

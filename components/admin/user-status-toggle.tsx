@@ -5,6 +5,7 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { toggleUserStatusAction } from '@/lib/actions/admin'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 interface UserStatusToggleProps {
   userId: number
@@ -12,15 +13,16 @@ interface UserStatusToggleProps {
 }
 
 export function UserStatusToggle({ userId, isActive }: UserStatusToggleProps) {
+  const t = useTranslations('admin')
   const [isPending, startTransition] = useTransition()
 
   function handleToggle(checked: boolean) {
     startTransition(async () => {
       const result = await toggleUserStatusAction(userId, checked)
       if (result.success) {
-        toast.success(checked ? 'Usuário ativado!' : 'Usuário desativado!')
+        toast.success(checked ? t('userActions.activated') : t('userActions.deactivated'))
       } else {
-        toast.error('Erro ao alterar status do usuário')
+        toast.error(t('userActions.statusError'))
       }
     })
   }
@@ -35,7 +37,7 @@ export function UserStatusToggle({ userId, isActive }: UserStatusToggleProps) {
         className="data-[state=checked]:bg-emerald-500"
       />
       <Label htmlFor={`status-${userId}`} className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-        {isActive ? 'Ativo' : 'Inativo'}
+        {isActive ? t('active') : t('inactive')}
       </Label>
     </div>
   )

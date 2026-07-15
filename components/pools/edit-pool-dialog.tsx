@@ -11,10 +11,8 @@ import { AlertCircle, Users } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { Pool, Tournament } from "@/lib/data";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Check, X } from "lucide-react";
 import { Switch } from "../ui/switch";
+import { useTranslations } from "next-intl";
 
 interface EditPoolDialogProps {
   pool: Pool;
@@ -24,6 +22,8 @@ interface EditPoolDialogProps {
 }
 
 export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPoolDialogProps) {
+  const t = useTranslations("pools");
+  const tButtons = useTranslations("buttons");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [members, setMembers] = useState<any[]>([]);
@@ -65,9 +65,9 @@ export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] rounded-3xl max-h-[95vh] overflow-y-auto p-6 sm:p-8">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-black text-slate-800 tracking-tight">Editar Grupo</DialogTitle>
+          <DialogTitle className="text-2xl font-black text-slate-800 tracking-tight">{t("editTitle")}</DialogTitle>
           <DialogDescription className="text-slate-500">
-            Altere as informações do seu grupo ou mude o torneio atual.
+            {t("editDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -80,19 +80,19 @@ export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPo
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="tournament_id" className="text-sm font-bold text-slate-700">Torneio Vinculado</Label>
+            <Label htmlFor="tournament_id" className="text-sm font-bold text-slate-700">{t("linkedTournament")}</Label>
             <Select name="tournament_id" defaultValue={pool.tournament_id ? String(pool.tournament_id) : undefined} required>
               <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white text-slate-700 font-medium">
-                <SelectValue placeholder="Selecione um torneio" />
+                <SelectValue placeholder={t("selectTournament")} />
               </SelectTrigger>
               <SelectContent>
                 {tournaments
-                  .filter((t) => 
-                    ['active', 'OPEN', 'IN_PROGRESS', 'LOCKED', 'upcoming', 'published', 'UPCOMING', 'STANDBY'].includes(t.status) || t.id === pool.tournament_id
+                  .filter((tournament) => 
+                    ['active', 'OPEN', 'IN_PROGRESS', 'LOCKED', 'upcoming', 'published', 'UPCOMING', 'STANDBY'].includes(tournament.status) || tournament.id === pool.tournament_id
                   )
-                  .map((t) => (
-                    <SelectItem key={t.id} value={String(t.id)}>
-                      {t.name}
+                  .map((tournament) => (
+                    <SelectItem key={tournament.id} value={String(tournament.id)}>
+                      {tournament.name}
                     </SelectItem>
                   ))}
               </SelectContent>
@@ -100,7 +100,7 @@ export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPo
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-bold text-slate-700">Nome do Grupo</Label>
+            <Label htmlFor="name" className="text-sm font-bold text-slate-700">{t("formName")}</Label>
             <Input
               id="name"
               name="name"
@@ -111,7 +111,7 @@ export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPo
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-bold text-slate-700">Descrição</Label>
+            <Label htmlFor="description" className="text-sm font-bold text-slate-700">{t("formDescriptionOptional")}</Label>
             <Textarea
               id="description"
               name="description"
@@ -121,7 +121,7 @@ export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPo
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="whatsapp_link" className="text-sm font-bold text-slate-700">Link do Grupo de WhatsApp (Opcional)</Label>
+            <Label htmlFor="whatsapp_link" className="text-sm font-bold text-slate-700">{t("formWhatsappOptional")}</Label>
             <Input
               id="whatsapp_link"
               name="whatsapp_link"
@@ -133,12 +133,12 @@ export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPo
 
           {!pool.is_general && (
             <div className="space-y-2">
-              <Label htmlFor="password" title="Altere a senha" className="text-sm font-bold text-slate-700">Nova Senha (Opcional)</Label>
+              <Label htmlFor="password" title={t("newPassword")} className="text-sm font-bold text-slate-700">{t("newPassword")}</Label>
               <Input
                 id="password"
                 name="password"
                 type="password"
-                placeholder="Deixe em branco para manter a senha atual"
+                placeholder={t("passwordKeep")}
                 className="h-12 rounded-xl border-slate-200"
               />
             </div>
@@ -149,8 +149,8 @@ export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPo
                 <Users className="w-5 h-5" />
               </div>
               <div>
-                <p className="font-bold text-slate-800 text-sm">Ocultar sem palpites</p>
-                <p className="text-xs text-slate-500">Esconder participantes que não enviaram palpites</p>
+                <p className="font-bold text-slate-800 text-sm">{t("hidePendingTitle")}</p>
+                <p className="text-xs text-slate-500">{t("hidePendingHint")}</p>
               </div>
             </div>
             <Switch 
@@ -168,14 +168,14 @@ export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPo
               className="w-full sm:w-auto sm:flex-1 h-12 rounded-xl font-bold"
               onClick={() => onOpenChange(false)}
             >
-              Cancelar
+              {tButtons("cancel")}
             </Button>
             <Button
               type="submit"
               className="w-full sm:w-auto sm:flex-[2] h-12 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold"
               disabled={isLoading}
             >
-              {isLoading ? "Salvando..." : "Salvar Alterações"}
+              {isLoading ? tButtons("saving") : t("saveChanges")}
             </Button>
           </DialogFooter>
         </form>

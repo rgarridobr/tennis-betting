@@ -6,11 +6,12 @@ import { getFlagUrl } from '@/lib/countries';
 import { saveFullBracketAction } from '@/lib/actions/predictions';
 import { Check, Trophy, X, Pencil, AlertCircle, Layout, User as UserIcon, ArrowRight, Clock, LogOut, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { AdminMatchActions } from '@/components/admin/admin-match-actions';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Settings } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface TournamentBracketProps {
   matches: BracketMatch[];
@@ -49,6 +50,11 @@ export function TournamentBracket({
   isViewingOthers = false,
   qualifierPlayerId,
 }: TournamentBracketProps) {
+  const tButtons = useTranslations('buttons');
+  const tTennis = useTranslations('tennis');
+  const tBracket = useTranslations('bracket');
+  const tFeedback = useTranslations('feedback');
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [localPredictions, setLocalPredictions] =
     useState<Record<number, { winnerId: number; score?: string }>>(predictions);
@@ -63,13 +69,13 @@ export function TournamentBracket({
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
-      e.returnValue = 'Você tem palpites não salvos. Tem certeza que deseja sair?';
+      e.returnValue = tBracket('unsavedWarning');
       return e.returnValue;
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [hasUnsavedChanges]);
+  }, [hasUnsavedChanges, tBracket]);
 
   // Group matches by round and position for easy lookup
   const matchesMap: Record<string, BracketMatch> = {};
@@ -105,7 +111,7 @@ export function TournamentBracket({
     );
   };
   const getBracketValidationError = () => {
-    if (rounds.length === 0 || maxRound === 0) return 'Chaveamento ainda não disponível.';
+    if (rounds.length === 0 || maxRound === 0) return tFeedback('bracketUnavailable');
 
     const resolvedWinners = new Map<number, number>();
 
@@ -114,7 +120,7 @@ export function TournamentBracket({
 
       for (const match of roundMatches) {
         const prediction = localPredictions[match.id];
-        if (!prediction?.winnerId) return 'Preencha todos os confrontos antes de finalizar.';
+        if (!prediction?.winnerId) return tFeedback('fillAllMatches');
 
         let validWinnerIds: number[] = [];
 
@@ -127,7 +133,7 @@ export function TournamentBracket({
             !isAutomaticByePick(match, validWinnerIds[0]) &&
             (match.player1_type === 'QUALIFIER' || match.player2_type === 'QUALIFIER')
           ) {
-            return 'Aguarde todos os jogadores da chave serem definidos antes de finalizar.';
+            return tFeedback('waitPlayersDefined');
           }
         } else {
           const previousRound = match.round - 1;
@@ -143,7 +149,7 @@ export function TournamentBracket({
         validWinnerIds = Array.from(new Set(validWinnerIds));
 
         if (!validWinnerIds.includes(prediction.winnerId)) {
-          return 'Revise a chave: há palpite em confronto sem jogador definido.';
+          return tFeedback('invalidPredictionChain');
         }
 
         resolvedWinners.set(match.id, prediction.winnerId);
@@ -209,13 +215,24 @@ export function TournamentBracket({
       }));
 
       await saveFullBracketAction(userId, tournamentId, predictionArray);
-      toast.success('Palpite salvo com sucesso!');
+      toast.success(tFeedback('predictionSaved'));
       router.push('/');
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message || 'Ocorreu um erro ao salvar seu palpite. Tente novamente.');
+      toast.error(error.message || tFeedback('predictionSaveErrorDetail'));
       setIsFinalizing(false);
     }
+  };
+
+  const resolveRoundLabel = (code?: string, roundNum?: number) => {
+    if (code === 'F') return tTennis('final');
+    if (code === 'SF') return tTennis('semifinals');
+    if (code === 'QF') return tTennis('quarterfinals');
+    if (code === 'R16' || code === 'OITAVAS') return tTennis('roundOf16');
+    if (code === 'R32') return tTennis('roundOf32');
+    if (code === 'R64') return tTennis('roundOf64');
+    if (code) return code;
+    return `${tTennis('round')} ${roundNum ?? ''}`.trim();
   };
 
   // Map of player ID to player details for display in predicted rounds
@@ -240,8 +257,8 @@ export function TournamentBracket({
   // Add the generic qualifier if provided
   if (qualifierPlayerId && !playersById[qualifierPlayerId]) {
     playersById[qualifierPlayerId] = {
-      name: 'Qualifier',
-      display_name: 'Qualifier',
+      name: tTennis('qualifier'),
+      display_name: tTennis('qualifier'),
       seed: null,
       type: 'QUALIFIER',
       country: null,
@@ -328,13 +345,13 @@ export function TournamentBracket({
         if (match.player1_id && match.player1_id !== qPlayerId) {
           return { realId: match.player1_id, displayName: null };
         }
-        return { realId: null, displayName: 'Qualifier 1' };
+        return { realId: null, displayName: tTennis('qualifier1') };
       } else if (slotMarker === '__SLOT_2__') {
         // User picked slot 2
         if (match.player2_id && match.player2_id !== qPlayerId) {
           return { realId: match.player2_id, displayName: null };
         }
-        return { realId: null, displayName: 'Qualifier 2' };
+        return { realId: null, displayName: tTennis('qualifier2') };
       }
 
       // No slot marker - try to resolve from match types
@@ -404,7 +421,7 @@ export function TournamentBracket({
               )}
             >
               <Layout className="w-3 h-3" />
-              Oficial
+              <span className="whitespace-nowrap">{tButtons('official')}</span>
             </button>
             <button
               onClick={() => setViewMode('predictions')}
@@ -414,7 +431,9 @@ export function TournamentBracket({
               )}
             >
               <UserIcon className="w-3 h-3" />
-              {isViewingOthers ? 'Ver Palpite' : 'Meu Palpite'}
+              <span className="whitespace-nowrap">
+                {isViewingOthers ? tButtons('viewPrediction') : tButtons('myPrediction')}
+              </span>
             </button>
           </div>
         )}
@@ -461,12 +480,12 @@ export function TournamentBracket({
             >
               {isFinalizing ? (
                 <>
-                  Salvando...
+                  <span className="whitespace-nowrap">{tButtons('saving')}</span>
                   <Loader2 className="w-4 h-4 animate-spin" />
                 </>
               ) : (
                 <>
-                  Finalizar
+                  <span className="whitespace-nowrap">{tButtons('finalize')}</span>
                   <LogOut className="w-4 h-4" />
                 </>
               )}
@@ -526,14 +545,8 @@ export function TournamentBracket({
                     )}
                   >
                     <div className="sticky top-0 md:pt-3 pt-10 z-30 flex flex-col items-center gap-2 m-auto">
-                      <h3 className="text-sm font-black uppercase tracking-[0.3em] text-emerald-600 bg-emerald-50 inline-block px-6 py-2 rounded-full border border-emerald-100 shadow-sm">
-                        {roundNames[round] === 'F'
-                          ? 'Final'
-                          : roundNames[round] === 'SF'
-                            ? 'Semifinais'
-                            : roundNames[round] === 'QF'
-                              ? 'Quartas de Final'
-                              : roundNames[round] || `Rodada ${round}`}
+                      <h3 className="text-sm font-black uppercase tracking-[0.3em] text-emerald-600 bg-emerald-50 inline-block px-6 py-2 rounded-full border border-emerald-100 shadow-sm whitespace-nowrap">
+                        {resolveRoundLabel(roundNames[round], round)}
                       </h3>
                     </div>
 
@@ -558,9 +571,9 @@ export function TournamentBracket({
                               <div className="bg-rose-50 border-2 border-rose-200 rounded-2xl w-full p-4 flex flex-col items-center justify-center text-rose-600 gap-1 shadow-sm">
                                 <AlertCircle className="w-5 h-5" />
                                 <p className="text-[10px] font-black uppercase tracking-widest text-center">
-                                  Confronto ausente
+                                  {tBracket('missingMatch')}
                                 </p>
-                                <p className="text-[8px] font-bold text-center opacity-70">ERRO DE CHAVEAMENTO</p>
+                                <p className="text-[8px] font-bold text-center opacity-70">{tBracket('bracketError')}</p>
                               </div>
                             </div>
                           );
@@ -700,7 +713,7 @@ export function TournamentBracket({
                               if (resolved.realId) {
                                 pred1 = resolved.realId;
                               } else {
-                                pred1DisplayName = resolved.displayName || 'Qualifier';
+                                pred1DisplayName = resolved.displayName || tTennis('qualifier');
                               }
                             }
                             if (pred2 && pred2 === qualifierPlayerId) {
@@ -708,7 +721,7 @@ export function TournamentBracket({
                               if (resolved.realId) {
                                 pred2 = resolved.realId;
                               } else {
-                                pred2DisplayName = resolved.displayName || 'Qualifier';
+                                pred2DisplayName = resolved.displayName || tTennis('qualifier');
                               }
                             }
 
@@ -887,6 +900,9 @@ function BracketMatchCard({
   allOfficialPlayerIds: Set<number>;
   qualifierPlayerId?: number;
 }) {
+  const tBracket = useTranslations('bracket');
+  const tTennis = useTranslations('tennis');
+
   const isCompleted = match.status === 'completed';
   const isFinishedTournament =
     tournamentStatus === 'FINISHED' || tournamentStatus === 'finished' || tournamentStatus === 'completed';
@@ -977,7 +993,7 @@ function BracketMatchCard({
           <>
             <PlayerRow
               name={p1?.name || null}
-              display_name={bothAreGenericQualifiers ? 'Qualifier 1' : (p1?.display_name || null)}
+              display_name={bothAreGenericQualifiers ? tTennis('qualifier1') : (p1?.display_name || null)}
               seed={p1?.seed || null}
               type={p1?.type}
               country={p1?.country}
@@ -991,7 +1007,7 @@ function BracketMatchCard({
                 } else if (p1?.type === 'QUALIFIER' && qualifierPlayerId) {
                   onPredict(qualifierPlayerId, bothAreGenericQualifiers ? '__SLOT_1__' : undefined);
                 } else if (p1?.type === 'QUALIFIER') {
-                  toast.info('Aguardando definição do Qualifier pela organização.');
+                  toast.info(tBracket('awaitingQualifier'));
                 }
               }}
               canPredict={p1CanPredict}
@@ -1011,7 +1027,7 @@ function BracketMatchCard({
 
             <PlayerRow
               name={p2?.name || null}
-              display_name={bothAreGenericQualifiers ? 'Qualifier 2' : (p2?.display_name || null)}
+              display_name={bothAreGenericQualifiers ? tTennis('qualifier2') : (p2?.display_name || null)}
               seed={p2?.seed || null}
               type={p2?.type}
               country={p2?.country}
@@ -1025,7 +1041,7 @@ function BracketMatchCard({
                 } else if (p2?.type === 'QUALIFIER' && qualifierPlayerId) {
                   onPredict(qualifierPlayerId, bothAreGenericQualifiers ? '__SLOT_2__' : undefined);
                 } else if (p2?.type === 'QUALIFIER') {
-                  toast.info('Aguardando definição do Qualifier pela organização.');
+                  toast.info(tBracket('awaitingQualifier'));
                 }
               }}
               canPredict={p2CanPredict}
@@ -1125,23 +1141,26 @@ function PlayerRow({
   isNotPredicted?: boolean;
   isFinishedTournament?: boolean;
 }) {
+  const tBracket = useTranslations('bracket');
+  const tTennis = useTranslations('tennis');
+
   const displayName = isAwaiting
-    ? 'Aguardando resultados'
+    ? tBracket('awaitingResults')
     : isNotPredicted
-      ? 'Não palpitado'
+      ? tBracket('notPredicted')
       : name ||
       (type === 'QUALIFIER'
-        ? 'Qualifier'
+        ? tTennis('qualifier')
         : type === 'WILDCARD'
-          ? 'Wild Card'
+          ? tTennis('wildcard')
           : type === 'LUCKY_LOSER'
-            ? 'Lucky Loser'
+            ? tTennis('luckyLoser')
           : type === 'NEXT_GEN'
-            ? 'Next Gen'
+            ? tTennis('nextGen')
             : type === 'ALT'
-              ? 'Alternate'
+              ? tTennis('alternate')
             : type === 'BYE'
-              ? 'BYE'
+              ? tTennis('bye')
               : null);
 
   if (!displayName) {
@@ -1154,7 +1173,7 @@ function PlayerRow({
         )}
       >
         <span className="text-[10px] font-bold italic uppercase tracking-widest">
-          {viewMode === 'predictions' ? 'Não palpitado' : 'A definir'}
+          {viewMode === 'predictions' ? tBracket('notPredicted') : tBracket('toBeDefined')}
         </span>
       </div>
     );
@@ -1253,12 +1272,12 @@ function PlayerRow({
         {indicator && <span className="text-[9px] font-black text-slate-400">{indicator}</span>}
         {isWalkover && displaySets.length > 0 && !isWinner && (
           <span className="ml-1 px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-[8px] font-black whitespace-nowrap">
-            RET
+            {tTennis('retired')}
           </span>
         )}
         {showPredictionResult && pointsCancelled && viewMode === 'predictions' && (
-          <div className="ml-2 bg-red-500 text-white text-[8px] font-black h-4 px-1 flex items-center rounded-sm">
-            ANULADA
+          <div className="ml-2 bg-red-500 text-white text-[8px] font-black h-4 px-1 flex items-center rounded-sm whitespace-nowrap">
+            {tTennis('pointsCancelled')}
           </div>
         )}
       </div>

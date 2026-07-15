@@ -4,8 +4,6 @@ import { useEffect, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { updateProfile } from '@/lib/actions/profile';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { StateCitySelector } from '@/components/shared/state-city-selector';
 import { TennisClubSelector } from '@/components/shared/tennis-club-selector';
@@ -13,12 +11,14 @@ import { CountrySelector } from '@/components/shared/country-selector';
 import { getTennisClubsAction } from '@/lib/actions/users';
 import type { TennisClub } from '@/lib/data';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const t = useTranslations('auth');
   return (
     <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={pending}>
-      {pending ? 'Salvando...' : 'Salvar e Continuar'}
+      {pending ? t('completeSubmitting') : t('completeSubmit')}
     </Button>
   );
 }
@@ -37,6 +37,7 @@ interface CompleteRegistrationFormProps {
 }
 
 export function CompleteRegistrationForm({ user }: CompleteRegistrationFormProps) {
+  const t = useTranslations('auth');
   const [country, setCountry] = useState(user.country || '');
   const [state, setState] = useState(user.state || '');
   const [city, setCity] = useState(user.city || '');
@@ -56,10 +57,10 @@ export function CompleteRegistrationForm({ user }: CompleteRegistrationFormProps
 
     const result = await updateProfile(formData);
     if (result?.success) {
-      toast.success('Perfil atualizado com sucesso!');
+      toast.success(t('completeSuccess'));
       window.location.href = '/dashboard';
     } else {
-      toast.error(result?.error || 'Erro ao atualizar perfil');
+      toast.error(result?.error || t('completeError'));
     }
   }
 
@@ -67,10 +68,9 @@ export function CompleteRegistrationForm({ user }: CompleteRegistrationFormProps
     <Dialog open={true}>
       <DialogContent showCloseButton={false} className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-slate-900">Complete seu Cadastro</DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-slate-900">{t('completeTitle')}</DialogTitle>
           <DialogDescription>
-            Para continuarmos, precisamos que você informe seu clube e país.
-            Estado e cidade são necessários apenas para Brasil.
+            {t('completeDescription')}
           </DialogDescription>
         </DialogHeader>
         <form action={handleSubmit} className="space-y-6 pt-4">
@@ -104,7 +104,7 @@ export function CompleteRegistrationForm({ user }: CompleteRegistrationFormProps
               required
             />
           ) : (
-            <p className="text-sm text-slate-500">Para outros países, estado e cidade não são necessários.</p>
+            <p className="text-sm text-slate-500">{t('nonBrazilHint')}</p>
           )}
 
           <SubmitButton />

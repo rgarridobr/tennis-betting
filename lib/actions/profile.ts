@@ -4,12 +4,14 @@ import { revalidatePath } from 'next/cache';
 import { sql } from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
+import { getTranslations } from 'next-intl/server';
 
 export async function updateProfile(formData: FormData) {
+  const t = await getTranslations('errors');
   try {
     const user = await getSession();
     if (!user) {
-      return { success: false, error: 'Não autorizado' };
+      return { success: false, error: t('unauthorized') };
     }
 
     const name = formData.get('name') as string;
@@ -26,19 +28,19 @@ export async function updateProfile(formData: FormData) {
     const cityValue = isBrazil ? city : '';
 
     if (!name || name.trim().length === 0) {
-      return { success: false, error: 'Nome é obrigatório' };
+      return { success: false, error: t('nameRequired') };
     }
 
     if (!tennis_club || tennis_club.trim().length === 0) {
-      return { success: false, error: 'Clube em que joga tênis é obrigatório' };
+      return { success: false, error: t('clubRequired') };
     }
 
     if (isBrazil && (!state || !city)) {
-      return { success: false, error: 'Estado e cidade são obrigatórios para Brasil' };
+      return { success: false, error: t('stateCityBrazil') };
     }
 
     if (name.trim().length < 2) {
-      return { success: false, error: 'Nome deve ter pelo menos 2 caracteres' };
+      return { success: false, error: t('nameMin2') };
     }
 
     // Update user (email cannot be changed)
@@ -63,34 +65,35 @@ export async function updateProfile(formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error('Error updating profile:', error);
-    return { success: false, error: 'Erro ao atualizar perfil' };
+    return { success: false, error: t('profileUpdateFailed') };
   }
 }
 
 export async function updatePassword(formData: FormData) {
+  const t = await getTranslations('errors');
   try {
     const user = await getSession();
     if (!user) {
-      return { success: false, error: 'Você precisa estar logado para alterar a senha' };
+      return { success: false, error: t('loginRequiredPassword') };
     }
 
     const currentPassword = formData.get('currentPassword') as string;
     const newPassword = formData.get('newPassword') as string;
 
     if (!currentPassword) {
-      return { success: false, error: 'Digite sua senha atual' };
+      return { success: false, error: t('currentPasswordRequired') };
     }
 
     if (!newPassword) {
-      return { success: false, error: 'Digite a nova senha' };
+      return { success: false, error: t('newPasswordRequired') };
     }
 
     if (newPassword.length < 6) {
-      return { success: false, error: 'A nova senha deve ter pelo menos 6 caracteres' };
+      return { success: false, error: t('passwordMin6') };
     }
 
     if (currentPassword === newPassword) {
-      return { success: false, error: 'A nova senha deve ser diferente da atual' };
+      return { success: false, error: t('passwordDifferent') };
     }
 
     // Get current user with password
@@ -99,13 +102,13 @@ export async function updatePassword(formData: FormData) {
     `;
 
     if (users.length === 0) {
-      return { success: false, error: 'Usuário não encontrado' };
+      return { success: false, error: t('userNotFound') };
     }
 
     // Verify current password
     const isValid = await bcrypt.compare(currentPassword, users[0].password_hash);
     if (!isValid) {
-      return { success: false, error: 'Senha atual incorreta' };
+      return { success: false, error: t('currentPasswordWrong') };
     }
 
     // Hash new password
@@ -120,9 +123,9 @@ export async function updatePassword(formData: FormData) {
 
     revalidatePath('/perfil');
 
-    return { success: true, message: 'Senha alterada com sucesso!' };
+    return { success: true, message: t('passwordChanged') };
   } catch (error) {
     console.error('Error updating password:', error);
-    return { success: false, error: 'Erro interno ao atualizar senha. Tente novamente.' };
+    return { success: false, error: t('passwordUpdateFailed') };
   }
 }

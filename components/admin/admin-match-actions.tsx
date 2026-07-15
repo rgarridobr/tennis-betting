@@ -21,7 +21,7 @@ import {
 import { useMediaQuery } from '@/lib/hooks/use-media-query';
 import { SetPlayersDialog, ReplaceMatchPlayerDialog, SetResultDialog } from './match-dialogs';
 import { Trophy, RefreshCw, Pencil, Settings2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface AdminMatchActionsProps {
   match: BracketMatch;
@@ -42,6 +42,8 @@ export function AdminMatchActions({
   tournamentStatus,
   trigger,
 }: AdminMatchActionsProps) {
+  const t = useTranslations('admin');
+  const tBracket = useTranslations('bracket');
   const [open, setOpen] = useState(false);
   const [activeAction, setActiveAction] = useState<'players' | 'replace' | 'result' | null>(null);
   const isDesktop = useMediaQuery('(min-width: 768px)');
@@ -96,8 +98,8 @@ export function AdminMatchActions({
               <Pencil className="w-6 h-6 text-slate-600" />
             </div>
             <div className="text-left">
-              <p className="font-black text-slate-900">Definir Confronto</p>
-              <p className="text-xs font-bold text-slate-500">Configure os jogadores para esta partida.</p>
+              <p className="font-black text-slate-900">{t('match.setMatchup')}</p>
+              <p className="text-xs font-bold text-slate-500">{t('match.setMatchupDesc')}</p>
             </div>
           </button>
         )}
@@ -112,9 +114,9 @@ export function AdminMatchActions({
               <RefreshCw className="w-6 h-6 text-rose-600" />
             </div>
             <div className="text-left">
-              <p className="font-black">Substituir / LL / Definir Q</p>
+              <p className="font-black">{t('match.replaceLL')}</p>
               <p className="text-xs font-bold text-rose-600/70">
-                Substitua um jogador, preencha um Qualifier ou adicione um LL.
+                {t('match.replaceLLDesc')}
               </p>
             </div>
           </button>
@@ -130,9 +132,11 @@ export function AdminMatchActions({
               <Trophy className="w-6 h-6 text-emerald-600" />
             </div>
             <div className="text-left">
-              <p className="font-black">{isCompleted ? 'Alterar Resultado' : 'Registrar Resultado'}</p>
+              <p className="font-black">
+                {isCompleted ? t('match.changeResult') : t('match.registerResult')}
+              </p>
               <p className="text-xs font-bold text-emerald-600/70">
-                {isCompleted ? 'Corrija o vencedor ou o placar desta partida.' : 'Defina o vencedor e o placar da partida.'}
+                {isCompleted ? t('match.changeResultDesc') : t('match.registerResultDesc')}
               </p>
             </div>
           </button>
@@ -141,9 +145,9 @@ export function AdminMatchActions({
         {!canEditPlayers && !showReplace && !showResult && (
           <div className="p-8 text-center space-y-2">
             <Settings2 className="w-12 h-12 text-slate-200 mx-auto" />
-            <p className="font-black text-slate-400">Nenhuma ação disponível</p>
+            <p className="font-black text-slate-400">{t('match.noActions')}</p>
             <p className="text-xs font-bold text-slate-400/70">
-              Esta partida já foi concluída ou o torneio está finalizado.
+              {t('match.noActionsDesc')}
             </p>
           </div>
         )}
@@ -151,8 +155,8 @@ export function AdminMatchActions({
     </div>
   );
 
-  const title = `Gerenciar Jogo ${match.position}`;
-  const description = `${match.player1_name || 'A definir'} vs ${match.player2_name || 'A definir'}`;
+  const title = t('match.manageGame', { position: match.position });
+  const description = `${match.player1_name || tBracket('toBeDefined')} vs ${match.player2_name || tBracket('toBeDefined')}`;
 
   return (
     <>

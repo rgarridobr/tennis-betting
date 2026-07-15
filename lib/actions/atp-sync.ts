@@ -5,6 +5,7 @@ import { sql } from '@/lib/db'
 import { runAtpSync } from '@/scripts/sync-atp-calendar-logic'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { getTranslations } from 'next-intl/server';
 
 async function requireAdmin() {
   const user = await getSession()
@@ -21,6 +22,7 @@ export async function getLastSyncTime() {
 }
 
 export async function syncAtpCalendarAction() {
+  const t = await getTranslations('errors');
   await requireAdmin()
 
   const lastSync = await getLastSyncTime()
@@ -36,7 +38,7 @@ export async function syncAtpCalendarAction() {
       const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000))
       return {
         success: false,
-        error: `Sincronização permitida apenas uma vez a cada 24 horas. Tente novamente em ${hours}h ${minutes}min.`
+        error: t('adminSyncRateLimit', { hours, minutes })
       }
     }
   }
@@ -47,6 +49,6 @@ export async function syncAtpCalendarAction() {
     return { success: true, ...result }
   } catch (error: any) {
     console.error("ATP Sync Error:", error)
-    return { success: false, error: 'Erro ao sincronizar com ATP. Tente novamente mais tarde.' }
+    return { success: false, error: t('adminAtpSyncFailed') }
   }
 }

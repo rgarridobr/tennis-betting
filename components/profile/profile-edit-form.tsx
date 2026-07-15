@@ -12,6 +12,7 @@ import { CountrySelector } from '@/components/shared/country-selector'
 import { updateProfile } from '@/lib/actions/profile'
 import type { TennisClub } from '@/lib/data'
 import { Loader2, Check, AlertCircle } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface ProfileEditFormProps {
   clubs: TennisClub[]
@@ -30,6 +31,8 @@ interface ProfileEditFormProps {
 }
 
 export function ProfileEditForm({ user, clubs }: ProfileEditFormProps) {
+  const t = useTranslations('profile')
+  const tButtons = useTranslations('buttons')
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [name, setName] = useState(user.name)
@@ -67,13 +70,13 @@ export function ProfileEditForm({ user, clubs }: ProfileEditFormProps) {
     try {
       const result = await updateProfile(formData)
       if (result.success) {
-        setMessage({ type: 'success', text: 'Perfil atualizado com sucesso!' })
+        setMessage({ type: 'success', text: t('editSuccess') })
         router.refresh()
       } else {
-        setMessage({ type: 'error', text: result.error || 'Erro ao atualizar perfil' })
+        setMessage({ type: 'error', text: result.error || t('editError') })
       }
     } catch {
-      setMessage({ type: 'error', text: 'Erro ao atualizar perfil' })
+      setMessage({ type: 'error', text: t('editError') })
     } finally {
       setIsLoading(false)
     }
@@ -85,7 +88,7 @@ export function ProfileEditForm({ user, clubs }: ProfileEditFormProps) {
       <form action={handleProfileSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label htmlFor="name">Nome *</Label>
+            <Label htmlFor="name">{t('name')}</Label>
             <Input
               id="name"
               name="name"
@@ -97,7 +100,7 @@ export function ProfileEditForm({ user, clubs }: ProfileEditFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="email">{t('email')}</Label>
             <Input
               id="email"
               name="email"
@@ -106,11 +109,11 @@ export function ProfileEditForm({ user, clubs }: ProfileEditFormProps) {
               disabled
               className="bg-slate-50 text-slate-500 cursor-not-allowed"
             />
-            <p className="text-[10px] sm:text-xs text-slate-500 px-1">O email não pode ser alterado</p>
+            <p className="text-[10px] sm:text-xs text-slate-500 px-1">{t('emailLocked')}</p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="nickname">Apelido (visível no site)</Label>
+            <Label htmlFor="nickname">{t('nickname')}</Label>
             <Input
               id="nickname"
               name="nickname"
@@ -122,7 +125,7 @@ export function ProfileEditForm({ user, clubs }: ProfileEditFormProps) {
             />
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-2 px-1">
               <p className="text-[10px] sm:text-xs text-slate-500 flex-1">
-                Apenas o apelido será exibido publicamente
+                {t('nicknameHint')}
               </p>
               <div className="flex items-center space-x-2 shrink-0">
                 <Checkbox
@@ -134,7 +137,7 @@ export function ProfileEditForm({ user, clubs }: ProfileEditFormProps) {
                   htmlFor="first_name_only_profile"
                   className="text-[10px] sm:text-xs font-medium cursor-pointer"
                 >
-                  Usar 1º nome
+                  {t('useFirstName')}
                 </Label>
               </div>
             </div>
@@ -172,7 +175,7 @@ export function ProfileEditForm({ user, clubs }: ProfileEditFormProps) {
                 layout="grid"
               />
             ) : (
-              <p className="text-sm text-slate-500">Para outros países, estado e cidade não são necessários.</p>
+              <p className="text-sm text-slate-500">{t('noStateCity')}</p>
             )}
           </div>
         </div>
@@ -200,10 +203,10 @@ export function ProfileEditForm({ user, clubs }: ProfileEditFormProps) {
           {isLoading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Salvando...
+              {tButtons('saving')}
             </>
           ) : (
-            'Salvar Alterações'
+            t('save')
           )}
         </Button>
       </form>

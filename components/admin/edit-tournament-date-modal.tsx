@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,11 +10,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
 import { updateStartDateTournamentAction } from "@/lib/actions/admin";
+import { useTranslations } from "next-intl";
 
 interface Props {
   tournamentId: number;
@@ -28,6 +28,8 @@ export function EditTournamentDateModal({
   currentDate,
   hasFinished,
 }: Props) {
+  const t = useTranslations("admin");
+  const tButtons = useTranslations("buttons");
   const [date, setDate] = useState<Date | undefined>(
     toUTCFromBrasilia(currentDate),
   );
@@ -46,11 +48,11 @@ export function EditTournamentDateModal({
       if (!response.success) {
         throw new Error("Failed to update tournament date");
       }
-      toast.success("Data e hora do torneio atualizada com sucesso!");
+      toast.success(t("date.toastSuccess"));
       setIsOpen(false);
     } catch (error) {
       console.error(error);
-      toast.error("Ocorreu um erro ao atualizar a data do torneio.");
+      toast.error(t("date.toastError"));
     } finally {
       setLoading(false);
     }
@@ -72,14 +74,14 @@ export function EditTournamentDateModal({
           className="w-full sm:w-auto border-white/20 text-white hover:bg-white/10 hover:text-white rounded-2xl bg-white/5 backdrop-blur-md font-bold h-12 sm:h-14 px-4 sm:px-6 text-sm sm:text-base"
         >
           <Calendar className="w-4 h-4 mr-2 shrink-0" />
-          <span className="truncate">Alterar data e hora</span>
+          <span className="truncate">{t("date.changeDateTime")}</span>
         </Button>
       </DialogTrigger>
 
       <DialogContent className="w-[95vw] max-w-[420px] rounded-3xl p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="font-black text-lg sm:text-xl">
-            Alterar data e hora
+            {t("date.changeDateTime")}
           </DialogTitle>
         </DialogHeader>
 
@@ -89,8 +91,7 @@ export function EditTournamentDateModal({
               htmlFor="start_date"
               className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] sm:text-xs tracking-widest"
             >
-              <Calendar className="w-4 h-4 text-emerald-500" /> Data e Hora
-              Início
+              <Calendar className="w-4 h-4 text-emerald-500" /> {t("date.startDateTime")}
             </Label>
             <Input
               id="start_date"
@@ -110,7 +111,7 @@ export function EditTournamentDateModal({
             className="w-full h-12 rounded-xl font-bold"
             disabled={loading}
           >
-            {loading ? "Salvando..." : "Salvar Alterações"}
+            {loading ? tButtons("saving") : t("date.saveChanges")}
           </Button>
         </div>
       </DialogContent>

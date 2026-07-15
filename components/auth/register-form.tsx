@@ -15,17 +15,20 @@ import { CountrySelector } from '@/components/shared/country-selector';
 import type { TennisClub } from '@/lib/data';
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const t = useTranslations('auth');
   return (
     <Button type="submit" className="w-full" disabled={pending}>
-      {pending ? 'Criando conta...' : 'Criar conta'}
+      {pending ? t('registerSubmitting') : t('registerSubmit')}
     </Button>
   );
 }
 
 export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
+  const t = useTranslations('auth');
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirectTo') || '';
   const [error, setError] = useState<string | null>(null);
@@ -83,7 +86,7 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
     }
 
     if (isBrazil && (!state || !city)) {
-      const message = 'Estado e cidade são obrigatórios para Brasil.';
+      const message = t('stateCityRequired');
       toast.error(message);
       setError(message);
       return;
@@ -101,7 +104,7 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
     const cleanEmail = email.trim();
 
     if (!emailRegex.test(cleanEmail)) {
-      toast.error('Por favor, insira um email válido.');
+      toast.error(t('invalidEmail'));
       return false;
     }
 
@@ -110,7 +113,7 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
 
   function validatePassword(password: string): boolean {
     if (password.length < 6) {
-      toast.error('A senha deve conter pelo menos 6 caracteres.');
+      toast.error(t('passwordMinLength'));
       return false;
     }
     return true;
@@ -122,13 +125,13 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
         <form action={handleSubmit} className="space-y-4">
           {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} />}
           <div className="space-y-2">
-            <Label htmlFor="name">Nome *</Label>
+            <Label htmlFor="name">{t('name')}</Label>
             <Input id="name" name="name" type="text" placeholder="" required value={name} onChange={handleNameChange} />
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="nickname">Apelido (visível no site)</Label>
+              <Label htmlFor="nickname">{t('nickname')}</Label>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="first_name_only"
@@ -139,7 +142,7 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
                   htmlFor="first_name_only"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Apenas o primeiro nome
+                  {t('firstNameOnly')}
                 </label>
               </div>
             </div>
@@ -154,12 +157,12 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
               className={isFirstNameOnlyChecked ? 'bg-slate-50 cursor-not-allowed' : ''}
             />
             <p className="text-[10px] text-slate-400 font-bold px-1 italic">
-              Seu nome real ficará privado, apenas este apelido será exibido publicamente
+              {t('nicknameHint')}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="email">{t('emailRequired')}</Label>
             <Input
               id="email"
               name="email"
@@ -196,11 +199,11 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
               required
             />
           ) : (
-            <p className="text-sm text-slate-500">Para outros países, estado e cidade não são necessários.</p>
+            <p className="text-sm text-slate-500">{t('nonBrazilHint')}</p>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="password">Senha *</Label>
+            <Label htmlFor="password">{t('passwordRequired')}</Label>
             <Input
               id="password"
               name="password"
@@ -210,12 +213,11 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-                          <p className="text-[10px] text-slate-400 font-bold px-1 italic">Mínimo de 6 caracteres</p>
-
+            <p className="text-[10px] text-slate-400 font-bold px-1 italic">{t('passwordHint')}</p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="whatsapp">WhatsApp</Label>
+            <Label htmlFor="whatsapp">{t('whatsapp')}</Label>
             <Input
               id="whatsapp"
               name="whatsapp"
@@ -229,7 +231,7 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
 
           <TennisClubSelector clubs={clubs} value={tennisClub} onChange={setTennisClub} required />
 
-          <div className="text-[10px] text-slate-400 font-bold px-1 italic py-2">Campos com * são obrigatórios</div>
+          <div className="text-[10px] text-slate-400 font-bold px-1 italic py-2">{t('requiredFields')}</div>
 
           <SubmitButton />
         </form>

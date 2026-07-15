@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { joinPoolAction } from "@/lib/actions/pools";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Lock, ShieldAlert, ArrowLeft } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link, useRouter } from "@/i18n/navigation";
 
 interface JoinPrivatePoolGateProps {
   poolId: number;
@@ -17,6 +17,8 @@ interface JoinPrivatePoolGateProps {
 }
 
 export function JoinPrivatePoolGate({ poolId, poolName }: JoinPrivatePoolGateProps) {
+  const t = useTranslations("pools");
+  const tButtons = useTranslations("buttons");
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,10 +52,10 @@ export function JoinPrivatePoolGate({ poolId, poolName }: JoinPrivatePoolGatePro
         
         <CardHeader className="text-center pt-6">
           <CardTitle className="text-2xl font-black text-slate-800 tracking-tight">
-            Grupo Privado
+            {t("gateTitle")}
           </CardTitle>
           <CardDescription className="text-slate-500 font-medium mt-2">
-            Este grupo é protegido. Digite a senha de acesso para participar de <span className="text-emerald-600 font-bold">{poolName}</span>.
+            {t("gateDescription", { name: poolName })}
           </CardDescription>
         </CardHeader>
         
@@ -67,12 +69,12 @@ export function JoinPrivatePoolGate({ poolId, poolName }: JoinPrivatePoolGatePro
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-bold text-slate-700">Senha de Acesso</Label>
+              <Label htmlFor="password" className="text-sm font-bold text-slate-700">{t("accessPassword")}</Label>
               <Input
                 id="password"
                 name="password"
                 type="password"
-                placeholder="Digite a senha do grupo"
+                placeholder={t("gatePasswordPlaceholder")}
                 required
                 className="h-12 rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:ring-emerald-500/20 transition-all text-base"
                 autoFocus
@@ -85,7 +87,7 @@ export function JoinPrivatePoolGate({ poolId, poolName }: JoinPrivatePoolGatePro
                 className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition-all duration-300"
                 disabled={isLoading}
               >
-                {isLoading ? "Entrando..." : "Participar do Grupo"}
+                {isLoading ? t("joining") : t("participate")}
               </Button>
 
               <Button
@@ -95,7 +97,7 @@ export function JoinPrivatePoolGate({ poolId, poolName }: JoinPrivatePoolGatePro
               >
                 <Link href="/grupos">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Voltar
+                  {tButtons("back")}
                 </Link>
               </Button>
             </div>

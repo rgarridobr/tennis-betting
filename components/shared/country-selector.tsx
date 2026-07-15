@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { useLocale, useTranslations } from 'next-intl';
 
 interface Country {
   name: string;
@@ -29,14 +30,18 @@ export function CountrySelector({
   selectedCountry,
   onCountryChange,
   required = false,
-  label = 'País',
+  label,
 }: CountrySelectorProps) {
+  const t = useTranslations('shared');
+  const locale = useLocale();
+  const displayLabel = label ?? t('countryLabel');
   const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [open, setOpen] = useState(false);
+  const displayLocale = locale === 'en' ? 'en' : 'pt-BR';
   const displayNames = typeof Intl !== 'undefined' && 'DisplayNames' in Intl
-    ? new Intl.DisplayNames(['pt-BR'], { type: 'region' })
+    ? new Intl.DisplayNames([displayLocale], { type: 'region' })
     : null;
 
   const localizedCountries = useMemo<LocalizedCountry[]>(() => {
@@ -83,32 +88,32 @@ export function CountrySelector({
   }, []);
 
   const sortedCountries = useMemo(() => {
-    return [...localizedCountries].sort((a, b) => a.displayName.localeCompare(b.displayName, 'pt-BR'));
-  }, [localizedCountries]);
+    return [...localizedCountries].sort((a, b) => a.displayName.localeCompare(b.displayName, displayLocale));
+  }, [localizedCountries, displayLocale]);
 
   const selectedLabel =
-    selectedCountry || (loading ? 'Carregando países...' : 'Selecione o país...');
+    selectedCountry || (loading ? t('countryLoading') : t('countryPlaceholder'));
 
   if (loadError) {
     return (
       <div className="space-y-2">
-        <Label htmlFor="country">{label} {required && '*'}</Label>
+        <Label htmlFor="country">{displayLabel} {required && '*'}</Label>
         <Input
           id="country"
           name="country"
-          placeholder="Brasil"
+          placeholder={t('countryManual')}
           value={selectedCountry}
           onChange={(event) => onCountryChange(event.target.value)}
           required={required}
         />
-        <p className="text-sm text-slate-500">Não foi possível carregar a lista de países. Informe o país manualmente.</p>
+        <p className="text-sm text-slate-500">{t('countryLoadError')}</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-2">
-      <Label htmlFor="country">{label} {required && '*'}</Label>
+      <Label htmlFor="country">{displayLabel} {required && '*'}</Label>
       <input type="hidden" name="country" value={selectedCountry || ''} />
       <Popover open={open} onOpenChange={setOpen} modal={true}>
         <PopoverTrigger asChild>
@@ -130,9 +135,9 @@ export function CountrySelector({
         </PopoverTrigger>
         <PopoverContent className="w-[--radix-popover-trigger-width] rounded-2xl p-0" align="start">
           <Command className="rounded-2xl">
-            <CommandInput placeholder="Buscar país..." />
+            <CommandInput placeholder={t('countrySearch')} />
             <CommandList className="max-h-72 overscroll-contain">
-              <CommandEmpty>Nenhum país encontrado.</CommandEmpty>
+              <CommandEmpty>{t('countryEmpty')}</CommandEmpty>
               <CommandGroup>
                 {sortedCountries.map((country) => (
                   <CommandItem

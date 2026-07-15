@@ -2,29 +2,32 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Target, TrendingUp, Trophy } from 'lucide-react';
 import type { RankingEntry } from '@/lib/data';
+import { getTranslations } from 'next-intl/server';
 
 interface RankingSectionProps {
   ranking: RankingEntry[];
   currentUserId?: number;
 }
 
-export function RankingSection({ ranking, currentUserId }: RankingSectionProps) {
+export async function RankingSection({ ranking, currentUserId }: RankingSectionProps) {
+  const t = await getTranslations('dashboard');
+
   return (
     <Card className="pt-0 border-0 shadow-lg overflow-hidden bg-white/80 backdrop-blur-sm rounded-2xl ring-1 ring-slate-200/50">
       <div className="bg-gradient-to-r from-slate-50 to-white px-6 py-5 border-b flex justify-between items-center">
         <h2 className="font-bold text-slate-900 flex items-center gap-2 text-lg">
           <Trophy className="w-5 h-5 text-amber-500" />
-          Ranking Geral
+          {t('rankingGeneral')}
         </h2>
         {ranking.length > 0 && (
           <Badge variant="outline" className="bg-white font-medium text-slate-500 border-slate-200">
-            Top 5
+            {t('top5')}
           </Badge>
         )}
       </div>
       <CardContent className="p-0">
         {ranking.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">Nenhum participante ainda</p>
+          <p className="text-sm text-muted-foreground text-center py-8">{t('noParticipants')}</p>
         ) : (
           <div className="divide-y divide-slate-100/80">
             {ranking.slice(0, 5).map((entry) => {
@@ -69,7 +72,7 @@ export function RankingSection({ ranking, currentUserId }: RankingSectionProps) 
                         </span>
                         {isCurrentUser && (
                           <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white border-0 text-[10px] uppercase font-black tracking-wider px-2 py-0.5 h-auto shrink-0">
-                            Você
+                            {t('you')}
                           </Badge>
                         )}
                       </p>
@@ -88,7 +91,7 @@ export function RankingSection({ ranking, currentUserId }: RankingSectionProps) 
 
                   {/* Points */}
                   <div className="text-right flex flex-col items-end shrink-0 ml-4">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Pontos</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">{t('points')}</span>
                     <p className={`text-2xl font-black tabular-nums tracking-tight leading-none ${isCurrentUser ? 'text-emerald-600' : 'text-slate-900'}`}>
                       {entry.total_points}
                     </p>

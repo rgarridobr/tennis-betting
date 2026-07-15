@@ -1,15 +1,18 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy, Target, TrendingUp, Calendar } from 'lucide-react'
 import type { UserStats } from '@/lib/data'
+import { getTranslations } from 'next-intl/server'
 
 interface StatsCardsProps {
   stats: UserStats
 }
 
-export function StatsCards({ stats }: StatsCardsProps) {
+export async function StatsCards({ stats }: StatsCardsProps) {
+  const t = await getTranslations('dashboard')
+
   const cards = [
     {
-      label: 'Seus Pontos',
+      label: t('statsPoints'),
       value: stats.total_points,
       icon: Trophy,
       iconColor: 'text-amber-500',
@@ -18,9 +21,9 @@ export function StatsCards({ stats }: StatsCardsProps) {
       type: 'points'
     },
     {
-      label: 'Acertos',
+      label: t('statsHits'),
       value: stats.correct_predictions,
-      subtext: `de ${stats.total_predictions} palpites`,
+      subtext: t('statsOfPredictions', { count: stats.total_predictions }),
       icon: Target,
       iconColor: 'text-emerald-500',
       bgColor: 'bg-emerald-50',
@@ -28,7 +31,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
       type: 'hits'
     },
     {
-      label: 'Precisão',
+      label: t('statsAccuracy'),
       value: `${stats.accuracy}%`,
       icon: TrendingUp,
       iconColor: 'text-blue-500',
@@ -37,9 +40,9 @@ export function StatsCards({ stats }: StatsCardsProps) {
       type: 'accuracy'
     },
     {
-      label: 'Torneios',
+      label: t('statsTournaments'),
       value: stats.active_tournaments,
-      subtext: 'em andamento',
+      subtext: t('statsInProgress'),
       icon: Calendar,
       iconColor: 'text-violet-500',
       bgColor: 'bg-violet-50',

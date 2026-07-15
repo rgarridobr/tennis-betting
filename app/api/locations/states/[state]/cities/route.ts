@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getTranslations } from 'next-intl/server';
 
 interface IbgeCity {
   id: number;
@@ -30,11 +31,12 @@ interface RouteContext {
 }
 
 export async function GET(_request: Request, { params }: RouteContext) {
+  const t = await getTranslations('errors');
   const { state } = await params;
   const stateCode = state.trim().toUpperCase();
 
   if (!/^[A-Z]{2}$/.test(stateCode)) {
-    return NextResponse.json({ error: 'Estado inválido' }, { status: 400 });
+    return NextResponse.json({ error: t('apiInvalidState') }, { status: 400 });
   }
 
   try {
@@ -60,6 +62,6 @@ export async function GET(_request: Request, { params }: RouteContext) {
     });
   } catch (error) {
     console.error('IBGE cities proxy error:', error);
-    return NextResponse.json({ error: 'Erro ao carregar cidades' }, { status: 500 });
+    return NextResponse.json({ error: t('apiCitiesFailed') }, { status: 500 });
   }
 }

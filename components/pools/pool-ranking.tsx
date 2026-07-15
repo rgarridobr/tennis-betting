@@ -3,9 +3,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Target, TrendingUp, Filter } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import type { RankingEntry } from "@/lib/data";
+import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 interface PoolRankingProps {
   ranking: RankingEntry[];
@@ -13,9 +13,8 @@ interface PoolRankingProps {
   initialHidePending?: boolean;
 }
 
-import { useState, useEffect } from "react";
-
 export function PoolRanking({ ranking, currentUserId, initialHidePending = true }: PoolRankingProps) {
+  const t = useTranslations("pools");
   const [hidePending, setHidePending] = useState(initialHidePending);
 
   // Sync state with props when database updates via server actions
@@ -31,8 +30,8 @@ export function PoolRanking({ ranking, currentUserId, initialHidePending = true 
       <Card className="border-0 shadow-sm bg-white rounded-[2.5rem]">
         <CardContent className="py-16 text-center">
           <Trophy className="w-16 h-16 text-slate-200 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-slate-900 mb-2">Nenhum palpite foi enviado ainda</h2>
-          <p className="text-slate-500">Convide amigos para começar a disputa!</p>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">{t("rankingEmptyTitle")}</h2>
+          <p className="text-slate-500">{t("rankingEmptyBody")}</p>
         </CardContent>
       </Card>
     );
@@ -43,7 +42,7 @@ export function PoolRanking({ ranking, currentUserId, initialHidePending = true 
       <Card className="border-0 shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
         <div className="bg-slate-50 px-8 py-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h3 className="text-lg font-black text-slate-900 flex items-center gap-2 uppercase tracking-tight">
-            Classificação Completa
+            {t("rankingFull")}
           </h3>
         </div>
         <CardContent className="p-0">
@@ -61,8 +60,8 @@ export function PoolRanking({ ranking, currentUserId, initialHidePending = true 
                 <Filter className="w-12 h-12 text-slate-200" />
                 <p className="text-slate-400 font-bold italic text-sm">
                   {hidePending 
-                    ? "Nenhum palpite enviado ainda por nenhum participante." 
-                    : "Nenhum dado disponível."}
+                    ? t("rankingFilteredEmpty")
+                    : t("rankingNoData")}
                 </p>
               </div>
             )}
@@ -80,6 +79,8 @@ function RankingRow({
   entry: RankingEntry;
   isCurrentUser: boolean;
 }) {
+  const t = useTranslations("pools");
+  const tCommon = useTranslations("common");
   const hasPredictions = entry.has_predictions !== false;
   const accuracy =
     entry.total_predictions > 0 ? Math.round((entry.correct_predictions / entry.total_predictions) * 100) : 0;
@@ -114,21 +115,21 @@ function RankingRow({
           <p className="font-black text-slate-900 flex items-center gap-2 leading-none mb-2 text-sm md:text-base">
             {entry.user_name}
             {isCurrentUser && (
-              <Badge className="bg-emerald-500 text-white border-none font-bold text-[9px] h-4 px-1.5">VOCÊ</Badge>
+              <Badge className="bg-emerald-500 text-white border-none font-bold text-[9px] h-4 px-1.5">{tCommon("youUpper")}</Badge>
             )}
           </p>
           {hasPredictions ? (
             <div className="flex items-center gap-3 md:gap-4 text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-wider">
               <span className="flex items-center gap-1">
-                <Target className="w-3 h-3" /> {entry.correct_predictions}/{entry.total_predictions} ACERTOS
+                <Target className="w-3 h-3" /> {t("rankingHits", { correct: entry.correct_predictions, total: entry.total_predictions })}
               </span>
               <span className="flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" /> {accuracy}% PRECISÃO
+                <TrendingUp className="w-3 h-3" /> {t("rankingAccuracy", { n: accuracy })}
               </span>
             </div>
           ) : (
             <p className="text-[10px] md:text-[11px] font-bold text-slate-400 italic">
-              Não completou seus palpites
+              {t("rankingIncomplete")}
             </p>
           )}
         </div>
@@ -139,7 +140,7 @@ function RankingRow({
           <p className={`text-xl md:text-2xl font-black leading-none ${hasPredictions ? "text-slate-900" : "text-slate-400"}`}>
             {hasPredictions ? entry.total_points : "0"}
           </p>
-          <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Pontos</p>
+          <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{tCommon("points")}</p>
         </div>
       </div>
     </div>

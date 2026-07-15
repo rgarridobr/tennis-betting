@@ -1,29 +1,43 @@
+'use client';
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Icon, MapPin, Trophy } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import type { Tournament } from "@/lib/data";
 import { tennisBall } from "@lucide/lab";
 import { getCategory } from "@/lib/utils";
 import {
   surfaceColors,
-  surfaceLabels,
   getTournamentImage,
   getTournamentStatus,
+  normalizeSurfaceKey,
 } from "@/lib/tournament";
+import { useLocale, useTranslations } from "next-intl";
 
 interface TournamentCardProps {
   tournament: Tournament;
   href?: string;
 }
 
-function formatDate(dateString: string): string {
+function formatDate(dateString: string, locale: string): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString("pt-BR", { day: "numeric", month: "short" });
+  const dateLocale = locale === "en" ? "en-US" : "pt-BR";
+  return date.toLocaleDateString(dateLocale, { day: "numeric", month: "short" });
 }
 
 export function TournamentCard({ tournament, href }: TournamentCardProps) {
-  const { label: statusLabel, color: statusColor, pulseEffect } = getTournamentStatus(tournament);
+  const tStatus = useTranslations("status");
+  const tSurfaces = useTranslations("surfaces");
+  const locale = useLocale();
+
+  const { statusKey, color: statusColor, pulseEffect } = getTournamentStatus(tournament);
+  const statusLabel = tStatus(statusKey);
+  const surfaceKey = normalizeSurfaceKey(tournament.surface);
+  const surface =
+    surfaceKey === "Hard" || surfaceKey === "Clay" || surfaceKey === "Grass"
+      ? tSurfaces(surfaceKey)
+      : tournament.surface;
   const imageUrl = getTournamentImage(tournament);
 
   return (
@@ -56,9 +70,9 @@ export function TournamentCard({ tournament, href }: TournamentCardProps) {
 
           <div className="absolute bottom-0 left-0 right-0 p-6 pt-12 flex flex-col items-start bg-gradient-to-t from-slate-900/90 hover:from-slate-900/95 transition-colors duration-500 to-transparent">
             <Badge
-              className={`mb-3 ${surfaceColors[tournament.surface] || "bg-slate-500 text-white"} border-none font-bold px-3 py-1 shadow-sm`}
+              className={`mb-3 ${surfaceColors[surfaceKey] || "bg-slate-500 text-white"} border-none font-bold px-3 py-1 shadow-sm`}
             >
-              {surfaceLabels[tournament.surface] || tournament.surface}
+              {surface}
             </Badge>
             <h3 className="font-bold text-white text-2xl drop-shadow-md leading-tight line-clamp-2 transform transition-transform duration-500 group-hover:translate-x-1">
               {tournament.name}
@@ -95,8 +109,8 @@ export function TournamentCard({ tournament, href }: TournamentCardProps) {
                 <Calendar className="w-4 h-4" />
               </div>
               <span className="text-slate-700 font-medium truncate">
-                {formatDate(tournament.start_date)} -{" "}
-                {formatDate(tournament.end_date)}
+                {formatDate(tournament.start_date, locale)} -{" "}
+                {formatDate(tournament.end_date, locale)}
               </span>
             </div>
           </div>

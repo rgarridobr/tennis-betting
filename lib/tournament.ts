@@ -8,11 +8,35 @@ export const surfaceColors: Record<string, string> = {
   Grass: 'bg-emerald-600/90 text-white',
 };
 
+/** Canonical surface keys — translate with `useTranslations('surfaces')`. */
 export const surfaceLabels: Record<string, string> = {
-  Hard: 'Hard Court',
-  Clay: 'Saibro',
-  Grass: 'Grama',
+  Hard: 'Hard',
+  Clay: 'Clay',
+  Grass: 'Grass',
 };
+
+/** Map legacy PT DB values → canonical surface keys for i18n. */
+export function normalizeSurfaceKey(surface: string): 'Hard' | 'Clay' | 'Grass' | string {
+  const map: Record<string, 'Hard' | 'Clay' | 'Grass'> = {
+    Hard: 'Hard',
+    Clay: 'Clay',
+    Grass: 'Grass',
+    Saibro: 'Clay',
+    Grama: 'Grass',
+    'Quadra dura': 'Hard',
+    'Quadra Dura': 'Hard',
+    'Hard Court': 'Hard',
+  };
+  return map[surface] ?? surface;
+}
+
+export type TournamentStatusKey =
+  | 'finished'
+  | 'open'
+  | 'scheduled'
+  | 'inProgress'
+  | 'preparingBracket'
+  | 'upcoming';
 
 export const surfaceImages: Record<string, string> = {
   Clay: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=1920&q=80',
@@ -68,12 +92,24 @@ export function getTournamentImage(tournament: Pick<Tournament, 'name' | 'image_
 // --- Tournament status helpers ---
 
 export interface TournamentStatus {
+  /** Message key under `status.*` — translate in the UI layer */
+  statusKey: TournamentStatusKey;
+  /** @deprecated Prefer translating `statusKey`. Kept for legacy callers. */
   label: string;
   color: string;
   isFinished: boolean;
   isLockedByDate: boolean;
   pulseEffect: boolean;
 }
+
+const STATUS_FALLBACK_LABELS: Record<TournamentStatusKey, string> = {
+  finished: 'Finalizado',
+  open: 'Aberto para palpites',
+  scheduled: 'Agendado',
+  inProgress: 'Em andamento',
+  preparingBracket: 'Preparando chaveamento',
+  upcoming: 'Em breve',
+};
 
 export function getTournamentStatus(tournament: Pick<Tournament, 'status' | 'start_date'>): TournamentStatus {
   const isLockedByDate = new Date(tournament.start_date) <= new Date();
@@ -83,30 +119,37 @@ export function getTournamentStatus(tournament: Pick<Tournament, 'status' | 'sta
 
   const isOpen = tournament.status === 'active' || tournament.status === 'OPEN';
 
-  let label: string;
+  let statusKey: TournamentStatusKey;
   let color: string;
 
   if (isFinished) {
-    label = 'Finalizado';
+    statusKey = 'finished';
     color = 'bg-slate-600/95 text-white border-slate-500/50';
   } else if (isOpen) {
-    label = 'Aberto para palpites';
+    statusKey = 'open';
     color = 'bg-emerald-600/95 text-white border-emerald-500/50';
   } else if (tournament.status === 'STANDBY') {
-    label = 'Agendado';
+    statusKey = 'scheduled';
     color = 'bg-amber-500/95 text-white border-amber-400/50';
   } else if (isLockedByDate) {
-    label = 'Em andamento';
+    statusKey = 'inProgress';
     color = 'bg-blue-600/95 text-white border-blue-500/50';
   } else if (tournament.status === 'UPCOMING') {
-    label = 'Preparando chaveamento';
+    statusKey = 'preparingBracket';
     color = 'bg-purple-600/95 text-white border-purple-500/50';
   } else {
-    label = 'Em breve';
+    statusKey = 'upcoming';
     color = 'bg-purple-600/95 text-white border-purple-500/50';
   }
 
   const pulseEffect = (isLockedByDate && !isFinished) || isOpen;
 
-  return { label, color, isFinished, isLockedByDate, pulseEffect };
+  return {
+    statusKey,
+    label: STATUS_FALLBACK_LABELS[statusKey],
+    color,
+    isFinished,
+    isLockedByDate,
+    pulseEffect,
+  };
 }

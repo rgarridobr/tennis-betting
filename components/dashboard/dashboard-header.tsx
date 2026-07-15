@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,7 +12,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Medal, Target, Trophy, FileText } from "lucide-react";
 import { logoutAction } from "@/lib/actions/auth";
 import type { User } from "@/lib/auth";
-import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { getUserCount } from "@/lib/actions/users";
 import {
@@ -21,18 +19,21 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/navigation";
+import { LanguageSwitcher } from "@/components/shared/language-switcher";
+import { CompleteRegistrationForm } from "@/components/auth/complete-registration-form";
 
 interface DashboardHeaderProps {
   user: User | null;
   activeTournamentId?: number | null;
 }
 
-import { CompleteRegistrationForm } from "@/components/auth/complete-registration-form";
-
 export function DashboardHeader({
   user,
   activeTournamentId,
 }: DashboardHeaderProps) {
+  const t = useTranslations("nav");
   const pathname = usePathname();
   const [totalUsers, setTotalUsers] = useState<number | null>(null);
 
@@ -40,7 +41,7 @@ export function DashboardHeader({
     getUserCount().then(setTotalUsers);
   }, []);
 
-  const displayName = user?.nickname || user?.name || "Visitante";
+  const displayName = user?.nickname || user?.name || t("guest");
 
   const initials = displayName
     .split(" ")
@@ -50,10 +51,15 @@ export function DashboardHeader({
     .toUpperCase();
 
   const navItems = [
-    { href: "/torneios", label: "Torneios", icon: Trophy },
-    { href: "/grupos", label: "Grupos", icon: Target },
-    { href: "/ranking", label: "Ranking", icon: Medal, isRanking: true },
-    { href: "/regras", label: "Regras", icon: FileText },
+    { href: "/torneios" as const, label: t("tournaments"), icon: Trophy },
+    { href: "/grupos" as const, label: t("groups"), icon: Target },
+    {
+      href: "/ranking" as const,
+      label: t("ranking"),
+      icon: Medal,
+      isRanking: true,
+    },
+    { href: "/regras" as const, label: t("rules"), icon: FileText },
   ];
 
   const showCompleteRegistration =
@@ -61,7 +67,7 @@ export function DashboardHeader({
     !user.is_admin &&
     (!user.country ||
       !user.tennis_club ||
-      (['brasil', 'brazil'].includes(user.country?.trim().toLowerCase() || '') &&
+      (["brasil", "brazil"].includes(user.country?.trim().toLowerCase() || "") &&
         (!user.state || !user.city)));
 
   return (
@@ -114,13 +120,15 @@ export function DashboardHeader({
                         }`}
                       >
                         <item.icon className="w-4 h-4" />
-                        <span className="hidden sm:inline">{item.label}</span>
+                        <span className="hidden sm:inline whitespace-nowrap">
+                          {item.label}
+                        </span>
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="center" className="w-48">
                       <DropdownMenuItem asChild>
                         <Link href="/ranking" className="cursor-pointer">
-                          Ranking Geral
+                          {t("rankingGeneral")}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
@@ -128,7 +136,7 @@ export function DashboardHeader({
                           href="/ranking/torneio"
                           className="cursor-pointer"
                         >
-                          Ranking por Torneio
+                          {t("rankingByTournament")}
                         </Link>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -147,7 +155,9 @@ export function DashboardHeader({
                   }`}
                 >
                   <item.icon className="w-4 h-4" />
-                  <span className="hidden sm:inline">{item.label}</span>
+                  <span className="hidden sm:inline whitespace-nowrap">
+                    {item.label}
+                  </span>
                 </Link>
               );
             })}
@@ -167,13 +177,14 @@ export function DashboardHeader({
                 </span>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Número de inscritos no site</p>
+                <p>{t("registeredUsers")}</p>
               </TooltipContent>
             </Tooltip>
           </nav>
 
           {/* User Avatar - Right */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <LanguageSwitcher />
             {user ? (
               <>
                 <div className="hidden sm:flex flex-col items-end mr-1">
@@ -181,7 +192,7 @@ export function DashboardHeader({
                     {displayName}
                   </p>
                   <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider mt-1">
-                    Participante
+                    {t("participant")}
                   </p>
                 </div>
                 <DropdownMenu>
@@ -206,12 +217,8 @@ export function DashboardHeader({
                         </p>
                       </div>
                     </div>
-                    {/* <DropdownMenuSeparator /> */}
-                    {/* <DropdownMenuItem asChild>
-                    <Link href="/meus-palpites">Meus Palpites</Link>
-                  </DropdownMenuItem> */}
                     <DropdownMenuItem asChild>
-                      <Link href="/perfil">Meu Perfil</Link>
+                      <Link href="/perfil">{t("profile")}</Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -219,7 +226,7 @@ export function DashboardHeader({
                       className="cursor-pointer"
                       variant="destructive"
                     >
-                      Sair
+                      {t("logout")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -231,13 +238,13 @@ export function DashboardHeader({
                   asChild
                   className="font-bold text-white hover:text-[#6EC46C] hover:bg-white/10 rounded-xl hidden sm:flex"
                 >
-                  <Link href="/login">Entrar</Link>
+                  <Link href="/login">{t("login")}</Link>
                 </Button>
                 <Button
                   className="bg-[#6EC46C] text-white hover:bg-[#6EC46C]/90 font-bold px-6 rounded-xl shadow-lg shadow-[#6EC46C]/20"
                   asChild
                 >
-                  <Link href="/cadastro">Cadastrar</Link>
+                  <Link href="/cadastro">{t("register")}</Link>
                 </Button>
               </div>
             )}

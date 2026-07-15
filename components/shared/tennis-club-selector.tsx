@@ -9,8 +9,9 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { TennisClub } from '@/lib/data';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
-const NO_CLUB_VALUE = 'Nenhum';
+const NO_CLUB_VALUE = 'NO_CLUB';
 const OTHER_VALUE = '__other__';
 
 interface TennisClubSelectorProps {
@@ -29,16 +30,22 @@ export function TennisClubSelector({
   onChange,
   clubId,
   customClub,
-  label = 'Clube em que joga tênis *',
+  label,
   required = true,
 }: TennisClubSelectorProps) {
+  const t = useTranslations('shared');
+  const displayLabel = label ?? t('clubLabel');
   const knownClubNames = useMemo(() => new Set(clubs.map((club) => club.name)), [clubs]);
-  const isKnownClub = value === NO_CLUB_VALUE || knownClubNames.has(value);
+  // Support legacy stored value "Nenhum" and the new sentinel NO_CLUB
+  const isNoClub = value === NO_CLUB_VALUE || value === 'Nenhum';
+  const isKnownClub = isNoClub || knownClubNames.has(value);
   const initialSelectedValue = clubId
     ? `club:${clubId}`
     : customClub || (!isKnownClub && value)
       ? OTHER_VALUE
-      : value || '';
+      : isNoClub
+        ? NO_CLUB_VALUE
+        : value || '';
   const initialOtherClub = customClub || (!isKnownClub ? value : '');
   const [selectedValue, setSelectedValue] = useState(initialSelectedValue);
   const [otherClub, setOtherClub] = useState(initialOtherClub);
@@ -48,8 +55,10 @@ export function TennisClubSelector({
     : null;
   const selectedLabel =
     selectedValue === OTHER_VALUE
-      ? 'Outro clube'
-      : selectedClub?.name || selectedValue || 'Selecione seu clube';
+      ? t('clubOther')
+      : selectedValue === NO_CLUB_VALUE
+        ? t('clubNone')
+        : selectedClub?.name || selectedValue || t('clubPlaceholder');
 
   const selectedClubId = selectedClub?.id || '';
   const selectedCustomClub = selectedValue === OTHER_VALUE ? otherClub : '';
@@ -80,7 +89,7 @@ export function TennisClubSelector({
 
   return (
     <div className="space-y-2">
-      <Label htmlFor="tennis_club_select">{label}</Label>
+      <Label htmlFor="tennis_club_select">{displayLabel}</Label>
       <input type="hidden" name="tennis_club" value={value} />
       <input type="hidden" name="tennis_club_id" value={selectedClubId} />
       <input type="hidden" name="tennis_club_custom" value={selectedCustomClub} />
@@ -108,17 +117,17 @@ export function TennisClubSelector({
           onTouchMove={(event) => event.stopPropagation()}
         >
           <Command className="rounded-2xl">
-            <CommandInput placeholder="Digite para buscar o clube..." />
+            <CommandInput placeholder={t('clubSearch')} />
             <CommandList
               className="max-h-72 overscroll-contain"
               onWheel={(event) => event.stopPropagation()}
               onTouchMove={(event) => event.stopPropagation()}
             >
-              <CommandEmpty>Nenhum clube encontrado.</CommandEmpty>
+              <CommandEmpty>{t('clubEmpty')}</CommandEmpty>
               <CommandGroup>
                 <CommandItem value={NO_CLUB_VALUE} onSelect={() => handleSelectChange(NO_CLUB_VALUE)}>
                   <Check className={cn('mr-2 h-4 w-4', selectedValue === NO_CLUB_VALUE ? 'opacity-100' : 'opacity-0')} />
-                  Não joga em nenhum clube
+                  {t('clubNone')}
                 </CommandItem>
                 {clubs.map((club) => (
                   <CommandItem key={club.id} value={club.name} onSelect={() => handleSelectChange(`club:${club.id}`)}>
@@ -126,9 +135,9 @@ export function TennisClubSelector({
                     {club.name}
                   </CommandItem>
                 ))}
-                <CommandItem value="Outro clube" onSelect={() => handleSelectChange(OTHER_VALUE)}>
+                <CommandItem value={t('clubOther')} onSelect={() => handleSelectChange(OTHER_VALUE)}>
                   <Check className={cn('mr-2 h-4 w-4', selectedValue === OTHER_VALUE ? 'opacity-100' : 'opacity-0')} />
-                  Outro clube
+                  {t('clubOther')}
                 </CommandItem>
               </CommandGroup>
             </CommandList>
@@ -140,7 +149,7 @@ export function TennisClubSelector({
         <Input
           value={otherClub}
           onChange={(event) => handleOtherChange(event.target.value)}
-          placeholder="Digite o nome do clube"
+          placeholder={t('clubCustomPlaceholder')}
           className="h-12 rounded-2xl border-slate-200 bg-white"
           required={required}
         />

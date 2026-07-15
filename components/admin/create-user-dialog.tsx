@@ -22,8 +22,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { useTranslations } from 'next-intl';
 
 export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
+  const tAuth = useTranslations('auth');
+  const tAdmin = useTranslations('admin');
+  const tCommon = useTranslations('common');
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +71,7 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!regex.test(email.trim())) {
-      toast.error('Por favor, insira um email válido.');
+      toast.error(tAuth('invalidEmail'));
       return false;
     }
 
@@ -76,7 +80,7 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
 
   function validatePassword(password: string) {
     if (password.length < 6) {
-      toast.error('A senha deve conter pelo menos 6 caracteres.');
+      toast.error(tAuth('passwordMinLength'));
       return false;
     }
 
@@ -95,7 +99,7 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
 
     if (!validateEmail(email) || !validatePassword(password)) return;
     if (isBrazil && (!state || !city)) {
-      const message = 'Estado e cidade são obrigatórios para Brasil.';
+      const message = tAuth('stateCityRequired');
       toast.error(message);
       setError(message);
       return;
@@ -105,10 +109,10 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
       const result = await createUserAction(formData);
 
       if (result.success) {
-        toast.success('Usuário cadastrado com sucesso!');
+        toast.success(tCommon('success'));
         setOpen(false);
       } else {
-        setError(result.error || 'Erro ao cadastrar usuário');
+        setError(result.error || tCommon('error'));
       }
     });
   }
@@ -121,7 +125,7 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
           className="bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-2xl shadow-xl shadow-emerald-500/20 h-14"
         >
           <UserPlus className="w-5 h-5 mr-2" />
-          Novo Usuário
+          {tAuth('registerSubmit')}
         </Button>
       </DialogTrigger>
 
@@ -132,11 +136,11 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
           </div>
 
           <DialogTitle className="text-3xl font-black text-slate-900 tracking-tight text-left">
-            Novo Usuário
+            {tAuth('registerTitle')}
           </DialogTitle>
 
           <DialogDescription className="text-base font-medium text-slate-400 mt-1 text-left">
-            Cadastre um novo participante para o grupo.
+            {tAdmin('usersListSubtitle')}
           </DialogDescription>
         </DialogHeader>
 
@@ -151,7 +155,7 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
           {/* Nome */}
           <div className="space-y-4">
             <Label className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
-              <User className="w-4 h-4 text-emerald-500" /> Nome *
+              <User className="w-4 h-4 text-emerald-500" /> {tAuth('name')}
             </Label>
 
             <Input
@@ -167,7 +171,7 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <Label className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
-                <User className="w-4 h-4 text-emerald-500" /> Apelido (visível no site)
+                <User className="w-4 h-4 text-emerald-500" /> {tAuth('nickname')}
               </Label>
 
               <div className="flex items-center gap-2">
@@ -180,7 +184,7 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
                   htmlFor="first_name_only_admin"
                   className="text-[10px] font-black uppercase tracking-widest text-slate-400 cursor-pointer"
                 >
-                  Apenas o primeiro nome
+                  {tAuth('firstNameOnly')}
                 </label>
               </div>
             </div>
@@ -199,7 +203,7 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
           {/* Email */}
           <div className="space-y-4">
             <Label className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
-              <Mail className="w-4 h-4 text-emerald-500" /> Email
+              <Mail className="w-4 h-4 text-emerald-500" /> {tAuth('email')}
             </Label>
 
             <Input
@@ -238,14 +242,14 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
                 required
               />
             ) : (
-              <p className="text-sm text-slate-500">Para outros países, estado e cidade não são necessários.</p>
+              <p className="text-sm text-slate-500">{tAuth('nonBrazilHint')}</p>
             )}
           </div>
 
           {/* Senha */}
           <div className="space-y-4">
             <Label className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
-              <Lock className="w-4 h-4 text-emerald-500" /> Senha
+              <Lock className="w-4 h-4 text-emerald-500" /> {tAuth('password')}
             </Label>
 
             <Input
@@ -258,13 +262,13 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
               className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700"
             />
 
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mínimo de 6 caracteres</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{tAuth('passwordHint')}</p>
           </div>
 
           {/* WhatsApp */}
           <div className="space-y-4">
             <Label className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
-              <Phone className="w-4 h-4 text-emerald-500" /> WhatsApp
+              <Phone className="w-4 h-4 text-emerald-500" /> {tAuth('whatsapp')}
             </Label>
 
             <Input
@@ -276,7 +280,7 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
             />
           </div>
 
-          <TennisClubSelector clubs={clubs} value={tennisClub} onChange={setTennisClub} label="Clube *" required />
+          <TennisClubSelector clubs={clubs} value={tennisClub} onChange={setTennisClub} required />
 
           <DialogFooter className="pt-4">
             <Button
@@ -287,10 +291,10 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
               {isPending ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                  Cadastrando...
+                  {tAuth('registerSubmitting')}
                 </>
               ) : (
-                'Cadastrar Usuário'
+                tAuth('registerSubmit')
               )}
             </Button>
           </DialogFooter>

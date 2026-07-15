@@ -3,8 +3,8 @@
 import { sql } from '@/lib/db';
 import { sendResetCodeEmail } from '@/lib/email';
 import { hashPassword, createSession } from '@/lib/auth';
-import { redirect } from 'next/navigation';
 import crypto from 'crypto';
+import { getTranslations, getLocale } from 'next-intl/server';
 
 /**
  * Generates a 5-character alphanumeric code using CSPRNG.
@@ -23,23 +23,20 @@ function generateCode(): string {
  * Step 1: Request a password reset code.
  */
 export async function requestPasswordResetAction(formData: FormData) {
+  const t = await getTranslations('errors');
+  const locale = await getLocale();
   const email = formData.get('email') as string;
 
   if (!email) {
-    return { error: 'O email é obrigatório.' };
+    return { error: t('emailRequired') };
   }
 
-  // Check if user exists
   const users = await sql`
     SELECT id FROM users WHERE email = ${email} AND (is_deleted IS FALSE OR is_deleted IS NULL)
   `;
 
   if (users.length === 0) {
-    // For security, don't reveal that the user doesn't exist.
-    // However, in this specific case, the requirements don't mention this,
-    // and sometimes it's better for UX in small apps.
-    // I will return a success message regardless.
-    return { success: true, message: 'Se o e-mail estiver cadastrado, você receberá um código em instantes.' };
+    return { success: true, message: t('resetEmailIfExists') };
   }
 
   const results = await sql`
@@ -55,36 +52,34 @@ export async function requestPasswordResetAction(formData: FormData) {
       if (record.attempts >= 5) {
         const remainingMs = expires.getTime() - now.getTime();
         const remainingMins = Math.ceil(remainingMs / (60 * 1000));
-        return { 
-          error: `Limite de tentativas excedido. Aguarde ${remainingMins} minuto(s) para solicitar um novo código.` 
+        return {
+          error: t('rateLimitMinutes', { n: remainingMins }),
         };
       }
-      
-      return { 
-        success: true, 
-        message: 'Um código já foi enviado e ainda é válido. Verifique sua caixa de entrada.' 
+
+      return {
+        success: true,
+        message: t('codeStillValid'),
       };
     }
   }
 
   const code = generateCode();
-  const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-  // Delete previous reset attempts for this email
   await sql`DELETE FROM password_resets WHERE email = ${email}`;
 
-  // Save the new reset code
   await sql`
     INSERT INTO password_resets (email, code, expires_at, attempts)
     VALUES (${email}, ${code}, ${expiresAt.toISOString()}, 0)
   `;
 
   try {
-    await sendResetCodeEmail(email, code);
-    return { success: true, message: 'Código enviado com sucesso!' };
+    await sendResetCodeEmail(email, code, locale);
+    return { success: true, message: t('codeSent') };
   } catch (error) {
     console.error('Error sending reset email:', error);
-    return { error: 'Ocorreu um erro ao enviar o e-mail. Tente novamente mais tarde.' };
+    return { error: t('emailSendFailed') };
   }
 }
 
@@ -92,8 +87,10 @@ export async function requestPasswordResetAction(formData: FormData) {
  * Step 2: Verify the 5-digit code.
  */
 export async function verifyResetCodeAction(email: string, code: string) {
+  const t = await getTranslations('errors');
+
   if (!email || !code) {
-    return { error: 'E-mail e código são obrigatórios.' };
+    return { error: t('emailCodeRequired') };
   }
 
   const normalizedCode = code.toUpperCase().trim();
@@ -103,22 +100,19 @@ export async function verifyResetCodeAction(email: string, code: string) {
   `;
 
   if (results.length === 0) {
-    return { error: 'Solicitação de recuperação não encontrada ou expirada.' };
+    return { error: t('resetNotFound'), code: 'RESET_NOT_FOUND' as const };
   }
 
   const record = results[0];
 
-  // Check expiration
   if (new Date(record.expires_at) < new Date()) {
-    return { error: 'O código expirou. Solicite um novo.' };
+    return { error: t('codeExpired'), code: 'CODE_EXPIRED' as const };
   }
 
-  // Check attempts
   if (record.attempts >= 5) {
-    return { error: 'Limite de tentativas excedido. O código foi invalidado.' };
+    return { error: t('codeInvalidated'), code: 'CODE_INVALIDATED' as const };
   }
 
-  // Check code
   if (record.code !== normalizedCode) {
     const newAttempts = record.attempts + 1;
 
@@ -127,11 +121,11 @@ export async function verifyResetCodeAction(email: string, code: string) {
     `;
 
     if (newAttempts >= 5) {
-      return { error: 'Limite de tentativas excedido. O código foi invalidado.' };
+      return { error: t('codeInvalidated'), code: 'CODE_INVALIDATED' as const };
     }
 
     const remaining = 5 - newAttempts;
-    return { error: `Código incorreto. Você tem mais ${remaining} tentativa(s).` };
+    return { error: t('codeWrong', { n: remaining }) };
   }
 
   return { success: true };
@@ -141,15 +135,15 @@ export async function verifyResetCodeAction(email: string, code: string) {
  * Step 3: Reset the password and log in.
  */
 export async function resetPasswordAction(formData: FormData) {
+  const t = await getTranslations('errors');
   const email = formData.get('email') as string;
   const code = formData.get('code') as string;
   const newPassword = formData.get('newPassword') as string;
 
   if (!email || !code || !newPassword) {
-    return { error: 'Todos os campos são obrigatórios.' };
+    return { error: t('allFieldsRequired') };
   }
 
-  // Re-verify the code for security before final update
   const verification = await verifyResetCodeAction(email, code);
   if (!verification.success) {
     return verification;
@@ -157,13 +151,11 @@ export async function resetPasswordAction(formData: FormData) {
 
   const hashedPassword = await hashPassword(newPassword);
 
-  // Update password and clear reset code
   await sql`
     UPDATE users SET password_hash = ${hashedPassword}, updated_at = NOW() WHERE email = ${email}
   `;
   await sql`DELETE FROM password_resets WHERE email = ${email}`;
 
-  // Log the user in automatically
   const users = await sql`SELECT id FROM users WHERE email = ${email}`;
   const user = users[0];
 
@@ -172,5 +164,5 @@ export async function resetPasswordAction(formData: FormData) {
     return { success: true };
   }
 
-  return { error: 'Erro ao realizar login automático.' };
+  return { error: t('autoLoginFailed') };
 }

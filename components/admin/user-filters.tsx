@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useTranslations } from 'next-intl';
 
 interface UserFiltersProps {
   filterOptions: {
@@ -22,6 +23,9 @@ interface UserFiltersProps {
 }
 
 export function UserFilters({ filterOptions }: UserFiltersProps) {
+  const tShared = useTranslations('shared');
+  const tCommon = useTranslations('common');
+  const tButtons = useTranslations('buttons');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -78,11 +82,11 @@ export function UserFilters({ filterOptions }: UserFiltersProps) {
     <div className="flex flex-col gap-4 mb-8">
       <div className="flex flex-col md:flex-row gap-4 items-end">
         <div className="flex-1 w-full space-y-2">
-          <label className="text-sm font-bold text-slate-700 ml-1">Buscar Usuário</label>
+          <label className="text-sm font-bold text-slate-700 ml-1">{tCommon('search')}</label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
-              placeholder="Buscar por nome, email ou apelido..."
+              placeholder={tCommon('search')}
               className="pl-10 h-12 rounded-2xl border-slate-200 bg-white shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -97,7 +101,7 @@ export function UserFilters({ filterOptions }: UserFiltersProps) {
             className="h-12 rounded-2xl text-slate-500 font-bold hover:text-rose-500 hover:bg-rose-50"
           >
             <FilterX className="w-4 h-4 mr-2" />
-            Limpar
+            {tButtons('clear')}
           </Button>
         )}
 
@@ -110,16 +114,16 @@ export function UserFilters({ filterOptions }: UserFiltersProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2">
-          <label className="text-sm font-bold text-slate-700 ml-1">Estado</label>
+          <label className="text-sm font-bold text-slate-700 ml-1">{tShared('state')}</label>
           <Select
             value={currentState}
             onValueChange={(value) => handleFilterChange('state', value === '_all' ? '' : value)}
           >
             <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white shadow-sm">
-              <SelectValue placeholder="Todos os estados" />
+              <SelectValue placeholder={tShared('selectState')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="_all">Todos os estados</SelectItem>
+              <SelectItem value="_all">{tShared('selectState')}</SelectItem>
               {filterOptions.states.map((state) => (
                 <SelectItem key={state} value={state}>
                   {state}
@@ -130,16 +134,16 @@ export function UserFilters({ filterOptions }: UserFiltersProps) {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-bold text-slate-700 ml-1">Cidade</label>
+          <label className="text-sm font-bold text-slate-700 ml-1">{tShared('city')}</label>
           <Select
             value={currentCity}
             onValueChange={(value) => handleFilterChange('city', value === '_all' ? '' : value)}
           >
             <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white shadow-sm">
-              <SelectValue placeholder="Todas as cidades" />
+              <SelectValue placeholder={tShared('selectCity')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="_all">Todas as cidades</SelectItem>
+              <SelectItem value="_all">{tShared('selectCity')}</SelectItem>
               {availableCities.map((city) => (
                 <SelectItem key={city} value={city}>
                   {city}
@@ -150,16 +154,16 @@ export function UserFilters({ filterOptions }: UserFiltersProps) {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-bold text-slate-700 ml-1">Clube</label>
+          <label className="text-sm font-bold text-slate-700 ml-1">{tShared('clubPlaceholder')}</label>
           <Select
             value={currentClub}
             onValueChange={(value) => handleFilterChange('club', value === '_all' ? '' : value)}
           >
             <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white shadow-sm">
-              <SelectValue placeholder="Todos os clubes" />
+              <SelectValue placeholder={tShared('clubPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="_all">Todos os clubes</SelectItem>
+              <SelectItem value="_all">{tShared('clubPlaceholder')}</SelectItem>
               {filterOptions.clubs.map((club) => (
                 <SelectItem key={club} value={club}>
                   {club}

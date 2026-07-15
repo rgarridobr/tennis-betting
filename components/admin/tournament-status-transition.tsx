@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   tournamentId: number
@@ -21,6 +22,8 @@ interface Props {
 }
 
 export function TournamentStatusTransition({ tournamentId, status, finalCompleted = false }: Props) {
+  const t = useTranslations('admin')
+  const tButtons = useTranslations('buttons')
   const [isPending, startTransition] = useTransition()
   const [showResetConfirm, setShowResetConfirm] = useState(false)
 
@@ -32,12 +35,12 @@ export function TournamentStatusTransition({ tournamentId, status, finalComplete
       try {
         const result = await resetTournamentToStandbyAction(tournamentId)
         if (result.success) {
-          toast.success('Chaveamento excluído e torneio em Standby')
+          toast.success(t('statusTransition.toastResetSuccess'))
         } else {
-          toast.error(result.error || 'Erro ao resetar torneio')
+          toast.error(result.error || t('statusTransition.toastResetError'))
         }
-      } catch (error) {
-        toast.error('Erro ao resetar torneio')
+      } catch {
+        toast.error(t('statusTransition.toastResetError'))
       }
     })
   }
@@ -47,12 +50,12 @@ export function TournamentStatusTransition({ tournamentId, status, finalComplete
       try {
         const result = await prepareTournamentAction(tournamentId)
         if (result.success) {
-          toast.success('Chaveamento gerado e torneio visível!')
+          toast.success(t('statusTransition.toastPrepareSuccess'))
         } else {
-          toast.error(result.error || 'Erro ao preparar torneio')
+          toast.error(result.error || t('statusTransition.toastPrepareError'))
         }
-      } catch (error) {
-        toast.error('Erro ao preparar torneio')
+      } catch {
+        toast.error(t('statusTransition.toastPrepareError'))
       }
     })
   }
@@ -62,12 +65,12 @@ export function TournamentStatusTransition({ tournamentId, status, finalComplete
       try {
         const result = await finishTournamentAction(tournamentId)
         if (result.success) {
-          toast.success('Torneio finalizado com sucesso!')
+          toast.success(t('statusTransition.toastFinishSuccess'))
         } else {
-          toast.error(result.error || 'Erro ao finalizar torneio')
+          toast.error(result.error || t('statusTransition.toastFinishError'))
         }
-      } catch (error) {
-        toast.error('Erro ao finalizar torneio')
+      } catch {
+        toast.error(t('statusTransition.toastFinishError'))
       }
     })
   }
@@ -81,7 +84,7 @@ export function TournamentStatusTransition({ tournamentId, status, finalComplete
         className="rounded-2xl font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg h-12 px-6 gap-2"
       >
         {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlayCircle className="w-4 h-4" />}
-        Preparar Chaveamento (Tornar Visível)
+        {t('statusTransition.prepareBracket')}
       </Button>
     )
   }
@@ -97,7 +100,7 @@ export function TournamentStatusTransition({ tournamentId, status, finalComplete
             className="rounded-2xl font-black border-2 border-slate-200 text-slate-600 hover:bg-slate-50 h-12 px-6 gap-2"
           >
             {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
-            Ocultar (Voltar para Standby)
+            {t('statusTransition.hideStandby')}
           </Button>
         </div>
 
@@ -107,9 +110,15 @@ export function TournamentStatusTransition({ tournamentId, status, finalComplete
               <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
                 <AlertTriangle className="w-8 h-8 text-amber-600" />
               </div>
-              <DialogTitle className="text-2xl font-black text-center text-slate-900">Voltar para Standby?</DialogTitle>
+              <DialogTitle className="text-2xl font-black text-center text-slate-900">
+                {t('statusTransition.resetToStandbyTitle')}
+              </DialogTitle>
               <DialogDescription className="text-center text-slate-500 font-medium px-4">
-                Esta ação irá <span className="font-bold text-rose-600 underline">EXCLUIR</span> permanentemente o chaveamento atual e todos os palpites já realizados.
+                {t.rich('statusTransition.resetToStandbyDesc', {
+                  strong: (chunks) => (
+                    <span className="font-bold text-rose-600 underline">{chunks}</span>
+                  ),
+                })}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="flex flex-col sm:flex-row gap-3 p-2">
@@ -118,14 +127,14 @@ export function TournamentStatusTransition({ tournamentId, status, finalComplete
                 onClick={() => setShowResetConfirm(false)}
                 className="flex-1 rounded-xl font-bold h-12 border-2"
               >
-                Cancelar
+                {tButtons('cancel')}
               </Button>
               <Button
                 onClick={handleReset}
                 variant="destructive"
                 className="flex-1 rounded-xl font-black h-12 bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-100"
               >
-                Sim, Resetar
+                {t('statusTransition.yesReset')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -142,7 +151,7 @@ export function TournamentStatusTransition({ tournamentId, status, finalComplete
         className="rounded-2xl font-black bg-slate-900 hover:bg-slate-800 text-white shadow-lg h-12 px-6 gap-2"
       >
         {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trophy className="w-4 h-4" />}
-        Finalizar Torneio
+        {t('statusTransition.finishTournament')}
       </Button>
     )
   }

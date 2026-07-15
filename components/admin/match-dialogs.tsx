@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useEffect, useState, useTransition } from 'react';
 import type { BracketMatch, Player } from '@/lib/data';
@@ -26,6 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Combobox } from '@/components/ui/combobox';
 import { Pencil, Trophy, CheckCircle2, AlertCircle, X, Trash2, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 // ==================== HELPER FUNCTIONS ====================
 
@@ -44,7 +45,12 @@ function getMatchResultMode(score?: string | null): { mode: MatchResultMode; par
   };
 }
 
-function formatPlayerName(name: string | null, seed: number | null, type?: string) {
+function formatPlayerName(
+  name: string | null,
+  seed: number | null,
+  type: string | undefined,
+  toBeDefined: string,
+) {
   if (!name) {
     if (type === 'QUALIFIER') return 'Qualifier';
     if (type === 'WILDCARD') return 'Wild Card';
@@ -52,7 +58,7 @@ function formatPlayerName(name: string | null, seed: number | null, type?: strin
     if (type === 'NEXT_GEN') return 'Next Gen';
     if (type === 'BYE') return 'BYE';
     if (type === 'ALT') return 'Alternate';
-    return 'A definir';
+    return toBeDefined;
   }
 
   if (type === 'SEED' && seed) return `${name} (${seed})`;
@@ -87,6 +93,7 @@ function SlotConfig({
   players: Player[];
   assignedPlayerIds?: number[];
 }) {
+  const t = useTranslations('admin');
   const filteredPlayers = players
     .filter((p) => !assignedPlayerIds.includes(p.id) || p.id.toString() === playerId)
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -108,7 +115,9 @@ function SlotConfig({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label className="text-[10px] font-bold">
-              {type === 'QUALIFIER' || type === 'WILDCARD' ? 'Jogador (Opcional)' : 'Selecionar Jogador'}
+              {type === 'QUALIFIER' || type === 'WILDCARD'
+                ? t('match.playerOptional')
+                : t('match.selectPlayer')}
             </Label>
             {playerId && (
               <button
@@ -116,7 +125,7 @@ function SlotConfig({
                 onClick={() => setPlayerId('')}
                 className="text-[10px] font-bold text-red-500 hover:text-red-700 flex items-center gap-0.5 transition-colors"
               >
-                <X className="w-3 h-3" /> Remover
+                <X className="w-3 h-3" /> {t('match.remove')}
               </button>
             )}
           </div>
@@ -124,13 +133,13 @@ function SlotConfig({
             options={options}
             value={playerId}
             onValueChange={setPlayerId}
-            placeholder="Selecione o jogador..."
+            placeholder={t('match.selectPlayerPlaceholder')}
           />
         </div>
       )}{' '}
       {type === 'SEED' && (
         <div className="space-y-2">
-          <Label className="text-[10px] font-bold">Número do Seed</Label>
+          <Label className="text-[10px] font-bold">{t('match.seedNumber')}</Label>
           <Input
             type="number"
             value={seed}
@@ -147,28 +156,28 @@ function SlotConfig({
         </SelectTrigger>
         <SelectContent className="rounded-xl">
           <SelectItem value="PLAYER" className="font-bold">
-            Jogador Específico
+            {t('match.typePlayer')}
           </SelectItem>
           <SelectItem value="SEED" className="font-bold">
-            Seed / Cabeça de Chave
+            {t('match.typeSeed')}
           </SelectItem>
           <SelectItem value="QUALIFIER" className="font-bold">
-            Qualifier (Q)
+            {t('match.typeQualifier')}
           </SelectItem>
           <SelectItem value="WILDCARD" className="font-bold">
-            Wild Card (WC)
+            {t('match.typeWildcard')}
           </SelectItem>
           <SelectItem value="LUCKY_LOSER" className="font-bold">
-            Lucky Loser (LL)
+            {t('match.typeLuckyLoser')}
           </SelectItem>
           <SelectItem value="NEXT_GEN" className="font-bold">
-            Next Gen (NG)
+            {t('match.typeNextGen')}
           </SelectItem>
           <SelectItem value="ALT" className="font-bold">
-            Alternate (ALT)
+            {t('match.typeAlternate')}
           </SelectItem>
           <SelectItem value="BYE" className="font-bold">
-            BYE
+            {t('match.typeBye')}
           </SelectItem>
         </SelectContent>
       </Select>
@@ -197,6 +206,8 @@ export function SetPlayersDialog({
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
+  const t = useTranslations('admin');
+  const tButtons = useTranslations('buttons');
   const [internalOpen, setInternalOpen] = useState(false);
   const open = externalOpen !== undefined ? externalOpen : internalOpen;
   const setOpen = externalOnOpenChange || setInternalOpen;
@@ -251,9 +262,9 @@ export function SetPlayersDialog({
       seed: p2Type === 'SEED' ? parseSeed(p2Seed) : null,
     };
 
-    if (p1.type === 'SEED' && !p1.seed) return setError('Defina o Seed do Jogador 1');
-    if (p2.type === 'SEED' && !p2.seed) return setError('Defina o Seed do Jogador 2');
-    if (p1.type === 'BYE' && p2.type === 'BYE') return setError('Bye nÃ£o pode enfrentar Bye');
+    if (p1.type === 'SEED' && !p1.seed) return setError(t('match.errorSeedP1'));
+    if (p2.type === 'SEED' && !p2.seed) return setError(t('match.errorSeedP2'));
+    if (p1.type === 'BYE' && p2.type === 'BYE') return setError(t('match.errorByeVsBye'));
 
     startTransition(async () => {
       try {
@@ -262,10 +273,10 @@ export function SetPlayersDialog({
           setOpen(false);
           onSuccess?.();
         } else {
-          setError('Erro ao salvar confronto');
+          setError(t('match.errorSaveMatchup'));
         }
-      } catch (e) {
-        setError('Ocorreu um erro inesperado');
+      } catch {
+        setError(t('match.errorUnexpected'));
       }
     });
   }
@@ -281,13 +292,15 @@ export function SetPlayersDialog({
             size="sm"
             className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider border-2"
           >
-            <Pencil className="w-3 h-3 mr-1.5" /> Definir Confronto
+            <Pencil className="w-3 h-3 mr-1.5" /> {t('match.setMatchup')}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="max-w-2xl rounded-[2rem]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-black">Configurar Jogo {match.position}</DialogTitle>
+          <DialogTitle className="text-2xl font-black">
+            {t('match.configureGame', { position: match.position })}
+          </DialogTitle>
         </DialogHeader>
         {error && (
           <div className="p-3 bg-red-50 text-red-700 rounded-xl text-xs font-bold border-2 border-red-100 flex items-center gap-2">
@@ -296,7 +309,7 @@ export function SetPlayersDialog({
         )}
         <div className="grid grid-cols-1 md:grid-cols-2 py-4 gap-4">
           <SlotConfig
-            label="Lado A"
+            label={t('match.sideA')}
             type={p1Type}
             setType={setP1Type}
             playerId={p1Id}
@@ -307,7 +320,7 @@ export function SetPlayersDialog({
             assignedPlayerIds={assignedPlayerIds}
           />
           <SlotConfig
-            label="Lado B"
+            label={t('match.sideB')}
             type={p2Type}
             setType={setP2Type}
             playerId={p2Id}
@@ -323,7 +336,7 @@ export function SetPlayersDialog({
           disabled={isPending}
           className="w-full h-12 rounded-2xl font-black text-lg bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-100"
         >
-          {isPending ? 'Salvando...' : 'Confirmar Confronto'}
+          {isPending ? tButtons('saving') : t('match.confirmMatchup')}
         </Button>
       </DialogContent>
     </Dialog>
@@ -349,6 +362,9 @@ export function ReplaceMatchPlayerDialog({
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
+  const t = useTranslations('admin');
+  const tButtons = useTranslations('buttons');
+  const tBracket = useTranslations('bracket');
   const [internalOpen, setInternalOpen] = useState(false);
   const open = externalOpen !== undefined ? externalOpen : internalOpen;
   const setOpen = externalOnOpenChange || setInternalOpen;
@@ -400,8 +416,9 @@ export function ReplaceMatchPlayerDialog({
     });
   }
 
-  const p1Name = formatPlayerName(match.player1_name, match.player1_seed, match.player1_type);
-  const p2Name = formatPlayerName(match.player2_name, match.player2_seed, match.player2_type);
+  const toBeDefined = tBracket('toBeDefined');
+  const p1Name = formatPlayerName(match.player1_name, match.player1_seed, match.player1_type, toBeDefined);
+  const p2Name = formatPlayerName(match.player2_name, match.player2_seed, match.player2_type, toBeDefined);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -414,17 +431,17 @@ export function ReplaceMatchPlayerDialog({
             size="sm"
             className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider border-2 border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 hover:text-rose-800"
           >
-            <RefreshCw className="w-3 h-3 mr-1.5" /> Substituir / LL / Definir Q
+            <RefreshCw className="w-3 h-3 mr-1.5" /> {t('match.replaceLL')}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="rounded-[2rem] max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-2xl font-black">
-            {isFillingPlaceholder ? 'Definir Jogador' : 'Substituir Jogador'}
+            {isFillingPlaceholder ? t('match.definePlayer') : t('match.replacePlayer')}
           </DialogTitle>
           <DialogDescription className="font-bold text-slate-500">
-            Selecione qual lado do confronto deseja alterar.
+            {t('match.selectSide')}
           </DialogDescription>
         </DialogHeader>
 
@@ -439,7 +456,9 @@ export function ReplaceMatchPlayerDialog({
                   : 'border-slate-100 hover:bg-slate-50',
               )}
             >
-              <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Lado A</span>
+              <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                {t('match.sideA')}
+              </span>
               <span className="text-sm font-black text-center line-clamp-2">{p1Name}</span>
             </button>
             <button
@@ -451,7 +470,9 @@ export function ReplaceMatchPlayerDialog({
                   : 'border-slate-100 hover:bg-slate-50',
               )}
             >
-              <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Lado B</span>
+              <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                {t('match.sideB')}
+              </span>
               <span className="text-sm font-black text-center line-clamp-2">{p2Name}</span>
             </button>
           </div>
@@ -459,12 +480,14 @@ export function ReplaceMatchPlayerDialog({
           {selectedSlot && (
             <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
               <div className="space-y-2">
-                <Label className="text-xs font-black uppercase tracking-widest text-slate-500">Novo Jogador</Label>
+                <Label className="text-xs font-black uppercase tracking-widest text-slate-500">
+                  {t('match.newPlayer')}
+                </Label>
                 <Combobox
                   options={options}
                   value={playerId}
                   onValueChange={setPlayerId}
-                  placeholder="Selecione o jogador..."
+                  placeholder={t('match.selectPlayerPlaceholder')}
                   className="h-12"
                 />
               </div>
@@ -478,16 +501,14 @@ export function ReplaceMatchPlayerDialog({
                   className="w-5 h-5 rounded-lg border-2 border-slate-300 text-rose-600 focus:ring-rose-500"
                 />
                 <label htmlFor="isLL" className="text-sm font-black text-slate-700 cursor-pointer">
-                  {isFillingPlaceholder
-                    ? 'Este jogador está entrando como Lucky Loser (LL)'
-                    : 'Substituir por Lucky Loser (LL)'}
+                  {isFillingPlaceholder ? t('match.enteringAsLL') : t('match.replaceWithLL')}
                 </label>
               </div>
 
               {isLL && (
                 <p className="text-[10px] text-amber-600 font-bold bg-amber-50 p-3 rounded-xl border border-amber-100">
                   <AlertCircle className="w-3 h-3 inline mr-1" />
-                  Ao marcar como LL, a pontuação desta partida será anulada apenas se o Lucky Loser vencer. Se ele perder, a pontuação será creditada normalmente.
+                  {t('match.llWarning')}
                 </p>
               )}
             </div>
@@ -499,7 +520,11 @@ export function ReplaceMatchPlayerDialog({
           disabled={isPending || !playerId || !selectedSlot}
           className="w-full h-14 rounded-2xl font-black text-lg bg-rose-600 hover:bg-rose-700 text-white shadow-xl shadow-rose-100"
         >
-          {isPending ? 'Salvando...' : isFillingPlaceholder ? 'Confirmar Jogador' : 'Confirmar Substituição'}
+          {isPending
+            ? tButtons('saving')
+            : isFillingPlaceholder
+              ? t('match.confirmPlayer')
+              : t('match.confirmReplace')}
         </Button>
       </DialogContent>
     </Dialog>
@@ -523,6 +548,9 @@ export function SetResultDialog({
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
+  const t = useTranslations('admin');
+  const tButtons = useTranslations('buttons');
+  const tBracket = useTranslations('bracket');
   const [internalOpen, setInternalOpen] = useState(false);
   const open = externalOpen !== undefined ? externalOpen : internalOpen;
   const setOpen = externalOnOpenChange || setInternalOpen;
@@ -566,7 +594,7 @@ export function SetResultDialog({
           onSuccess?.();
         }, 1000);
       } else {
-        setError(result.error || 'Erro ao limpar resultado');
+        setError(result.error || t('match.errorClearResult'));
         setShowConfirmClear(false);
       }
     });
@@ -587,7 +615,7 @@ export function SetResultDialog({
           onSuccess?.();
         }, 1000);
       } else {
-        setError(result.error || 'Erro ao alterar pontuação');
+        setError(result.error || t('match.errorChangePoints'));
         setShowConfirmCancelPoints(false);
       }
     });
@@ -599,7 +627,7 @@ export function SetResultDialog({
     setSuccess(false);
 
     if (!winnerId) {
-      setError('Selecione o vencedor');
+      setError(t('match.errorSelectWinner'));
       return;
     }
 
@@ -612,7 +640,7 @@ export function SetResultDialog({
     }
 
     if (!finalScore) {
-      setError(resultMode === 'retired' ? 'Informe o placar parcial do RET' : 'Selecione o placar ou marque W/O/RET');
+      setError(resultMode === 'retired' ? t('match.errorPartialScore') : t('match.errorSelectScore'));
       return;
     }
 
@@ -627,10 +655,12 @@ export function SetResultDialog({
           onSuccess?.();
         }, 1000);
       } else {
-        setError(result.error || 'Erro ao salvar');
+        setError(result.error || t('match.errorSave'));
       }
     });
   }
+
+  const toBeDefined = tBracket('toBeDefined');
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -643,29 +673,34 @@ export function SetResultDialog({
             size="sm"
             className="flex-1 text-[10px] h-8 rounded-xl font-black uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-100"
           >
-            <Trophy className="w-3 h-3 mr-1.5" /> {match.status === 'completed' ? 'Alterar' : 'Resultado'}
+            <Trophy className="w-3 h-3 mr-1.5" />{' '}
+            {match.status === 'completed' ? t('match.change') : t('match.result')}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="rounded-[2rem] max-w-lg" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="text-2xl font-black">
-            {match.status === 'completed' ? 'Alterar Resultado' : 'Registrar Resultado'}
+            {match.status === 'completed' ? t('match.changeResult') : t('match.registerResult')}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6 pt-4">
           <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
             <div className="text-center flex-1">
-              <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Jogador A</p>
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">
+                {t('match.playerA')}
+              </p>
               <p className="font-bold text-slate-700">
-                {formatPlayerName(match.player1_name, match.player1_seed, match.player1_type)}
+                {formatPlayerName(match.player1_name, match.player1_seed, match.player1_type, toBeDefined)}
               </p>
             </div>
             <div className="px-4 text-slate-300 font-black italic text-xl">VS</div>
             <div className="text-center flex-1">
-              <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Jogador B</p>
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">
+                {t('match.playerB')}
+              </p>
               <p className="font-bold text-slate-700">
-                {formatPlayerName(match.player2_name, match.player2_seed, match.player2_type)}
+                {formatPlayerName(match.player2_name, match.player2_seed, match.player2_type, toBeDefined)}
               </p>
             </div>
           </div>
@@ -679,12 +714,14 @@ export function SetResultDialog({
           {success && (
             <div className="flex items-center gap-2 p-3 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-bold border-2 border-emerald-100">
               <CheckCircle2 className="w-4 h-4" />
-              Resultado salvo! Vencedor avançado.
+              {t('match.resultSaved')}
             </div>
           )}
 
           <div className="space-y-3">
-            <Label className="text-xs font-black uppercase tracking-widest text-slate-500">Selecione o Vencedor</Label>
+            <Label className="text-xs font-black uppercase tracking-widest text-slate-500">
+              {t('match.selectWinner')}
+            </Label>
             <div className="grid grid-cols-2 gap-4">
               <label
                 className={`flex flex-col items-center gap-2 p-4 border-2 rounded-2xl cursor-pointer transition-all ${
@@ -701,9 +738,11 @@ export function SetResultDialog({
                   className="hidden"
                 />
                 <span className="text-sm font-black text-center">
-                  {formatPlayerName(match.player1_name, match.player1_seed, match.player1_type)}
+                  {formatPlayerName(match.player1_name, match.player1_seed, match.player1_type, toBeDefined)}
                 </span>
-                {winnerId === match.player1_id?.toString() && <Badge className="bg-emerald-500">VENCEDOR</Badge>}
+                {winnerId === match.player1_id?.toString() && (
+                  <Badge className="bg-emerald-500">{t('match.winnerBadge')}</Badge>
+                )}
               </label>
               <label
                 className={`flex flex-col items-center gap-2 p-4 border-2 rounded-2xl cursor-pointer transition-all ${
@@ -720,15 +759,19 @@ export function SetResultDialog({
                   className="hidden"
                 />
                 <span className="text-sm font-black text-center">
-                  {formatPlayerName(match.player2_name, match.player2_seed, match.player2_type)}
+                  {formatPlayerName(match.player2_name, match.player2_seed, match.player2_type, toBeDefined)}
                 </span>
-                {winnerId === match.player2_id?.toString() && <Badge className="bg-emerald-500">VENCEDOR</Badge>}
+                {winnerId === match.player2_id?.toString() && (
+                  <Badge className="bg-emerald-500">{t('match.winnerBadge')}</Badge>
+                )}
               </label>
             </div>
           </div>
 
           <div className="space-y-3">
-            <Label className="text-xs font-black uppercase tracking-widest text-slate-500">Placar Final</Label>
+            <Label className="text-xs font-black uppercase tracking-widest text-slate-500">
+              {t('match.finalScore')}
+            </Label>
             
             {/* Result mode */}
             <div className="flex flex-wrap items-center gap-2">
@@ -748,7 +791,7 @@ export function SetResultDialog({
                     : ''
                 }`}
               >
-                Normal
+                {t('match.normal')}
               </Button>
               <Button
                 type="button"
@@ -791,10 +834,10 @@ export function SetResultDialog({
               <p className="basis-full sm:basis-auto sm:ml-auto text-[10px] text-slate-400 font-bold flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
                 {resultMode === 'retired'
-                  ? 'Placar parcial obrigatório'
+                  ? t('match.partialScoreRequired')
                   : resultMode === 'walkover'
-                    ? 'Sem placar'
-                    : 'Sets separados por espaço (6-4 3-6 7-6)'}
+                    ? t('match.noScore')
+                    : t('match.setsHint')}
               </p>
             </div>
 
@@ -803,13 +846,13 @@ export function SetResultDialog({
               <Input
                 value={woPartialScore}
                 onChange={(e) => setWoPartialScore(e.target.value)}
-                placeholder="Ex: 6-4 3-2"
+                placeholder={t('match.partialScorePlaceholder')}
                 required
                 className="h-14 rounded-2xl border-2 border-slate-100 focus:border-orange-600 text-lg font-black tracking-widest"
               />
             ) : resultMode === 'walkover' ? (
               <div className="h-14 rounded-2xl border-2 border-amber-100 bg-amber-50 text-amber-700 flex items-center px-4 text-sm font-black uppercase tracking-widest">
-                W/O sem placar
+                {t('match.woNoScore')}
               </div>
             ) : (
               <Input
@@ -830,7 +873,11 @@ export function SetResultDialog({
               disabled={isPending || success}
               autoFocus={true}
             >
-              {isPending ? 'Salvando...' : success ? 'Sucesso!' : 'Confirmar Resultado'}
+              {isPending
+                ? tButtons('saving')
+                : success
+                  ? t('match.success')
+                  : t('match.confirmResult')}
             </Button>
 
             <div className="grid grid-cols-2 gap-3">
@@ -845,7 +892,7 @@ export function SetResultDialog({
                     : 'text-amber-600 border-amber-100 hover:bg-amber-50'
                 }`}
               >
-                {match.points_cancelled ? 'Reativar Pontos' : 'Anular Pontos'}
+                {match.points_cancelled ? t('match.reactivatePoints') : t('match.cancelPoints')}
               </Button>
 
               {match.status === 'completed' && (
@@ -856,7 +903,7 @@ export function SetResultDialog({
                   disabled={isPending || success}
                   className="h-12 rounded-2xl font-bold border-2 text-red-600 border-red-100 hover:bg-red-50 hover:border-red-200"
                 >
-                  Limpar
+                  {t('match.clear')}
                 </Button>
               )}
             </div>
@@ -874,12 +921,14 @@ export function SetResultDialog({
                 <AlertCircle className={`w-8 h-8 ${match.points_cancelled ? 'text-emerald-600' : 'text-amber-600'}`} />
               </div>
               <DialogTitle className="text-2xl font-black text-center text-slate-900">
-                {match.points_cancelled ? 'Reativar Pontuação?' : 'Anular Pontuação?'}
+                {match.points_cancelled
+                  ? t('match.reactivatePointsTitle')
+                  : t('match.cancelPointsTitle')}
               </DialogTitle>
               <DialogDescription className="text-center text-slate-500 font-medium px-4">
                 {match.points_cancelled
-                  ? 'Deseja reativar a pontuação para esta partida? Os pontos serão recalculados ao salvar o resultado novamente.'
-                  : 'Tem certeza que deseja anular a pontuação desta partida? Nenhum usuário ganhará pontos por este confronto.'}
+                  ? t('match.reactivatePointsDesc')
+                  : t('match.cancelPointsDesc')}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="flex flex-col sm:flex-row gap-3 p-2">
@@ -888,7 +937,7 @@ export function SetResultDialog({
                 onClick={() => setShowConfirmCancelPoints(false)}
                 className="flex-1 rounded-xl font-bold h-12 border-2"
               >
-                Cancelar
+                {tButtons('cancel')}
               </Button>
               <Button
                 onClick={() => handleCancelPoints(!match.points_cancelled)}
@@ -898,7 +947,7 @@ export function SetResultDialog({
                     : 'bg-amber-600 hover:bg-amber-700 shadow-amber-100'
                 }`}
               >
-                Sim
+                {t('match.yes')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -910,9 +959,11 @@ export function SetResultDialog({
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
                 <Trash2 className="w-8 h-8 text-red-600" />
               </div>
-              <DialogTitle className="text-2xl font-black text-center text-slate-900">Limpar Resultado?</DialogTitle>
+              <DialogTitle className="text-2xl font-black text-center text-slate-900">
+                {t('match.clearResultTitle')}
+              </DialogTitle>
               <DialogDescription className="text-center text-slate-500 font-medium px-4">
-                Tem certeza que deseja limpar o resultado desta partida? Isso removerá o vencedor das rodadas seguintes.
+                {t('match.clearResultDesc')}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="flex flex-col sm:flex-row gap-3 p-2">
@@ -921,13 +972,13 @@ export function SetResultDialog({
                 onClick={() => setShowConfirmClear(false)}
                 className="flex-1 rounded-xl font-bold h-12 border-2"
               >
-                Cancelar
+                {tButtons('cancel')}
               </Button>
               <Button
                 onClick={() => handleClearResult()}
                 className="flex-1 rounded-xl font-black h-12 bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-100"
               >
-                Sim
+                {t('match.yes')}
               </Button>
             </DialogFooter>
           </DialogContent>

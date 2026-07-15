@@ -1,7 +1,5 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -14,6 +12,9 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Trophy, Home, Users, LogOut, ClipboardList, Building2 } from 'lucide-react';
 import { logoutAction } from '@/lib/actions/auth';
 import type { User } from '@/lib/auth';
+import { LanguageSwitcher } from '@/components/shared/language-switcher';
+import { useTranslations } from 'next-intl';
+import { Link, usePathname } from '@/i18n/navigation';
 
 interface AdminHeaderProps {
   user: User;
@@ -21,6 +22,9 @@ interface AdminHeaderProps {
 
 export function AdminHeader({ user }: AdminHeaderProps) {
   const pathname = usePathname();
+  const t = useTranslations('admin');
+  const tNav = useTranslations('nav');
+  const tCommon = useTranslations('common');
 
   const initials = user.name
     .split(' ')
@@ -30,11 +34,11 @@ export function AdminHeader({ user }: AdminHeaderProps) {
     .toUpperCase();
 
   const navItems = [
-    { href: '/admin', label: 'Home', icon: Home },
-    { href: '/admin/torneios', label: 'Torneios', icon: Trophy },
-    { href: '/admin/usuarios', label: 'Usuários', icon: Users },
-    { href: '/admin/clubes', label: 'Clubes', icon: Building2 },
-    { href: '/admin/grupos', label: 'Grupos', icon: ClipboardList },
+    { href: '/admin', label: t('navHome'), icon: Home },
+    { href: '/admin/torneios', label: t('navTournaments'), icon: Trophy },
+    { href: '/admin/usuarios', label: t('navUsers'), icon: Users },
+    { href: '/admin/clubes', label: t('navClubs'), icon: Building2 },
+    { href: '/admin/grupos', label: t('navPools'), icon: ClipboardList },
   ];
 
   return (
@@ -45,7 +49,7 @@ export function AdminHeader({ user }: AdminHeaderProps) {
           <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-[#6EC46C]/20 group-hover:scale-110 transition-transform">
             <Trophy className="w-6 h-6 text-white" />
           </div>
-          <span className="hidden sm:inline font-black text-xl tracking-tight text-[#D32D18]">TennisPool</span>
+          <span className="hidden sm:inline font-black text-xl tracking-tight text-[#D32D18]">{tCommon('brandName')}</span>
         </Link>
 
         {/* Navigation - Center */}
@@ -71,10 +75,11 @@ export function AdminHeader({ user }: AdminHeaderProps) {
         </nav>
 
         {/* User Info - Right */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <LanguageSwitcher />
           <div className="hidden sm:flex flex-col items-end mr-1">
             <p className="text-sm font-black text-[#D32D18] leading-none">{user.name}</p>
-            <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider mt-1">Administrador</p>
+            <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider mt-1">{t('role')}</p>
           </div>
 
           <DropdownMenu>
@@ -100,7 +105,7 @@ export function AdminHeader({ user }: AdminHeaderProps) {
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => logoutAction()} className="cursor-pointer" variant="destructive">
                 <LogOut className="w-4 h-4" />
-                Sair
+                {tNav('logout')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

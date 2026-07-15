@@ -3,15 +3,17 @@
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Lock, AlertCircle } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { EnrollmentModal } from './enrollment-modal';
 import type { Tournament } from '@/lib/data';
+import { useTranslations } from 'next-intl';
 
 interface EnrollmentBannerProps {
   tournament: Tournament;
 }
 
 export function EnrollmentBanner({ tournament }: EnrollmentBannerProps) {
+  const t = useTranslations('tournaments');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -24,9 +26,9 @@ export function EnrollmentBanner({ tournament }: EnrollmentBannerProps) {
                 <Lock className="w-6 h-6 text-emerald-600" />
               </div>
               <div>
-                <h3 className="font-bold text-lg text-slate-900">Participe do Grupo!</h3>
+                <h3 className="font-bold text-lg text-slate-900">{t('enrollBannerTitle')}</h3>
                 <p className="text-slate-600 mt-1">
-                  Inscreva-se para fazer seus palpites no chaveamento completo do {tournament.name}.
+                  {t('enrollBannerBody', { name: tournament.name })}
                 </p>
               </div>
             </div>
@@ -36,7 +38,7 @@ export function EnrollmentBanner({ tournament }: EnrollmentBannerProps) {
               size="lg"
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-8"
             >
-              Inscrever-se
+              {t('enrollCta')}
             </Button>
           </div>
         </CardContent>

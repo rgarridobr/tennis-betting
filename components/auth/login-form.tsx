@@ -8,19 +8,21 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { ResetPasswordDialog } from './reset-password-dialog';
-
+import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const t = useTranslations('auth');
   return (
     <Button type="submit" className="w-full" disabled={pending}>
-      {pending ? 'Entrando...' : 'Entrar'}
+      {pending ? t('loginSubmitting') : t('loginSubmit')}
     </Button>
   );
 }
 
 export function LoginForm() {
+  const t = useTranslations('auth');
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirectTo') || '';
   const [error, setError] = useState<string | null>(null);
@@ -42,12 +44,12 @@ export function LoginForm() {
           {error && <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg">{error}</div>}
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('email')}</Label>
             <Input id="email" name="email" type="text" placeholder="" required />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
+            <Label htmlFor="password">{t('password')}</Label>
             <Input id="password" name="password" type="password" placeholder="" required />
           </div>
 
@@ -58,7 +60,7 @@ export function LoginForm() {
               onClick={() => setResetDialogOpen(true)}
               className="text-xs font-semibold text-emerald-600 hover:underline"
             >
-              Esqueci minha senha
+              {t('forgotPassword')}
             </button>
           </div>
 

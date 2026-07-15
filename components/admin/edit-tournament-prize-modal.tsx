@@ -14,6 +14,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { updateTournamentPrizeAction } from '@/lib/actions/admin';
+import { useTranslations } from 'next-intl';
 
 interface Props {
   tournamentId: number;
@@ -21,6 +22,8 @@ interface Props {
 }
 
 export function EditTournamentPrizeModal({ tournamentId, initialPrizeDescription }: Props) {
+  const t = useTranslations('admin');
+  const tButtons = useTranslations('buttons');
   const [prizeDescription, setPrizeDescription] = useState(initialPrizeDescription || '');
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -34,11 +37,11 @@ export function EditTournamentPrizeModal({ tournamentId, initialPrizeDescription
         throw new Error(response.error || 'Failed to update tournament prize');
       }
 
-      toast.success('Prêmio atualizado com sucesso!');
+      toast.success(t('prize.toastSuccess'));
       setIsOpen(false);
     } catch (error) {
       console.error(error);
-      toast.error('Ocorreu um erro ao atualizar o prêmio.');
+      toast.error(t('prize.toastError'));
     } finally {
       setLoading(false);
     }
@@ -53,13 +56,15 @@ export function EditTournamentPrizeModal({ tournamentId, initialPrizeDescription
           className="w-full sm:w-auto border-white/20 text-white hover:bg-white/10 hover:text-white rounded-2xl bg-white/5 backdrop-blur-md font-bold h-12 sm:h-14 px-4 sm:px-6 text-sm sm:text-base"
         >
           <Gift className="w-4 h-4 mr-2 shrink-0" />
-          <span className="truncate">{initialPrizeDescription ? 'Editar prêmio' : 'Adicionar prêmio'}</span>
+          <span className="truncate">
+            {initialPrizeDescription ? t('prize.editPrize') : t('prize.addPrize')}
+          </span>
         </Button>
       </DialogTrigger>
 
       <DialogContent className="w-[95vw] max-w-[520px] rounded-3xl p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="font-black text-lg sm:text-xl">Prêmio do torneio</DialogTitle>
+          <DialogTitle className="font-black text-lg sm:text-xl">{t('prize.title')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 sm:space-y-6">
@@ -68,19 +73,19 @@ export function EditTournamentPrizeModal({ tournamentId, initialPrizeDescription
               htmlFor="prize_description"
               className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] sm:text-xs tracking-widest"
             >
-              <Gift className="w-4 h-4 text-emerald-500" /> Descrição
+              <Gift className="w-4 h-4 text-emerald-500" /> {t('prize.description')}
             </Label>
             <Textarea
               id="prize_description"
               value={prizeDescription}
               onChange={(event) => setPrizeDescription(event.target.value)}
-              placeholder="Descreva o que o ganhador vai receber"
+              placeholder={t('prize.placeholder')}
               className="min-h-36 bg-slate-50 border-2 border-slate-100 focus:ring-emerald-500 rounded-2xl font-bold text-slate-700 text-sm sm:text-base px-3 sm:px-4"
             />
           </div>
 
           <Button onClick={handleSave} className="w-full h-12 rounded-xl font-bold" disabled={loading}>
-            {loading ? 'Salvando...' : 'Salvar alterações'}
+            {loading ? tButtons('saving') : t('prize.saveChanges')}
           </Button>
         </div>
       </DialogContent>

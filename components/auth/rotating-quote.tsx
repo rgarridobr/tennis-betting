@@ -1,21 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
-const QUOTES = [
-  '“No tênis, cada ponto conta uma história — de foco, coragem e paixão.”',
-  '“Entre linhas e silêncios, o tênis revela quem você é quando a bola volta.”',
-  '“O jogo começa antes do saque.”',
-  '“No tênis, a mente é tão afiada quanto a raquete.”',
-  '“Cada partida é uma nova chance de se reinventar.”',
-];
+const QUOTE_KEYS = ['quote1', 'quote2', 'quote3', 'quote4', 'quote5'] as const;
 
 export function RotatingQuote() {
+  const t = useTranslations('auth');
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % QUOTES.length);
+      setIndex((prev) => (prev + 1) % QUOTE_KEYS.length);
     }, 4000);
 
     return () => clearInterval(interval);
@@ -26,7 +22,7 @@ export function RotatingQuote() {
       key={index}
       className="text-white/90 text-xl font-medium max-w-md transition-opacity duration-700 ease-in-out animate-fade"
     >
-      {QUOTES[index]}
+      {t(QUOTE_KEYS[index])}
     </p>
   );
 }
