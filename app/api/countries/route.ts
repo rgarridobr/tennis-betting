@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getTranslations } from 'next-intl/server';
-import { getTranslations } from 'next-intl/server';
 
 interface FirstOrgCountry {
   country: string;
