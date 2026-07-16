@@ -387,4 +387,4 @@ npm install
 
 ---
 
-**Última atualização:** julho de 2026
+**Última atualização:** julho de 2026.
