@@ -66,7 +66,7 @@
     "missingMatch": "Confronto ausente",
     "bracketError": "ERRO DE CHAVEAMENTO",
     "awaitingResults": "Aguardando resultados",
-    "notPredicted": "Sem palpite",
+    "notPredicted": "Não palpitado",
     "toBeDefined": "A definir",
     "awaitingQualifier": "Aguardando definição do Qualifier pela organização.",
     "unsavedWarning": "Você tem palpites não salvos. Tem certeza que deseja sair?"
@@ -171,7 +171,7 @@
     "tagline": "Viva o jogo",
     "backToHome": "Voltar à página inicial",
     "loginTitle": "Bem-vindo de volta",
-    "loginSubtitle": "Entre na sua conta para fazer seus palpites ou acompanhar os resultados.",
+    "loginSubtitle": "Entre no seu Perfil para marcar seus palpites ou acompanhar os resultados.",
     "noAccount": "Ainda não tem uma conta?",
     "signUpLink": "Cadastre-se",
     "loginSubmit": "Entrar",
@@ -229,7 +229,7 @@
   },
   "dashboard": {
     "availableTournaments": "Torneios disponíveis",
-    "availableSubtitle": "Alguns torneios estão acontecendo agora. Participe e mostre o quanto você entende de tênis!",
+    "availableSubtitle": "Alguns torneios estão acontecendo agora. Participe e mostre suas habilidades!",
     "viewAll": "Ver todos",
     "noTournaments": "Nenhum torneio disponível no momento.",
     "heroTitle": "Faça seus palpites e",
@@ -300,8 +300,8 @@
     "enrollModalTitle": "Participar do Grupo",
     "enrollModalDescription": "Inscreva-se no grupo de {name} e dispute com outros participantes!",
     "enrollStep1": "Confirme sua inscrição no botão abaixo para entrar na disputa deste torneio.",
-    "enrollStep2": "Após a inscrição, você poderá iniciar os palpites nos jogos já confirmados.",
-    "enrollStep3": "Assim que os classificados do qualifying forem inseridos na chave principal, você poderá completar os palpites restantes.",
+    "enrollStep2": "Após inscrito, você poderá iniciar os palpites nos jogos já confirmados.",
+    "enrollStep3": "Assim que os classificados no qualifying forem inseridos na chave principal do torneio, pode-se completar os palpites do grupo.",
     "enrollViewRules": "Ver regras completas de pontuação",
     "enrollProcessing": "Processando inscrição...",
     "enrollSuccessTitle": "Inscrição confirmada!",
@@ -316,7 +316,7 @@
     "rankingEmptyBody": "As classificações aparecerão assim que os resultados forem lançados.",
     "rankingFull": "Classificação Completa",
     "rankingParticipants": "{count} participantes",
-    "hitChampionAndRunner": "Acertou o campeão e o vice",
+    "hitChampionAndRunner": "Acertou Campeão e Vice",
     "hitChampion": "Acertou o Campeão",
     "hitsLabel": "ACERTOS",
     "accuracyLabel": "PRECISÃO",
@@ -358,6 +358,15 @@
     "pointsValue": "{n} pontos"
   },
   "rules": {
+    "categoryDescriptions": {
+      "GRAND_SLAM": "Australian Open, Roland Garros, Wimbledon, US Open",
+      "MASTERS_1000_96": "Indian Wells, Miami, Madrid, Rome, etc.",
+      "MASTERS_1000_48_56": "Masters 1000 com chave de 48 ou 56 jogadores",
+      "ATP_500_48": "ATP 500 com chave de 48 jogadores",
+      "ATP_500_32": "ATP 500 com chave de 32 jogadores",
+      "ATP_250_48": "ATP 250 com chave de 48 jogadores",
+      "ATP_250_32": "ATP 250 com chave de 32 jogadores"
+    },
     "title": "Regras do Grupo",
     "subtitle": "Entenda como funciona a pontuação e as participações",
     "deadlinesTitle": "Início e Prazos",
@@ -367,11 +376,11 @@
     "scoringTitle": "Como Pontuar",
     "scoringBody": "Você ganha pontos a cada acerto de vencedor. A pontuação é progressiva: rodadas finais valem mais. A última partida (Final) premia exclusivamente quem acerta o Campeão do torneio.",
     "bracketTitle": "Chaveamento e Ranking",
-    "bracketBody": "Escolha quem avança em cada fase, palpitando no chaveamento até a final, e conquiste pontos progressivos para se destacar no ranking.",
+    "bracketBody": "Escolha quem avança em cada fase do torneio, palpitando no chaveamento até a partida final e conquiste pontos progressivos para se destacar no Ranking.",
     "viewOthersTitle": "Ver palpites dos adversários",
-    "viewOthersBody": "Para visualizar os palpites dos adversários, basta clicar em \"Ranking\", depois em \"Ranking por Torneio\" e, ao acessar o torneio, escolher um adversário.",
+    "viewOthersBody": "Para visualizar os palpites dos adversários, basta clicar em \"Ranking\", depois em \"Ranking por Torneio\", e ao acessar o torneio basta escolher um adversário.",
     "importantTitle": "Observação Importante",
-    "importantBody": "Sempre que um tenista com o status de Lucky Loser (LL) vencer uma partida, ou em caso de vitória por W/O (Walkover), não haverá pontuação.",
+    "importantBody": "Sempre que um tenista com o status de Lucky Loser(LL) vencer uma partida, ou em caso de vitória por W/O (Walkover), não haverá pontuação.",
     "scoringSystem": "Sistema de Pontuação",
     "pointsUnit": "pontos",
     "champion": "Campeão",
@@ -387,16 +396,16 @@
     "generalSlam": "4 Grand Slams",
     "generalMasters": "9 Masters 1000",
     "generalAtp500": "16 ATPs 500",
-    "generalValid": "29 torneios válidos para pontuação",
+    "generalValid": "Totalizando <bold>29 torneios válidos para pontuação</bold>.",
     "generalScoringTitle": "Sistema de Pontuação",
-    "generalScoring1": "Cada torneio tem sua própria tabela de pontuação conforme a categoria.",
-    "generalScoring2": "Os pontos de todos os torneios são somados no Ranking Geral.",
-    "generalScoring3": "Não há descarte de piores resultados — todos os torneios contam.",
-    "generalScoring4": "O ranking é atualizado em tempo real conforme os resultados oficiais.",
+    "generalScoring1": "Em cada torneio disputado, o participante acumulará pontos de acordo com seu desempenho.",
+    "generalScoring2": "O ranking geral será calculado com base nas 22 melhores pontuações obtidas entre os 29 torneios disponíveis.",
+    "generalScoring3": "A contagem dos pontos seguirá o sistema de 52 semanas (12 meses corridos).",
+    "generalScoring4": "O ranking geral será atualizado somente ao término de cada torneio.",
     "validityTitle": "Validade dos Pontos",
-    "validity1": "Os pontos permanecem válidos durante toda a temporada.",
-    "validity2": "Ao final da temporada, o ranking é zerado para o novo ciclo.",
-    "validity3": "Premiações especiais podem ser definidas pela organização do grupo."
+    "validity1": "Toda pontuação conquistada em um torneio terá validade de 52 semanas a partir da data da competição.",
+    "validity2": "Após este período, os pontos referentes ao torneio serão automaticamente zerados e deixarão de contar para o ranking.",
+    "validity3": "O sistema atualizará continuamente o ranking, sempre considerando as 22 maiores pontuações válidas dentro do período vigente."
   },
   "profile": {
     "title": "Meu Perfil",
@@ -427,6 +436,11 @@
     "changePassword": "Alterar Senha"
   },
   "pools": {
+    "adminGroupDeletedToast": "Grupo excluído com sucesso!",
+    "adminDeleteTitle": "Excluir Grupo?",
+    "adminDeleteDescription": "Tem certeza que deseja excluir o grupo <bold>{name}</bold>? Esta ação é irreversível e removerá todos os participantes.",
+    "adminCreateDescription": "Crie um novo grupo com restrições customizadas.",
+    "adminNoDescription": "Sem descrição.",
     "pageTitle": "Grupos",
     "pageSubtitle": "Crie ou participe de grupos privados para competir com seus amigos.",
     "tournamentLabel": "Torneio: {name}",
@@ -539,6 +553,27 @@
     "clubCustomPlaceholder": "Digite o nome do clube"
   },
   "admin": {
+    "tennisClub": {
+      "toastCreated": "Clube cadastrado com sucesso!",
+      "toastUpdated": "Clube atualizado com sucesso!",
+      "toastDeleted": "Clube excluído com sucesso!",
+      "deleteTitle": "Excluir Clube?",
+      "deleteDescription": "Você está prestes a excluir o clube oficial <bold>\"{name}\"</bold>. Essa ação removerá a associação oficial de usuários que pertencem a esse clube."
+    },
+    "createUser": {
+      "title": "Novo Usuário",
+      "submit": "Cadastrar Usuário",
+      "clubLabel": "Clube *",
+      "toast": "Usuário cadastrado com sucesso!"
+    },
+    "editUser": {
+      "title": "Editar Usuário",
+      "toast": "Usuário atualizado com sucesso!"
+    },
+    "userSearch": {
+      "label": "Buscar Usuário",
+      "placeholder": "Buscar por nome, email ou apelido..."
+    },
     "navHome": "Home",
     "navTournaments": "Torneios",
     "navUsers": "Usuários",
@@ -574,9 +609,9 @@
     "active": "Ativo",
     "you": "Você",
     "clubsTitle": "Clubes Oficiais",
-    "clubsSubtitle": "Cadastre, edite e exclua os clubes oficiais do sistema",
+    "clubsSubtitle": "Cadastre, edite e exclua os clubes que aparecerão na seleção dos usuários.",
     "tournamentsTitle": "Gerenciar Torneios",
-    "tournamentsSubtitle": "Acompanhe o calendário e gerencie os campeonatos",
+    "tournamentsSubtitle": "Crie, edite e acompanhe seus campeonatos para o grupo de tênis",
     "tournamentsListTitle": "Lista de Torneios",
     "tournamentsListSubtitle": "Acompanhe e edite seus campeonatos",
     "newTournament": "Novo Torneio",
@@ -587,7 +622,7 @@
     "emptyMonthTitle": "Nenhum torneio neste mês",
     "emptyMonthBody": "Não há torneios cadastrados para este período.",
     "groupInProgress": "Em Andamento / Bloqueados",
-    "groupOpen": "Abertos para palpites",
+    "groupOpen": "Abertos para Apostas",
     "groupUpcoming": "Próximos (Visíveis)",
     "groupStandby": "Calendário (Standby)",
     "groupFinished": "Finalizados",
@@ -727,9 +762,9 @@
     },
     "date": {
       "changeDateTime": "Alterar data e hora",
-      "startDateTime": "Data e hora de início",
+      "startDateTime": "Data e Hora Início",
       "saveChanges": "Salvar Alterações",
-      "toastSuccess": "Data e hora do torneio atualizadas com sucesso!",
+      "toastSuccess": "Data e hora do torneio atualizada com sucesso!",
       "toastError": "Ocorreu um erro ao atualizar a data do torneio."
     },
     "prize": {
@@ -772,7 +807,7 @@
       "grass": "Grama",
       "location": "Local",
       "selectLocation": "Selecione o local",
-      "startDateTime": "Data e hora de início",
+      "startDateTime": "Data e Hora Início",
       "endDate": "Data de término",
       "format": "Formato",
       "singles": "Simples",
@@ -829,7 +864,7 @@
       "toastDeleteError": "Erro ao excluir jogador",
       "playerList": "Lista de Jogadores",
       "importPlaceholder": "Cole a lista no formato:\nCarlos Alcaraz (ESP) [Car. Alcaraz]\nJannik Sinner (ITA) [J. Sinner]\nNovak Djokovic (SRB)\n...\n\nOu apenas nomes:\nCarlos Alcaraz\nJannik Sinner\nNovak Djokovic",
-      "importHint": "Formatos aceitos: \"Nome (País) [Nome de exibição]\", \"Nome (País)\" ou apenas \"Nome\". Um jogador por linha. O sistema ignora a numeração, se houver.",
+      "importHint": "Formatos aceitos: \"Nome (País) [Nome Exibição]\", \"Nome (País)\" ou apenas \"Nome\". Um jogador por linha. O sistema ignora numeração caso exista.",
       "importing": "Importando...",
       "importPlayers": "Importar Jogadores",
       "pasteList": "Cole a lista de jogadores",

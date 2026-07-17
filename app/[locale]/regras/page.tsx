@@ -128,7 +128,7 @@ export default async function RulesPage() {
                 <Card key={cat.id} className="border-0 shadow-md overflow-hidden pt-0">
                   <div className="bg-slate-900 px-6 py-4">
                     <h3 className="text-white font-bold text-lg">{cat.name}</h3>
-                    <p className="text-slate-400 text-xs">{cat.description}</p>
+                    <p className="text-slate-400 text-xs">{t(`categoryDescriptions.${cat.id}`)}</p>
                   </div>
                   <CardContent className="p-0">
                     <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
@@ -201,7 +201,9 @@ export default async function RulesPage() {
               <li>{t('generalAtp500')}</li>
             </ul>
             <p className="text-slate-600 mt-3">
-              <span className="font-bold text-slate-900">{t('generalValid')}</span>
+              {t.rich('generalValid', {
+                bold: (chunks) => <span className="font-bold text-slate-900">{chunks}</span>,
+              })}
             </p>
           </div>
 

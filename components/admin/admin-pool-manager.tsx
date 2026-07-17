@@ -56,7 +56,7 @@ export function AdminPoolManager({ pools, tournaments }: AdminPoolManagerProps) 
     try {
       const result = await deletePoolAction(Number(deletingPool.id));
       if (result.success) {
-        toast.success(tCommon("success"));
+        toast.success(t("adminGroupDeletedToast"));
         setDeletingPool(null);
         router.refresh();
       } else {
@@ -101,7 +101,7 @@ export function AdminPoolManager({ pools, tournaments }: AdminPoolManagerProps) 
                     {!pool.is_general && !pool.is_state_pool && <Badge className="bg-slate-100 text-slate-600 border-none text-[9px] uppercase font-black tracking-wider px-2 py-0.5">{t("privateTitle")}</Badge>}
                   </div>
                   <p className="text-sm text-slate-500 font-medium line-clamp-1 mb-2">
-                    {pool.description || t("noDescription")}
+                    {pool.description || t("adminNoDescription")}
                   </p>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400 font-bold">
                     <span>{t("tournamentLabel", { name: pool.tournament_name || t("filterOverall") })}</span>
@@ -157,7 +157,7 @@ export function AdminPoolManager({ pools, tournaments }: AdminPoolManagerProps) 
           <DialogHeader>
             <DialogTitle className="text-2xl font-black text-slate-800 tracking-tight">{t("createDialogTitle")}</DialogTitle>
             <DialogDescription className="text-slate-500">
-              {t("createDialogDescription")}
+              {t("adminCreateDescription")}
             </DialogDescription>
           </DialogHeader>
           <CreatePoolForm 
@@ -230,9 +230,12 @@ export function AdminPoolManager({ pools, tournaments }: AdminPoolManagerProps) 
             <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
               <Trash2 className="w-8 h-8 text-rose-600" />
             </div>
-            <DialogTitle className="text-2xl font-black text-center text-slate-900">{tButtons("delete")}</DialogTitle>
+            <DialogTitle className="text-2xl font-black text-center text-slate-900">{t("adminDeleteTitle")}</DialogTitle>
             <DialogDescription className="text-center text-slate-500 font-medium px-4 mt-2">
-              {deletingPool?.name}
+              {t.rich("adminDeleteDescription", {
+                name: deletingPool?.name ?? "",
+                bold: (chunks) => <strong>{chunks}</strong>,
+              })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex flex-col sm:flex-row gap-3 p-2 pt-4">

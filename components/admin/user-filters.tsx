@@ -24,8 +24,8 @@ interface UserFiltersProps {
 
 export function UserFilters({ filterOptions }: UserFiltersProps) {
   const tShared = useTranslations('shared');
-  const tCommon = useTranslations('common');
   const tButtons = useTranslations('buttons');
+  const tAdmin = useTranslations('admin');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -82,11 +82,11 @@ export function UserFilters({ filterOptions }: UserFiltersProps) {
     <div className="flex flex-col gap-4 mb-8">
       <div className="flex flex-col md:flex-row gap-4 items-end">
         <div className="flex-1 w-full space-y-2">
-          <label className="text-sm font-bold text-slate-700 ml-1">{tCommon('search')}</label>
+          <label className="text-sm font-bold text-slate-700 ml-1">{tAdmin('userSearch.label')}</label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
-              placeholder={tCommon('search')}
+              placeholder={tAdmin('userSearch.placeholder')}
               className="pl-10 h-12 rounded-2xl border-slate-200 bg-white shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

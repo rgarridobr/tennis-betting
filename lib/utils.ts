@@ -23,7 +23,7 @@ export function formatBrazilianPhoneNumber(value: string) {
 }
 
 export function getRoundName(round: number, maxRound: number): string {
-  if (maxRound === 0) return `Rodada ${round}`;
+  if (maxRound === 0) return `R${round}`;
 
   if (round === maxRound) return 'F';
   if (round === maxRound - 1) return 'SF';

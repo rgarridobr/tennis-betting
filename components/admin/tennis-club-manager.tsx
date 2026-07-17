@@ -35,7 +35,7 @@ export function TennisClubManager({ clubs }: { clubs: TennisClub[] }) {
     startTransition(async () => {
       const result = await createTennisClubAction(formData);
       if (result.success) {
-        toast.success(tCommon('success'));
+        toast.success(t('tennisClub.toastCreated'));
         setName('');
       } else {
         toast.error(result.error || tCommon('error'));
@@ -57,7 +57,7 @@ export function TennisClubManager({ clubs }: { clubs: TennisClub[] }) {
     startTransition(async () => {
       const result = await updateTennisClubAction(formData);
       if (result.success) {
-        toast.success(tCommon('success'));
+        toast.success(t('tennisClub.toastUpdated'));
         handleCancelEdit();
       } else {
         toast.error(result.error || tCommon('error'));
@@ -80,7 +80,7 @@ export function TennisClubManager({ clubs }: { clubs: TennisClub[] }) {
       formData.set('id', String(deleteClubId));
       const result = await deleteTennisClubAction(formData);
       if (result.success) {
-        toast.success(tCommon('success'));
+        toast.success(t('tennisClub.toastDeleted'));
       } else {
         toast.error(result.error || tCommon('error'));
       }
@@ -186,9 +186,12 @@ export function TennisClubManager({ clubs }: { clubs: TennisClub[] }) {
             <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm">
               <AlertTriangle className="w-8 h-8 text-rose-600" />
             </div>
-            <DialogTitle className="text-2xl font-black text-center text-slate-900">{tButtons('delete')}</DialogTitle>
+            <DialogTitle className="text-2xl font-black text-center text-slate-900">{t('tennisClub.deleteTitle')}</DialogTitle>
             <DialogDescription className="text-center text-slate-500 font-medium px-4">
-              <span className="font-bold text-slate-900">&quot;{deleteClubName}&quot;</span>
+              {t.rich('tennisClub.deleteDescription', {
+                name: deleteClubName,
+                bold: (chunks) => <span className="font-bold text-slate-900">{chunks}</span>,
+              })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex flex-col sm:flex-row gap-3 p-2">

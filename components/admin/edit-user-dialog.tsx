@@ -46,6 +46,7 @@ export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
   const tProfile = useTranslations('profile')
   const tCommon = useTranslations('common')
   const tButtons = useTranslations('buttons')
+  const tAdmin = useTranslations('admin')
   const [isPending, startTransition] = useTransition()
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -99,7 +100,7 @@ export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
     startTransition(async () => {
       const result = await updateUserAction(user.id, formData)
       if (result.success) {
-        toast.success(tCommon('success'))
+        toast.success(tAdmin('editUser.toast'))
         setOpen(false)
       } else {
         setError(result.error || tCommon('error'))
@@ -123,7 +124,7 @@ export function EditUserDialog({ user, clubs }: EditUserDialogProps) {
           <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-4 border border-emerald-200 shadow-sm">
             <Pencil className="w-7 h-7 text-emerald-600" />
           </div>
-          <DialogTitle className="text-3xl font-black text-slate-900 tracking-tight text-left">{tProfile('editTitle')}</DialogTitle>
+          <DialogTitle className="text-3xl font-black text-slate-900 tracking-tight text-left">{tAdmin('editUser.title')}</DialogTitle>
           <DialogDescription className="text-base font-medium text-slate-400 mt-1 text-left">
             {tProfile('subtitle')}
           </DialogDescription>

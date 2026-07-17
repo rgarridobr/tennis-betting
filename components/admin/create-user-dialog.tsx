@@ -109,7 +109,7 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
       const result = await createUserAction(formData);
 
       if (result.success) {
-        toast.success(tCommon('success'));
+        toast.success(tAdmin('createUser.toast'));
         setOpen(false);
       } else {
         setError(result.error || tCommon('error'));
@@ -125,7 +125,7 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
           className="bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-2xl shadow-xl shadow-emerald-500/20 h-14"
         >
           <UserPlus className="w-5 h-5 mr-2" />
-          {tAuth('registerSubmit')}
+          {tAdmin('createUser.title')}
         </Button>
       </DialogTrigger>
 
@@ -136,7 +136,7 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
           </div>
 
           <DialogTitle className="text-3xl font-black text-slate-900 tracking-tight text-left">
-            {tAuth('registerTitle')}
+            {tAdmin('createUser.title')}
           </DialogTitle>
 
           <DialogDescription className="text-base font-medium text-slate-400 mt-1 text-left">
@@ -280,7 +280,7 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
             />
           </div>
 
-          <TennisClubSelector clubs={clubs} value={tennisClub} onChange={setTennisClub} required />
+          <TennisClubSelector clubs={clubs} value={tennisClub} onChange={setTennisClub} label={tAdmin('createUser.clubLabel')} required />
 
           <DialogFooter className="pt-4">
             <Button
@@ -294,7 +294,7 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
                   {tAuth('registerSubmitting')}
                 </>
               ) : (
-                tAuth('registerSubmit')
+                tAdmin('createUser.submit')
               )}
             </Button>
           </DialogFooter>
