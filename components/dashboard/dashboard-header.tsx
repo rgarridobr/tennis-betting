@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Medal, Target, Trophy, FileText } from "lucide-react";
+import { Medal, Target, Trophy, FileText, UserPlus } from "lucide-react";
 import { logoutAction } from "@/lib/actions/auth";
 import type { User } from "@/lib/auth";
 import { useState, useEffect } from "react";
@@ -87,7 +87,7 @@ export function DashboardHeader({
         />
       )}
       <header className="sticky top-0 z-50 bg-gradient-to-br from-[#041a16] via-[#062c25] to-[#005e50] backdrop-blur-xl border-b border-white/5">
-        <div className="container mx-auto px-4 md:px-32 h-20 flex items-center justify-between">
+        <div className="container mx-auto px-2 sm:px-4 md:px-32 h-20 flex items-center justify-between gap-1 sm:gap-3">
           {/* Logo - Left */}
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-[#6EC46C]/20 group-hover:scale-110 transition-transform">
@@ -99,7 +99,7 @@ export function DashboardHeader({
           </Link>
 
           {/* Navigation - Center */}
-          <nav className="flex-1 flex items-center justify-center gap-1 sm:gap-2">
+          <nav className="flex-none sm:flex-1 flex items-center justify-center gap-0.5 sm:gap-2">
             {navItems.map((item) => {
               const isActive =
                 pathname === item.href ||
@@ -113,7 +113,7 @@ export function DashboardHeader({
                   <DropdownMenu key={item.href}>
                     <DropdownMenuTrigger asChild>
                       <button
-                        className={`px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base font-medium rounded-lg transition-all flex items-center gap-2 outline-none ${
+                        className={`px-2 py-2 sm:px-4 sm:py-2 text-sm sm:text-base font-medium rounded-lg transition-all flex items-center gap-2 outline-none ${
                           isActive
                             ? "text-gradient-to-br from-[#041a16] via-[#062c25] to-[#083a31] bg-white"
                             : "text-white hover:text-gradient-to-br from-[#041a16] via-[#062c25] to-[#083a31] hover:bg-white/10"
@@ -148,7 +148,7 @@ export function DashboardHeader({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base font-medium rounded-lg transition-all flex items-center gap-2 ${
+                  className={`px-2 py-2 sm:px-4 sm:py-2 text-sm sm:text-base font-medium rounded-lg transition-all flex items-center gap-2 ${
                     isActive
                       ? "text-gradient-to-br from-[#041a16] via-[#062c25] to-[#083a31] bg-white"
                       : "text-white hover:text-gradient-to-br from-[#041a16] via-[#062c25] to-[#083a31] hover:bg-white/10"
@@ -183,7 +183,7 @@ export function DashboardHeader({
           </nav>
 
           {/* User Avatar - Right */}
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-4">
             <LanguageSwitcher />
             {user ? (
               <>
@@ -241,10 +241,13 @@ export function DashboardHeader({
                   <Link href="/login">{t("login")}</Link>
                 </Button>
                 <Button
-                  className="bg-[#6EC46C] text-white hover:bg-[#6EC46C]/90 font-bold px-6 rounded-xl shadow-lg shadow-[#6EC46C]/20"
+                  className="h-10 w-10 rounded-2xl bg-[#6EC46C] p-0 text-white shadow-lg shadow-[#6EC46C]/20 hover:bg-[#6EC46C]/90 sm:w-auto sm:px-6 sm:rounded-xl"
                   asChild
                 >
-                  <Link href="/cadastro">{t("register")}</Link>
+                  <Link href="/cadastro" aria-label={t("register")} className="flex items-center justify-center gap-2">
+                    <UserPlus className="h-4 w-4 sm:hidden" />
+                    <span className="hidden sm:inline">{t("register")}</span>
+                  </Link>
                 </Button>
               </div>
             )}
