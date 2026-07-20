@@ -9,7 +9,7 @@ import { useTranslations } from "next-intl";
 
 interface PoolRankingProps {
   ranking: RankingEntry[];
-  currentUserId: number;
+  currentUserId?: number;
   initialHidePending?: boolean;
 }
 

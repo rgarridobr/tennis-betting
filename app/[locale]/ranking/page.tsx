@@ -1,4 +1,4 @@
-import { requireUserWithLocation } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import {
   getGlobalRanking,
@@ -22,8 +22,8 @@ export default async function RankingPage({
 }: { 
   searchParams: Promise<{ tab?: string; tournamentId?: string }> 
 }) {
-  const user = await requireUserWithLocation();
-  if (user.is_admin) redirect("/admin");
+  const user = await getSession();
+  if (user?.is_admin) redirect("/admin");
 
   const t = await getTranslations("ranking");
 
@@ -38,7 +38,7 @@ export default async function RankingPage({
 
   let ranking: RankingEntry[] = [];
   if (tab === "estadual") {
-    if (user.state) {
+    if (user?.state) {
       ranking = await getStateRanking(user.state, selectedTournamentId);
     }
   } else {
@@ -52,12 +52,12 @@ export default async function RankingPage({
       <PageHero
         title={
           tab === "estadual"
-            ? t("stateTitle", { state: user.state || "N/A" })
+            ? t("stateTitle", { state: user?.state || "N/A" })
             : t("nationalTitle")
         }
         subtitle={
           tab === "estadual"
-            ? t("stateSubtitle", { state: user.state || "" })
+            ? t("stateSubtitle", { state: user?.state || "" })
             : t("nationalSubtitle")
         }
       />
@@ -103,7 +103,7 @@ export default async function RankingPage({
           </div>
         </div>
 
-        {tab === "estadual" && !user.state && (
+        {tab === "estadual" && !user?.state && (
           <div className="text-center py-8 text-slate-500 font-medium">
             {t("needState")}
           </div>
@@ -147,7 +147,7 @@ export default async function RankingPage({
               <CardContent className="p-0">
                 <div className="divide-y divide-slate-100/80">
                   {ranking.map((entry) => {
-                    const isCurrentUser = user.id === entry.user_id;
+                    const isCurrentUser = user?.id === entry.user_id;
                     const accuracy =
                       entry.total_predictions > 0
                         ? Math.round(

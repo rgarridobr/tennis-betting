@@ -18,15 +18,17 @@ import { toast } from "sonner";
 import { EditPoolDialog } from "./edit-pool-dialog";
 import type { Pool, Tournament } from "@/lib/data";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 
 interface PoolActionsProps {
   pool: Pool;
   tournaments: Tournament[];
   isMember: boolean;
   isCreator: boolean;
+  isAuthenticated?: boolean;
 }
 
-export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActionsProps) {
+export function PoolActions({ pool, tournaments, isMember, isCreator, isAuthenticated = true }: PoolActionsProps) {
   const t = useTranslations("pools");
   const tButtons = useTranslations("buttons");
   const poolId = Number(pool.id);
@@ -116,7 +118,7 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
             {t("leave")}
           </Button>
         </div>
-      ) : (
+      ) : isAuthenticated ? (
         <Button 
           className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold px-8 h-12 w-full sm:w-auto"
           onClick={handleJoin}
@@ -124,6 +126,15 @@ export function PoolActions({ pool, tournaments, isMember, isCreator }: PoolActi
         >
           <Users className="w-5 h-5 mr-2" />
           {needsPassword ? t("joinWithPassword") : t("joinGroup")}
+        </Button>
+      ) : (
+        <Button
+          asChild
+          className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold px-8 h-12 w-full sm:w-auto"
+        >
+          <Link href={`/login?redirectTo=/grupos/${poolId}`}>
+            {needsPassword ? t("joinWithPassword") : t("joinGroup")}
+          </Link>
         </Button>
       )}
 

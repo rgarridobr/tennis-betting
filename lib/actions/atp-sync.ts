@@ -10,7 +10,7 @@ import { getTranslations } from 'next-intl/server';
 async function requireAdmin() {
   const user = await getSession()
   if (!user || !user.is_admin) {
-    redirect('/dashboard')
+    redirect('/')
   }
   return user
 }

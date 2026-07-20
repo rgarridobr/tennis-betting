@@ -1,4 +1,4 @@
-import { requireUserWithLocation } from '@/lib/auth';
+import { getSession } from '@/lib/auth';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { PageHero } from '@/components/shared/page-hero';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,9 +10,9 @@ import React from 'react';
 import { getTranslations } from 'next-intl/server';
 
 export default async function RulesPage() {
-  const user = await requireUserWithLocation();
+  const user = await getSession();
 
-  if (user.is_admin) {
+  if (user?.is_admin) {
     redirect('/admin');
   }
 

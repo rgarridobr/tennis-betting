@@ -9,7 +9,7 @@ import { getTranslations } from "next-intl/server";
 export default async function AdminPoolsPage() {
   const user = await getSession();
   if (!user) redirect("/login");
-  if (!user.is_admin) redirect("/dashboard");
+  if (!user.is_admin) redirect("/");
 
   const t = await getTranslations("admin");
 

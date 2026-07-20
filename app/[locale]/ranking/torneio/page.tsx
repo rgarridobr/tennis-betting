@@ -1,4 +1,4 @@
-import { requireUserWithLocation } from '@/lib/auth';
+import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getAllVisibleTournaments, getActiveTournament } from '@/lib/data';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
@@ -22,8 +22,8 @@ interface PageProps {
 const ITEMS_PER_PAGE = 9;
 
 export default async function TournamentRankingListPage({ searchParams }: PageProps) {
-  const user = await requireUserWithLocation();
-  if (user.is_admin) redirect('/admin');
+  const user = await getSession();
+  if (user?.is_admin) redirect('/admin');
 
   const t = await getTranslations('ranking');
   const tCommon = await getTranslations('common');

@@ -17,6 +17,7 @@ interface PoolListProps {
   initialSearchResults: Pool[];
   tournaments?: Tournament[];
   isAdmin?: boolean;
+  isAuthenticated?: boolean;
 }
 
 export function PoolList({
@@ -25,6 +26,7 @@ export function PoolList({
   initialSearchResults: searchResults,
   tournaments = [],
   isAdmin = false,
+  isAuthenticated = true,
 }: PoolListProps) {
   const t = useTranslations('pools');
   const [search, setSearch] = useState('');
@@ -102,12 +104,21 @@ export function PoolList({
             </h2>
             <p className="text-slate-500 mt-2 font-medium ml-1">{t('myPoolsSubtitle')}</p>
           </div>
-          <Button
-            onClick={() => setShowCreateDialog(true)}
-            className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold uppercase tracking-widest text-xs px-6 py-6 shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/30 cursor-pointer"
-          >
-            {t('createNew')}
-          </Button>
+          {isAuthenticated ? (
+            <Button
+              onClick={() => setShowCreateDialog(true)}
+              className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold uppercase tracking-widest text-xs px-6 py-6 shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/30 cursor-pointer"
+            >
+              {t('createNew')}
+            </Button>
+          ) : (
+            <Button
+              asChild
+              className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold uppercase tracking-widest text-xs px-6 py-6 shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/30 cursor-pointer"
+            >
+              <Link href="/login?redirectTo=/grupos">{t('createNew')}</Link>
+            </Button>
+          )}
         </div>
 
         {myPools.length > 0 ? (
@@ -158,7 +169,9 @@ export function PoolList({
             </DialogDescription>
           </DialogHeader>
 
-          <CreatePoolForm isAdmin={isAdmin} tournaments={tournaments} onCancel={() => setShowCreateDialog(false)} />
+          {isAuthenticated && (
+            <CreatePoolForm isAdmin={isAdmin} tournaments={tournaments} onCancel={() => setShowCreateDialog(false)} />
+          )}
         </DialogContent>
       </Dialog>
     </div>

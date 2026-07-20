@@ -15,7 +15,7 @@ export default async function RegisterPage() {
     if (user.is_admin) {
       redirect('/admin');
     } else {
-      redirect('/dashboard');
+      redirect('/');
     }
   }
   const clubs = await getTennisClubs();

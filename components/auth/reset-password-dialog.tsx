@@ -98,7 +98,7 @@ export function ResetPasswordDialog({ open, onOpenChange }: { open: boolean, onO
     if (result.success) {
       toast.success(t('resetSuccess'))
       onOpenChange(false)
-      window.location.href = '/dashboard' // Redirect to dashboard since it logs in automatically
+      window.location.href = '/' // Redirect to home since it logs in automatically
     } else if (result.error) {
       setError(result.error)
     }

@@ -1,4 +1,4 @@
-import { requireUserWithLocation } from '@/lib/auth';
+import { getSession } from '@/lib/auth';
 import { redirect, notFound } from 'next/navigation';
 import {
   getTournamentById,
@@ -29,8 +29,8 @@ interface TournamentPageProps {
 }
 
 export default async function TournamentPage({ params, searchParams }: TournamentPageProps) {
-  const user = await requireUserWithLocation();
-  if (user.is_admin) redirect('/admin');
+  const user = await getSession();
+  if (user?.is_admin) redirect('/admin');
 
   const t = await getTranslations('tournaments');
   const locale = await getLocale();
@@ -46,8 +46,9 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
   if (!tournament || !tournament.is_visible) notFound();
 
   const started = await hasTournamentStarted(tournamentId);
-  const targetUserId = viewUser && started ? parseInt(viewUser, 10) : user.id;
-  const isViewingOthers = targetUserId !== user.id;
+  const currentUserId = user?.id;
+  const targetUserId = viewUser && started ? parseInt(viewUser, 10) : currentUserId;
+  const isViewingOthers = !!currentUserId && !!targetUserId && targetUserId !== currentUserId;
 
   const [
     matches,
@@ -61,8 +62,8 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
     genericQualifierPlayer,
   ] = await Promise.all([
     getBracketMatches(tournamentId),
-    getUserPredictions(targetUserId, tournamentId),
-    getEnrollment(user.id, tournamentId),
+    targetUserId ? getUserPredictions(targetUserId, tournamentId) : Promise.resolve([]),
+    currentUserId ? getEnrollment(currentUserId, tournamentId) : Promise.resolve(null),
     getTournamentParticipantCount(tournamentId),
     getTournamentPlayers(tournamentId, targetUserId),
     isViewingOthers ? getUserPublicInfo(targetUserId) : null,
@@ -103,7 +104,13 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
       <TournamentHeader tournament={tournament} participants={participants} />
 
       <main className="container mx-auto px-4 md:px-12 lg:px-32 py-12">
-        {!enrolled && !started && <EnrollmentBanner tournament={tournament} />}
+        {!enrolled && !started && (
+          <EnrollmentBanner
+            tournament={tournament}
+            isAuthenticated={!!user}
+            redirectTo={`/torneios/${tournamentId}`}
+          />
+        )}
 
         {ranking && ranking.length > 0 && !isViewingOthers && (
           <TournamentPodium ranking={ranking} isFinished={isFinished} />
@@ -221,7 +228,7 @@ export default async function TournamentPage({ params, searchParams }: Tournamen
         ) : (
           <TournamentBracket
             matches={matches}
-            userId={user.id}
+            userId={currentUserId || 0}
             tournamentId={tournamentId}
             predictions={predictionsRecord}
             canMakePredictions={enrolled && !started && !isViewingOthers}

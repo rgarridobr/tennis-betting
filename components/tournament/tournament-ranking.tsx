@@ -9,7 +9,7 @@ import { useTranslations } from 'next-intl';
 
 interface TournamentRankingProps {
   ranking: RankingEntry[];
-  currentUserId: number;
+  currentUserId?: number;
   tournamentId: number;
   hasStarted: boolean;
 }

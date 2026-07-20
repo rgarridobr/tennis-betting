@@ -54,7 +54,7 @@ export async function registerAction(formData: FormData) {
   if (redirectTo) {
     redirect(redirectTo);
   } else {
-    redirect('/dashboard');
+    redirect('/');
   }
 }
 
@@ -85,7 +85,7 @@ export async function loginAction(formData: FormData) {
   } else if (user.is_admin) {
     redirect('/admin');
   } else {
-    redirect('/dashboard');
+    redirect('/');
   }
 }
 

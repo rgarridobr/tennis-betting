@@ -1,4 +1,4 @@
-import { requireUserWithLocation } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { getUserPools, getGeneralPools, getPools, getActiveTournament, getTournamentsActive } from "@/lib/data";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { PageHero } from "@/components/shared/page-hero";
@@ -10,13 +10,13 @@ interface PoolsPageProps {
 }
 
 export default async function PoolsPage({ searchParams }: PoolsPageProps) {
-  const user = await requireUserWithLocation();
+  const user = await getSession();
   const t = await getTranslations("pools");
 
   const { q } = await searchParams;
 
   const [myPools, generalPools, searchResults, activeTournament, tournaments] = await Promise.all([
-    getUserPools(user.id),
+    user ? getUserPools(user.id) : Promise.resolve([]),
     getGeneralPools(),
     q ? getPools(q) : Promise.resolve([]),
     getActiveTournament(),
@@ -38,7 +38,8 @@ export default async function PoolsPage({ searchParams }: PoolsPageProps) {
           generalPools={generalPools} 
           initialSearchResults={searchResults}
           tournaments={tournaments}
-          isAdmin={user.is_admin}
+          isAdmin={user?.is_admin}
+          isAuthenticated={!!user}
         />
       </main>
     </div>

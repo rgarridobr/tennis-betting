@@ -1,5 +1,5 @@
-import { requireUserWithLocation } from "@/lib/auth";
-import { redirect, notFound } from "next/navigation";
+import { getSession } from "@/lib/auth";
+import { notFound } from "next/navigation";
 import { 
   getPoolById, 
   getPoolRanking, 
@@ -33,7 +33,7 @@ export default async function PoolPage({ params, searchParams }: PoolPageProps) 
   const poolId = parseInt(id, 10);
   if (isNaN(poolId)) notFound();
 
-  const user = await requireUserWithLocation(`/grupos/${poolId}`);
+  const user = await getSession();
   const t = await getTranslations("pools");
 
   const pool = await getPoolById(poolId);
@@ -43,17 +43,31 @@ export default async function PoolPage({ params, searchParams }: PoolPageProps) 
   const selectedTournamentId = tournamentId ? parseInt(tournamentId, 10) : undefined;
 
   const [isMember, activeTournament, tournaments, ranking] = await Promise.all([
-    isUserPoolMember(user.id, poolId),
+    user ? isUserPoolMember(user.id, poolId) : Promise.resolve(false),
     getActiveTournament(),
     pool.tournament_id ? getTournamentsActive() : getTournamentsWithBrackets(),
     getPoolRanking(poolId, selectedTournamentId)
   ]);
 
-  if (!isMember && pool.password_hash && !user.is_admin) {
+  if (!isMember && pool.password_hash && !user?.is_admin) {
     return (
       <div className="min-h-screen bg-slate-50">
         <DashboardHeader user={user} activeTournamentId={activeTournament?.id} />
-        <JoinPrivatePoolGate poolId={poolId} poolName={pool.name} />
+        {user ? (
+          <JoinPrivatePoolGate poolId={poolId} poolName={pool.name} />
+        ) : (
+          <main className="container mx-auto px-4 md:px-32 py-12">
+            <Card className="border-0 shadow-sm rounded-[2rem]">
+              <CardContent className="p-8 text-center">
+                <h1 className="text-2xl font-black text-slate-900 mb-3">{pool.name}</h1>
+                <p className="text-slate-600 font-medium mb-6">{t("passwordDescription")}</p>
+                <Button asChild className="rounded-xl bg-emerald-600 font-bold hover:bg-emerald-500">
+                  <Link href={`/login?redirectTo=/grupos/${poolId}`}>{t("joinWithPassword")}</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </main>
+        )}
       </div>
     );
   }
@@ -69,8 +83,8 @@ export default async function PoolPage({ params, searchParams }: PoolPageProps) 
     if (linkedTournament) linkedTournamentName = linkedTournament.name;
     
     const [enrolled, predictions, started] = await Promise.all([
-      isUserEnrolled(user.id, pool.tournament_id),
-      getUserPredictions(user.id, pool.tournament_id),
+      user ? isUserEnrolled(user.id, pool.tournament_id) : Promise.resolve(false),
+      user ? getUserPredictions(user.id, pool.tournament_id) : Promise.resolve([]),
       hasTournamentStarted(pool.tournament_id)
     ]);
     
@@ -92,7 +106,7 @@ export default async function PoolPage({ params, searchParams }: PoolPageProps) 
         <div className="flex flex-wrap items-center gap-4 mt-6">
           <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl border border-white/10">
             <Users className="w-4 h-4 text-emerald-300" />
-            <span className="text-white font-bold">{t("participantsCount", { count: pool.member_count })}</span>
+            <span className="text-white font-bold">{t("participantsCount", { count: pool.member_count || 0 })}</span>
           </div>
  
           {pool.is_general && (
@@ -121,7 +135,11 @@ export default async function PoolPage({ params, searchParams }: PoolPageProps) 
       <main className="container mx-auto px-4 md:px-32 py-12">
         <div className="flex flex-col gap-8">
           {linkedTournament && !isEnrolled && (
-            <EnrollmentBanner tournament={linkedTournament} />
+            <EnrollmentBanner
+              tournament={linkedTournament}
+              isAuthenticated={!!user}
+              redirectTo={`/grupos/${poolId}`}
+            />
           )}
 
           {linkedTournament && isEnrolled && !hasPredictions && !hasStarted && (
@@ -134,7 +152,7 @@ export default async function PoolPage({ params, searchParams }: PoolPageProps) 
                   <div>
                     <h3 className="font-bold text-lg text-slate-900">{t("pendingTitle")}</h3>
                     <p className="text-slate-600 mt-1 font-medium">
-                      {t("pendingBody", { name: linkedTournamentName })}
+                      {t("pendingBody", { name: linkedTournamentName || "" })}
                     </p>
                   </div>
                 </div>
@@ -162,14 +180,15 @@ export default async function PoolPage({ params, searchParams }: PoolPageProps) 
                 pool={pool}
                 tournaments={tournaments}
                 isMember={isMember}
-                isCreator={pool.creator_id === user.id}
+                isCreator={!!user && pool.creator_id === user.id}
+                isAuthenticated={!!user}
               />
             </div>
           </div>
 
           <PoolRanking 
             ranking={ranking} 
-            currentUserId={user.id} 
+            currentUserId={user?.id} 
             initialHidePending={pool.hide_pending}
           />
         </div>

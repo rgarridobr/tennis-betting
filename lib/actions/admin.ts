@@ -45,7 +45,7 @@ import { redirect } from 'next/navigation';
 async function requireAdmin() {
   const user = await getSession();
   if (!user || !user.is_admin) {
-    redirect('/dashboard');
+    redirect('/');
   }
   return user;
 }
@@ -111,7 +111,7 @@ export async function createTournamentAction(formData: FormData) {
     });
 
     revalidatePath('/admin/torneios');
-    revalidatePath('/dashboard');
+    revalidatePath('/');
 
     return { success: true, tournamentId };
   } catch (error: any) {
@@ -132,7 +132,7 @@ export async function updateTournamentPrizeAction(tournamentId: number, prizeDes
     revalidatePath(`/admin/torneios/${tournamentId}`);
     revalidatePath(`/torneios/${tournamentId}`);
     revalidatePath('/torneios');
-    revalidatePath('/dashboard');
+    revalidatePath('/');
     return { success: true };
   } catch (error) {
     console.error('Error updating tournament prize:', error);
@@ -160,7 +160,7 @@ export async function updateTournamentStatusAction(tournamentId: number, status:
   await updateTournamentStatus(tournamentId, status);
   revalidatePath('/admin/torneios');
   revalidatePath('/torneios');
-  revalidatePath('/dashboard');
+  revalidatePath('/');
 }
 
 export async function finishTournamentAction(tournamentId: number) {
@@ -174,7 +174,7 @@ export async function finishTournamentAction(tournamentId: number) {
     revalidatePath('/torneios');
     revalidatePath(`/torneios/${tournamentId}`);
     revalidatePath('/ranking');
-    revalidatePath('/dashboard');
+    revalidatePath('/');
   }
 
   return result;
@@ -186,7 +186,7 @@ export async function deleteTournamentAction(tournamentId: number) {
   const result = await deleteTournament(tournamentId);
   if (result.success) {
     revalidatePath('/admin/torneios');
-    revalidatePath('/dashboard');
+    revalidatePath('/');
   }
   return result;
 }
@@ -199,7 +199,7 @@ export async function toggleTournamentVisibilityAction(tournamentId: number, isV
   revalidatePath(`/admin/torneios/${tournamentId}`);
   revalidatePath('/torneios');
   revalidatePath(`/torneios/${tournamentId}`);
-  revalidatePath('/dashboard');
+  revalidatePath('/');
   return { success: true };
 }
 
@@ -312,7 +312,7 @@ export async function prepareTournamentAction(tournamentId: number) {
     revalidatePath(`/admin/torneios/${tournamentId}`);
     revalidatePath(`/torneios/${tournamentId}`);
     revalidatePath('/admin/torneios');
-    revalidatePath('/dashboard');
+    revalidatePath('/');
     return { success: true };
   } catch (error) {
     console.error('Error preparing tournament:', error);
@@ -328,7 +328,7 @@ export async function resetTournamentToStandbyAction(tournamentId: number) {
     revalidatePath(`/admin/torneios/${tournamentId}`);
     revalidatePath(`/torneios/${tournamentId}`);
     revalidatePath('/admin/torneios');
-    revalidatePath('/dashboard');
+    revalidatePath('/');
     return { success: true };
   } catch (error) {
     console.error('Error resetting tournament:', error);
@@ -357,7 +357,7 @@ export async function publishTournamentAction(tournamentId: number) {
     await publishTournament(tournamentId);
     revalidatePath(`/admin/torneios/${tournamentId}`);
     revalidatePath(`/torneios/${tournamentId}`);
-    revalidatePath('/dashboard');
+    revalidatePath('/');
     return { success: true };
   } catch (error) {
     console.error('Error publishing tournament:', error);
@@ -378,7 +378,7 @@ export async function updatePlaceholderPlayerAction(
   revalidatePath(`/admin/torneios/${tournamentId}`);
   revalidatePath(`/torneios/${tournamentId}`);
   revalidatePath('/ranking');
-  revalidatePath('/dashboard');
+  revalidatePath('/');
   return { success: true };
 }
 
@@ -391,7 +391,7 @@ export async function setMatchResultAction(matchId: number, winnerId: number, sc
     revalidatePath(`/admin/torneios/${tournamentId}`);
     revalidatePath(`/torneios/${tournamentId}`);
     revalidatePath('/ranking');
-    revalidatePath('/dashboard');
+    revalidatePath('/');
   }
 
   return result;
@@ -405,7 +405,7 @@ export async function cancelMatchPointsAction(matchId: number, cancelled: boolea
     revalidatePath(`/admin/torneios/${tournamentId}`);
     revalidatePath(`/torneios/${tournamentId}`);
     revalidatePath('/ranking');
-    revalidatePath('/dashboard');
+    revalidatePath('/');
     return { success: true };
   } catch (error) {
     console.error('Error cancelling match points:', error);
@@ -422,7 +422,7 @@ export async function clearMatchResultAction(matchId: number, tournamentId: numb
     revalidatePath(`/admin/torneios/${tournamentId}`);
     revalidatePath(`/torneios/${tournamentId}`);
     revalidatePath('/ranking');
-    revalidatePath('/dashboard');
+    revalidatePath('/');
   }
 
   return result;

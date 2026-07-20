@@ -89,7 +89,7 @@ export function DashboardHeader({
       <header className="sticky top-0 z-50 bg-gradient-to-br from-[#041a16] via-[#062c25] to-[#005e50] backdrop-blur-xl border-b border-white/5">
         <div className="container mx-auto px-4 md:px-32 h-20 flex items-center justify-between">
           {/* Logo - Left */}
-          <Link href="/dashboard" className="flex items-center gap-2.5 group">
+          <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-[#6EC46C]/20 group-hover:scale-110 transition-transform">
               <Trophy className="w-6 h-6 text-white" />
             </div>

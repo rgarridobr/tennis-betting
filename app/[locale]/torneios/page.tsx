@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { SearchX, Trophy, Zap } from 'lucide-react';
-import { requireUserWithLocation } from '@/lib/auth';
+import { getSession } from '@/lib/auth';
 import { getAllVisibleTournaments, getActiveTournament, getGlobalRanking } from '@/lib/data';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { RankingSection } from '@/components/dashboard/ranking-section';
@@ -25,8 +25,8 @@ interface PageProps {
 const ITEMS_PER_PAGE = 9;
 
 export default async function TournamentsPage({ searchParams }: PageProps) {
-  const user = await requireUserWithLocation();
-  if (user.is_admin) redirect('/admin');
+  const user = await getSession();
+  if (user?.is_admin) redirect('/admin');
 
   const t = await getTranslations('tournaments');
   const tCommon = await getTranslations('common');
@@ -174,7 +174,7 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
           </div>
 
           <div className="space-y-8">
-            <RankingSection ranking={ranking} currentUserId={user.id} />
+            <RankingSection ranking={ranking} currentUserId={user?.id} />
           </div>
         </div>
       </main>

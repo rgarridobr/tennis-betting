@@ -60,7 +60,7 @@ export async function updateProfile(formData: FormData) {
     `;
 
     revalidatePath('/perfil');
-    revalidatePath('/dashboard');
+    revalidatePath('/');
 
     return { success: true };
   } catch (error) {

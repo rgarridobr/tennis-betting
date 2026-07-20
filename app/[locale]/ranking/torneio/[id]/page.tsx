@@ -1,4 +1,4 @@
-import { requireUserWithLocation } from '@/lib/auth';
+import { getSession } from '@/lib/auth';
 import { redirect, notFound } from 'next/navigation';
 import {
   getTournamentRanking,
@@ -19,8 +19,8 @@ interface TournamentRankingPageProps {
 }
 
 export default async function TournamentRankingPage({ params, searchParams }: TournamentRankingPageProps) {
-  const user = await requireUserWithLocation();
-  if (user.is_admin) redirect('/admin');
+  const user = await getSession();
+  if (user?.is_admin) redirect('/admin');
 
   const t = await getTranslations('ranking');
 
@@ -33,7 +33,7 @@ export default async function TournamentRankingPage({ params, searchParams }: To
   if (!tournament) notFound();
 
   const [ranking, started, activeTournament] = await Promise.all([
-    tab === 'estadual' && user.state
+    tab === 'estadual' && user?.state
       ? getTournamentRanking(tournamentId, 100, user.state)
       : getTournamentRanking(tournamentId),
     hasTournamentStarted(tournamentId),
@@ -41,7 +41,7 @@ export default async function TournamentRankingPage({ params, searchParams }: To
   ]);
 
   // Find current user's position in this tournament
-  const userRankEntry = ranking.find((r) => r.user_id === user.id);
+  const userRankEntry = user ? ranking.find((r) => r.user_id === user.id) : undefined;
   const userPosition = userRankEntry?.rank || '-';
   const userPoints = userRankEntry?.total_points || 0;
 
@@ -54,6 +54,7 @@ export default async function TournamentRankingPage({ params, searchParams }: To
         title={t('tournamentTitle', { name: tournament.name })}
         subtitle={t('tournamentSubtitle')}
       >
+        {user && (
         <Card className="bg-white/10 border-0 backdrop-blur-sm">
           <CardContent className="p-4 flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
@@ -73,6 +74,7 @@ export default async function TournamentRankingPage({ params, searchParams }: To
             </div>
           </CardContent>
         </Card>
+        )}
       </PageHero>
 
       <main className="container mx-auto px-4 md:px-32 py-8">
@@ -100,14 +102,14 @@ export default async function TournamentRankingPage({ params, searchParams }: To
           </Link>
         </div>
 
-        {tab === "estadual" && !user.state ? (
+        {tab === "estadual" && !user?.state ? (
           <div className="text-center py-8 text-slate-500 font-medium">
             {t('needState')}
           </div>
         ) : (
           <TournamentRanking
             ranking={ranking}
-            currentUserId={user.id}
+            currentUserId={user?.id}
             tournamentId={tournamentId}
             hasStarted={started}
           />

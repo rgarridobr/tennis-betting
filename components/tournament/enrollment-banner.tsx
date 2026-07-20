@@ -4,17 +4,21 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Lock } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
 import { EnrollmentModal } from './enrollment-modal';
 import type { Tournament } from '@/lib/data';
 import { useTranslations } from 'next-intl';
 
 interface EnrollmentBannerProps {
   tournament: Tournament;
+  isAuthenticated?: boolean;
+  redirectTo?: string;
 }
 
-export function EnrollmentBanner({ tournament }: EnrollmentBannerProps) {
+export function EnrollmentBanner({ tournament, isAuthenticated = true, redirectTo }: EnrollmentBannerProps) {
   const t = useTranslations('tournaments');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const loginHref = `/login?redirectTo=${encodeURIComponent(redirectTo || `/torneios/${tournament.id}`)}`;
 
   return (
     <>
@@ -33,13 +37,23 @@ export function EnrollmentBanner({ tournament }: EnrollmentBannerProps) {
               </div>
             </div>
 
-            <Button
-              onClick={() => setIsModalOpen(true)}
-              size="lg"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-8"
-            >
-              {t('enrollCta')}
-            </Button>
+            {isAuthenticated ? (
+              <Button
+                onClick={() => setIsModalOpen(true)}
+                size="lg"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-8"
+              >
+                {t('enrollCta')}
+              </Button>
+            ) : (
+              <Button
+                asChild
+                size="lg"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-8"
+              >
+                <Link href={loginHref}>{t('enrollCta')}</Link>
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

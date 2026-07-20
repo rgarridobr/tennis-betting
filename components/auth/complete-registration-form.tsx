@@ -58,7 +58,7 @@ export function CompleteRegistrationForm({ user }: CompleteRegistrationFormProps
     const result = await updateProfile(formData);
     if (result?.success) {
       toast.success(t('completeSuccess'));
-      window.location.href = '/dashboard';
+      window.location.href = '/';
     } else {
       toast.error(result?.error || t('completeError'));
     }

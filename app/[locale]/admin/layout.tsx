@@ -10,7 +10,7 @@ export default async function AdminLayout({
 }) {
   const user = await getSession()
   if (!user) redirect('/login')
-  if (!user.is_admin) redirect('/dashboard')
+  if (!user.is_admin) redirect('/')
 
   return (
     <div className="min-h-screen bg-slate-50">

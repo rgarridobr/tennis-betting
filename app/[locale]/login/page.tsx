@@ -21,7 +21,7 @@ export default async function LoginPage({ searchParams }: Props) {
     } else if (user.is_admin) {
       redirect('/admin');
     } else {
-      redirect('/dashboard');
+      redirect('/');
     }
   }
 
