@@ -56,10 +56,10 @@ export async function PublicDashboardPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-black uppercase tracking-wide text-slate-900">
-                    Estatisticas pessoais
+                    Estatísticas pessoais
                   </p>
                   <p className="mt-1 text-xs font-bold leading-relaxed text-slate-500">
-                    Entre para visualizar seus pontos, acertos, precisao e torneios em andamento.
+                    Entre para visualizar seus pontos, acertos, precisão e torneios em andamento.
                   </p>
                 </div>
                 <Button
