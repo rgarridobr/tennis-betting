@@ -56,10 +56,10 @@ export async function PublicDashboardPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-black uppercase tracking-wide text-slate-900">
-                    Estatísticas pessoais
+                    {t('personalStatsLockedTitle')}
                   </p>
                   <p className="mt-1 text-xs font-bold leading-relaxed text-slate-500">
-                    Entre para visualizar seus pontos, acertos, precisão e torneios em andamento.
+                    {t('personalStatsLockedBody')}
                   </p>
                 </div>
                 <Button
@@ -68,7 +68,7 @@ export async function PublicDashboardPage() {
                 >
                   <Link href="/login" className="flex items-center gap-2">
                     <LogIn className="h-4 w-4" />
-                    Login
+                    {t('login')}
                   </Link>
                 </Button>
               </div>
