@@ -1,6 +1,8 @@
 {
   "nav": {
     "home": "Home",
+    "menu": "Menu",
+    "closeMenu": "Close menu",
     "brackets": "Brackets",
     "tournaments": "Tournaments",
     "groups": "Groups",
@@ -11,6 +13,7 @@
     "rules": "Rules",
     "profile": "My Profile",
     "logout": "Log out",
+    "accountMenu": "Account",
     "login": "Log in",
     "register": "Sign up",
     "participant": "Participant",

@@ -2,6 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -9,7 +17,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Medal, Target, Trophy, FileText, UserPlus } from "lucide-react";
+import {
+  ChevronDown,
+  FileText,
+  Home,
+  LogIn,
+  Medal,
+  Menu,
+  Target,
+  Trophy,
+  X,
+  UserRound,
+  UserPlus,
+} from "lucide-react";
 import { logoutAction } from "@/lib/actions/auth";
 import type { User } from "@/lib/auth";
 import { useState, useEffect } from "react";
@@ -62,6 +82,19 @@ export function DashboardHeader({
     { href: "/regras" as const, label: t("rules"), icon: FileText },
   ];
 
+  const mobileNavItems = [
+    { href: "/" as const, label: t("home"), icon: Home },
+    { href: "/torneios" as const, label: t("tournaments"), icon: Trophy },
+    { href: "/grupos" as const, label: t("groups"), icon: Target },
+    { href: "/ranking" as const, label: t("rankingGeneral"), icon: Medal },
+    {
+      href: "/ranking/torneio" as const,
+      label: t("rankingByTournament"),
+      icon: Medal,
+    },
+    { href: "/regras" as const, label: t("rules"), icon: FileText },
+  ];
+
   const showCompleteRegistration =
     user &&
     !user.is_admin &&
@@ -87,25 +120,88 @@ export function DashboardHeader({
         />
       )}
       <header className="sticky top-0 z-50 bg-gradient-to-br from-[#041a16] via-[#062c25] to-[#005e50] backdrop-blur-xl border-b border-white/5">
-        <div className="container mx-auto px-2 sm:px-4 md:px-32 h-20 flex items-center justify-between gap-1 sm:gap-3">
-          {/* Logo - Left */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-[#6EC46C]/20 group-hover:scale-110 transition-transform">
-              <Trophy className="w-6 h-6 text-white" />
-            </div>
-            <span className="hidden sm:inline font-black text-xl tracking-tight text-[#D32D18]">
-              TennisPool
-            </span>
-          </Link>
+        <div className="container relative mx-auto px-2 sm:px-4 md:px-32 h-20 flex items-center justify-between gap-1 sm:gap-3">
+          <div className="flex items-center gap-2">
+            <Drawer direction="left">
+              <DrawerTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="h-10 w-10 rounded-xl border border-white/15 bg-white/10 p-0 text-white hover:bg-white/15 hover:text-white sm:hidden"
+                  aria-label={t("menu")}
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent className="inset-y-0 left-0 right-auto mt-0 h-full w-[82vw] max-w-xs rounded-none border-r border-white/10 bg-slate-50 p-0 [&>div:first-child]:hidden border-none">
+                <DrawerHeader className="bg-gradient-to-br from-[#041a16] via-[#062c25] to-[#005e50] px-5 py-5 text-left">
+                  <div className="flex items-center justify-between gap-4">
+                    <DrawerTitle className="flex items-center gap-3 text-white">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-lg shadow-[#6EC46C]/20">
+                        <Trophy className="h-5 w-5" />
+                      </span>
+                      <span className="font-black tracking-tight text-[#D32D18]">
+                        TennisPool
+                      </span>
+                    </DrawerTitle>
+                    <DrawerClose asChild>
+                      <Button
+                        variant="ghost"
+                        className="h-9 w-9 rounded-xl border border-white/15 bg-white/10 p-0 text-white hover:bg-white/15 hover:text-white"
+                        aria-label={t("closeMenu")}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </DrawerClose>
+                  </div>
+                </DrawerHeader>
+                <nav className="flex flex-col gap-1 p-3">
+                  {mobileNavItems.map((item) => {
+                    const isActive =
+                      pathname === item.href ||
+                      (item.href !== "/" &&
+                        item.href !== "/ranking" &&
+                        pathname.startsWith(item.href));
+
+                    return (
+                      <DrawerClose asChild key={item.href}>
+                        <Link
+                          href={item.href}
+                          className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold transition-colors ${
+                            isActive
+                              ? "bg-emerald-600 text-white shadow-sm"
+                              : "text-slate-700 hover:bg-white hover:text-slate-950"
+                          }`}
+                        >
+                          <item.icon className="h-4 w-4" />
+                          {item.label}
+                        </Link>
+                      </DrawerClose>
+                    );
+                  })}
+                </nav>
+              </DrawerContent>
+            </Drawer>
+
+            {/* Logo - Left */}
+            <Link
+              href="/"
+              className="group absolute left-1/2 flex -translate-x-1/2 items-center gap-2.5 sm:static sm:translate-x-0"
+            >
+              <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-[#6EC46C]/20 group-hover:scale-110 transition-transform">
+                <Trophy className="w-6 h-6 text-white" />
+              </div>
+              <span className="hidden sm:inline font-black text-xl tracking-tight text-[#D32D18]">
+                TennisPool
+              </span>
+            </Link>
+          </div>
 
           {/* Navigation - Center */}
-          <nav className="flex-none sm:flex-1 flex items-center justify-center gap-0.5 sm:gap-2">
+          <nav className="hidden flex-none items-center justify-center gap-0.5 sm:flex sm:flex-1 sm:gap-2">
             {navItems.map((item) => {
               const isActive =
                 pathname === item.href ||
-                (item.href !== "/admin" &&
-                  item.href !== "/ranking" &&
-                  pathname.startsWith(item.href)) ||
+                (item.href !== "/ranking" && pathname.startsWith(item.href)) ||
                 (item.href === "/ranking" && pathname.startsWith("/ranking"));
 
               if (item.isRanking) {
@@ -232,24 +328,33 @@ export function DashboardHeader({
                 </DropdownMenu>
               </>
             ) : (
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  asChild
-                  className="font-bold text-white hover:text-[#6EC46C] hover:bg-white/10 rounded-xl hidden sm:flex"
-                >
-                  <Link href="/login">{t("login")}</Link>
-                </Button>
-                <Button
-                  className="h-10 w-10 rounded-2xl bg-[#6EC46C] p-0 text-white shadow-lg shadow-[#6EC46C]/20 hover:bg-[#6EC46C]/90 sm:w-auto sm:px-6 sm:rounded-xl"
-                  asChild
-                >
-                  <Link href="/cadastro" aria-label={t("register")} className="flex items-center justify-center gap-2">
-                    <UserPlus className="h-4 w-4 sm:hidden" />
-                    <span className="hidden sm:inline">{t("register")}</span>
-                  </Link>
-                </Button>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="h-10 w-10 rounded-xl border border-white/15 bg-white/10 p-0 text-white shadow-none hover:bg-white/15 hover:text-white sm:w-auto sm:px-4"
+                    aria-label={t("accountMenu")}
+                  >
+                    <UserRound className="h-4 w-4" />
+                    <span className="hidden sm:inline">{t("accountMenu")}</span>
+                    <ChevronDown className="hidden h-4 w-4 sm:block" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-44">
+                  <DropdownMenuItem asChild>
+                    <Link href="/login" className="cursor-pointer">
+                      <LogIn className="mr-2 h-4 w-4" />
+                      {t("login")}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/cadastro" className="cursor-pointer">
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      {t("register")}
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         </div>

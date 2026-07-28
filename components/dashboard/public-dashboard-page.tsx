@@ -40,15 +40,15 @@ export async function PublicDashboardPage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50">  
       <DashboardHeader user={user} activeTournamentId={activeTournament?.id} />
       <HeroSection user={user} />
 
-      <main className="container mx-auto px-4 md:px-12 lg:px-32 pb-12">
+      <main className={`container mx-auto px-4 md:px-12 lg:px-32 pb-12 ${!user ? 'mt-6' : ''}`}>
         <div className="relative">
           <StatsCards stats={stats} />
           {!user && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center px-4">
+            <div className="absolute inset-0 z-20 flex items-start justify-center px-4 pt-4 sm:items-center sm:pt-0">
               <div className="absolute inset-x-0 top-2 bottom-2 rounded-[2rem] bg-slate-50/60 backdrop-blur-[3px]" />
               <div className="relative flex w-full max-w-xl flex-col items-center gap-3 rounded-[2rem] border border-emerald-100 bg-white/95 px-5 py-4 text-center shadow-[0_18px_50px_rgba(15,23,42,0.14)] sm:flex-row sm:text-left">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100">
