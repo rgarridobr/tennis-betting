@@ -1,6 +1,8 @@
 {
   "nav": {
     "home": "Início",
+    "menu": "Menu",
+    "closeMenu": "Fechar menu",
     "brackets": "Chaves",
     "tournaments": "Torneios",
     "groups": "Grupos",
@@ -11,6 +13,7 @@
     "rules": "Regras",
     "profile": "Meu Perfil",
     "logout": "Sair",
+    "accountMenu": "Conta",
     "login": "Entrar",
     "register": "Cadastrar",
     "participant": "Participante",
