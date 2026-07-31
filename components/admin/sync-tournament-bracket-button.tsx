@@ -35,7 +35,8 @@ export function SyncTournamentBracketButton({
     try {
       const result = await syncTournamentBracketAction(tournamentId);
       if (result.success) {
-        toast.success(t("sync.toastBracketSuccess", { count: result.updatedCount }));
+        const updatedCount = "updatedCount" in result ? result.updatedCount : 0;
+        toast.success(t("sync.toastBracketSuccess", { count: updatedCount }));
       } else {
         toast.error(result.error || t("sync.toastBracketError"));
       }

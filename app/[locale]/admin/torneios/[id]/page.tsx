@@ -14,6 +14,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PlayerManager } from '@/components/admin/player-manager';
 import { SyncTournamentBracketButton } from '@/components/admin/sync-tournament-bracket-button';
+import { ImportBracketPdfButton } from '@/components/admin/import-bracket-pdf-button';
 import { PublishBracketButton } from '@/components/admin/publish-bracket-button';
 import { TournamentStatusTransition } from '@/components/admin/tournament-status-transition';
 import { TournamentBracket } from '@/components/tournament/tournament-bracket';
@@ -195,7 +196,10 @@ export default async function ManageTournamentPage({ params }: Props) {
               tournament.status === 'UPCOMING' || 
               tournament.status === 'draft' || 
               tournament.status === 'OPEN') && (
-              <SyncTournamentBracketButton tournamentId={tournamentId} isReady={matches.length > 0} />
+              <>
+                <SyncTournamentBracketButton tournamentId={tournamentId} isReady={matches.length > 0} />
+                <ImportBracketPdfButton tournamentId={tournamentId} isReady={matches.length > 0} />
+              </>
             )}
               {tournament.status !== 'draft' && (
                 <Badge className="bg-emerald-600 text-white font-black px-4 py-1.5 rounded-full">{t('fixedBracket')}</Badge>

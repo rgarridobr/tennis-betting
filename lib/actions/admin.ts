@@ -6,6 +6,8 @@ import { getTranslations } from 'next-intl/server';
 import {
   fetchAtpDraw,
   findAtpPlayerMatch,
+  parseAtpDrawPdfBuffer,
+  type AtpMatch,
   type ExistingPlayer,
 } from '@/lib/services/atp-draw';
 import {
@@ -658,6 +660,139 @@ function normalizePlayerType(type: string): string {
   return type;
 }
 
+async function applyDrawMatchesToTournament(
+  tournamentId: number,
+  drawMatches: AtpMatch[],
+  t: Awaited<ReturnType<typeof getTranslations>>,
+) {
+  if (drawMatches.length === 0) {
+    return {
+      success: false,
+      error: t('adminNoAtpMatches'),
+    };
+  }
+
+  const ourMatches = await sql`
+    SELECT id, position
+    FROM bracket_matches
+    WHERE tournament_id = ${tournamentId}
+      AND round = 1
+    ORDER BY position ASC
+  `;
+
+  if (ourMatches.length === 0) {
+    return { success: false, error: t('adminBracketNotGenerated') };
+  }
+
+  const allPlayers = await sql`
+    SELECT id, name, display_name, country
+    FROM players
+  ` as ExistingPlayer[];
+
+  let updatedCount = 0;
+  const reviewPlayers: string[] = [];
+
+  for (let i = 0; i < ourMatches.length; i++) {
+    const ourMatch = ourMatches[i];
+    const atpMatch = drawMatches[i];
+
+    if (!atpMatch) break;
+
+    const playersToUpdate: Array<{
+      id?: number;
+      type: string;
+      seed: number | null;
+    }> = [];
+
+    for (let pIdx = 0; pIdx < 2; pIdx++) {
+      const atpPlayer = atpMatch.players[pIdx];
+
+      if (!atpPlayer) {
+        playersToUpdate.push({ id: undefined, type: 'PLAYER', seed: null });
+        continue;
+      }
+
+      if (atpPlayer.type === 'BYE') {
+        playersToUpdate.push({ id: undefined, type: 'BYE', seed: null });
+        continue;
+      }
+
+      let matchedPlayer = findAtpPlayerMatch(
+        atpPlayer.name,
+        atpPlayer.country,
+        allPlayers,
+      );
+
+      const cleanedAtpName = cleanAtpPlayerName(atpPlayer.name);
+
+      if (!matchedPlayer && cleanedAtpName !== atpPlayer.name) {
+        matchedPlayer = findAtpPlayerMatch(
+          cleanedAtpName,
+          atpPlayer.country,
+          allPlayers,
+        );
+      }
+
+      let playerId: number;
+
+      if (!matchedPlayer && atpPlayer.name.includes('…')) {
+        reviewPlayers.push(`${atpPlayer.name} (${atpPlayer.country || t('adminNoCountry')})`);
+        playersToUpdate.push({
+          id: undefined,
+          type: normalizePlayerType(atpPlayer.type),
+          seed: atpPlayer.seed && !isNaN(parseInt(atpPlayer.seed, 10)) ? parseInt(atpPlayer.seed, 10) : null,
+        });
+        continue;
+      }
+
+      if (!matchedPlayer) {
+        const createdPlayer = await sql`
+          INSERT INTO players (name, country, display_name)
+          VALUES (${cleanedAtpName}, ${atpPlayer.country || null}, ${cleanedAtpName})
+          RETURNING id
+        `;
+
+        playerId = createdPlayer[0].id;
+        allPlayers.push({
+          id: playerId,
+          name: cleanedAtpName,
+          display_name: cleanedAtpName,
+          country: atpPlayer.country || null,
+        });
+      } else {
+        playerId = matchedPlayer.id;
+      }
+
+      if (atpPlayer.country) {
+        await sql`
+          UPDATE players
+          SET country = COALESCE(country, ${atpPlayer.country})
+          WHERE id = ${playerId}
+        `;
+      }
+
+      playersToUpdate.push({
+        id: playerId,
+        type: normalizePlayerType(atpPlayer.type),
+        seed: atpPlayer.seed && !isNaN(parseInt(atpPlayer.seed, 10)) ? parseInt(atpPlayer.seed, 10) : null,
+      });
+    }
+
+    await setMatchPlayers(ourMatch.id, playersToUpdate[0], playersToUpdate[1], tournamentId);
+    updatedCount++;
+  }
+
+  revalidatePath(`/admin/torneios/${tournamentId}`);
+  revalidatePath(`/torneios/${tournamentId}`);
+
+  return {
+    success: true,
+    updatedCount,
+    reviewCount: reviewPlayers.length,
+    reviewPlayers,
+  };
+}
+
 export async function syncTournamentBracketAction(tournamentId: number) {
   const t = await getTranslations('errors');
   await requireAdmin();
@@ -684,125 +819,53 @@ export async function syncTournamentBracketAction(tournamentId: number) {
 
     const drawMatches = await fetchAtpDraw(api_id, year, atpSlug);
 
-    if (drawMatches.length === 0) {
-      return {
-        success: false,
-        error: t('adminNoAtpMatches'),
-      };
-    }
-
-    const ourMatches = await sql`
-      SELECT id, position
-      FROM bracket_matches
-      WHERE tournament_id = ${tournamentId}
-        AND round = 1
-      ORDER BY position ASC
-    `;
-
-    if (ourMatches.length === 0) {
-      return { success: false, error: t('adminBracketNotGenerated') };
-    }
-
-    const allPlayers = await sql`
-      SELECT id, name, display_name, country
-      FROM players
-    ` as ExistingPlayer[];
-
-    let updatedCount = 0;
-
-    for (let i = 0; i < ourMatches.length; i++) {
-      const ourMatch = ourMatches[i];
-      const atpMatch = drawMatches[i];
-
-      if (!atpMatch) break;
-
-      const playersToUpdate: Array<{
-        id?: number;
-        type: string;
-        seed: number | null;
-      }> = [];
-
-      for (let pIdx = 0; pIdx < 2; pIdx++) {
-        const atpPlayer = atpMatch.players[pIdx];
-
-        if (!atpPlayer) {
-          playersToUpdate.push({ id: undefined, type: 'PLAYER', seed: null });
-          continue;
-        }
-
-        if (atpPlayer.type === 'BYE') {
-          playersToUpdate.push({ id: undefined, type: 'BYE', seed: null });
-          continue;
-        }
-
-        let matchedPlayer = findAtpPlayerMatch(
-          atpPlayer.name,
-          atpPlayer.country,
-          allPlayers,
-        );
-
-        const cleanedAtpName = cleanAtpPlayerName(atpPlayer.name);
-
-        if (!matchedPlayer && cleanedAtpName !== atpPlayer.name) {
-          matchedPlayer = findAtpPlayerMatch(
-            cleanedAtpName,
-            atpPlayer.country,
-            allPlayers,
-          );
-        }
-
-        let playerId: number;
-
-        if (!matchedPlayer && atpPlayer.name.includes('…')) {
-          throw new Error(t('adminTruncatedPlayerName', { name: atpPlayer.name, country: atpPlayer.country || t('adminNoCountry') }));
-        }
-
-        if (!matchedPlayer) {
-          const createdPlayer = await sql`
-            INSERT INTO players (name, country, display_name)
-            VALUES (${cleanedAtpName}, ${atpPlayer.country || null}, ${cleanedAtpName})
-            RETURNING id
-          `;
-
-          playerId = createdPlayer[0].id;
-          allPlayers.push({
-            id: playerId,
-            name: cleanedAtpName,
-            display_name: cleanedAtpName,
-            country: atpPlayer.country || null,
-          });
-        } else {
-          playerId = matchedPlayer.id;
-        }
-
-        if (atpPlayer.country) {
-          await sql`
-            UPDATE players
-            SET country = COALESCE(country, ${atpPlayer.country})
-            WHERE id = ${playerId}
-          `;
-        }
-
-        playersToUpdate.push({
-          id: playerId,
-          type: normalizePlayerType(atpPlayer.type),
-          seed: atpPlayer.seed && !isNaN(parseInt(atpPlayer.seed, 10)) ? parseInt(atpPlayer.seed, 10) : null,
-        });
-      }
-
-      await setMatchPlayers(ourMatch.id, playersToUpdate[0], playersToUpdate[1], tournamentId);
-      updatedCount++;
-    }
-
-    revalidatePath(`/admin/torneios/${tournamentId}`);
-    revalidatePath(`/torneios/${tournamentId}`);
-
-    return { success: true, updatedCount };
+    return await applyDrawMatchesToTournament(tournamentId, drawMatches, t);
   } catch (error: any) {
     console.error('Error syncing bracket:', error);
     return {
       success: false,
       error: t('adminBracketSyncFailed', { message: error.message }),
+    };
+  }
+}
+
+export async function importTournamentBracketPdfAction(formData: FormData) {
+  const t = await getTranslations('errors');
+  await requireAdmin();
+
+  const tournamentId = Number(formData.get('tournamentId'));
+  const file = formData.get('pdf');
+
+  if (!tournamentId) {
+    return { success: false, error: t('adminTournamentNotFound') };
+  }
+
+  const tournament = await sql`
+    SELECT id FROM tournaments WHERE id = ${tournamentId}
+  `;
+
+  if (tournament.length === 0) {
+    return { success: false, error: t('adminTournamentNotFound') };
+  }
+
+  if (!(file instanceof File) || file.size === 0) {
+    return { success: false, error: t('adminPdfRequired') };
+  }
+
+  if (file.type && file.type !== 'application/pdf') {
+    return { success: false, error: t('adminPdfInvalid') };
+  }
+
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const drawMatches = await parseAtpDrawPdfBuffer(buffer);
+
+    return await applyDrawMatchesToTournament(tournamentId, drawMatches, t);
+  } catch (error: any) {
+    console.error('Error importing bracket PDF:', error);
+    return {
+      success: false,
+      error: t('adminBracketPdfImportFailed', { message: error.message }),
     };
   }
 }
