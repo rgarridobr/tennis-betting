@@ -81,6 +81,9 @@
     "bracketUnavailable": "Bracket is not available yet.",
     "fillAllMatches": "Fill in all matches before finalizing.",
     "waitPlayersDefined": "Wait until all bracket players are set before finalizing.",
+    "incompleteBracketWarning": "Some matches are not predicted. You can save now and complete them later.",
+    "pendingQualifierWarning": "Some Qualifiers are still unset. You can save now and complete them later.",
+    "incompleteBracketConfirm": "Some predictions are missing or Qualifiers are still unset. Do you want to finalize anyway and save what is already filled in?",
     "invalidPredictionChain": "Review the bracket: a prediction points to an undefined matchup."
   },
   "language": {

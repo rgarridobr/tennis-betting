@@ -1095,7 +1095,7 @@ export async function updatePlaceholderPlayer(
   isLL?: boolean,
 ): Promise<void> {
   const matchData = await sql`
-    SELECT round, position, status, player1_id, player2_id
+    SELECT round, position, status, player1_id, player2_id, player1_type, player2_type
     FROM bracket_matches
     WHERE id = ${matchId}
   `;
@@ -1129,20 +1129,36 @@ export async function updatePlaceholderPlayer(
     `;
   }
 
-  // Transfer predictions from generic Qualifier to the new player
-  // This ensures users who predicted "Qualifier" don't lose their prediction
-  // when the actual player is defined.
+  // Transfer predictions from generic Qualifier to the new player.
+  // When both sides were qualifiers, keep the user's original slot choice.
   try {
-    const genericQualifiers = await sql`SELECT id FROM players WHERE name ILIKE 'Qualifier%'`;
-    const genericIds = genericQualifiers.map((q) => q.id);
+    const genericQualifier = await sql`SELECT id FROM players WHERE name = 'Qualifier' LIMIT 1`;
+    const qualifierPlayerId = genericQualifier.length > 0 ? genericQualifier[0].id : null;
 
-    if (genericIds.length > 0) {
-      await sql`
-        UPDATE predictions
-        SET predicted_winner_id = ${playerId}
-        WHERE bracket_match_id = ${matchId} 
-        AND predicted_winner_id IN (${genericIds})
-      `;
+    if (qualifierPlayerId) {
+      const wasSlot1Qualifier = m.player1_type === 'QUALIFIER' && (!m.player1_id || m.player1_id === qualifierPlayerId);
+      const wasSlot2Qualifier = m.player2_type === 'QUALIFIER' && (!m.player2_id || m.player2_id === qualifierPlayerId);
+      const updatedSlotWasQualifier = slot === 1 ? wasSlot1Qualifier : wasSlot2Qualifier;
+
+      if (updatedSlotWasQualifier) {
+        if (wasSlot1Qualifier && wasSlot2Qualifier) {
+          await resolveQualifierPredictions(
+            matchId,
+            qualifierPlayerId,
+            playerId,
+            slot === 1 ? '__SLOT_1__' : '__SLOT_2__',
+            tournamentId,
+          );
+        } else {
+          await sql`
+            UPDATE predictions
+            SET predicted_winner_id = ${playerId}, predicted_score = NULL
+            WHERE bracket_match_id = ${matchId}
+            AND predicted_winner_id = ${qualifierPlayerId}
+          `;
+          await resolveQualifierCascade(matchId, qualifierPlayerId, playerId, tournamentId);
+        }
+      }
     }
   } catch (err) {
     console.error('Error transferring qualifier predictions:', err);

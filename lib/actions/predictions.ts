@@ -64,9 +64,14 @@ async function validateFullBracketPredictions(
   }
 
   const isRealPlayerId = (playerId: number | null | undefined) => !!playerId && playerId !== qualifierPlayerId;
-  const isAutomaticByePick = (match: BracketMatchRow, winnerId: number) =>
-    (match.player1_type === 'BYE' && match.player2_id === winnerId && isRealPlayerId(match.player2_id)) ||
-    (match.player2_type === 'BYE' && match.player1_id === winnerId && isRealPlayerId(match.player1_id));
+  const isQualifierSlot = (playerType: string | null | undefined) =>
+    playerType === 'QUALIFIER' || playerType === 'LUCKY_LOSER';
+  const addMatchPlayerOptions = (match: BracketMatchRow, options: number[]) => {
+    if (isRealPlayerId(match.player1_id)) options.push(match.player1_id!);
+    if (isRealPlayerId(match.player2_id)) options.push(match.player2_id!);
+    if (isQualifierSlot(match.player1_type) && qualifierPlayerId) options.push(qualifierPlayerId);
+    if (isQualifierSlot(match.player2_type) && qualifierPlayerId) options.push(qualifierPlayerId);
+  };
 
   const resolvedWinners = new Map<number, number>();
 
@@ -76,22 +81,13 @@ async function validateFullBracketPredictions(
     for (const match of roundMatches) {
       const prediction = predictionsByMatch.get(match.id);
       if (!prediction?.winnerId) {
-        throw new Error(t('fillAllMatches'));
+        continue;
       }
 
       let validWinnerIds: number[] = [];
 
       if (match.round === 1) {
-        if (isRealPlayerId(match.player1_id)) validWinnerIds.push(match.player1_id!);
-        if (isRealPlayerId(match.player2_id)) validWinnerIds.push(match.player2_id!);
-
-        if (
-          validWinnerIds.length === 1 &&
-          !isAutomaticByePick(match, validWinnerIds[0]) &&
-          (match.player1_type === 'QUALIFIER' || match.player2_type === 'QUALIFIER')
-        ) {
-          throw new Error(t('waitPlayers'));
-        }
+        addMatchPlayerOptions(match, validWinnerIds);
       } else {
         const previousRound = match.round - 1;
         const previousMatch1 = matchesMap.get(`${previousRound}-${match.position * 2 - 1}`);
@@ -101,11 +97,12 @@ async function validateFullBracketPredictions(
 
         if (winner1) validWinnerIds.push(winner1);
         if (winner2) validWinnerIds.push(winner2);
+        addMatchPlayerOptions(match, validWinnerIds);
       }
 
       validWinnerIds = Array.from(new Set(validWinnerIds));
 
-      if (!validWinnerIds.includes(prediction.winnerId)) {
+      if (validWinnerIds.length === 0 || !validWinnerIds.includes(prediction.winnerId)) {
         throw new Error(t('invalidChain'));
       }
 
