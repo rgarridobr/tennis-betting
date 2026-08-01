@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { useRouter } from '@/i18n/navigation';
 import { AdminMatchActions } from '@/components/admin/admin-match-actions';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -59,6 +60,7 @@ export function TournamentBracket({
   const [localPredictions, setLocalPredictions] =
     useState<Record<number, { winnerId: number; score?: string }>>(predictions);
   const [isFinalizing, setIsFinalizing] = useState(false);
+  const [showIncompleteConfirm, setShowIncompleteConfirm] = useState(false);
 
   // Track if user has unsaved changes
   const hasUnsavedChanges = canMakePredictions && JSON.stringify(localPredictions) !== JSON.stringify(predictions);
@@ -102,39 +104,45 @@ export function TournamentBracket({
   const router = useRouter();
 
   const isRealPlayerId = (playerId: number | null | undefined) => !!playerId && playerId !== qualifierPlayerId;
-  const isAutomaticByePick = (match: BracketMatch, winnerId: number) => {
-    const player1IsBye = match.player1_type === 'BYE';
-    const player2IsBye = match.player2_type === 'BYE';
-    return (
-      (player1IsBye && match.player2_id === winnerId && isRealPlayerId(match.player2_id)) ||
-      (player2IsBye && match.player1_id === winnerId && isRealPlayerId(match.player1_id))
-    );
+  const isQualifierSlot = (playerType: string | null | undefined) =>
+    playerType === 'QUALIFIER' || playerType === 'LUCKY_LOSER';
+  const addMatchPlayerOptions = (match: BracketMatch, options: number[]) => {
+    if (isRealPlayerId(match.player1_id)) options.push(match.player1_id!);
+    if (isRealPlayerId(match.player2_id)) options.push(match.player2_id!);
+    if (isQualifierSlot(match.player1_type) && qualifierPlayerId) options.push(qualifierPlayerId);
+    if (isQualifierSlot(match.player2_type) && qualifierPlayerId) options.push(qualifierPlayerId);
   };
-  const getBracketValidationError = () => {
-    if (rounds.length === 0 || maxRound === 0) return tFeedback('bracketUnavailable');
+  const getBracketValidationState = () => {
+    if (rounds.length === 0 || maxRound === 0) {
+      return { blockingError: tFeedback('bracketUnavailable'), warning: null };
+    }
 
     const resolvedWinners = new Map<number, number>();
+    let hasMissingPredictions = false;
+    let hasPendingQualifierSlots = false;
 
     for (const round of rounds) {
       const roundMatches = [...(matchesByRound[round] || [])].sort((a, b) => a.position - b.position);
 
       for (const match of roundMatches) {
         const prediction = localPredictions[match.id];
-        if (!prediction?.winnerId) return tFeedback('fillAllMatches');
+        const matchHasPendingQualifier =
+          (isQualifierSlot(match.player1_type) && !isRealPlayerId(match.player1_id)) ||
+          (isQualifierSlot(match.player2_type) && !isRealPlayerId(match.player2_id));
+
+        if (matchHasPendingQualifier) {
+          hasPendingQualifierSlots = true;
+        }
+
+        if (!prediction?.winnerId) {
+          hasMissingPredictions = true;
+          continue;
+        }
 
         let validWinnerIds: number[] = [];
 
         if (match.round === 1) {
-          if (isRealPlayerId(match.player1_id)) validWinnerIds.push(match.player1_id!);
-          if (isRealPlayerId(match.player2_id)) validWinnerIds.push(match.player2_id!);
-
-          if (
-            validWinnerIds.length === 1 &&
-            !isAutomaticByePick(match, validWinnerIds[0]) &&
-            (match.player1_type === 'QUALIFIER' || match.player2_type === 'QUALIFIER')
-          ) {
-            return tFeedback('waitPlayersDefined');
-          }
+          addMatchPlayerOptions(match, validWinnerIds);
         } else {
           const previousRound = match.round - 1;
           const previousMatch1 = matchesMap[`${previousRound}-${match.position * 2 - 1}`];
@@ -144,21 +152,32 @@ export function TournamentBracket({
 
           if (winner1) validWinnerIds.push(winner1);
           if (winner2) validWinnerIds.push(winner2);
+          addMatchPlayerOptions(match, validWinnerIds);
         }
 
         validWinnerIds = Array.from(new Set(validWinnerIds));
 
-        if (!validWinnerIds.includes(prediction.winnerId)) {
-          return tFeedback('invalidPredictionChain');
+        if (validWinnerIds.length === 0 || !validWinnerIds.includes(prediction.winnerId)) {
+          return { blockingError: tFeedback('invalidPredictionChain'), warning: null };
         }
 
         resolvedWinners.set(match.id, prediction.winnerId);
       }
     }
 
-    return null;
+    if (hasMissingPredictions) {
+      return { blockingError: null, warning: tFeedback('incompleteBracketWarning') };
+    }
+
+    if (hasPendingQualifierSlots) {
+      return { blockingError: null, warning: tFeedback('pendingQualifierWarning') };
+    }
+
+    return { blockingError: null, warning: null };
   };
-  const bracketValidationError = getBracketValidationError();
+  const bracketValidationState = getBracketValidationState();
+  const bracketValidationError = bracketValidationState.blockingError;
+  const bracketValidationWarning = bracketValidationState.warning;
   const canFinalizeBracket = !bracketValidationError;
 
   // Track officially eliminated players and the round they lost to highlight incorrect predictions early
@@ -199,12 +218,8 @@ export function TournamentBracket({
     }
   };
 
-  const handleFinalize = async () => {
+  const saveBracket = async () => {
     if (isFinalizing) return;
-    if (bracketValidationError) {
-      toast.error(bracketValidationError);
-      return;
-    }
 
     setIsFinalizing(true);
     try {
@@ -222,6 +237,20 @@ export function TournamentBracket({
       toast.error(error.message || tFeedback('predictionSaveErrorDetail'));
       setIsFinalizing(false);
     }
+  };
+
+  const handleFinalize = async () => {
+    if (isFinalizing) return;
+    if (bracketValidationError) {
+      toast.error(bracketValidationError);
+      return;
+    }
+    if (bracketValidationWarning) {
+      setShowIncompleteConfirm(true);
+      return;
+    }
+
+    await saveBracket();
   };
 
   const resolveRoundLabel = (code?: string, roundNum?: number) => {
@@ -461,11 +490,6 @@ export function TournamentBracket({
         {/* Finalizar Button */}
         {viewMode === 'predictions' && !hasStarted && canMakePredictions && hasUnsavedChanges && (
           <div className="flex items-center gap-3">
-            {bracketValidationError && (
-              <span className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-2 rounded-xl border border-amber-200 animate-pulse">
-                {bracketValidationError}
-              </span>
-            )}
             <button
               onClick={handleFinalize}
               disabled={isFinalizing || !canFinalizeBracket}
@@ -493,6 +517,71 @@ export function TournamentBracket({
           </div>
         )}
       </div>
+
+      {(bracketValidationError || bracketValidationWarning) &&
+        viewMode === 'predictions' &&
+        !hasStarted &&
+        canMakePredictions &&
+        hasUnsavedChanges && (
+          <div
+            className={cn(
+              'flex items-start gap-3 rounded-2xl border px-5 py-4 text-sm font-bold shadow-sm',
+              bracketValidationError
+                ? 'border-red-100 bg-red-50 text-red-700'
+                : 'border-amber-100 bg-amber-50 text-amber-700',
+            )}
+          >
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+            <p className="leading-relaxed">{bracketValidationError || bracketValidationWarning}</p>
+          </div>
+        )}
+
+      <Dialog open={showIncompleteConfirm} onOpenChange={setShowIncompleteConfirm}>
+        <DialogContent className="rounded-3xl border-amber-100 p-0 overflow-hidden">
+          <DialogHeader className="items-center px-6 pt-6 text-center">
+            <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+              <AlertCircle className="h-6 w-6" />
+            </div>
+            <DialogTitle className="text-xl font-black text-slate-900">
+              {tButtons('finalize')}
+            </DialogTitle>
+            <DialogDescription className="text-sm font-semibold leading-relaxed text-slate-600">
+              {tFeedback('incompleteBracketConfirm')}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="items-center justify-center border-t border-slate-100 bg-slate-50 px-6 py-4 sm:justify-center">
+            <button
+              type="button"
+              onClick={() => setShowIncompleteConfirm(false)}
+              disabled={isFinalizing}
+              className="rounded-2xl px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-slate-500 transition-colors hover:bg-white hover:text-slate-700 disabled:opacity-60"
+            >
+              {tButtons('cancel')}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowIncompleteConfirm(false);
+                void saveBracket();
+              }}
+              disabled={isFinalizing}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3 text-xs font-black uppercase tracking-[0.18em] text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isFinalizing ? (
+                <>
+                  <span>{tButtons('saving')}</span>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                </>
+              ) : (
+                <>
+                  <span className="leading-none">{tButtons('finalize')}</span>
+                  <LogOut className="h-4 w-4 shrink-0" />
+                </>
+              )}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
 
 
@@ -986,8 +1075,14 @@ function BracketMatchCard({
           ((!p2?.id || p2?.id === qualifierPlayerId) && p2?.type !== 'BYE' && p2?.type !== 'PLAYER') ||
           p2?.isAwaiting ||
           p2?.isNotPredicted;
-        const p1CanPredict = !!canPredict && !p1IsPlaceholder && !!p1?.id;
-        const p2CanPredict = !!canPredict && !p2IsPlaceholder && !!p2?.id;
+        const p1CanPredict =
+          !!canPredict &&
+          (!!p1?.id || (p1?.type === 'QUALIFIER' && !!qualifierPlayerId)) &&
+          (!p1IsPlaceholder || (p1?.type === 'QUALIFIER' && !!qualifierPlayerId));
+        const p2CanPredict =
+          !!canPredict &&
+          (!!p2?.id || (p2?.type === 'QUALIFIER' && !!qualifierPlayerId)) &&
+          (!p2IsPlaceholder || (p2?.type === 'QUALIFIER' && !!qualifierPlayerId));
 
         return (
           <>
