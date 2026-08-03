@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Search, FilterX } from 'lucide-react';
+import { CalendarDays, CheckCircle2, FilterX, PlayCircle, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -18,9 +18,14 @@ import { useTranslations } from 'next-intl';
 interface TournamentFiltersProps {
   hideUpcoming?: boolean;
   defaultStatus?: 'active' | 'upcoming' | 'finished';
+  statusCounts?: {
+    active: number;
+    upcoming: number;
+    finished: number;
+  };
 }
 
-export function TournamentFilters({ hideUpcoming, defaultStatus = 'active' }: TournamentFiltersProps = {}) {
+export function TournamentFilters({ hideUpcoming, defaultStatus = 'active', statusCounts }: TournamentFiltersProps = {}) {
   const t = useTranslations('tournaments');
   const router = useRouter();
   const pathname = usePathname();
@@ -109,35 +114,52 @@ export function TournamentFilters({ hideUpcoming, defaultStatus = 'active' }: To
         )}
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <Tabs value={currentStatus} onValueChange={(value) => handleFilterChange('status', value)} className="w-full sm:w-auto">
-          <TabsList className="bg-slate-100 p-1 rounded-2xl h-12 w-full sm:w-auto flex">
+      <div className="space-y-2">
+        <Tabs value={currentStatus} onValueChange={(value) => handleFilterChange('status', value)} className="w-full">
+          <TabsList className="relative bg-gradient-to-br from-[#041a16] via-[#062c25] to-[#005e50] p-1.5 rounded-2xl h-auto w-full flex flex-col sm:flex-row gap-1.5 sm:gap-0 border border-white/10 shadow-[0_18px_40px_-24px_rgba(4,26,22,0.9)] ring-1 ring-slate-900/10">
             <TabsTrigger
               value="active"
-              className="flex-1 rounded-xl px-3 sm:px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm transition-all"
+              className="group min-w-0 w-full sm:basis-0 flex-1 justify-start sm:justify-center rounded-xl px-4 py-3 sm:py-2.5 text-sm font-black text-white/80 hover:bg-white/10 hover:text-white data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm transition-all"
             >
-              {t('filterActive')}
+              <PlayCircle className="w-4 h-4 text-emerald-500 transition-transform group-data-[state=active]:scale-110" />
+              <span>{t('filterActive')}</span>
+              {statusCounts && (
+                <span className="min-w-6 rounded-full bg-white/15 px-1.5 py-0.5 text-[11px] leading-none text-white/80 group-data-[state=active]:bg-emerald-50 group-data-[state=active]:text-emerald-700">
+                  {statusCounts.active}
+                </span>
+              )}
             </TabsTrigger>
             {!hideUpcoming && (
               <TabsTrigger
                 value="upcoming"
-                className="flex-1 rounded-xl px-3 sm:px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm transition-all"
+                className="group min-w-0 w-full sm:basis-0 flex-1 justify-start sm:justify-center rounded-xl px-4 py-3 sm:py-2.5 text-sm font-black text-white/90 hover:bg-white/10 hover:text-white data-[state=active]:bg-amber-50 data-[state=active]:text-amber-800 data-[state=active]:shadow-sm transition-all"
               >
-                <span className="hidden sm:inline">{t('filterUpcoming')}</span>
-                <span className="sm:hidden">{t('filterUpcomingShort')}</span>
+                <CalendarDays className="w-4 h-4 text-amber-500 transition-transform group-data-[state=active]:scale-110" />
+                <span>{t('filterUpcoming')}</span>
+                {statusCounts && (
+                  <span className="min-w-6 rounded-full bg-amber-400/20 px-1.5 py-0.5 text-[11px] leading-none text-amber-100 group-data-[state=active]:bg-white group-data-[state=active]:text-amber-700">
+                    {statusCounts.upcoming}
+                  </span>
+                )}
               </TabsTrigger>
             )}
             <TabsTrigger
               value="finished"
-              className="flex-1 rounded-xl px-3 sm:px-6 font-bold data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm transition-all"
+              className="group min-w-0 w-full sm:basis-0 flex-1 justify-start sm:justify-center rounded-xl px-4 py-3 sm:py-2.5 text-sm font-black text-white/80 hover:bg-white/10 hover:text-white data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm transition-all"
             >
-              {t('filterFinished')}
+              <CheckCircle2 className="w-4 h-4 text-slate-300 transition-transform group-data-[state=active]:scale-110 group-data-[state=active]:text-slate-400" />
+              <span>{t('filterFinished')}</span>
+              {statusCounts && (
+                <span className="min-w-6 rounded-full bg-white/15 px-1.5 py-0.5 text-[11px] leading-none text-white/80 group-data-[state=active]:bg-slate-100 group-data-[state=active]:text-slate-700">
+                  {statusCounts.finished}
+                </span>
+              )}
             </TabsTrigger>
           </TabsList>
         </Tabs>
 
         {isPending && (
-          <div className="flex items-center gap-2 text-slate-400 animate-pulse">
+          <div className="flex items-center gap-2 text-slate-400 animate-pulse px-1">
             <div className="w-2 h-2 rounded-full bg-emerald-500" />
             <span className="text-xs font-bold uppercase tracking-wider">{t('updating')}</span>
           </div>
