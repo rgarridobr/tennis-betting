@@ -112,8 +112,8 @@ function RankingRow({
             <span className="flex items-center gap-1">
               <Target className="w-3 h-3" /> {entry.correct_predictions}/{entry.total_predictions}
             </span>
-            <span className="flex items-center gap-1">
-              <TrendingUp className="w-3 h-3" /> {accuracy}%
+            <span className="flex items-center gap-1 text-blue-700">
+              <TrendingUp className="w-3 h-3 text-blue-600" /> <span className="text-blue-600">{accuracy}%</span>
             </span>
           </div>
         </div>
