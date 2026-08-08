@@ -110,10 +110,10 @@ function RankingRow({
           </p>
           <div className="flex items-center gap-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
             <span className="flex items-center gap-1">
-              <Target className="w-3 h-3" /> {entry.correct_predictions}/{entry.total_predictions} {t('hitsLabel')}
+              <Target className="w-3 h-3" /> {entry.correct_predictions}/{entry.total_predictions}
             </span>
-            <span className="flex items-center gap-1">
-              <TrendingUp className="w-3 h-3" /> {accuracy}% {t('accuracyLabel')}
+            <span className="flex items-center gap-1 text-blue-700">
+              <TrendingUp className="w-3 h-3 text-blue-600" /> <span className="text-blue-600">{accuracy}%</span>
             </span>
           </div>
         </div>
