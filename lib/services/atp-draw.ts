@@ -48,9 +48,9 @@ type DrawRow = {
 const POSITION_MAX_X = 1.5;
 const ENTRY_MIN_X = 1.5;
 const PLAYER_MIN_X = 3.0;
-const COUNTRY_MIN_X = 8.0;
+const COUNTRY_MIN_X = 7.7;
 const COUNTRY_MAX_X = 9.2;
-const SAME_ROW_TOLERANCE = 0.03;
+const SAME_ROW_TOLERANCE = 0.06;
 
 export async function fetchAtpDraw(
   atpId: string,
