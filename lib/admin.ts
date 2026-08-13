@@ -1,6 +1,7 @@
 import { sql } from './db';
 import { ROUND_POINTS, getMatchPoints, getPointsConfig } from './data';
 import { getTranslations } from 'next-intl/server';
+import { sortByPtBrText } from './sorting';
 
 function normalizeString(str: string): string {
   return str
@@ -1315,10 +1316,8 @@ export async function getAllUsers(options?: { search?: string; state?: string; c
       AND (${cityFilter}::text IS NULL OR u.city = ${cityFilter})
       AND (${clubFilter}::text IS NULL OR COALESCE(tc.name, u.tennis_club_custom, u.tennis_club) = ${clubFilter})
     GROUP BY u.id, u.name, u.email, u.nickname, u.whatsapp, tc.name, u.tennis_club, u.tennis_club_id, u.tennis_club_custom, u.country, u.state, u.city, u.is_admin, u.is_active, u.is_deleted, u.created_at
-    ORDER BY u.name ASC
-    LIMIT ${limit} OFFSET ${offset}
   `;
-  return users;
+  return sortByPtBrText(users, (user) => user.name as string).slice(offset, offset + limit);
 }
 
 export async function countAllUsers(options?: { search?: string; state?: string; city?: string; club?: string }) {
@@ -1342,8 +1341,8 @@ export async function countAllUsers(options?: { search?: string; state?: string;
 
 export async function getUserFilterOptions() {
   const [states, cities, clubs] = await Promise.all([
-    sql`SELECT DISTINCT state FROM users WHERE is_deleted = FALSE AND state IS NOT NULL AND state != '' ORDER BY state ASC`,
-    sql`SELECT DISTINCT city FROM users WHERE is_deleted = FALSE AND city IS NOT NULL AND city != '' ORDER BY city ASC`,
+    sql`SELECT DISTINCT state FROM users WHERE is_deleted = FALSE AND state IS NOT NULL AND state != ''`,
+    sql`SELECT DISTINCT city FROM users WHERE is_deleted = FALSE AND city IS NOT NULL AND city != ''`,
     sql`
       SELECT DISTINCT COALESCE(tc.name, u.tennis_club_custom, u.tennis_club) as tennis_club
       FROM users u
@@ -1351,14 +1350,13 @@ export async function getUserFilterOptions() {
       WHERE u.is_deleted = FALSE
         AND COALESCE(tc.name, u.tennis_club_custom, u.tennis_club) IS NOT NULL
         AND COALESCE(tc.name, u.tennis_club_custom, u.tennis_club) != ''
-      ORDER BY tennis_club ASC
     `,
   ]);
 
   return {
-    states: states.map((r) => r.state as string),
-    cities: cities.map((r) => r.city as string),
-    clubs: clubs.map((r) => r.tennis_club as string),
+    states: sortByPtBrText(states, (r) => r.state as string).map((r) => r.state as string),
+    cities: sortByPtBrText(cities, (r) => r.city as string).map((r) => r.city as string),
+    clubs: sortByPtBrText(clubs, (r) => r.tennis_club as string).map((r) => r.tennis_club as string),
   };
 }
 

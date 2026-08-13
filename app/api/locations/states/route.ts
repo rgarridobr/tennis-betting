@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getTranslations } from 'next-intl/server';
+import { comparePtBrText } from '@/lib/sorting';
 
 interface IbgeState {
   id: number;
@@ -19,7 +20,7 @@ export async function GET() {
     }
 
     const states = (await response.json()) as IbgeState[];
-    const sorted = states.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+    const sorted = states.sort((a, b) => comparePtBrText(a.nome, b.nome));
 
     return NextResponse.json(sorted, {
       headers: {

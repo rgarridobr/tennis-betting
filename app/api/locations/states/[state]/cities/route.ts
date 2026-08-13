@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getTranslations } from 'next-intl/server';
+import { comparePtBrText } from '@/lib/sorting';
 
 interface IbgeCity {
   id: number;
@@ -53,7 +54,7 @@ export async function GET(_request: Request, { params }: RouteContext) {
       id: Number(city.codigo_ibge),
       nome: formatCityName(city.nome),
     }));
-    const sorted = cities.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+    const sorted = cities.sort((a, b) => comparePtBrText(a.nome, b.nome));
 
     return NextResponse.json(sorted, {
       headers: {

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getTranslations } from 'next-intl/server';
+import { comparePtBrText } from '@/lib/sorting';
 
 interface FirstOrgCountry {
   country: string;
@@ -31,7 +32,7 @@ export async function GET() {
         code,
       }))
       .filter((country) => country.name)
-      .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+      .sort((a, b) => comparePtBrText(a.name, b.name));
 
     return NextResponse.json(countries, {
       headers: {
