@@ -9,6 +9,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { useLocale, useTranslations } from 'next-intl';
+import { comparePtBrText } from '@/lib/sorting';
 
 interface Country {
   name: string;
@@ -88,8 +89,8 @@ export function CountrySelector({
   }, []);
 
   const sortedCountries = useMemo(() => {
-    return [...localizedCountries].sort((a, b) => a.displayName.localeCompare(b.displayName, displayLocale));
-  }, [localizedCountries, displayLocale]);
+    return [...localizedCountries].sort((a, b) => comparePtBrText(a.displayName, b.displayName));
+  }, [localizedCountries]);
 
   const selectedLabel =
     selectedCountry || (loading ? t('countryLoading') : t('countryPlaceholder'));

@@ -27,6 +27,7 @@ import { Combobox } from '@/components/ui/combobox';
 import { Pencil, Trophy, CheckCircle2, AlertCircle, X, Trash2, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
+import { comparePtBrText } from '@/lib/sorting';
 
 // ==================== HELPER FUNCTIONS ====================
 
@@ -96,7 +97,7 @@ function SlotConfig({
   const t = useTranslations('admin');
   const filteredPlayers = players
     .filter((p) => !assignedPlayerIds.includes(p.id) || p.id.toString() === playerId)
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .sort((a, b) => comparePtBrText(a.name, b.name));
 
   const options = filteredPlayers.map((p) => ({
     value: p.id.toString(),
@@ -399,7 +400,7 @@ export function ReplaceMatchPlayerDialog({
 
   const filteredPlayers = players
     .filter((p) => !assignedPlayerIds?.includes(p.id) || p.id.toString() === playerId)
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .sort((a, b) => comparePtBrText(a.name, b.name));
 
   const options = filteredPlayers.map((p) => ({
     value: p.id.toString(),

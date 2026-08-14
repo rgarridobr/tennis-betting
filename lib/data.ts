@@ -1,4 +1,5 @@
 import { sql } from './db';
+import { comparePtBrText, sortByPtBrText } from './sorting';
 
 // Migration: Add tournament_id, hide_pending and whatsapp_link to pools
 sql`ALTER TABLE pools ADD COLUMN IF NOT EXISTS tournament_id INTEGER REFERENCES tournaments(id)`.catch(console.error);
@@ -553,8 +554,8 @@ export async function getActiveTournament(): Promise<Tournament | null> {
 // ==================== PLAYERS ====================
 
 export async function getPlayers(): Promise<Player[]> {
-  const rows = await sql`SELECT * FROM players ORDER BY name ASC`;
-  return rows as Player[];
+  const rows = await sql`SELECT * FROM players`;
+  return sortByPtBrText(rows as Player[], (player) => player.name);
 }
 
 export async function getPlayerById(id: number): Promise<Player | null> {
@@ -572,13 +573,13 @@ export async function getUserPublicInfo(userId: number): Promise<{ id: number; n
 }
 
 export async function getTournamentNames(): Promise<TournamentMetadata[]> {
-  const rows = await sql`SELECT * FROM tournament_names ORDER BY name ASC`;
-  return rows as TournamentMetadata[];
+  const rows = await sql`SELECT * FROM tournament_names`;
+  return sortByPtBrText(rows as TournamentMetadata[], (item) => item.name);
 }
 
 export async function getTournamentLocations(): Promise<TournamentMetadata[]> {
-  const rows = await sql`SELECT * FROM tournament_locations ORDER BY name ASC`;
-  return rows as TournamentMetadata[];
+  const rows = await sql`SELECT * FROM tournament_locations`;
+  return sortByPtBrText(rows as TournamentMetadata[], (item) => item.name);
 }
 
 export async function getTennisClubs(): Promise<TennisClub[]> {
@@ -586,9 +587,8 @@ export async function getTennisClubs(): Promise<TennisClub[]> {
   const rows = await sql`
     SELECT id, name
     FROM tennis_clubs
-    ORDER BY name ASC
   `;
-  return rows as TennisClub[];
+  return sortByPtBrText(rows as TennisClub[], (club) => club.name);
 }
 
 // ==================== BRACKET MATCHES ====================
@@ -689,10 +689,9 @@ export async function getTournamentParticipants(tournamentId: number): Promise<T
     LEFT JOIN tennis_clubs tc ON tc.id = u.tennis_club_id
     WHERE ut.tournament_id = ${tournamentId}
       AND u.is_deleted = FALSE
-    ORDER BY user_name ASC
   `;
 
-  return rows.map((row) => ({
+  return sortByPtBrText(rows, (row) => row.user_name as string).map((row) => ({
     user_id: Number(row.user_id),
     user_name: String(row.user_name),
     email: String(row.email),
@@ -700,6 +699,22 @@ export async function getTournamentParticipants(tournamentId: number): Promise<T
     whatsapp: (row.whatsapp as string | null) ?? null,
     tennis_club: (row.tennis_club as string | null) ?? null,
     joined_at: row.joined_at ? String(row.joined_at) : null,
+  }));
+}
+
+function compareRankingEntries(a: RankingEntry, b: RankingEntry): number {
+  if (b.total_points !== a.total_points) return b.total_points - a.total_points;
+  if (Number(b.hit_champion) !== Number(a.hit_champion)) return Number(b.hit_champion) - Number(a.hit_champion);
+  if (Number(b.hit_both) !== Number(a.hit_both)) return Number(b.hit_both) - Number(a.hit_both);
+  if (b.correct_predictions !== a.correct_predictions) return b.correct_predictions - a.correct_predictions;
+  if ((b.global_points || 0) !== (a.global_points || 0)) return (b.global_points || 0) - (a.global_points || 0);
+  return comparePtBrText(a.user_name, b.user_name);
+}
+
+function assignRanks(entries: RankingEntry[], limit: number): RankingEntry[] {
+  return [...entries].sort(compareRankingEntries).slice(0, limit).map((entry, i) => ({
+    ...entry,
+    rank: i + 1,
   }));
 }
 
@@ -834,9 +849,8 @@ export async function getGlobalRanking(limit: number = 50, tournamentId?: number
         )
       ) r
       WHERE r.total_points > 0
-      ORDER BY r.total_points DESC, r.hit_champion DESC, r.hit_both DESC, r.correct_predictions DESC, r.global_points DESC, r.user_name ASC
-      LIMIT ${limit}`;
-    return ranking.map((r, i) => ({
+      ORDER BY r.total_points DESC, r.hit_champion DESC, r.hit_both DESC, r.correct_predictions DESC, r.global_points DESC`;
+    return assignRanks(ranking.map((r) => ({
       user_id: r.user_id as number,
       user_name: r.user_name as string,
       correct_predictions: Number(r.correct_predictions || 0),
@@ -845,8 +859,8 @@ export async function getGlobalRanking(limit: number = 50, tournamentId?: number
       hit_champion: Boolean(r.hit_champion),
       hit_both: Boolean(r.hit_both),
       global_points: Number(r.global_points || 0),
-      rank: i + 1,
-    }));
+      rank: 0,
+    })), limit);
   }
 
   // Global ranking with:
@@ -983,19 +997,7 @@ export async function getGlobalRanking(limit: number = 50, tournamentId?: number
   }
 
   // Step 7: Sort by ranking criteria and assign ranks
-  rankingEntries.sort((a, b) => {
-    if (b.total_points !== a.total_points) return b.total_points - a.total_points;
-    if (Number(b.hit_champion) !== Number(a.hit_champion)) return Number(b.hit_champion) - Number(a.hit_champion);
-    if (Number(b.hit_both) !== Number(a.hit_both)) return Number(b.hit_both) - Number(a.hit_both);
-    if (b.correct_predictions !== a.correct_predictions) return b.correct_predictions - a.correct_predictions;
-    if ((b.global_points || 0) !== (a.global_points || 0)) return (b.global_points || 0) - (a.global_points || 0);
-    return a.user_name.localeCompare(b.user_name);
-  });
-
-  return rankingEntries.slice(0, limit).map((entry, i) => ({
-    ...entry,
-    rank: i + 1,
-  }));
+  return assignRanks(rankingEntries, limit);
 }
 
 export async function getStateRanking(
@@ -1027,10 +1029,9 @@ export async function getStateRanking(
           AND bm_final.round = (SELECT MAX(round) FROM bracket_matches WHERE tournament_id = ${tournamentId})
         )
       ) r
-      ORDER BY r.total_points DESC, r.hit_champion DESC, r.hit_both DESC, r.correct_predictions DESC, r.global_points DESC, r.user_name ASC
-      LIMIT ${limit}`;
+      ORDER BY r.total_points DESC, r.hit_champion DESC, r.hit_both DESC, r.correct_predictions DESC, r.global_points DESC`;
 
-    return ranking.map((r, i) => ({
+    return assignRanks(ranking.map((r) => ({
       user_id: r.user_id as number,
       user_name: r.user_name as string,
       correct_predictions: Number(r.correct_predictions || 0),
@@ -1039,8 +1040,8 @@ export async function getStateRanking(
       hit_champion: Boolean(r.hit_champion),
       hit_both: Boolean(r.hit_both),
       global_points: Number(r.global_points || 0),
-      rank: i + 1,
-    }));
+      rank: 0,
+    })), limit);
   }
 
   // Global state ranking with point defense logic + 52-week validity + best 22 rule (only finished tournaments)
@@ -1168,19 +1169,7 @@ export async function getStateRanking(
     });
   }
 
-  rankingEntries.sort((a, b) => {
-    if (b.total_points !== a.total_points) return b.total_points - a.total_points;
-    if (Number(b.hit_champion) !== Number(a.hit_champion)) return Number(b.hit_champion) - Number(a.hit_champion);
-    if (Number(b.hit_both) !== Number(a.hit_both)) return Number(b.hit_both) - Number(a.hit_both);
-    if (b.correct_predictions !== a.correct_predictions) return b.correct_predictions - a.correct_predictions;
-    if ((b.global_points || 0) !== (a.global_points || 0)) return (b.global_points || 0) - (a.global_points || 0);
-    return a.user_name.localeCompare(b.user_name);
-  });
-
-  return rankingEntries.slice(0, limit).map((entry, i) => ({
-    ...entry,
-    rank: i + 1,
-  }));
+  return assignRanks(rankingEntries, limit);
 }
 
 export async function getStateMemberCount(state: string): Promise<number> {
@@ -1224,11 +1213,10 @@ export async function getTournamentRanking(
     )
     SELECT * FROM tournament_stats
     WHERE total_predictions > 0
-    ORDER BY total_points DESC, hit_champion DESC, hit_both DESC, correct_predictions DESC, global_points DESC, user_name ASC
-    LIMIT ${limit}
+    ORDER BY total_points DESC, hit_champion DESC, hit_both DESC, correct_predictions DESC, global_points DESC
   `;
 
-  return ranking.map((r, i) => ({
+  return assignRanks(ranking.map((r) => ({
     user_id: r.user_id as number,
     user_name: r.user_name as string,
     correct_predictions: Number(r.correct_predictions || 0),
@@ -1237,8 +1225,8 @@ export async function getTournamentRanking(
     hit_champion: Boolean(r.hit_champion),
     hit_both: Boolean(r.hit_both),
     global_points: Number(r.global_points || 0),
-    rank: i + 1,
-  }));
+    rank: 0,
+  })), limit);
 }
 
 export async function getUserRanking(userId: number): Promise<RankingEntry | null> {
@@ -1289,7 +1277,6 @@ export async function getPools(search?: string): Promise<Pool[]> {
       LEFT JOIN pool_members pm ON p.id = pm.pool_id
       WHERE p.is_general = FALSE AND p.name ILIKE ${searchPattern}
       GROUP BY p.id
-      ORDER BY p.name ASC
     `;
   } else {
     query = sql`
@@ -1303,7 +1290,8 @@ export async function getPools(search?: string): Promise<Pool[]> {
     `;
   }
   const rows = await query;
-  return rows as Pool[];
+  const pools = rows as Pool[];
+  return search ? sortByPtBrText(pools, (pool) => pool.name) : pools;
 }
 
 export async function getGeneralPools(): Promise<Pool[]> {
@@ -1313,9 +1301,8 @@ export async function getGeneralPools(): Promise<Pool[]> {
     LEFT JOIN pool_members pm ON p.id = pm.pool_id
     WHERE p.is_general = TRUE
     GROUP BY p.id
-    ORDER BY p.name ASC
   `;
-  return rows as Pool[];
+  return sortByPtBrText(rows as Pool[], (pool) => pool.name);
 }
 
 export async function getUserPools(userId: number): Promise<Pool[]> {
@@ -1326,9 +1313,11 @@ export async function getUserPools(userId: number): Promise<Pool[]> {
     LEFT JOIN pool_members pm2 ON p.id = pm2.pool_id
     WHERE pm.user_id = ${userId}
     GROUP BY p.id
-    ORDER BY p.is_general DESC, p.name ASC
   `;
-  return rows as Pool[];
+  return [...(rows as Pool[])].sort((a, b) => {
+    if (Number(b.is_general) !== Number(a.is_general)) return Number(b.is_general) - Number(a.is_general);
+    return comparePtBrText(a.name, b.name);
+  });
 }
 
 export async function getPoolById(id: number): Promise<Pool | null> {
@@ -1390,10 +1379,9 @@ export async function getPoolRanking(
         ))
       )
     ) r
-    ORDER BY r.total_points DESC, r.hit_champion DESC, r.hit_both DESC, r.correct_predictions DESC, r.global_points DESC, r.user_name ASC
-    LIMIT ${limit}`;
+    ORDER BY r.total_points DESC, r.hit_champion DESC, r.hit_both DESC, r.correct_predictions DESC, r.global_points DESC`;
 
-  const rankedEntries: RankingEntry[] = ranking.map((r, i) => ({
+  const allRankedEntries: RankingEntry[] = assignRanks(ranking.map((r) => ({
     user_id: r.user_id as number,
     user_name: r.user_name as string,
     correct_predictions: Number(r.correct_predictions || 0),
@@ -1402,12 +1390,13 @@ export async function getPoolRanking(
     hit_champion: Boolean(r.hit_champion),
     hit_both: Boolean(r.hit_both),
     global_points: Number(r.global_points || 0),
-    rank: i + 1,
+    rank: 0,
     has_predictions: true,
-  }));
+  })), ranking.length).map((entry) => ({ ...entry, has_predictions: true }));
+  const rankedEntries = allRankedEntries.slice(0, limit);
 
   // Get members who did NOT complete predictions (not in the ranked list)
-  const rankedUserIds = rankedEntries.map((e) => e.user_id);
+  const rankedUserIds = allRankedEntries.map((e) => e.user_id);
   const unrankedMembers = await sql`
     SELECT 
       u.id as user_id,
@@ -1433,10 +1422,7 @@ export async function getPoolRanking(
     has_predictions: false,
   }));
 
-  // Sort unranked alphabetically
-  unrankedEntries.sort((a, b) => a.user_name.localeCompare(b.user_name));
-
-  return [...rankedEntries, ...unrankedEntries];
+  return [...rankedEntries, ...sortByPtBrText(unrankedEntries, (entry) => entry.user_name)];
 }
 
 export async function getEnrollment(userId: number, tournamentId: number): Promise<Enrollment | null> {
@@ -1482,9 +1468,8 @@ export async function getTournamentPlayers(tournamentId: number, includePredicte
         JOIN bracket_matches bm2 ON pred.bracket_match_id = bm2.id
         WHERE bm2.tournament_id = ${tournamentId} AND pred.user_id = ${includePredictedByUserId}
       )
-      ORDER BY p.name ASC
     `;
-    return players as Player[];
+    return sortByPtBrText(players as Player[], (player) => player.name);
   }
 
   const players = await sql`
@@ -1492,9 +1477,8 @@ export async function getTournamentPlayers(tournamentId: number, includePredicte
     FROM players p
     JOIN bracket_matches bm ON (p.id = bm.player1_id OR p.id = bm.player2_id)
     WHERE bm.tournament_id = ${tournamentId}
-    ORDER BY p.name ASC
   `;
-  return players as Player[];
+  return sortByPtBrText(players as Player[], (player) => player.name);
 }
 
 export async function hasTournamentStarted(tournamentId: number): Promise<boolean> {

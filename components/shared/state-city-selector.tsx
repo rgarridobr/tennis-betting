@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { useTranslations } from "next-intl";
+import { comparePtBrText } from "@/lib/sorting";
 
 interface State {
   id: number;
@@ -66,9 +67,7 @@ export function StateCitySelector({
           throw new Error(`States API responded with status ${response.status}`);
         }
         const data: State[] = await response.json();
-        const sorted = data.sort((a, b) =>
-          a.nome.localeCompare(b.nome, "pt-BR"),
-        );
+        const sorted = data.sort((a, b) => comparePtBrText(a.nome, b.nome));
         setStates(sorted);
       } catch (error) {
         console.error("Error fetching states:", error);
@@ -94,9 +93,7 @@ export function StateCitySelector({
           throw new Error(`Cities API responded with status ${response.status}`);
         }
         const data: City[] = await response.json();
-        const sorted = data.sort((a, b) =>
-          a.nome.localeCompare(b.nome, "pt-BR"),
-        );
+        const sorted = data.sort((a, b) => comparePtBrText(a.nome, b.nome));
         setCities(sorted);
       } catch (error) {
         console.error("Error fetching cities:", error);
