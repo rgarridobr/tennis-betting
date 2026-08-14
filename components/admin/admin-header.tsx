@@ -2,6 +2,14 @@
 
 import { Button } from '@/components/ui/button';
 import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -9,7 +17,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Trophy, Home, Users, LogOut, ClipboardList, Building2 } from 'lucide-react';
+import { AdminAccountPasswordDialog } from '@/components/admin/admin-account-password-dialog';
+import { Trophy, Home, Users, LogOut, ClipboardList, Building2, Menu, X } from 'lucide-react';
 import { logoutAction } from '@/lib/actions/auth';
 import type { User } from '@/lib/auth';
 import { LanguageSwitcher } from '@/components/shared/language-switcher';
@@ -43,17 +52,73 @@ export function AdminHeader({ user }: AdminHeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 bg-gradient-to-br from-[#041a16] via-[#062c25] to-[#005e50] backdrop-blur-xl border-b border-white/5">
-      <div className="container mx-auto px-4 md:px-32 h-20 flex items-center justify-between">
-        {/* Logo - Left */}
-        <Link href="/admin" className="flex items-center gap-2.5 group">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-[#6EC46C]/20 group-hover:scale-110 transition-transform">
-            <Trophy className="w-6 h-6 text-white" />
-          </div>
-          <span className="hidden sm:inline font-black text-xl tracking-tight text-[#D32D18]">{tCommon('brandName')}</span>
-        </Link>
+      <div className="container relative mx-auto px-2 sm:px-4 md:px-32 h-20 flex items-center justify-between gap-1 sm:gap-3">
+        <div className="flex items-center gap-2">
+          <Drawer direction="left">
+            <DrawerTrigger asChild>
+              <Button
+                variant="ghost"
+                className="h-10 w-10 rounded-xl border border-white/15 bg-white/10 p-0 text-white hover:bg-white/15 hover:text-white lg:hidden"
+                aria-label={tNav('menu')}
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </DrawerTrigger>
+            <DrawerContent className="inset-y-0 left-0 right-auto mt-0 h-full w-[82vw] max-w-xs rounded-none border-none border-r border-white/10 bg-slate-50 p-0 [&>div:first-child]:hidden">
+              <DrawerHeader className="bg-gradient-to-br from-[#041a16] via-[#062c25] to-[#005e50] px-5 py-5 text-left">
+                <div className="flex items-center justify-between gap-4">
+                  <DrawerTitle className="flex items-center gap-3 text-white">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-lg shadow-[#6EC46C]/20">
+                      <Trophy className="h-5 w-5" />
+                    </span>
+                    <span className="font-black tracking-tight text-[#D32D18]">{tCommon('brandName')}</span>
+                  </DrawerTitle>
+                  <DrawerClose asChild>
+                    <Button
+                      variant="ghost"
+                      className="h-9 w-9 rounded-xl border border-white/15 bg-white/10 p-0 text-white hover:bg-white/15 hover:text-white"
+                      aria-label={tNav('closeMenu')}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </DrawerClose>
+                </div>
+              </DrawerHeader>
+              <nav className="flex flex-col gap-1 p-3">
+                {navItems.map((item) => {
+                  const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
+
+                  return (
+                    <DrawerClose asChild key={item.href}>
+                      <Link
+                        href={item.href}
+                        className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold transition-colors ${
+                          isActive
+                            ? 'bg-emerald-600 text-white shadow-sm'
+                            : 'text-slate-700 hover:bg-white hover:text-slate-950'
+                        }`}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {item.label}
+                      </Link>
+                    </DrawerClose>
+                  );
+                })}
+              </nav>
+            </DrawerContent>
+          </Drawer>
+
+          {/* Logo - Left */}
+          <Link href="/admin" className="group absolute left-1/2 flex -translate-x-1/2 items-center gap-2.5 lg:static lg:translate-x-0">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-[#6EC46C]/20 group-hover:scale-110 transition-transform">
+              <Trophy className="w-6 h-6 text-white" />
+            </div>
+            <span className="hidden lg:inline font-black text-xl tracking-tight text-[#D32D18]">{tCommon('brandName')}</span>
+          </Link>
+        </div>
 
         {/* Navigation - Center */}
-        <nav className="flex-1 flex items-center justify-center gap-1 sm:gap-2">
+        <nav className="hidden flex-1 items-center justify-center gap-1 sm:gap-2 lg:flex">
           {navItems.map((item) => {
             const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
 
@@ -102,6 +167,7 @@ export function AdminHeader({ user }: AdminHeaderProps) {
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                 </div>
               </div>
+              <AdminAccountPasswordDialog />
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => logoutAction()} className="cursor-pointer" variant="destructive">
                 <LogOut className="w-4 h-4" />

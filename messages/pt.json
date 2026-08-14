@@ -579,6 +579,16 @@
       "title": "Editar Usuário",
       "toast": "Usuário atualizado com sucesso!"
     },
+    "changeUserPassword": {
+      "title": "Alterar Senha",
+      "description": "Defina uma nova senha para {name}.",
+      "newPassword": "Nova Senha",
+      "confirmPassword": "Confirmar Nova Senha",
+      "submit": "Salvar Senha",
+      "updating": "Atualizando...",
+      "toastSuccess": "Senha atualizada com sucesso!"
+    },
+    "accountPasswordDescription": "Confirme sua senha atual para definir uma nova senha de acesso.",
     "userSearch": {
       "label": "Buscar Usuário",
       "placeholder": "Buscar por nome, email ou apelido..."

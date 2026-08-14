@@ -1,6 +1,6 @@
 'use server';
 
-import { getSession, registerUser } from '@/lib/auth';
+import { getSession, hashPassword, registerUser } from '@/lib/auth';
 import { sql } from '@/lib/db';
 import { getTranslations } from 'next-intl/server';
 import {
@@ -522,6 +522,50 @@ export async function updateUserAction(id: number, formData: FormData) {
   } catch (error) {
     console.error('Error updating user:', error);
     return { success: false, error: t('adminUserUpdateFailed') };
+  }
+}
+
+export async function updateUserPasswordAction(id: number, formData: FormData) {
+  const t = await getTranslations('errors');
+  await requireAdmin();
+
+  const newPassword = (formData.get('newPassword') as string | null)?.trim() ?? '';
+
+  if (!newPassword) {
+    return { success: false, error: t('newPasswordRequired') };
+  }
+
+  if (newPassword.length < 6) {
+    return { success: false, error: t('passwordMin6') };
+  }
+
+  try {
+    const users = await sql`
+      SELECT id
+      FROM users
+      WHERE id = ${id}
+        AND (is_deleted IS FALSE OR is_deleted IS NULL)
+    `;
+
+    if (users.length === 0) {
+      return { success: false, error: t('userNotFound') };
+    }
+
+    const hashedPassword = await hashPassword(newPassword);
+
+    await sql`
+      UPDATE users
+      SET password_hash = ${hashedPassword}, updated_at = NOW()
+      WHERE id = ${id}
+    `;
+
+    await sql`DELETE FROM sessions WHERE user_id = ${id}`;
+
+    revalidatePath('/admin/usuarios');
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating user password:', error);
+    return { success: false, error: t('passwordUpdateFailed') };
   }
 }
 
