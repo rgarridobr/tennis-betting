@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CreateUserDialog } from '@/components/admin/create-user-dialog';
 import { EditUserDialog } from '@/components/admin/edit-user-dialog';
+import { ChangeUserPasswordDialog } from '@/components/admin/change-user-password-dialog';
 import { UserStatusToggle } from '@/components/admin/user-status-toggle';
 import { DeleteUserButton } from '@/components/admin/delete-user-button';
 import { Users, UserCheck, Phone, Icon } from 'lucide-react';
@@ -145,6 +146,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                               <UserStatusToggle userId={user.id} isActive={user.is_active} />
                               <div className="flex items-center gap-1 ml-2">
                                 <EditUserDialog user={user as any} clubs={clubs} />
+                                <ChangeUserPasswordDialog userId={user.id} userName={user.name} />
                                 <DeleteUserButton userId={user.id} userName={user.name} />
                               </div>
                             </>
