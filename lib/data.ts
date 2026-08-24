@@ -734,19 +734,31 @@ type TournamentScore = {
 
 type RankingScope = {
   state?: string | null;
-  projectedTournamentId?: number | null;
+  excludeTournamentId?: number | null;
 };
 
-async function getCountingTournamentIds(projectedTournamentId?: number | null): Promise<number[]> {
+async function getLatestFinishedTournamentId(): Promise<number | null> {
+  const rows = await sql`
+    SELECT id
+    FROM tournaments
+    WHERE EXISTS (SELECT 1 FROM bracket_matches bm WHERE bm.tournament_id = tournaments.id AND bm.status = 'completed')
+      AND start_date >= (NOW() - INTERVAL '52 weeks')
+      AND status IN ('FINISHED', 'finished', 'completed')
+    ORDER BY COALESCE(end_date, start_date) DESC, start_date DESC, id DESC
+    LIMIT 1
+  `;
+
+  return rows.length > 0 ? (rows[0].id as number) : null;
+}
+
+async function getCountingTournamentIds(excludeTournamentId?: number | null): Promise<number[]> {
   const tournaments = await sql`
     SELECT id, name, start_date
     FROM tournaments
     WHERE EXISTS (SELECT 1 FROM bracket_matches bm WHERE bm.tournament_id = tournaments.id AND bm.status = 'completed')
       AND start_date >= (NOW() - INTERVAL '52 weeks')
-      AND (
-        status IN ('FINISHED', 'finished', 'completed')
-        OR (${projectedTournamentId || null}::integer IS NOT NULL AND id = ${projectedTournamentId || null})
-      )
+      AND status IN ('FINISHED', 'finished', 'completed')
+      AND (${excludeTournamentId || null}::integer IS NULL OR id != ${excludeTournamentId || null})
     ORDER BY start_date DESC
   `;
 
@@ -762,7 +774,7 @@ async function getCountingTournamentIds(projectedTournamentId?: number | null): 
 }
 
 async function buildOverallRankingEntries(scope: RankingScope = {}): Promise<RankingEntry[]> {
-  const activeIds = await getCountingTournamentIds(scope.projectedTournamentId);
+  const activeIds = await getCountingTournamentIds(scope.excludeTournamentId);
 
   if (activeIds.length === 0) {
     return [];
@@ -980,31 +992,32 @@ export async function getUserStats(userId: number): Promise<UserStats> {
   };
 }
 
-export async function getGlobalRanking(limit: number = 50, tournamentId?: number | null): Promise<RankingEntry[]> {
-  const currentEntries = await buildOverallRankingEntries({ projectedTournamentId: tournamentId });
+export async function getGlobalRanking(limit: number = 50): Promise<RankingEntry[]> {
+  const currentEntries = await buildOverallRankingEntries();
   const rankedEntries = assignRanks(currentEntries, currentEntries.length);
 
-  if (!tournamentId) {
+  const latestFinishedTournamentId = await getLatestFinishedTournamentId();
+  if (!latestFinishedTournamentId) {
     return rankedEntries.slice(0, limit);
   }
 
-  const previousEntries = await buildOverallRankingEntries();
+  const previousEntries = await buildOverallRankingEntries({ excludeTournamentId: latestFinishedTournamentId });
   return withRankMovement(rankedEntries, previousEntries).slice(0, limit);
 }
 
 export async function getStateRanking(
   state: string,
-  tournamentId?: number | null,
   limit: number = 100,
 ): Promise<RankingEntry[]> {
-  const currentEntries = await buildOverallRankingEntries({ state, projectedTournamentId: tournamentId });
+  const currentEntries = await buildOverallRankingEntries({ state });
   const rankedEntries = assignRanks(currentEntries, currentEntries.length);
 
-  if (!tournamentId) {
+  const latestFinishedTournamentId = await getLatestFinishedTournamentId();
+  if (!latestFinishedTournamentId) {
     return rankedEntries.slice(0, limit);
   }
 
-  const previousEntries = await buildOverallRankingEntries({ state });
+  const previousEntries = await buildOverallRankingEntries({ state, excludeTournamentId: latestFinishedTournamentId });
   return withRankMovement(rankedEntries, previousEntries).slice(0, limit);
 }
 
