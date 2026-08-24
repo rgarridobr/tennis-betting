@@ -22,7 +22,7 @@ export async function PublicDashboardPage() {
 
   const t = await getTranslations('dashboard');
 
-  const [tournaments, stats, ranking, activeTournament] = await Promise.all([
+  const [tournaments, stats, activeTournament] = await Promise.all([
     getAllVisibleTournaments(4),
     user
       ? getUserStats(user.id)
@@ -35,9 +35,9 @@ export async function PublicDashboardPage() {
           active_tournaments: 0,
           tournament_stats: [],
         }),
-    getGlobalRanking(5),
     getActiveTournament(),
   ]);
+  const ranking = await getGlobalRanking(5, activeTournament?.id);
 
   return (
     <div className="min-h-screen bg-slate-50">  
