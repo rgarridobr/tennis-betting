@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Target, TrendingUp, Trophy } from 'lucide-react';
 import type { RankingEntry } from '@/lib/data';
 import { getTranslations } from 'next-intl/server';
+import { RankMovementIndicator } from './rank-movement-indicator';
 
 interface RankingSectionProps {
   ranking: RankingEntry[];
@@ -44,20 +45,25 @@ export async function RankingSection({ ranking, currentUserId }: RankingSectionP
                     isCurrentUser ? 'bg-emerald-50/50 shadow-sm relative z-10' : ''
                   }`}
                 >
-                  <div className="flex items-center gap-5">
+                  <div className="flex min-w-0 items-center gap-3 sm:gap-5">
                     {/* Position */}
-                    <div
-                      className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-black shadow-sm transition-transform group-hover:scale-105 shrink-0 ${
-                        entry.rank === 1
-                          ? 'bg-gradient-to-br from-amber-300 to-amber-500 text-amber-950 shadow-amber-500/20'
-                          : entry.rank === 2
-                            ? 'bg-gradient-to-br from-slate-200 to-slate-400 text-slate-900 shadow-slate-400/20'
-                            : entry.rank === 3
-                              ? 'bg-gradient-to-br from-orange-300 to-orange-500 text-orange-950 shadow-orange-500/20'
-                              : 'bg-slate-100 text-slate-500 border border-slate-200/60'
-                      }`}
-                    >
-                      {entry.rank}
+                    <div className="flex w-[4.75rem] shrink-0 items-center gap-2">
+                      <div
+                        className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-black shadow-sm transition-transform group-hover:scale-105 shrink-0 ${
+                          entry.rank === 1
+                            ? 'bg-gradient-to-br from-amber-300 to-amber-500 text-amber-950 shadow-amber-500/20'
+                            : entry.rank === 2
+                              ? 'bg-gradient-to-br from-slate-200 to-slate-400 text-slate-900 shadow-slate-400/20'
+                              : entry.rank === 3
+                                ? 'bg-gradient-to-br from-orange-300 to-orange-500 text-orange-950 shadow-orange-500/20'
+                                : 'bg-slate-100 text-slate-500 border border-slate-200/60'
+                        }`}
+                      >
+                        {entry.rank}
+                      </div>
+                      <div className="flex w-5 shrink-0 justify-center">
+                        <RankMovementIndicator movement={entry.rank_movement} compact />
+                      </div>
                     </div>
 
                     {/* User Info */}

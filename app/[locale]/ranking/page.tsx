@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import {
   getGlobalRanking,
   getStateRanking,
+  getTournamentRanking,
   getActiveTournament,
   getTournamentsWithBrackets,
   RankingEntry,
@@ -14,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Target, TrendingUp, Trophy } from "lucide-react";
 import { TournamentPodium } from "@/components/tournament/tournament-podium";
 import { TournamentFilter } from "@/components/pools/tournament-filter";
+import { RankMovementIndicator } from "@/components/dashboard/rank-movement-indicator";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
@@ -29,20 +31,33 @@ export default async function RankingPage({
 
   const params = await searchParams;
   const tab = params.tab || "nacional";
-  const selectedTournamentId = params.tournamentId ? parseInt(params.tournamentId, 10) : undefined;
+  const explicitOverall = params.tournamentId === "overall";
+  const parsedTournamentId =
+    params.tournamentId && !explicitOverall ? parseInt(params.tournamentId, 10) : undefined;
+  const selectedTournamentId =
+    typeof parsedTournamentId === "number" && !Number.isNaN(parsedTournamentId)
+      ? parsedTournamentId
+      : undefined;
 
   const [activeTournament, tournaments] = await Promise.all([
     getActiveTournament(),
     getTournamentsWithBrackets(),
   ]);
 
+  const projectionTournamentId = activeTournament?.id;
+  const showRankMovement = !selectedTournamentId;
+
   let ranking: RankingEntry[] = [];
   if (tab === "estadual") {
     if (user?.state) {
-      ranking = await getStateRanking(user.state, selectedTournamentId);
+      ranking = selectedTournamentId
+        ? await getTournamentRanking(selectedTournamentId, 1000, user.state)
+        : await getStateRanking(user.state, projectionTournamentId);
     }
   } else {
-    ranking = await getGlobalRanking(1000, selectedTournamentId);
+    ranking = selectedTournamentId
+      ? await getTournamentRanking(selectedTournamentId, 1000)
+      : await getGlobalRanking(1000, projectionTournamentId);
   }
 
   return (
@@ -98,7 +113,7 @@ export default async function RankingPage({
 
             <TournamentFilter 
               tournaments={tournaments} 
-              currentTournamentId={selectedTournamentId} 
+              currentTournamentId={selectedTournamentId}
             />
           </div>
         </div>
@@ -166,35 +181,42 @@ export default async function RankingPage({
                             : "border-l-4 border-transparent"
                         }`}
                       >
-                        <div className="flex items-center gap-5">
+                        <div className="flex min-w-0 items-center gap-3 sm:gap-5">
                           {/* Position */}
-                          <div
-                            className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-black shadow-sm transition-transform group-hover:scale-105 ${
-                              entry.rank === 1
-                                ? "bg-gradient-to-br from-amber-300 to-amber-500 text-amber-950 shadow-amber-500/20"
-                                : entry.rank === 2
-                                  ? "bg-gradient-to-br from-slate-200 to-slate-400 text-slate-900 shadow-slate-400/20"
-                                  : entry.rank === 3
-                                    ? "bg-gradient-to-br from-orange-300 to-orange-500 text-orange-950 shadow-orange-500/20"
-                                    : "bg-slate-100 text-slate-500 border border-slate-200/60"
-                            }`}
-                          >
-                            {entry.rank}
+                          <div className="flex w-[4.75rem] shrink-0 items-center gap-2">
+                            <div
+                              className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-black shadow-sm transition-transform group-hover:scale-105 shrink-0 ${
+                                entry.rank === 1
+                                  ? "bg-gradient-to-br from-amber-300 to-amber-500 text-amber-950 shadow-amber-500/20"
+                                  : entry.rank === 2
+                                    ? "bg-gradient-to-br from-slate-200 to-slate-400 text-slate-900 shadow-slate-400/20"
+                                    : entry.rank === 3
+                                      ? "bg-gradient-to-br from-orange-300 to-orange-500 text-orange-950 shadow-orange-500/20"
+                                      : "bg-slate-100 text-slate-500 border border-slate-200/60"
+                              }`}
+                            >
+                              {entry.rank}
+                            </div>
+                            <div className="flex w-5 shrink-0 justify-center">
+                              {showRankMovement && (
+                                <RankMovementIndicator movement={entry.rank_movement} compact />
+                              )}
+                            </div>
                           </div>
 
                           {/* User Info */}
-                          <div className="flex flex-col gap-1">
+                          <div className="flex min-w-0 flex-col gap-1">
                             <p
-                              className={`font-bold text-base flex items-center gap-2 ${isCurrentUser ? "text-emerald-800" : "text-slate-900"}`}
+                              className={`font-bold text-base flex items-center gap-2 truncate ${isCurrentUser ? "text-emerald-800" : "text-slate-900"}`}
                             >
-                              {entry.user_name}
+                              <span className="truncate">{entry.user_name}</span>
                               {isCurrentUser && (
                                 <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white border-0 text-[10px] uppercase font-black tracking-wider px-2 py-0.5 h-auto">
                                   {t("you")}
                                 </Badge>
                               )}
                             </p>
-                            <div className="flex items-center gap-4 text-xs font-medium text-slate-500">
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs font-medium text-slate-500">
                               <span className="flex items-center gap-1.5 bg-slate-100 px-2 py-1 rounded-md">
                                 <Target className="w-3.5 h-3.5 text-slate-400" />
                                 {entry.correct_predictions}/
