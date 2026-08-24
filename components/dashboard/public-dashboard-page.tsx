@@ -37,7 +37,7 @@ export async function PublicDashboardPage() {
         }),
     getActiveTournament(),
   ]);
-  const ranking = await getGlobalRanking(5, activeTournament?.id);
+  const ranking = await getGlobalRanking(5);
 
   return (
     <div className="min-h-screen bg-slate-50">  

@@ -44,7 +44,6 @@ export default async function RankingPage({
     getTournamentsWithBrackets(),
   ]);
 
-  const projectionTournamentId = activeTournament?.id;
   const showRankMovement = !selectedTournamentId;
 
   let ranking: RankingEntry[] = [];
@@ -52,12 +51,12 @@ export default async function RankingPage({
     if (user?.state) {
       ranking = selectedTournamentId
         ? await getTournamentRanking(selectedTournamentId, 1000, user.state)
-        : await getStateRanking(user.state, projectionTournamentId);
+        : await getStateRanking(user.state);
     }
   } else {
     ranking = selectedTournamentId
       ? await getTournamentRanking(selectedTournamentId, 1000)
-      : await getGlobalRanking(1000, projectionTournamentId);
+      : await getGlobalRanking(1000);
   }
 
   return (
