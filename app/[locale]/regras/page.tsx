@@ -4,7 +4,7 @@ import { PageHero } from '@/components/shared/page-hero';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { POINTS_VARIANTS, getActiveTournament } from '@/lib/data';
 import { getRoundName } from '@/lib/utils';
-import { HelpCircle, Trophy, Clock, Edit3, Target, AlertTriangle, Users, Award } from 'lucide-react';
+import { Trophy, Clock, Edit3, Target, AlertTriangle, Users, Award, CircleHelp } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import React from 'react';
 import { getTranslations } from 'next-intl/server';
@@ -115,57 +115,11 @@ export default async function RulesPage() {
           </div>
         </section>
 
-        {/* Scoring Table */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <h2 className="text-2xl font-black text-slate-900 tracking-tight">{t('scoringSystem')}</h2>
-          </div>
-
-          <div className="grid gap-6">
-            {categories.map((cat) => {
-              const config = cat;
-              return (
-                <Card key={cat.id} className="border-0 shadow-md overflow-hidden pt-0">
-                  <div className="bg-slate-900 px-6 py-4">
-                    <h3 className="text-white font-bold text-lg">{cat.name}</h3>
-                    <p className="text-slate-400 text-xs">{t(`categoryDescriptions.${cat.id}`)}</p>
-                  </div>
-                  <CardContent className="p-0">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
-                      {config.rounds.map((points, idx) => {
-                        const isCampeao = idx === config.rounds.length - 1;
-                        const isFinal = idx === config.rounds.length - 2;
-                        const roundName = getRoundName(idx + 1, config.rounds.length - 1);
-
-                        let displayTitle = roundName;
-                        if (isCampeao) displayTitle = t('champion');
-                        if (isFinal) displayTitle = t('final');
-
-                        return (
-                          <React.Fragment key={idx}>
-                            <div className="text-center border-1 border-slate-200 rounded-lg mx-2 py-1">
-                              <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">{displayTitle}</p>
-                              <p className="text-xl font-black text-emerald-600 py-3">
-                                {points === null ? '-' : points}
-                              </p>
-                              <p className="text-[10px] text-slate-500">{t('pointsUnit')}</p>
-                            </div>
-                          </React.Fragment>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </section>
-
         {/* Tie breaker */}
         <section className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-              <HelpCircle className="w-5 h-5 text-gray-600" />
+            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+              <CircleHelp className="w-4 h-4 text-slate-500" />
             </div>
             <h2 className="text-xl font-bold text-slate-900">{t('tiebreakTitle')}</h2>
           </div>
@@ -224,6 +178,52 @@ export default async function RulesPage() {
               <li>{t('validity2')}</li>
               <li>{t('validity3')}</li>
             </ul>
+          </div>
+        </section>
+
+        {/* Scoring Table */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 mb-2">
+            <h2 className="text-2xl font-black text-slate-900 tracking-tight">{t('scoringSystem')}</h2>
+          </div>
+
+          <div className="grid gap-6">
+            {categories.map((cat) => {
+              const config = cat;
+              return (
+                <Card key={cat.id} className="border-0 shadow-md overflow-hidden pt-0">
+                  <div className="bg-slate-900 px-6 py-4">
+                    <h3 className="text-white font-bold text-lg">{cat.name}</h3>
+                    <p className="text-slate-400 text-xs">{t(`categoryDescriptions.${cat.id}`)}</p>
+                  </div>
+                  <CardContent className="p-0">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
+                      {config.rounds.map((points, idx) => {
+                        const isCampeao = idx === config.rounds.length - 1;
+                        const isFinal = idx === config.rounds.length - 2;
+                        const roundName = getRoundName(idx + 1, config.rounds.length - 1);
+
+                        let displayTitle = roundName;
+                        if (isCampeao) displayTitle = t('champion');
+                        if (isFinal) displayTitle = t('final');
+
+                        return (
+                          <React.Fragment key={idx}>
+                            <div className="text-center border-1 border-slate-200 rounded-lg mx-2 py-1">
+                              <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">{displayTitle}</p>
+                              <p className="text-xl font-black text-emerald-600 py-3">
+                                {points === null ? '-' : points}
+                              </p>
+                              <p className="text-[10px] text-slate-500">{t('pointsUnit')}</p>
+                            </div>
+                          </React.Fragment>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </section>
       </main>
