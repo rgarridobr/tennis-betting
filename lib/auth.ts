@@ -3,6 +3,52 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import bcrypt from 'bcryptjs';
 
+const NICKNAME_UNIQUE_INDEX = 'users_nickname_unique_ci';
+
+export class NicknameTakenError extends Error {
+  constructor() {
+    super('Nickname is already in use');
+    this.name = 'NicknameTakenError';
+  }
+}
+
+export function isNicknameTakenError(error: unknown): boolean {
+  if (error instanceof NicknameTakenError) return true;
+  if (!error || typeof error !== 'object') return false;
+
+  const databaseError = error as {
+    code?: string;
+    constraint?: string;
+    message?: string;
+  };
+
+  return (
+    databaseError.code === '23505' &&
+    (databaseError.constraint === NICKNAME_UNIQUE_INDEX ||
+      databaseError.message?.includes(NICKNAME_UNIQUE_INDEX) === true)
+  );
+}
+
+export async function isNicknameTaken(
+  nickname: string,
+  excludeUserId?: number,
+): Promise<boolean> {
+  const normalizedNickname = nickname.trim();
+  if (!normalizedNickname) return false;
+
+  const excludedId = excludeUserId ?? null;
+  const users = await sql`
+    SELECT 1
+    FROM users
+    WHERE LOWER(BTRIM(nickname)) = LOWER(BTRIM(${normalizedNickname}))
+      AND (is_deleted IS FALSE OR is_deleted IS NULL)
+      AND (${excludedId}::integer IS NULL OR id <> ${excludedId})
+    LIMIT 1
+  `;
+
+  return users.length > 0;
+}
+
 export interface User {
   id: number;
   name: string;
@@ -161,11 +207,16 @@ export async function registerUser(
     throw new Error('State and city are required to register with Brasil');
   }
 
+  const normalizedNickname = nickname?.trim() ?? '';
+  if (normalizedNickname && (await isNicknameTaken(normalizedNickname))) {
+    throw new NicknameTakenError();
+  }
+
   const hashedPassword = await hashPassword(password);
 
   const users = await sql`
     INSERT INTO users (name, email, whatsapp, tennis_club, tennis_club_id, tennis_club_custom, nickname, password_hash, country, state, city)
-    VALUES (${name}, ${email}, ${whatsapp}, ${tennis_club}, ${tennis_club_id || null}, ${tennis_club_custom || null}, ${nickname || null}, ${hashedPassword}, ${normalizedCountry}, ${stateValue}, ${cityValue})
+    VALUES (${name}, ${email}, ${whatsapp}, ${tennis_club}, ${tennis_club_id || null}, ${tennis_club_custom || null}, ${normalizedNickname || null}, ${hashedPassword}, ${normalizedCountry}, ${stateValue}, ${cityValue})
     RETURNING id, name, email, nickname, whatsapp, tennis_club, tennis_club_id, tennis_club_custom, country, state, city, is_admin, created_at
   `;
 

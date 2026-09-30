@@ -951,6 +951,7 @@
     "requiredFields": "All required fields must be filled in",
     "passwordMin6": "Password must be at least 6 characters",
     "emailTaken": "This email is already registered",
+    "nicknameTaken": "This nickname is already in use. Choose another one.",
     "registerFailed": "Could not create account. Please try again.",
     "emailPasswordRequired": "Email and password are required",
     "invalidCredentials": "Incorrect email or password",

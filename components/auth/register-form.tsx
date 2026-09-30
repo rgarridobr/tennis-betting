@@ -32,6 +32,7 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirectTo') || '';
   const [error, setError] = useState<string | null>(null);
+  const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [nickname, setNickname] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
@@ -51,6 +52,7 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
     if (isFirstNameOnlyChecked) {
       const firstName = value.trim().split(' ')[0];
       setNickname(firstName);
+      setNicknameError(null);
     }
   };
 
@@ -59,6 +61,7 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
     if (checked) {
       const firstName = name.trim().split(' ')[0];
       setNickname(firstName);
+      setNicknameError(null);
     }
   };
 
@@ -73,6 +76,7 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
 
   async function handleSubmit(formData: FormData) {
     setError(null);
+    setNicknameError(null);
 
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
@@ -96,6 +100,9 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
     if (result?.error) {
       toast.error(result.error)
       setError(result.error);
+      if (result.field === 'nickname') {
+        setNicknameError(result.error);
+      }
     }
   }
 
@@ -152,13 +159,26 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
               type="text"
               placeholder=""
               value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
+              onChange={(e) => {
+                setNickname(e.target.value);
+                setNicknameError(null);
+              }}
               readOnly={isFirstNameOnlyChecked}
-              className={isFirstNameOnlyChecked ? 'bg-slate-50 cursor-not-allowed' : ''}
+              aria-invalid={Boolean(nicknameError)}
+              aria-describedby={nicknameError ? 'nickname-error' : 'nickname-hint'}
+              className={`${isFirstNameOnlyChecked ? 'bg-slate-50 cursor-not-allowed' : ''} ${
+                nicknameError ? 'border-red-500 focus-visible:ring-red-500' : ''
+              }`}
             />
-            <p className="text-[10px] text-slate-400 font-bold px-1 italic">
-              {t('nicknameHint')}
-            </p>
+            {nicknameError ? (
+              <p id="nickname-error" role="alert" className="text-xs text-red-600 font-bold px-1">
+                {nicknameError}
+              </p>
+            ) : (
+              <p id="nickname-hint" className="text-[10px] text-slate-400 font-bold px-1 italic">
+                {t('nicknameHint')}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">

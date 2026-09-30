@@ -1,6 +1,12 @@
 'use server';
 
-import { registerUser, loginUser, createSession, destroySession } from '@/lib/auth';
+import {
+  registerUser,
+  loginUser,
+  createSession,
+  destroySession,
+  isNicknameTakenError,
+} from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
@@ -44,6 +50,9 @@ export async function registerAction(formData: FormData) {
     );
     await createSession(user.id);
   } catch (error: unknown) {
+    if (isNicknameTakenError(error)) {
+      return { error: t('nicknameTaken'), field: 'nickname' as const };
+    }
     if (error instanceof Error && error.message.includes('unique')) {
       return { error: t('emailTaken') };
     }
