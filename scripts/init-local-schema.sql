@@ -21,6 +21,12 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS users_nickname_unique_ci
+  ON users (LOWER(BTRIM(nickname)))
+  WHERE nickname IS NOT NULL
+    AND BTRIM(nickname) <> ''
+    AND (is_deleted IS FALSE OR is_deleted IS NULL);
+
 CREATE TABLE IF NOT EXISTS sessions (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,

@@ -1,6 +1,12 @@
 'use server';
 
-import { getSession, hashPassword, registerUser } from '@/lib/auth';
+import {
+  getSession,
+  hashPassword,
+  registerUser,
+  isNicknameTaken,
+  isNicknameTakenError,
+} from '@/lib/auth';
 import { sql } from '@/lib/db';
 import { getTranslations } from 'next-intl/server';
 import {
@@ -476,6 +482,9 @@ export async function createUserAction(formData: FormData) {
     return { success: true };
   } catch (error: any) {
     console.error('Error creating user:', error);
+    if (isNicknameTakenError(error)) {
+      return { success: false, error: t('nicknameTaken') };
+    }
     if (error.message?.includes('unique') || error.code === '23505') {
       return { success: false, error: t('emailTaken') };
     }
@@ -505,6 +514,10 @@ export async function updateUserAction(id: number, formData: FormData) {
   }
 
   try {
+    if (nickname && (await isNicknameTaken(nickname, id))) {
+      return { success: false, error: t('nicknameTaken') };
+    }
+
     await updateUser(id, {
       name,
       email,
@@ -521,6 +534,9 @@ export async function updateUserAction(id: number, formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error('Error updating user:', error);
+    if (isNicknameTakenError(error)) {
+      return { success: false, error: t('nicknameTaken') };
+    }
     return { success: false, error: t('adminUserUpdateFailed') };
   }
 }

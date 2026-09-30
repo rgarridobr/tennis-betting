@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { sql } from '@/lib/db';
-import { getSession } from '@/lib/auth';
+import { getSession, isNicknameTaken, isNicknameTakenError } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 import { getTranslations } from 'next-intl/server';
 
@@ -43,12 +43,17 @@ export async function updateProfile(formData: FormData) {
       return { success: false, error: t('nameMin2') };
     }
 
+    const normalizedNickname = nickname?.trim() ?? '';
+    if (normalizedNickname && (await isNicknameTaken(normalizedNickname, user.id))) {
+      return { success: false, error: t('nicknameTaken') };
+    }
+
     // Update user (email cannot be changed)
     await sql`
       UPDATE users 
       SET
         name = ${name.trim()},
-        nickname = ${nickname?.trim() || null},
+        nickname = ${normalizedNickname || null},
         tennis_club = ${tennis_club.trim()},
         tennis_club_id = ${tennis_club_id},
         tennis_club_custom = ${tennis_club_custom || null},
@@ -65,6 +70,9 @@ export async function updateProfile(formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error('Error updating profile:', error);
+    if (isNicknameTakenError(error)) {
+      return { success: false, error: t('nicknameTaken') };
+    }
     return { success: false, error: t('profileUpdateFailed') };
   }
 }

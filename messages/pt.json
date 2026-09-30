@@ -951,6 +951,7 @@
     "requiredFields": "Todos os campos obrigatórios devem ser preenchidos",
     "passwordMin6": "A senha deve ter pelo menos 6 caracteres",
     "emailTaken": "Este e-mail já está cadastrado",
+    "nicknameTaken": "Este nickname já está em uso. Escolha outro.",
     "registerFailed": "Erro ao criar conta. Tente novamente.",
     "emailPasswordRequired": "E-mail e senha são obrigatórios",
     "invalidCredentials": "E-mail ou senha incorretos",
