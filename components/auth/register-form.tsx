@@ -5,6 +5,7 @@ import { useFormStatus } from 'react-dom';
 import { registerAction } from '@/lib/actions/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -224,10 +225,10 @@ export function RegisterForm({ clubs }: { clubs: TennisClub[] }) {
 
           <div className="space-y-2">
             <Label htmlFor="password">{t('passwordRequired')}</Label>
-            <Input
+            <PasswordInput
               id="password"
               name="password"
-              type="password"
+              autoComplete="new-password"
               placeholder=""
               value={password}
               onChange={(e) => setPassword(e.target.value)}

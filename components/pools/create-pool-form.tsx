@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createPoolAction } from "@/lib/actions/pools";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -124,10 +125,9 @@ export function CreatePoolForm({ isAdmin, tournaments = [], onCancel }: { isAdmi
           {isPrivate && (
             <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
               <Label htmlFor="password" title={t("accessPassword")} className="text-sm font-bold text-slate-700">{t("accessPassword")}</Label>
-              <Input
+              <PasswordInput
                 id="password"
                 name="password"
-                type="password"
                 placeholder={t("passwordPlaceholder")}
                 required={isPrivate}
                 className="h-12 rounded-xl border-slate-200"

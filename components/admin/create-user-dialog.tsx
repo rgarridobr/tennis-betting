@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { StateCitySelector } from '@/components/shared/state-city-selector';
 import { TennisClubSelector } from '@/components/shared/tennis-club-selector';
@@ -248,13 +249,14 @@ export function CreateUserDialog({ clubs }: { clubs: TennisClub[] }) {
 
           {/* Senha */}
           <div className="space-y-4">
-            <Label className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
+            <Label htmlFor="create-user-password" className="flex items-center gap-2 text-slate-900 font-black uppercase text-xs tracking-widest">
               <Lock className="w-4 h-4 text-emerald-500" /> {tAuth('password')}
             </Label>
 
-            <Input
+            <PasswordInput
+              id="create-user-password"
               name="password"
-              type="password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

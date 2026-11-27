@@ -93,6 +93,8 @@
     "switchTo": "Switch language"
   },
   "common": {
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
@@ -634,8 +636,9 @@
     "tournamentsListTitle": "Tournament list",
     "tournamentsListSubtitle": "Track and edit your championships",
     "newTournament": "New tournament",
+    "filterSeason": "Filter by season",
     "filterByMonth": "Filter by month",
-    "noneThisYear": "No tournaments this year.",
+    "noCalendarTournaments": "No tournaments in {year}.",
     "eventOne": "event",
     "eventOther": "events",
     "emptyMonthTitle": "No tournaments this month",

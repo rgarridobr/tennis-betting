@@ -20,7 +20,7 @@ import { TournamentStatusTransition } from '@/components/admin/tournament-status
 import { TournamentBracket } from '@/components/tournament/tournament-bracket';
 import { Clock, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { ptBR, enUS } from 'date-fns/locale';
 import { format } from 'date-fns';
 import { EditTournamentDateModal } from '@/components/admin/edit-tournament-date-modal';
@@ -78,6 +78,7 @@ export default async function ManageTournamentPage({ params }: Props) {
     return new Date(dateString);
   }
 
+  const startDate = parseDate(tournament.start_date);
   const surfaceKey = normalizeSurfaceKey(tournament.surface);
   const surfaceLabel =
     surfaceKey === 'Hard' || surfaceKey === 'Clay' || surfaceKey === 'Grass'
@@ -88,10 +89,10 @@ export default async function ManageTournamentPage({ params }: Props) {
     <>
       <PageHero
         title={tournament.name}
-        subtitle={`${tournament.location} \u2022 ${format(parseDate(tournament.start_date), 'dd/MM/yyyy - HH:mm', { locale: dateLocale })} \u2022 ${surfaceLabel}`}
+        subtitle={`${tournament.location} \u2022 ${format(startDate, 'dd/MM/yyyy - HH:mm', { locale: dateLocale })} \u2022 ${surfaceLabel}`}
       >
         <div className="grid grid-cols-1 gap-4">
-          <EditTournamentDateModal tournamentId={tournamentId} currentDate={new Date(tournament.start_date)} hasFinished={tournament.status === 'finished'}/>
+          <EditTournamentDateModal tournamentId={tournamentId} currentDate={startDate} hasFinished={tournament.status === 'finished'}/>
           <EditTournamentPrizeModal
             tournamentId={tournamentId}
             initialPrizeDescription={tournament.prize_description}
@@ -102,7 +103,7 @@ export default async function ManageTournamentPage({ params }: Props) {
         {/* Status e Voltar */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <Button variant="outline" size="sm" asChild className="bg-transparent w-fit">
-            <Link href="/admin/torneios">
+            <Link href={{ pathname: '/admin/torneios', query: { year: startDate.getFullYear(), month: startDate.getMonth() } }}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               {tButtons('back')}
             </Link>

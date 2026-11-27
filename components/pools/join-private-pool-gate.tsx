@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { joinPoolAction } from "@/lib/actions/pools";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Lock, ShieldAlert, ArrowLeft } from "lucide-react";
@@ -70,10 +70,9 @@ export function JoinPrivatePoolGate({ poolId, poolName }: JoinPrivatePoolGatePro
 
             <div className="space-y-2">
               <Label htmlFor="password" className="text-sm font-bold text-slate-700">{t("accessPassword")}</Label>
-              <Input
+              <PasswordInput
                 id="password"
                 name="password"
-                type="password"
                 placeholder={t("gatePasswordPlaceholder")}
                 required
                 className="h-12 rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:ring-emerald-500/20 transition-all text-base"

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { requestPasswordResetAction, verifyResetCodeAction, resetPasswordAction } from '@/lib/actions/password-reset'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { toast } from 'sonner'
@@ -192,20 +193,20 @@ export function ResetPasswordDialog({ open, onOpenChange }: { open: boolean, onO
           <form onSubmit={handleResetPassword} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="newPassword">{t('resetNewPassword')}</Label>
-              <Input
+              <PasswordInput
                 id="newPassword"
                 name="newPassword"
-                type="password"
+                autoComplete="new-password"
                 placeholder={t('resetPasswordPlaceholder')}
                 required
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">{t('resetConfirmPassword')}</Label>
-              <Input
+              <PasswordInput
                 id="confirmPassword"
                 name="confirmPassword"
-                type="password"
+                autoComplete="new-password"
                 required
               />
             </div>

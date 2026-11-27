@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { updatePassword } from '@/lib/actions/profile'
 import { AlertCircle, KeyRound, Loader2 } from 'lucide-react'
@@ -87,20 +87,20 @@ export function AdminAccountPasswordDialog() {
 
             <div className="space-y-2">
               <Label htmlFor="admin-current-password">{tProfile('currentPassword')}</Label>
-              <Input
+              <PasswordInput
                 id="admin-current-password"
                 name="currentPassword"
-                type="password"
+                autoComplete="current-password"
                 required
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="admin-new-password">{tProfile('newPassword')}</Label>
-              <Input
+              <PasswordInput
                 id="admin-new-password"
                 name="newPassword"
-                type="password"
+                autoComplete="new-password"
                 required
                 minLength={6}
               />
@@ -108,10 +108,10 @@ export function AdminAccountPasswordDialog() {
 
             <div className="space-y-2">
               <Label htmlFor="admin-confirm-password">{tProfile('confirmPassword')}</Label>
-              <Input
+              <PasswordInput
                 id="admin-confirm-password"
                 name="confirmPassword"
-                type="password"
+                autoComplete="new-password"
                 required
                 minLength={6}
               />

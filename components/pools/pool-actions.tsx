@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { 
   Dialog, 
   DialogContent, 
@@ -156,12 +156,12 @@ export function PoolActions({ pool, tournaments, isMember, isCreator, isAuthenti
                 <AlertDescription className="font-bold">{error}</AlertDescription>
               </Alert>
             )}
-            <Input
-              type="password"
+            <PasswordInput
+              aria-label={t("passwordInput")}
               placeholder={t("passwordInput")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="h-14 rounded-2xl border-slate-100 bg-slate-50 focus:bg-white transition-all text-center text-lg font-bold"
+              className="h-14 rounded-2xl border-slate-100 bg-slate-50 focus:bg-white transition-all pl-12 text-center text-lg font-bold"
               autoFocus
             />
           </div>
