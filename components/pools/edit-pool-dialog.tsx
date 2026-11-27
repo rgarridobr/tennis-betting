@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { updatePoolAction, getPoolMembersWithPredictionsAction } from "@/lib/actions/pools";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -134,10 +135,9 @@ export function EditPoolDialog({ pool, tournaments, open, onOpenChange }: EditPo
           {!pool.is_general && (
             <div className="space-y-2">
               <Label htmlFor="password" title={t("newPassword")} className="text-sm font-bold text-slate-700">{t("newPassword")}</Label>
-              <Input
+              <PasswordInput
                 id="password"
                 name="password"
-                type="password"
                 placeholder={t("passwordKeep")}
                 className="h-12 rounded-xl border-slate-200"
               />

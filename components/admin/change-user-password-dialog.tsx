@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { updateUserPasswordAction } from '@/lib/actions/admin'
 import { AlertCircle, Check, KeyRound, Loader2 } from 'lucide-react'
@@ -99,10 +99,10 @@ export function ChangeUserPasswordDialog({ userId, userName }: ChangeUserPasswor
             <Label htmlFor={`new-password-${userId}`} className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest ml-1">
               <KeyRound className="w-3 h-3 text-amber-500" /> {tAdmin('changeUserPassword.newPassword')}
             </Label>
-            <Input
+            <PasswordInput
               id={`new-password-${userId}`}
               name="newPassword"
-              type="password"
+              autoComplete="new-password"
               required
               minLength={6}
               className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-amber-500 rounded-2xl font-bold text-slate-700"
@@ -113,10 +113,10 @@ export function ChangeUserPasswordDialog({ userId, userName }: ChangeUserPasswor
             <Label htmlFor={`confirm-password-${userId}`} className="flex items-center gap-2 text-slate-900 font-black uppercase text-[10px] tracking-widest ml-1">
               <Check className="w-3 h-3 text-amber-500" /> {tAdmin('changeUserPassword.confirmPassword')}
             </Label>
-            <Input
+            <PasswordInput
               id={`confirm-password-${userId}`}
               name="confirmPassword"
-              type="password"
+              autoComplete="new-password"
               required
               minLength={6}
               className="h-12 bg-slate-50 border-2 border-slate-100 focus:ring-amber-500 rounded-2xl font-bold text-slate-700"

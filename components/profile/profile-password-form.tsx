@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { updatePassword } from '@/lib/actions/profile';
 import { Loader2, Check, AlertCircle } from 'lucide-react';
@@ -53,17 +53,17 @@ export function ProfilePasswordForm() {
     <form id="password-form-sidebar" action={handlePasswordSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="currentPassword">{t('currentPassword')}</Label>
-        <Input id="currentPassword" name="currentPassword" type="password" placeholder="" required />
+        <PasswordInput id="currentPassword" name="currentPassword" autoComplete="current-password" placeholder="" required />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="newPassword">{t('newPassword')}</Label>
-        <Input id="newPassword" name="newPassword" type="password" placeholder="" required minLength={6} />
+        <PasswordInput id="newPassword" name="newPassword" autoComplete="new-password" placeholder="" required minLength={6} />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
-        <Input id="confirmPassword" name="confirmPassword" type="password" placeholder="" required minLength={6} />
+        <PasswordInput id="confirmPassword" name="confirmPassword" autoComplete="new-password" placeholder="" required minLength={6} />
       </div>
 
       {passwordMessage && (

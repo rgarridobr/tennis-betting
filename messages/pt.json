@@ -93,6 +93,8 @@
     "switchTo": "Mudar idioma"
   },
   "common": {
+    "showPassword": "Mostrar senha",
+    "hidePassword": "Ocultar senha",
     "loading": "Carregando...",
     "error": "Erro",
     "success": "Sucesso",
@@ -634,8 +636,9 @@
     "tournamentsListTitle": "Lista de Torneios",
     "tournamentsListSubtitle": "Acompanhe e edite seus campeonatos",
     "newTournament": "Novo Torneio",
+    "filterSeason": "Filtrar por temporada",
     "filterByMonth": "Filtrar por mês",
-    "noneThisYear": "Nenhum torneio este ano.",
+    "noCalendarTournaments": "Nenhum torneio em {year}.",
     "eventOne": "evento",
     "eventOther": "eventos",
     "emptyMonthTitle": "Nenhum torneio neste mês",

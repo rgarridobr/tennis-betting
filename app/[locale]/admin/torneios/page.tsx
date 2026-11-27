@@ -1,21 +1,23 @@
-import { getTournaments } from '@/lib/data';
+import { getTournaments, type Tournament } from '@/lib/data';
 import { PageHero } from '@/components/shared/page-hero';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { Plus, Settings, Trophy, Zap, Calendar, ClipboardList, MapPin, ChevronRight } from 'lucide-react';
 import { DeleteTournamentButton } from '@/components/admin/delete-tournament-button';
 import { TournamentVisibilityToggle } from '@/components/admin/tournament-visibility-toggle';
-import { SyncAtpButton } from '@/components/admin/sync-atp-button';
+import { TournamentYearSelect } from '@/components/admin/tournament-year-select';
 import { cn, getStatusLabelKeys } from '@/lib/utils'
 import { normalizeSurfaceKey } from '@/lib/tournament';
 import { format } from 'date-fns';
 import { ptBR, enUS } from 'date-fns/locale';
 import { getLocale, getTranslations } from 'next-intl/server';
 
+const FIRST_CALENDAR_YEAR = 2026;
+
 interface Props {
-  searchParams: Promise<{ month?: string }>;
+  searchParams: Promise<{ year?: string; month?: string }>;
 }
 
 // Helper to safely parse dates regardless if they are strings or Date objects
@@ -25,7 +27,7 @@ const parseDate = (date: string | Date) => {
 };
 
 export default async function AdminTournamentsPage({ searchParams }: Props) {
-  const { month: selectedMonth } = await searchParams;
+  const { year: selectedYear, month: selectedMonth } = await searchParams;
   const allTournaments = await getTournaments();
   const t = await getTranslations('admin');
   const tStatus = await getTranslations('status');
@@ -34,33 +36,38 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
   const locale = await getLocale();
   const dateLocale = locale === 'en' ? enUS : ptBR;
 
-  const currentYear = new Date().getFullYear();
-  const currentMonthIndex = new Date().getMonth();
-  const monthToFilter = selectedMonth !== undefined ? parseInt(selectedMonth) : currentMonthIndex;
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const calendar = allTournaments.map((tournament) => ({
+    tournament,
+    date: parseDate(tournament.start_date),
+  }));
+  const lastYear = calendar.reduce((latest, { date }) => Math.max(latest, date.getFullYear()), currentYear);
+  const years = Array.from({ length: lastYear - FIRST_CALENDAR_YEAR + 1 }, (_, index) => FIRST_CALENDAR_YEAR + index);
+  const year = years.find((option) => String(option) === selectedYear) ?? currentYear;
+  const tournamentsByMonth = new Map<number, Tournament[]>();
 
-  // Filter out tournaments from previous years if that's what's intended
-  // "5 - apenas do ano atual, os dos anos anteriores nao precisam ser listados"
-  const tournaments = allTournaments.filter((tournament) => parseDate(tournament.start_date).getFullYear() === currentYear);
+  for (const { tournament, date } of calendar) {
+    if (date.getFullYear() !== year) continue;
 
-  // Group tournaments by month for the sidebar
-  const monthsWithEvents = Array.from({ length: 12 }, (_, i) => {
-    const monthIndex = i;
-    const count = tournaments.filter((tournament) => {
-      const date = parseDate(tournament.start_date);
-      return date.getFullYear() === currentYear && date.getMonth() === monthIndex;
-    }).length;
+    const month = date.getMonth();
+    const tournaments = tournamentsByMonth.get(month);
+    if (tournaments) tournaments.push(tournament);
+    else tournamentsByMonth.set(month, [tournament]);
+  }
 
-    return {
-      index: monthIndex,
-      name: format(new Date(currentYear, monthIndex), 'MMMM', { locale: dateLocale }),
-      count,
-    };
-  }).filter((m) => m.count > 0);
+  const monthsWithEvents = Array.from(tournamentsByMonth, ([month, tournaments]) => ({
+    month,
+    label: format(new Date(year, month), 'MMMM', { locale: dateLocale }),
+    count: tournaments.length,
+    href: { pathname: '/admin/torneios', query: { year, month } },
+  }));
 
-  const filteredTournaments = tournaments.filter((tournament) => {
-    const date = parseDate(tournament.start_date);
-    return date.getFullYear() === currentYear && date.getMonth() === monthToFilter;
-  });
+  const requestedMonth = monthsWithEvents.find(({ month }) => String(month) === selectedMonth)?.month;
+  const defaultMonth = year === currentYear ? currentMonth : monthsWithEvents[0]?.month;
+  const monthToFilter = requestedMonth ?? defaultMonth;
+  const filteredTournaments = monthToFilter === undefined ? [] : tournamentsByMonth.get(monthToFilter) ?? [];
 
   const standbyTournaments = filteredTournaments.filter((tournament) => tournament.status === 'STANDBY' || tournament.status === 'draft');
   const upcomingTournaments = filteredTournaments.filter((tournament) => tournament.status === 'UPCOMING' || tournament.status === 'upcoming');
@@ -97,129 +104,74 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
             <h2 className="text-3xl font-black text-slate-900 tracking-tight">{t('tournamentsListTitle')}</h2>
             <p className="text-slate-500 font-medium">{t('tournamentsListSubtitle')}</p>
           </div>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <SyncAtpButton />
-
-            <Button
-              asChild
-              size="lg"
-              className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-2xl shadow-xl shadow-emerald-500/20 h-12 sm:h-14"
-            >
-              <Link href="/admin/torneios/novo">
-                <Plus className="w-5 h-5 mr-2" />
-                {t('newTournament')}
-              </Link>
-            </Button>
-          </div>
+          <Button
+            asChild
+            size="lg"
+            className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-2xl shadow-xl shadow-emerald-500/20 h-12 sm:h-14"
+          >
+            <Link href="/admin/torneios/novo">
+              <Plus className="w-5 h-5 mr-2" />
+              {t('newTournament')}
+            </Link>
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
-          {/* Sidebar Filters */}
-          {/* MOBILE FILTER */}
-          <div className="lg:hidden mb-6">
-            <h3 className="text-lg font-black text-slate-900 mb-3 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-emerald-600" />
-              {t('filterByMonth')}
-            </h3>
+          <aside className="min-w-0 space-y-6 lg:col-span-1">
+            <TournamentYearSelect year={year} years={years} />
 
-            {monthsWithEvents.length === 0 ? (
-              <p className="text-sm text-slate-400 font-medium italic">{t('noneThisYear')}</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <div className="flex gap-2 w-max pb-2">
-                  {monthsWithEvents.map((m) => {
-                    const isSelected = monthToFilter === m.index;
+            <div>
+              <h3 className="mb-3 flex items-center gap-2 text-lg font-black text-slate-900 lg:mb-6 lg:text-xl">
+                <Calendar className="size-5 text-emerald-600" />
+                {t('filterByMonth')}
+              </h3>
+
+              {monthsWithEvents.length === 0 ? (
+                <p className="text-sm font-medium italic text-slate-500">
+                  {t('noCalendarTournaments', { year: String(year) })}
+                </p>
+              ) : (
+                <div className="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
+                  {monthsWithEvents.map(({ month, label, count, href }) => {
+                    const isSelected = monthToFilter === month;
 
                     return (
                       <Link
-                        key={m.index}
-                        href={isSelected ? '/admin/torneios' : `/admin/torneios?month=${m.index}`}
+                        key={month}
+                        href={href}
+                        aria-current={isSelected ? 'true' : undefined}
                         scroll={false}
                         className={cn(
-                          'flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap border transition-all capitalize',
+                          'group flex shrink-0 items-center justify-between gap-2 whitespace-nowrap rounded-full border-2 px-4 py-2 text-sm font-bold transition-all lg:shrink lg:whitespace-normal lg:rounded-2xl lg:p-4',
                           isSelected
-                            ? 'bg-emerald-50 border-emerald-200 text-emerald-900 shadow-md'
-                            : 'bg-white border-transparent hover:border-slate-100 hover:bg-slate-50 text-slate-600',
+                            ? 'border-emerald-200 bg-emerald-50 text-emerald-900 shadow-md'
+                            : 'border-transparent bg-white text-slate-600 hover:border-slate-100 hover:bg-slate-50',
                         )}
                       >
-                        {m.name}
-                        <Badge variant="secondary" className="rounded-md text-xs font-black bg-white/30">
-                          {m.count}
-                        </Badge>
+                        <span className="flex items-center gap-3 capitalize">
+                          <span className={cn('hidden size-2 shrink-0 rounded-full lg:block', isSelected ? 'bg-emerald-500' : 'bg-slate-300')} />
+                          {label}
+                        </span>
+                        <span className="flex shrink-0 items-center gap-2">
+                          <Badge
+                            variant={isSelected ? 'default' : 'secondary'}
+                            className={cn('rounded-lg font-black', isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600')}
+                          >
+                            {count}
+                            <span className="hidden lg:inline">{count === 1 ? t('eventOne') : t('eventOther')}</span>
+                          </Badge>
+                          <ChevronRight
+                            className={cn(
+                              'hidden size-4 transition-transform lg:block',
+                              isSelected ? 'rotate-90 text-emerald-500' : 'text-slate-400 group-hover:translate-x-1',
+                            )}
+                          />
+                        </span>
                       </Link>
                     );
                   })}
                 </div>
-              </div>
-            )}
-          </div>
-
-          {/* DESKTOP FILTER */}
-          <aside className="hidden lg:block lg:col-span-1 space-y-8">
-            <div>
-              <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-emerald-600" />
-                {t('filterByMonth')}
-              </h3>
-
-              <div className="flex flex-col gap-2">
-                {monthsWithEvents.length === 0 ? (
-                  <p className="text-sm text-slate-400 font-medium italic">{t('noneThisYear')}</p>
-                ) : (
-                  <>
-                    {monthsWithEvents.map((m) => {
-                      const isSelected = monthToFilter === m.index;
-
-                      return (
-                        <Link
-                          key={m.index}
-                          href={isSelected ? '/admin/torneios' : `/admin/torneios?month=${m.index}`}
-                          scroll={false}
-                          className={cn(
-                            'flex items-center justify-between p-4 rounded-2xl transition-all group border-2',
-                            isSelected
-                              ? 'bg-emerald-50 border-emerald-200 text-emerald-900 shadow-md'
-                              : 'bg-white border-transparent hover:border-slate-100 hover:bg-slate-50 text-slate-600',
-                          )}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={cn(
-                                'w-2 h-2 rounded-full transition-all',
-                                isSelected ? 'bg-emerald-500' : 'bg-slate-300 group-hover:bg-slate-400',
-                              )}
-                            />
-                            <span
-                              className={cn('font-bold capitalize', isSelected ? 'text-emerald-900' : 'text-slate-600')}
-                            >
-                              {m.name}, {currentYear}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              variant={isSelected ? 'default' : 'secondary'}
-                              className={cn(
-                                'rounded-lg font-black',
-                                isSelected ? 'bg-emerald-500' : 'bg-slate-100 text-white',
-                              )}
-                            >
-                              {m.count} {m.count === 1 ? t('eventOne') : t('eventOther')}
-                            </Badge>
-
-                            <ChevronRight
-                              className={cn(
-                                'w-4 h-4 transition-transform',
-                                isSelected ? 'rotate-90 text-emerald-500' : 'text-slate-300 group-hover:translate-x-1',
-                              )}
-                            />
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </>
-                )}
-              </div>
+              )}
             </div>
           </aside>
 
@@ -232,9 +184,6 @@ export default async function AdminTournamentsPage({ searchParams }: Props) {
                   <h2 className="text-xl font-semibold text-slate-900 mb-2">{t('emptyMonthTitle')}</h2>
                   <p className="text-slate-500 mb-8">{t('emptyMonthBody')}</p>
                   <div className="flex justify-center gap-4">
-                    <Button variant="outline" asChild size="lg" className="rounded-2xl font-black">
-                      <Link href="/admin/torneios">{t('viewAll')}</Link>
-                    </Button>
                     <Button
                       asChild
                       size="lg"
